@@ -5,21 +5,19 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.FunctionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,41 +39,44 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public List<FunctionHeader> getInitializers(BaseScope scope) {
-		return Collections.singletonList(new FunctionHeader(
+	public List<AnnotationInitializer> getInitializers(TypeBuilder types) {
+		TypeID enforcementLevel = types.resolve(CodePosition.BUILTIN, enforcementLevelName)
+				.orElseThrow(() -> new RuntimeException("Could not find stdlib.EnforcementLevel"));
+
+		return Collections.singletonList(new AnnotationInitializer(new FunctionHeader(
 				BasicTypeID.VOID,
-				scope.getType(CodePosition.BUILTIN, enforcementLevelName),
+				enforcementLevel,
 				BasicTypeID.BOOL,
-				BasicTypeID.STRING));
+				BasicTypeID.STRING)));
 	}
 
 	@Override
-	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
+	public ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
 		if (member instanceof FunctionalMember) {
 			FunctionHeader header = ((FunctionalMember) member).header;
-			return new ExpressionScope(new FunctionScope(((FunctionalMember) member).position, scope, header));
+			return compiler.forMethod(header).expressions();
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to methods");
 		}
 	}
 
 	@Override
-	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
+	public ExpressionCompiler getScopeForType(HighLevelDefinition definition, DefinitionCompiler compiler) {
 		if (definition instanceof FunctionDefinition) {
 			FunctionHeader header = ((FunctionDefinition) definition).header;
-			return new ExpressionScope(new FunctionScope(((FunctionDefinition) definition).position, scope, header));
+			return compiler.forMembers(definition).forMethod(header).expressions();
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to functions");
 		}
 	}
 
 	@Override
-	public ExpressionScope getScopeForStatement(Statement statement, StatementScope scope) {
+	public ExpressionCompiler getScopeForStatement(Statement statement, StatementCompiler compiler) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
-	public ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
+	public ExpressionCompiler getScopeForParameter(FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
@@ -93,7 +94,6 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public DefinitionAnnotation createForDefinition(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
 	}
-
 	@Override
 	public StatementAnnotation createForStatement(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
@@ -105,27 +105,28 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
-		CodePosition position = input.deserializePosition();
+	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeSerializationContext context, IDefinitionMember member) {
+/*		CodePosition position = input.deserializePosition();
 		String enforcement = input.readString();
 		StatementContext statementContext = new StatementContext(position, context, member.getHeader());
 		Expression condition = input.deserializeExpression(statementContext);
 		Expression message = input.deserializeExpression(statementContext);
-		return new PreconditionForMethod(position, enforcement, condition, message);
+		return new PreconditionForMethod(position, enforcement, condition, message);*/
+		throw new UnsupportedOperationException("Not yet supported");
 	}
 
 	@Override
-	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context) {
+	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
-	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context) {
+	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
-	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

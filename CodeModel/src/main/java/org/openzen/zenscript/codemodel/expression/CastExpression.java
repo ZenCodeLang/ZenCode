@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class CastExpression extends Expression {
 	public final Expression target;

@@ -18,6 +18,8 @@ import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.USIZE;
 
 public class ArrayTypeSymbol implements TypeSymbol {
+	private final Modifiers MODIFIERS = new Modifiers(Modifiers.PUBLIC);
+
 	public static final TypeParameter ELEMENT = new TypeParameter(BUILTIN, "E");
 	public static final GenericTypeID ELEMENT_TYPE = new GenericTypeID(ELEMENT);
 
@@ -60,6 +62,16 @@ public class ArrayTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
+	public boolean isExpansion() {
+		return false;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return MODIFIERS;
+	}
+
+	@Override
 	public boolean isStatic() {
 		return true;
 	}
@@ -88,13 +100,15 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		members.indexGet(new MethodInstance(
 				BuiltinMethodSymbol.ARRAY_INDEXGET,
-				new FunctionHeader(baseType, indexGetParameters)));
+				new FunctionHeader(baseType, indexGetParameters),
+				type));
 
 		if (dimension == 1) {
 			FunctionHeader sliceHeader = new FunctionHeader(type, new FunctionParameter(RangeTypeID.USIZE, "range"));
 			members.indexGet(new MethodInstance(
 					BuiltinMethodSymbol.ARRAY_INDEXGETRANGE,
-					sliceHeader));
+					sliceHeader,
+					type));
 
 			if (baseType == BYTE)
 				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
@@ -114,12 +128,13 @@ public class ArrayTypeSymbol implements TypeSymbol {
 				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
 		}
 
-		members.contains(mapper.map(BuiltinMethodSymbol.ARRAY_CONTAINS));
+		members.contains(mapper.map(type, BuiltinMethodSymbol.ARRAY_CONTAINS));
 
 		if (baseType.hasDefaultValue()) {
 			members.constructor(new MethodInstance(
 					BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_SIZED,
-					new FunctionHeader(VOID, indexGetParameters)));
+					new FunctionHeader(VOID, indexGetParameters),
+					type));
 		}
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
@@ -127,7 +142,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 			initialValueConstructorParameters[i] = new FunctionParameter(USIZE);
 		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
 		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID, initialValueConstructorParameters);
-		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_INITIAL_VALUE, initialValueConstructorHeader));
+		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_INITIAL_VALUE, initialValueConstructorHeader, type));
 
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
@@ -136,7 +151,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
 		lambdaConstructorParameters[dimension] = new FunctionParameter(new FunctionTypeID(lambdaConstructorFunction));
 		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID, lambdaConstructorParameters);
-		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_LAMBDA, lambdaConstructorHeader));
+		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_LAMBDA, lambdaConstructorHeader, type));
 
 		{
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
@@ -148,7 +163,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 					null,
 					new FunctionParameter(new ArrayTypeID(mappedConstructorParameterType, dimension), "original"),
 					new FunctionParameter(new FunctionTypeID(mappedConstructorHeaderWithoutIndex), "projection"));
-			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED, mappedConstructorFunctionWithoutIndex));
+			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED, mappedConstructorFunctionWithoutIndex, type));
 		}
 
 		{
@@ -167,7 +182,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 					null,
 					new FunctionParameter(new ArrayTypeID(mappedConstructorParameterType, dimension), "original"),
 					new FunctionParameter(new FunctionTypeID(mappedConstructorHeaderWithIndex), "projection"));
-			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex));
+			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex, type));
 		}
 
 		FunctionParameter[] indexSetParameters = new FunctionParameter[dimension + 1];
@@ -176,7 +191,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		indexSetParameters[dimension] = new FunctionParameter(baseType);
 
 		FunctionHeader indexSetHeader = new FunctionHeader(VOID, indexSetParameters);
-		members.indexSet(new MethodInstance(BuiltinMethodSymbol.ARRAY_INDEXSET, indexSetHeader));
+		members.indexSet(new MethodInstance(BuiltinMethodSymbol.ARRAY_INDEXSET, indexSetHeader, type));
 
 		if (dimension == 1) {
 			members.getter("length", new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTH1D));
@@ -186,16 +201,16 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		members.getter("isEmpty", new MethodInstance(BuiltinMethodSymbol.ARRAY_ISEMPTY));
 		members.getter("hashCode", new MethodInstance(BuiltinMethodSymbol.ARRAY_HASHCODE));
-		members.iterator(mapper.map(BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES));
+		members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES));
 		if (dimension == 1) {
-			members.iterator(mapper.map(BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES));
+			members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES));
 		}
 
 		FunctionHeader equalityHeader = new FunctionHeader(BOOL, type);
-		members.equals(new MethodInstance(BuiltinMethodSymbol.ARRAY_EQUALS, equalityHeader));
-		members.notEquals(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTEQUALS, equalityHeader));
-		members.same(new MethodInstance(BuiltinMethodSymbol.ARRAY_SAME, equalityHeader));
-		members.notSame(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTSAME, equalityHeader));
+		members.equals(new MethodInstance(BuiltinMethodSymbol.ARRAY_EQUALS, equalityHeader, type));
+		members.notEquals(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTEQUALS, equalityHeader, type));
+		members.same(new MethodInstance(BuiltinMethodSymbol.ARRAY_SAME, equalityHeader, type));
+		members.notSame(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTSAME, equalityHeader, type));
 
 		return members.build();
 

@@ -43,12 +43,6 @@ public class FunctionParameter extends Taggable {
 		this(type, name, null, variadic);
 	}
 
-	public FunctionParameter normalize() {
-		FunctionParameter result = new FunctionParameter(type.getNormalized(), name, defaultValue, variadic);
-		result.annotations = this.annotations;
-		return result;
-	}
-
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {
 		TypeID instanced = type.instance(mapper);
 		if (instanced.equals(type))

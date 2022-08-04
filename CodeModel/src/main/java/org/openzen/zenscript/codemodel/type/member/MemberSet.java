@@ -230,10 +230,18 @@ public class MemberSet implements ResolvedType {
 			return this;
 		}
 
+		public Builder operator(MethodInstance method) {
+			OperatorType operator = method.method.getOperator()
+					.orElseThrow(() -> new IllegalArgumentException("Not an operator"));
+			return operator(operator, method);
+		}
+
 		public Builder operator(OperatorType operator, InstanceCallableMethod method) {
 			target.operators.computeIfAbsent(operator, k -> new ArrayList<>()).add(method);
 			return this;
 		}
+
+		public Builder contextMember(CompilingExpression )
 
 		/* Operators */
 

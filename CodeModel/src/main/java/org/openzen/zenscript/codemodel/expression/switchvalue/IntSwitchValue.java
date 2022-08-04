@@ -1,10 +1,20 @@
 package org.openzen.zenscript.codemodel.expression.switchvalue;
 
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+
+import java.util.Collections;
+import java.util.List;
+
 public class IntSwitchValue implements SwitchValue {
 	public final int value;
 
 	public IntSwitchValue(int value) {
 		this.value = value;
+	}
+
+	@Override
+	public List<VarStatement> getBindings() {
+		return Collections.emptyList();
 	}
 
 	@Override

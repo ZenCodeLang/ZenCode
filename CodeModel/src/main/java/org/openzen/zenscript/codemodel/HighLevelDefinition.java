@@ -7,9 +7,12 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
@@ -146,8 +149,18 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(type, members, mapper);
 		}
+
+		if (superType != null) {
+			// TODO - register supertype members
+		}
+
+		members.operator(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.operator(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		resolveAdditional(type, members, mapper);
 		return members.build();
 	}
+
+	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {}
 
 	@Override
 	public TypeParameter[] getTypeParameters() {

@@ -2,21 +2,21 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
 
 public class VariantValueExpression extends Expression {
-	public final VariantOptionRef option;
+	public final VariantOptionInstance option;
 	public final Expression[] arguments;
 
-	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionRef option) {
+	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionInstance option) {
 		this(position, variantType, option, Expression.NONE);
 	}
 
-	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionRef option, Expression[] arguments) {
+	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionInstance option, Expression[] arguments) {
 		super(position, variantType, multiThrow(position, arguments));
 
 		this.option = option;

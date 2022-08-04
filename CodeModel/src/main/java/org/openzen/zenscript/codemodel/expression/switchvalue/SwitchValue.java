@@ -1,11 +1,12 @@
 package org.openzen.zenscript.codemodel.expression.switchvalue;
 
 import org.openzen.zenscript.codemodel.LocalVariable;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 import java.util.List;
 
 public interface SwitchValue {
-	List<LocalVariable> getBindings();
+	List<VarStatement> getBindings();
 
 	<T> T accept(SwitchValueVisitor<T> visitor);
 

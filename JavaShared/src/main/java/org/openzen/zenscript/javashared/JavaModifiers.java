@@ -38,19 +38,19 @@ public class JavaModifiers {
 	private JavaModifiers() {
 	}
 
-	public static int getJavaModifiers(int modifiers) {
+	public static int getJavaModifiers(Modifiers modifiers) {
 		int out = 0;
-		if (Modifiers.isStatic(modifiers))
+		if (modifiers.isStatic())
 			out |= STATIC;
-		if (Modifiers.isFinal(modifiers))
+		if (modifiers.isFinal())
 			out |= FINAL;
-		if (Modifiers.isPublic(modifiers))
+		if (modifiers.isPublic())
 			out |= PUBLIC;
-		if (Modifiers.isPrivate(modifiers))
+		if (modifiers.isPrivate())
 			out |= PRIVATE;
-		if (Modifiers.isProtected(modifiers))
+		if (modifiers.isProtected())
 			out |= PROTECTED;
-		if (Modifiers.isAbstract(modifiers))
+		if (modifiers.isAbstract())
 			out |= ABSTRACT;
 		return out;
 	}

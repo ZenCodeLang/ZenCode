@@ -564,6 +564,8 @@ public class BasicTypeMembers {
 
 	private static MemberSet getString() {
 		MemberSet.Builder builder = MemberSet.create();
+		builder.constructor(new MethodInstance(BuiltinMethodSymbol.STRING_CONSTRUCTOR_CHARACTERS));
+
 		builder.operator(OperatorType.ADD, new MethodInstance(BuiltinMethodSymbol.STRING_ADD_STRING));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.STRING_COMPARE));
 

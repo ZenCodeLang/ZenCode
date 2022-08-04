@@ -1,12 +1,11 @@
 package org.openzen.zenscript.codemodel.annotations;
 
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 
 public class NativeMemberAnnotation implements MemberAnnotation {
 	private final String identifier;
@@ -21,27 +20,27 @@ public class NativeMemberAnnotation implements MemberAnnotation {
 	}
 
 	@Override
-	public void apply(IDefinitionMember member, BaseScope scope) {
+	public void apply(IDefinitionMember member) {
 		member.setTag(NativeTag.class, new NativeTag(identifier));
 	}
 
 	@Override
-	public void applyOnOverridingMethod(FunctionalMember member, BaseScope scope) {
+	public void applyOnOverridingMethod(FunctionalMember member) {
 		// not inherited
 	}
 
 	@Override
-	public void applyOnOverridingGetter(GetterMember member, BaseScope scope) {
+	public void applyOnOverridingGetter(GetterMember member) {
 		// not inherited
 	}
 
 	@Override
-	public void applyOnOverridingSetter(SetterMember member, BaseScope scope) {
+	public void applyOnOverridingSetter(SetterMember member) {
 		// not inherited
 	}
 
 	@Override
-	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context) {
+	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeSerializationContext context) {
 		output.writeString(identifier);
 	}
 }

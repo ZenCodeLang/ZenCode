@@ -8,7 +8,6 @@ package org.openzen.zenscript.javasource;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -22,12 +21,9 @@ import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -152,7 +148,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		JavaClass cls = context.getJavaClass(definition);
 
 		output.append(indent);
-		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
+		convertModifiers(definition.modifiers.withVirtual()); // to prevent 'final'
 		output.append("interface ").append(cls.getName());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 
@@ -207,7 +203,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				true);
 
 		output.append(indent);
-		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
+		convertModifiers(definition.modifiers.withVirtual()); // to prevent 'final'
 		output.append("enum ").append(definition.name);
 
 		output.append(" {\n");
@@ -251,7 +247,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		JavaSourceFileScope scope = createScope(definition);
 
 		output.append(indent);
-		convertModifiers(definition.modifiers | Modifiers.FINAL);
+		convertModifiers(definition.modifiers.withFinal());
 		output.append("class ").append(definition.name);
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 		output.append(" {\n");
@@ -265,7 +261,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	public Void visitFunction(FunctionDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
 
-		convertModifiers(definition.modifiers | Modifiers.STATIC);
+		convertModifiers(definition.modifiers.withStatic());
 
 		return null;
 	}
@@ -301,7 +297,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	public Void visitVariant(VariantDefinition variant) {
 		JavaSourceFileScope scope = createScope(variant);
 
-		convertModifiers(variant.modifiers | Modifiers.VIRTUAL | Modifiers.ABSTRACT);
+		convertModifiers(variant.modifiers.withVirtual().withAbstract());
 		output.append(indent).append("class ").append(variant.name);
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.typeParameters, false);
 		output.append(" {\n");
@@ -377,18 +373,18 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		}
 	}
 
-	private void convertModifiers(int modifiers) {
-		if (Modifiers.isPublic(modifiers) || Modifiers.isInternal(modifiers))
+	private void convertModifiers(Modifiers modifiers) {
+		if (modifiers.isPublic() || modifiers.isInternal())
 			output.append("public ");
-		if (Modifiers.isPrivate(modifiers))
+		if (modifiers.isPrivate())
 			output.append("private ");
-		if (Modifiers.isProtected(modifiers))
+		if (modifiers.isProtected())
 			output.append("protected ");
-		if (Modifiers.isStatic(modifiers))
+		if (modifiers.isStatic())
 			output.append("static ");
-		if (Modifiers.isAbstract(modifiers))
+		if (modifiers.isAbstract())
 			output.append("abstract ");
-		if (!Modifiers.isVirtual(modifiers) && !Modifiers.isAbstract(modifiers))
+		if (!modifiers.isVirtual() && !modifiers.isAbstract())
 			output.append("final ");
 	}
 

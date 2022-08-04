@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 		return compiler.resolve(instance.type)
 				.findGetter(name.name)
-				.map(getter -> getter.apply(compiler.at(position), instance))
+				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE))
 				.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(instance.type, name.name)));
 	}
 
@@ -35,7 +36,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 	}
 
 	@Override
-	public Optional<StaticCallable> call() {
+	public Optional<CompilingCallable> call() {
 		return compiler.resolve(instance.type)
 				.findMethod(name.name)
 				.map(method -> method.bind(instance, name.arguments));
@@ -54,14 +55,14 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 	private static class Setter extends AbstractCompilingExpression {
 		private final Expression instance;
-		private final ResolvedType.InstanceSetter setter;
+		private final InstanceCallable setter;
 		private final CompilingExpression value;
 
 		public Setter(
 				ExpressionCompiler compiler,
 				CodePosition position,
 				Expression instance,
-				ResolvedType.InstanceSetter setter,
+				InstanceCallable setter,
 				CompilingExpression value
 		) {
 			super(compiler, position);
@@ -73,7 +74,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 		@Override
 		public Expression eval() {
-			return setter.apply(compiler.at(position), instance, value.cast(cast(setter.getType())).value);
+			return setter.call(compiler, position, instance, TypeID.NONE, value);
 		}
 
 		@Override

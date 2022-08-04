@@ -1,14 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 
 public class InterfaceCastExpression extends Expression {
 	public final Expression value;
-	public final ImplementationMemberRef implementation;
+	public final ImplementationMemberInstance implementation;
 
-	public InterfaceCastExpression(CodePosition position, Expression value, ImplementationMemberRef implementation) {
+	public InterfaceCastExpression(CodePosition position, Expression value, ImplementationMemberInstance implementation) {
 		super(position, implementation.implementsType, value.thrownType);
 
 		this.value = value;

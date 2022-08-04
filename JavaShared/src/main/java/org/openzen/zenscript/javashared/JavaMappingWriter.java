@@ -148,7 +148,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitConstructor(ConstructorMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -162,7 +162,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitDestructor(DestructorMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -174,7 +174,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitMethod(MethodMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -189,7 +189,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitGetter(GetterMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -203,7 +203,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitSetter(SetterMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -217,7 +217,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitOperator(OperatorMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -232,7 +232,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitCaster(CasterMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 
@@ -251,7 +251,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitCaller(CallerMember member) {
-			JavaMethod method = module.optMethodInfo(member);
+			JavaNativeMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
 

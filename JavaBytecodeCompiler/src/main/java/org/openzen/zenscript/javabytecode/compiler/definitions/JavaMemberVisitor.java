@@ -41,7 +41,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(toClass, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -68,7 +68,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
 		final boolean isEnum = definition instanceof EnumDefinition;
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaNativeMethod method = context.getJavaMethod(member);
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
@@ -162,7 +162,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		if (member.body == null)
 			modifiers |= Opcodes.ACC_ABSTRACT;
 
-		final JavaMethod method = JavaMethod.getVirtual(toClass, "close", "()V", modifiers);
+		final JavaNativeMethod method = JavaNativeMethod.getVirtual(toClass, "close", "()V", modifiers);
 		if (member.body == null)
 			return null;
 
@@ -185,7 +185,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), Collections.emptyList());
 
 		final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaNativeMethod method = context.getJavaMethod(member);
 
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
@@ -218,7 +218,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaNativeMethod method = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
@@ -239,7 +239,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
 		methodWriter.label(methodStart);
 
@@ -263,7 +263,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitOperator(OperatorMember member) {
 
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;
@@ -274,7 +274,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		if (javaMethod == null || !javaMethod.compile) {
 			return null;
 		}
@@ -318,7 +318,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCaller(CallerMember member) {
 		//It's gonna be a method anyways, so why not reuse the code ^^
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final MethodMember call = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
 		call.body = member.body;
 		call.annotations = member.annotations;
@@ -334,13 +334,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			for (IDefinitionMember imember : member.members)
 				imember.accept(this);
 		} else {
-			//TODO: Fixme???
-			// What should I do if a native class has interfaces to be visited?
-			if (javaModule.getNativeClassInfo(member.definition) != null) {
-				return null;
-			}
-
-
 			throw new UnsupportedOperationException("Non-inline interface implementations not yet available");
 		}
 		return null;

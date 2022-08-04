@@ -3,8 +3,6 @@ package org.openzen.zenscript.codemodel.serialization;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -14,7 +12,7 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -49,11 +47,11 @@ public interface CodeSerializationOutput {
 
 	void write(EnumConstantMember constant);
 
-	void write(VariantOptionRef option);
+	void write(VariantOptionInstance option);
 
-	void write(TypeContext context, FieldSymbol field);
+	void write(TypeSerializationContext context, FieldSymbol field);
 
-	void write(TypeContext context, MethodSymbol method);
+	void write(TypeSerializationContext context, MethodSymbol method);
 
 	void write(AnnotationDefinition annotationType);
 
@@ -69,13 +67,13 @@ public interface CodeSerializationOutput {
 
 	void serialize(TypeSerializationContext context, FunctionHeader header);
 
-	void serialize(StatementContext context, CallArguments arguments);
+	void serialize(StatementSerializationContext context, CallArguments arguments);
 
-	void serialize(StatementContext context, Statement statement);
+	void serialize(StatementSerializationContext context, Statement statement);
 
-	void serialize(StatementContext context, Expression expression);
+	void serialize(StatementSerializationContext context, Expression expression);
 
-	void serialize(StatementContext context, SwitchValue value);
+	void serialize(StatementSerializationContext context, SwitchValue value);
 
 	void enqueueMembers(EncodingOperation operation);
 

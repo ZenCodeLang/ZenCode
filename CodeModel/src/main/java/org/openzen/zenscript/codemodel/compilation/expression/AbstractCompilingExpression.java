@@ -22,7 +22,7 @@ public abstract class AbstractCompilingExpression implements CompilingExpression
 	}
 
 	@Override
-	public Optional<StaticCallable> call() {
+	public Optional<CompilingCallable> call() {
 		return Optional.empty();
 	}
 

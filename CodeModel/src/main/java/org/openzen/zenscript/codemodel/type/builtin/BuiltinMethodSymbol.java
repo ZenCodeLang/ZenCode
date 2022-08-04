@@ -1,13 +1,16 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.constant.StringConstant;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Optional;
@@ -452,8 +455,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	},
 	STRING_COMPARE(STRING, COMPARE, INT, STRING),
 	STRING_LENGTH(STRING, "length", USIZE),
-	STRING_INDEXGET(STRING, "[]", CHAR, USIZE),
-	STRING_RANGEGET(STRING, "[..]", STRING, RangeTypeID.USIZE),
+	STRING_INDEXGET(STRING, INDEXGET, CHAR, USIZE),
+	STRING_RANGEGET(STRING, INDEXGET, STRING, RangeTypeID.USIZE),
 	STRING_CHARACTERS(STRING, "characters", ArrayTypeID.CHAR),
 	STRING_ISEMPTY(STRING, "isEmpty", BOOL),
 	STRING_REMOVE_DIACRITICS(STRING, "removeDiacritics", STRING),
@@ -464,30 +467,51 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	STRING_CONTAINS_STRING(STRING, CONTAINS, BOOL, STRING),
 
 	ASSOC_CONSTRUCTOR(MapTypeSymbol.INSTANCE, "this", new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
-	ASSOC_INDEXGET(MapTypeSymbol.INSTANCE, "[]", new OptionalTypeID(MapTypeSymbol.VALUE_TYPE), MapTypeSymbol.KEY_TYPE),
-	ASSOC_INDEXSET(MapTypeSymbol.INSTANCE, "[]=", VOID, MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE),
-	ASSOC_CONTAINS(MapTypeSymbol.INSTANCE, "in", BOOL, MapTypeSymbol.KEY_TYPE),
+	ASSOC_INDEXGET(MapTypeSymbol.INSTANCE, INDEXGET, new OptionalTypeID(MapTypeSymbol.VALUE_TYPE), MapTypeSymbol.KEY_TYPE),
+	ASSOC_INDEXSET(MapTypeSymbol.INSTANCE, INDEXSET, VOID, MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE),
+	ASSOC_CONTAINS(MapTypeSymbol.INSTANCE, CONTAINS, BOOL, MapTypeSymbol.KEY_TYPE),
 	ASSOC_GETORDEFAULT(MapTypeSymbol.INSTANCE, "getOrDefault", MapTypeSymbol.VALUE_TYPE, MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE),
 	ASSOC_SIZE(MapTypeSymbol.INSTANCE, "size", USIZE),
 	ASSOC_ISEMPTY(MapTypeSymbol.INSTANCE, "isEmpty", BOOL),
 	ASSOC_KEYS(MapTypeSymbol.INSTANCE, "keys", new ArrayTypeID(MapTypeSymbol.KEY_TYPE)),
 	ASSOC_VALUES(MapTypeSymbol.INSTANCE, "values", new ArrayTypeID(MapTypeSymbol.VALUE_TYPE)),
 	ASSOC_HASHCODE(MapTypeSymbol.INSTANCE, "objectHashCode", UINT),
-	ASSOC_EQUALS(MapTypeSymbol.INSTANCE, "==", new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
-	ASSOC_NOTEQUALS(MapTypeSymbol.INSTANCE, "!=", new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
-	ASSOC_SAME(MapTypeSymbol.INSTANCE, "===", new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
-	ASSOC_NOTSAME(MapTypeSymbol.INSTANCE, "!==", new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
+	ASSOC_EQUALS(MapTypeSymbol.INSTANCE, EQUALS, new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
+	ASSOC_NOTEQUALS(MapTypeSymbol.INSTANCE, NOTEQUALS, new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
+	ASSOC_SAME(MapTypeSymbol.INSTANCE, SAME, new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
+	ASSOC_NOTSAME(MapTypeSymbol.INSTANCE, NOTSAME, new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
 
-/*	GENERICMAP_CONSTRUCTOR,
-	GENERICMAP_GETOPTIONAL,
-	GENERICMAP_PUT,
-	GENERICMAP_CONTAINS,
-	GENERICMAP_ADDALL,
-	GENERICMAP_SIZE,
-	GENERICMAP_ISEMPTY,
-	GENERICMAP_HASHCODE,
-	GENERICMAP_SAME,
-	GENERICMAP_NOTSAME,*/
+	GENERICMAP_CONSTRUCTOR(GenericMapTypeSymbol.INSTANCE, "this", GenericMapTypeSymbol.PROTOTYPE),
+	GENERICMAP_GETOPTIONAL(
+			GenericMapTypeSymbol.INSTANCE,
+			INDEXGET,
+			new FunctionHeader(
+					new TypeParameter[] { GenericMapTypeSymbol.PARAMETER },
+					new GenericTypeID(GenericMapTypeSymbol.VALUE),
+					null,
+					new FunctionParameter(new GenericTypeID(GenericMapTypeSymbol.PARAMETER)))),
+	GENERICMAP_PUT(
+			GenericMapTypeSymbol.INSTANCE,
+			INDEXSET,
+			new FunctionHeader(
+					new TypeParameter[] { GenericMapTypeSymbol.PARAMETER },
+					new GenericTypeID(GenericMapTypeSymbol.VALUE),
+					null,
+					new FunctionParameter(new GenericTypeID(GenericMapTypeSymbol.PARAMETER)),
+					new FunctionParameter(new GenericTypeID(GenericMapTypeSymbol.VALUE))
+			)),
+	GENERICMAP_CONTAINS(GenericMapTypeSymbol.INSTANCE, CONTAINS, new FunctionHeader(
+			new TypeParameter[] { GenericMapTypeSymbol.PARAMETER },
+			BOOL,
+			null,
+			new FunctionParameter(new GenericTypeID(GenericMapTypeSymbol.PARAMETER))
+	)),
+	GENERICMAP_ADDALL(GenericMapTypeSymbol.INSTANCE, "addAll", FunctionHeader.PLACEHOLDER),
+	GENERICMAP_SIZE(GenericMapTypeSymbol.INSTANCE, "size", USIZE),
+	GENERICMAP_ISEMPTY(GenericMapTypeSymbol.INSTANCE, "isEmpty", BOOL),
+	GENERICMAP_HASHCODE(GenericMapTypeSymbol.INSTANCE, "hashCode", UINT),
+	GENERICMAP_SAME(GenericMapTypeSymbol.INSTANCE, SAME, BOOL),
+	GENERICMAP_NOTSAME(GenericMapTypeSymbol.INSTANCE, NOTSAME, BOOL),
 
 	ARRAY_CONSTRUCTOR_SIZED(ArrayTypeSymbol.ARRAY, "this", FunctionHeader.PLACEHOLDER),
 	ARRAY_CONSTRUCTOR_INITIAL_VALUE(ArrayTypeSymbol.ARRAY, "this", FunctionHeader.PLACEHOLDER),
@@ -530,6 +554,9 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ENUM_TO_STRING(FunctionTypeSymbol.PLACEHOLDER, "as string", STRING),
 	ENUM_COMPARE(FunctionTypeSymbol.PLACEHOLDER, COMPARE, FunctionHeader.PLACEHOLDER),
 
+
+	METHOD_CALL(FunctionTypeSymbol.PLACEHOLDER, CALL, FunctionHeader.PLACEHOLDER),
+
 	OBJECT_HASHCODE(FunctionTypeSymbol.PLACEHOLDER, "hashCode", UINT),
 	OBJECT_SAME(FunctionTypeSymbol.PLACEHOLDER, "===", BOOL),
 	OBJECT_NOTSAME(FunctionTypeSymbol.PLACEHOLDER, "!==", BOOL),
@@ -537,8 +564,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	RANGE_FROM(RangeTypeSymbol.INSTANCE, "from", new GenericTypeID(RangeTypeSymbol.PARAMETER)),
 	RANGE_TO(RangeTypeSymbol.INSTANCE, "to", new GenericTypeID(RangeTypeSymbol.PARAMETER)),
 
-/*	OPTIONAL_IS_NULL,
-	OPTIONAL_IS_NOT_NULL,*/
+	OPTIONAL_IS_NULL(OptionalTypeSymbol.INSTANCE, EQUALS, NULL),
+	OPTIONAL_IS_NOT_NULL(OptionalTypeSymbol.INSTANCE, NOTEQUALS, NULL),
 
 	ITERATOR_INT_RANGE(RangeTypeSymbol.INSTANCE, "iterator", FunctionHeader.PLACEHOLDER),
 	ITERATOR_ARRAY_VALUES(ArrayTypeSymbol.ARRAY, "iterator", FunctionHeader.PLACEHOLDER),
@@ -550,29 +577,34 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	private final TypeSymbol definingType;
 	private final String name;
+	private final OperatorType operator;
 	private final FunctionHeader header;
 
 	BuiltinMethodSymbol(TypeSymbol definingType, String name, FunctionHeader header) {
 		this.definingType = definingType;
 		this.name = name;
+		this.operator = null;
 		this.header = header;
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, String name, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
 		this.name = name;
+		this.operator = null;
 		header = new FunctionHeader(result, parameters);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
 		this.definingType = definingType;
 		this.name = operator.operator;
+		this.operator = operator;
 		this.header = header;
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
 		this.name = operator.operator;
+		this.operator = operator;
 		header = new FunctionHeader(result, parameters);
 	}
 
@@ -597,8 +629,17 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	}
 
 	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.ofNullable(operator);
+	}
+
+	@Override
 	public FunctionHeader getHeader() {
 		return header;
 	}
 
+	@Override
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.empty();
+	}
 }

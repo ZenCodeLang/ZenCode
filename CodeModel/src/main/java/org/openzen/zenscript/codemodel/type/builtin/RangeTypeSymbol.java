@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -55,10 +56,11 @@ public class RangeTypeSymbol implements TypeSymbol {
 	public ResolvedType resolve(TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(PARAMETER, baseType);
+		RangeTypeID type = new RangeTypeID(baseType);
 
 		MemberSet.Builder members = MemberSet.create();
-		members.getter(mapper.map(BuiltinMethodSymbol.RANGE_FROM));
-		members.getter(mapper.map(BuiltinMethodSymbol.RANGE_TO));
+		members.getter(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));
+		members.getter(mapper.map(type, BuiltinMethodSymbol.RANGE_TO));
 
 		if (baseType == BYTE
 				|| baseType == SBYTE
@@ -69,7 +71,7 @@ public class RangeTypeSymbol implements TypeSymbol {
 				|| baseType == LONG
 				|| baseType == ULONG
 				|| baseType == USIZE) {
-			members.iterator(mapper.map(BuiltinMethodSymbol.ITERATOR_INT_RANGE));
+			members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_INT_RANGE));
 		}
 
 		return members.build();

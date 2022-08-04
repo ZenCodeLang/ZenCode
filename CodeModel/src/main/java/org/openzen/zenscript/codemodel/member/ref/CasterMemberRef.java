@@ -47,7 +47,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 
 	public boolean isImplicit() {
-		return Modifiers.isImplicit(member.getSpecifiedModifiers());
+		return member.getSpecifiedModifiers().isImplicit();
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 package org.openzen.zenscript.codemodel.type;
 
-import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.builtin.GenericMapTypeSymbol;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class GenericMapTypeID implements TypeID {
 	public final TypeID value;
@@ -39,6 +39,11 @@ public class GenericMapTypeID implements TypeID {
 	@Override
 	public Optional<GenericMapTypeID> asGenericMap() {
 		return Optional.of(this);
+	}
+
+	@Override
+	public ResolvedType resolve() {
+		return GenericMapTypeSymbol.INSTANCE.resolve(new TypeID[] { new GenericTypeID(key), value });
 	}
 
 	@Override

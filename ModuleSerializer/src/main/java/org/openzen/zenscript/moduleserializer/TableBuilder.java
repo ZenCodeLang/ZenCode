@@ -32,7 +32,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -205,7 +205,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void write(VariantOptionRef option) {
+	public void write(VariantOptionInstance option) {
 		prepare(option.getOption().variant).mark(option.getOption());
 	}
 

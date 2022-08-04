@@ -8,6 +8,7 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -33,8 +34,10 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 		if (!(type instanceof DefinitionTypeID))
 			return;
 
-		HighLevelDefinition definition = ((DefinitionTypeID) type).definition;
-		prepare(definition);
+		TypeSymbol typeSymbol = ((DefinitionTypeID) type).definition;
+		if (typeSymbol instanceof HighLevelDefinition) {
+			prepare((HighLevelDefinition) typeSymbol);
+		}
 	}
 
 	public void prepare(HighLevelDefinition definition) {
@@ -88,7 +91,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return context.getJavaClass(definition);
 
 		JavaClass cls = context.getJavaClass(definition);
-		JavaMethod method = JavaMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		JavaNativeMethod method = JavaNativeMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
 		module.setMethodInfo(definition.caller, method);
 		return cls;
 	}

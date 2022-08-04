@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.util.ArrayList;
@@ -20,12 +20,12 @@ import java.util.Map;
 import static org.objectweb.asm.Opcodes.*;
 
 public class JavaWriter {
-	private static final JavaMethod STRING_CONCAT = JavaMethod.getNativeStatic(
+	private static final JavaNativeMethod STRING_CONCAT = JavaNativeMethod.getNativeStatic(
 			JavaClass.STRING,
 			"concat",
 			"(Ljava/lang/String;)Ljava/lang/String;");
 
-	public final JavaMethod method;
+	public final JavaNativeMethod method;
 	public final HighLevelDefinition forDefinition;
 	public final ClassVisitor clazzVisitor;
 	private final IZSLogger logger;
@@ -45,7 +45,7 @@ public class JavaWriter {
 			CodePosition position,
 			ClassVisitor visitor,
 			boolean nameVariables,
-			JavaMethod method,
+			JavaNativeMethod method,
 			HighLevelDefinition forDefinition,
 			String signature,
 			String[] exceptions,
@@ -60,7 +60,7 @@ public class JavaWriter {
 			CodePosition position,
 			ClassVisitor visitor,
 			boolean nameVariables,
-			JavaMethod method,
+			JavaNativeMethod method,
 			HighLevelDefinition forDefinition,
 			boolean isExtension,
 			String signature,
@@ -85,7 +85,7 @@ public class JavaWriter {
 	}
 
 
-	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaNativeMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
 		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
 	}
 
@@ -870,7 +870,7 @@ public class JavaWriter {
 		visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
 	}
 
-	public void invokeStatic(JavaMethod method) {
+	public void invokeStatic(JavaNativeMethod method) {
 		visitor.visitMethodInsn(
 				INVOKESTATIC,
 				method.cls.internalName,
@@ -890,12 +890,12 @@ public class JavaWriter {
 		invokeSpecial(Type.getInternalName(owner), name, descriptor);
 	}
 
-	public void invokeSpecial(JavaMethod method) {
+	public void invokeSpecial(JavaNativeMethod method) {
 		invokeSpecial(method.cls.internalName, method.name, method.descriptor);
 	}
 
-	public void invokeVirtual(JavaMethod method) {
-		if (method.kind == JavaMethod.Kind.INTERFACE) {
+	public void invokeVirtual(JavaNativeMethod method) {
+		if (method.kind == JavaNativeMethod.Kind.INTERFACE) {
 			invokeInterface(method);
 			return;
 		}
@@ -905,7 +905,7 @@ public class JavaWriter {
 		visitor.visitMethodInsn(INVOKEVIRTUAL, method.cls.internalName, method.name, method.descriptor, false);
 	}
 
-	public void invokeInterface(JavaMethod method) {
+	public void invokeInterface(JavaNativeMethod method) {
 		if (debug)
 			logger.debug("invokeInterface " + method.cls.internalName + '.' + method.name + method.descriptor);
 

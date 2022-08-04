@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.formattershared.ExpressionString;
 
+import java.util.Optional;
+
 public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> {
 	public final TypeFormatter typeFormatter;
 	public final String indent;
@@ -57,8 +59,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitCall(CallExpression expression) {
-		if (expression.member.isOperator()) {
-			switch (expression.member.getOperator()) {
+		return expression.method.method.getOperator().map(operator -> {
+			switch (operator) {
 				case NOT:
 					return unaryPrefix(expression.target, ZenScriptOperator.NOT, "!");
 				case NEG:
@@ -167,7 +169,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 					return unaryPrefix(expression.target, ZenScriptOperator.DECREMENT, "--");
 				case CALL: {
 					StringBuilder result = new StringBuilder();
-					result.append(".");
 					FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 					return new ExpressionString(result.toString(), ZenScriptOperator.CALL);
 				}
@@ -178,40 +179,33 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 					return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
 				}
 				default:
-					throw new UnsupportedOperationException("Unknown operator: " + expression.member.getOperator());
+					throw new UnsupportedOperationException("Unknown operator: " + operator);
 			}
-		} else if (expression.member.isCaller()) {
-			StringBuilder result = new StringBuilder();
-			result.append(expression.target.accept(this).value);
-			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
-			return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
-		} else {
+		}).orElseGet(() -> {
 			StringBuilder result = new StringBuilder();
 			result.append(expression.target.accept(this).value);
 			result.append(".");
-			result.append(expression.member.getMethodName());
+			result.append(expression.method.getName());
 			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 			return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
-		}
+		});
 	}
 
 	@Override
 	public ExpressionString visitCallStatic(CallStaticExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(typeFormatter));
-		if (expression.member.isOperator()) {
-			OperatorType operator = expression.member.getOperator();
-			if (operator == OperatorType.CALL) {
+		Optional<OperatorType> operator = expression.member.method.getOperator();
+		if (operator.isPresent()) {
+			if (operator.get() == OperatorType.CALL) {
 				// nothing
 			} else {
 				result.append(".");
-				result.append(operator.operator);
+				result.append(operator.get().operator);
 			}
-		} else if (expression.member.isCaller()) {
-			// nothing
 		} else {
 			result.append(".");
-			result.append(expression.member.getMethodName());
+			result.append(expression.member.getName());
 		}
 		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
@@ -279,7 +273,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(typeFormatter.format(expression.type));
 		result.append('.');
-		result.append(expression.constant.member.name);
+		result.append(expression.constant.getName());
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -411,7 +405,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.field.getName());
+		result.append(expression.field.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -444,7 +438,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.getter.member.name);
+		result.append(expression.getter.getName());
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 

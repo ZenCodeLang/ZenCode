@@ -2,6 +2,10 @@ package org.openzen.zenscript.codemodel.expression.switchvalue;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+
+import java.util.Collections;
+import java.util.List;
 
 public class ErrorSwitchValue implements SwitchValue {
 	public final CodePosition position;
@@ -10,6 +14,11 @@ public class ErrorSwitchValue implements SwitchValue {
 	public ErrorSwitchValue(CodePosition position, CompileError error) {
 		this.position = position;
 		this.error = error;
+	}
+
+	@Override
+	public List<VarStatement> getBindings() {
+		return Collections.emptyList();
 	}
 
 	@Override

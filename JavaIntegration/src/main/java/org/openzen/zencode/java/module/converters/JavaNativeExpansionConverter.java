@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -165,7 +165,7 @@ public class JavaNativeExpansionConverter {
 		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 		expansion.addMember(member);
-		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
 	}
 
 	private void fillStaticMethod(ExpansionDefinition expansion, JavaClass javaClass, Method method, ZenCodeType.StaticExpansionMethod annotation) {
@@ -176,7 +176,7 @@ public class JavaNativeExpansionConverter {
 		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method), name, header, null);
 
 		expansion.addMember(member);
-		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
 	}
 
 	private void fillOperator(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Operator operator) {
@@ -189,7 +189,7 @@ public class JavaNativeExpansionConverter {
 		final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, operatorType, header, null);
 
 		expansion.addMember(member);
-		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
 	}
 
 	private OperatorType getOperatorTypeFrom(ZenCodeType.Operator operator) {

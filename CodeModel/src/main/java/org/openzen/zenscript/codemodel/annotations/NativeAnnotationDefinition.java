@@ -5,19 +5,14 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
-import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
@@ -28,8 +23,8 @@ import java.util.Optional;
 public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
 
-	private final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
-			new FunctionHeader(BasicTypeID.VOID, BasicTypeID.STRING));
+	private final List<AnnotationInitializer> INITIALIZERS = Collections.singletonList(
+					new AnnotationInitializer(new FunctionHeader(BasicTypeID.VOID, BasicTypeID.STRING)));
 
 	private NativeAnnotationDefinition() {
 	}
@@ -40,28 +35,28 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public List<FunctionHeader> getInitializers(BaseScope scope) {
+	public List<AnnotationInitializer> getInitializers(TypeBuilder types) {
 		return INITIALIZERS;
 	}
 
 	@Override
 	public ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
-		return new ExpressionScope(scope);
+		return compiler.forFieldInitializers();
 	}
 
 	@Override
-	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
-		return new ExpressionScope(scope);
+	public ExpressionCompiler getScopeForType(HighLevelDefinition definition, DefinitionCompiler compiler) {
+		return compiler.types().getDefaultValueCompiler();
 	}
 
 	@Override
-	public ExpressionScope getScopeForStatement(Statement statement, StatementScope scope) {
-		return new ExpressionScope(scope);
+	public ExpressionCompiler getScopeForStatement(Statement statement, StatementCompiler compiler) {
+		return compiler.types().getDefaultValueCompiler();
 	}
 
 	@Override
-	public ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
-		return new ExpressionScope(scope);
+	public ExpressionCompiler getScopeForParameter(FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler) {
+		return compiler;
 	}
 
 	@Override
@@ -97,24 +92,24 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
+	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeSerializationContext context, IDefinitionMember member) {
 		String name = input.readString();
 		return new NativeMemberAnnotation(name);
 	}
 
 	@Override
-	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context) {
+	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeSerializationContext context) {
 		String name = input.readString();
 		return new NativeDefinitionAnnotation(name);
 	}
 
 	@Override
-	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context) {
+	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
-	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 }

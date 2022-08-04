@@ -4,7 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.LocalVariable;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public interface ExpressionCompiler extends TypeResolver {
 
 	Optional<TypeID> union(TypeID left, TypeID right);
 
-	ExpressionCompiler withLocalVariables(List<LocalVariable> variables);
+	ExpressionCompiler withLocalVariables(List<VarStatement> variables);
 
 	ExpressionCompiler forFunction(FunctionHeader header);
 }

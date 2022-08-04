@@ -18,12 +18,10 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
@@ -45,7 +43,6 @@ public abstract class JavaContext {
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
 	private final JavaCompileSpace space;
 	private final Map<Module, JavaCompiledModule> modules = new HashMap<>();
-	private boolean useShared = false;
 
 	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
 		this.logger = logger;
@@ -57,6 +54,8 @@ public abstract class JavaContext {
 
 
 		addDefaultFunctions();
+
+		modules.put(Module.BUILTIN, JavaBuiltinModule.generate());
 	}
 
 	private void addDefaultFunctions() {
@@ -237,7 +236,7 @@ public abstract class JavaContext {
 		return getPackageName(pkg.parent) + "/" + pkg.name;
 	}
 
-	public JavaMethod getFunctionalInterface(TypeID type) {
+	public JavaNativeMethod getFunctionalInterface(TypeID type) {
 		if (type instanceof JavaFunctionalInterfaceTypeID) {
 			JavaFunctionalInterfaceTypeID t = (JavaFunctionalInterfaceTypeID) type;
 			return t.method;
@@ -245,9 +244,9 @@ public abstract class JavaContext {
 			FunctionTypeID functionType = (FunctionTypeID) type;
 			JavaSynthesizedFunctionInstance function = getFunction(functionType);
 
-			return new JavaMethod(
+			return new JavaNativeMethod(
 					function.getCls(),
-					JavaMethod.Kind.INTERFACE,
+					JavaNativeMethod.Kind.INTERFACE,
 					function.getMethod(),
 					false,
 					getMethodDescriptor(function.getHeader()),
@@ -341,7 +340,7 @@ public abstract class JavaContext {
 		return getJavaModule(definition.module).getVariantOption(option);
 	}
 
-	public JavaVariantOption getJavaVariantOption(VariantOptionRef member) {
+	public JavaVariantOption getJavaVariantOption(VariantOptionInstance member) {
 		return getJavaVariantOption(member.getOption());
 	}
 

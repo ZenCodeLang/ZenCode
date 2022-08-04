@@ -2,10 +2,10 @@ package org.openzen.zenscript.codemodel;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -40,7 +40,7 @@ public final class ModuleSpace {
 
 		for (Map.Entry<String, ISymbol> globalEntry : dependency.globals.entrySet()) {
 			if (globals.containsKey(globalEntry.getKey()))
-				throw new CompileException(CodePosition.META, CompileExceptionCode.DUPLICATE_GLOBAL, "Duplicate global: " + globalEntry.getKey());
+				throw new CompileException(CodePosition.META, CompileErrors.duplicateGlobal(globalEntry.getKey()));
 
 			globals.put(globalEntry.getKey(), globalEntry.getValue());
 		}

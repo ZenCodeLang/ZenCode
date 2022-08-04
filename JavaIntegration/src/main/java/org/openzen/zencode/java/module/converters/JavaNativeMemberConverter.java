@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -122,10 +122,10 @@ public class JavaNativeMemberConverter {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
-		return new JavaMethod(
+	public JavaNativeMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
+		return new JavaNativeMethod(
 				cls,
-				JavaMethod.Kind.CONSTRUCTOR,
+				JavaNativeMethod.Kind.CONSTRUCTOR,
 				"<init>",
 				false,
 				getConstructorDescriptor(constructor),
@@ -133,23 +133,23 @@ public class JavaNativeMemberConverter {
 				false);
 	}
 
-	public JavaMethod getMethod(JavaClass cls, Method method, TypeID result) {
-		JavaMethod.Kind kind;
+	public JavaNativeMethod getMethod(JavaClass cls, Method method, TypeID result) {
+		JavaNativeMethod.Kind kind;
 		if (method.getName().equals("<init>"))
-			kind = JavaMethod.Kind.CONSTRUCTOR;
+			kind = JavaNativeMethod.Kind.CONSTRUCTOR;
 		else if (method.getName().equals("<clinit>"))
-			kind = JavaMethod.Kind.STATICINIT;
+			kind = JavaNativeMethod.Kind.STATICINIT;
 		else if (Modifier.isStatic(method.getModifiers()))
-			kind = JavaMethod.Kind.STATIC;
+			kind = JavaNativeMethod.Kind.STATIC;
 		else
-			kind = JavaMethod.Kind.INSTANCE;
+			kind = JavaNativeMethod.Kind.INSTANCE;
 
 		final int length = method.getTypeParameters().length;
 		boolean compile = length > 0 && length == Arrays.stream(method.getParameterTypes())
 				.filter(s -> s.getCanonicalName().contentEquals("java.lang.Class"))
 				.count();
 
-		return new JavaMethod(cls, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
+		return new JavaNativeMethod(cls, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
 				.getModifiers(), result.isGeneric());
 	}
 
@@ -166,7 +166,7 @@ public class JavaNativeMemberConverter {
 					.filter(m -> m instanceof MethodMember)
 					.map(m -> ((MethodMember) m))
 					.filter(m -> {
-						final JavaMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
+						final JavaNativeMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
 						return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
 					})
 					.findAny();
@@ -178,7 +178,7 @@ public class JavaNativeMemberConverter {
 		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), headerConverter.getHeader(typeConversionContext.context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaNativeMethod(jcls, JavaNativeMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
 		return methodMember.ref(typeConversionContext.registry.getForDefinition(definition));
 	}
 }

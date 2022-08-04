@@ -266,4 +266,8 @@ public class CompileErrors {
 	public static CompileError annotationNotFound(String type) {
 		return new CompileError(CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type);
 	}
+
+	public static CompileError duplicateGlobal(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_GLOBAL, "Duplicate global: " + name);
+	}
 }

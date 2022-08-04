@@ -29,7 +29,7 @@ public interface CompilingExpression {
 	 *
 	 * @return callable
 	 */
-	Optional<StaticCallable> call();
+	Optional<CompilingCallable> call();
 
 	/**
 	 * Finds a member from this expression.

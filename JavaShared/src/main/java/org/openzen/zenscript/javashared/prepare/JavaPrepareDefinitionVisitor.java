@@ -38,7 +38,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addConstructor("constructor", "()V");
 			cls.addConstructor("constructorWithCapacity", "(I)V");
 			cls.addConstructor("constructorWithValue", "(Ljava/lang/String;)V");
-			cls.addMethod("isEmpty", new JavaMethod((expression, translator) -> translator.isEmptyAsLengthZero(((CallExpression) expression).target)));
+			cls.addMethod("isEmpty", new JavaNativeMethod((expression, translator) -> translator.isEmptyAsLengthZero(((CallExpression) expression).target)));
 			cls.addInstanceMethod("length", "length", "()I");
 			cls.addInstanceMethod("appendBool", "append", "(Z)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendByte", "append", "(I)Ljava/lang/StringBuilder;");
@@ -61,7 +61,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
-			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
+			list.addMethod("constructor", JavaNativeMethod.getNativeConstructor(arrayList, "()V"));
 			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("insert", "add", "(ILjava/lang/Object;)V");
 			list.addInstanceMethod("remove", "remove", "(I)Ljava/lang/Object;", true);
@@ -71,7 +71,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;", true);
 			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;", true);
 			list.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
-			list.addMethod("toArray", new JavaMethod((expression, translator) -> translator.listToArray((CastExpression) expression)));
+			list.addMethod("toArray", new JavaNativeMethod((expression, translator) -> translator.listToArray((CastExpression) expression)));
 			list.addInstanceMethod("length", "size", "()I");
 			list.addInstanceMethod("isEmpty", "isEmpty", "()Z");
 			list.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
@@ -86,7 +86,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 
 		{
 			JavaNativeClass iterator = new JavaNativeClass(new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE));
-			iterator.addMethod("empty", new JavaMethod(JavaClass.COLLECTIONS, JavaMethod.Kind.STATIC, "emptyIterator", false, "()Ljava/lang/Iterator;", JavaModifiers.STATIC | JavaModifiers.PUBLIC, false));
+			iterator.addMethod("empty", new JavaNativeMethod(JavaClass.COLLECTIONS, JavaNativeMethod.Kind.STATIC, "emptyIterator", false, "()Ljava/lang/Iterator;", JavaModifiers.STATIC | JavaModifiers.PUBLIC, false));
 			iterator.addInstanceMethod("hasNext", "hasNext", "()Z");
 			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;", true);
 			nativeClasses.put("stdlib::Iterator", iterator);
@@ -103,9 +103,9 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaClass math = new JavaClass("java.lang", "Math", JavaClass.Kind.CLASS);
 
 			JavaNativeClass cls = new JavaNativeClass(integer);
-			cls.addMethod("min", JavaMethod.getNativeStatic(math, "min", "(II)I"));
-			cls.addMethod("max", JavaMethod.getNativeStatic(math, "max", "(II)I"));
-			cls.addMethod("toHexString", JavaMethod.getNativeExpansion(integer, "toHexString", "(I)Ljava/lang/String;"));
+			cls.addMethod("min", JavaNativeMethod.getNativeStatic(math, "min", "(II)I"));
+			cls.addMethod("max", JavaNativeMethod.getNativeStatic(math, "max", "(II)I"));
+			cls.addMethod("toHexString", JavaNativeMethod.getNativeExpansion(integer, "toHexString", "(I)Ljava/lang/String;"));
 			nativeClasses.put("stdlib::Integer", cls);
 			nativeClasses.put("stdlib::USize", cls);
 		}
@@ -113,7 +113,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass string = new JavaClass("java.lang", "String", JavaClass.Kind.CLASS);
 			JavaNativeClass cls = new JavaNativeClass(string);
-			cls.addMethod("contains", new JavaMethod((expression, translator) -> {
+			cls.addMethod("contains", new JavaNativeMethod((expression, translator) -> {
 				CallExpression call = (CallExpression) expression;
 				Expression str = call.target;
 				Expression character = call.arguments.arguments[0];
@@ -136,19 +136,19 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
-			cls.addMethod("fromAsciiBytes", new JavaMethod((expression, translator) -> {
+			cls.addMethod("fromAsciiBytes", new JavaNativeMethod((expression, translator) -> {
 				CallStaticExpression call = (CallStaticExpression) expression;
 				return translator.bytesAsciiToString(call.arguments.arguments[0]);
 			}));
-			cls.addMethod("fromUTF8Bytes", new JavaMethod((expression, translator) -> {
+			cls.addMethod("fromUTF8Bytes", new JavaNativeMethod((expression, translator) -> {
 				CallStaticExpression call = (CallStaticExpression) expression;
 				return translator.bytesUTF8ToString(call.arguments.arguments[0]);
 			}));
-			cls.addMethod("toAsciiBytes", new JavaMethod((expression, translator) -> {
+			cls.addMethod("toAsciiBytes", new JavaNativeMethod((expression, translator) -> {
 				CallExpression call = (CallExpression) expression;
 				return translator.stringToAscii(call.target);
 			}));
-			cls.addMethod("toUTF8Bytes", new JavaMethod((expression, translator) -> {
+			cls.addMethod("toUTF8Bytes", new JavaNativeMethod((expression, translator) -> {
 				CallExpression call = (CallExpression) expression;
 				return translator.stringToUTF8(call.target);
 			}));
@@ -158,19 +158,19 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass arrays = JavaClass.ARRAYS;
 			JavaNativeClass cls = new JavaNativeClass(arrays);
-			cls.addMethod("sort", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)V"));
-			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {
+			cls.addMethod("sort", JavaNativeMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)V"));
+			cls.addMethod("sorted", new JavaNativeMethod((expression, translator) -> {
 				return translator.sorted(((CallExpression) expression).target);
 			}));
-			cls.addMethod("sortWithComparator", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V"));
-			cls.addMethod("sortedWithComparator", new JavaMethod((expression, translator) -> {
+			cls.addMethod("sortWithComparator", JavaNativeMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V"));
+			cls.addMethod("sortedWithComparator", new JavaNativeMethod((expression, translator) -> {
 				return translator.sortedWithComparator(
 						((CallExpression) expression).target,
 						((CallExpression) expression).arguments.arguments[0]);
 			}));
-			cls.addMethod("copy", new JavaMethod((expression, translator) -> translator.arrayCopy(((CallExpression) expression).target)));
-			cls.addMethod("copyResize", new JavaMethod((expression, translator) -> translator.arrayCopyResize((CallExpression)expression)));
-			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> translator.arrayCopyTo((CallExpression) expression)));
+			cls.addMethod("copy", new JavaNativeMethod((expression, translator) -> translator.arrayCopy(((CallExpression) expression).target)));
+			cls.addMethod("copyResize", new JavaNativeMethod((expression, translator) -> translator.arrayCopyResize((CallExpression)expression)));
+			cls.addMethod("copyTo", new JavaNativeMethod((expression, translator) -> translator.arrayCopyTo((CallExpression) expression)));
 			nativeClasses.put("stdlib::Arrays", cls);
 		}
 
@@ -235,22 +235,22 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			 final JavaNativeClass mathFunctions = new JavaNativeClass(math, true);
 
 			 for (String doubleToDoubleMethodName : new String[]{"sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "toRadians", "toDegrees", "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "abs", "signum"}) {
-				 mathFunctions.addMethod(doubleToDoubleMethodName, JavaMethod.getNativeStatic(math, doubleToDoubleMethodName, "(D)D"));
+				 mathFunctions.addMethod(doubleToDoubleMethodName, JavaNativeMethod.getNativeStatic(math, doubleToDoubleMethodName, "(D)D"));
 			 }
 
-			 mathFunctions.addMethod("minInteger", JavaMethod.getNativeStatic(math, "min", "(II)I"));
-			 mathFunctions.addMethod("maxInteger", JavaMethod.getNativeStatic(math, "max", "(II)I"));
-			 mathFunctions.addMethod("minLong", JavaMethod.getNativeStatic(math, "min", "(JJ)J"));
-			 mathFunctions.addMethod("maxLong", JavaMethod.getNativeStatic(math, "max", "(JJ)J"));
-			 mathFunctions.addMethod("minFloat", JavaMethod.getNativeStatic(math, "min", "(FF)F"));
-			 mathFunctions.addMethod("maxFloat", JavaMethod.getNativeStatic(math, "max", "(FF)F"));
-			 mathFunctions.addMethod("minDouble", JavaMethod.getNativeStatic(math, "min", "(DD)D"));
-			 mathFunctions.addMethod("maxDouble", JavaMethod.getNativeStatic(math, "max", "(DD)D"));
+			 mathFunctions.addMethod("minInteger", JavaNativeMethod.getNativeStatic(math, "min", "(II)I"));
+			 mathFunctions.addMethod("maxInteger", JavaNativeMethod.getNativeStatic(math, "max", "(II)I"));
+			 mathFunctions.addMethod("minLong", JavaNativeMethod.getNativeStatic(math, "min", "(JJ)J"));
+			 mathFunctions.addMethod("maxLong", JavaNativeMethod.getNativeStatic(math, "max", "(JJ)J"));
+			 mathFunctions.addMethod("minFloat", JavaNativeMethod.getNativeStatic(math, "min", "(FF)F"));
+			 mathFunctions.addMethod("maxFloat", JavaNativeMethod.getNativeStatic(math, "max", "(FF)F"));
+			 mathFunctions.addMethod("minDouble", JavaNativeMethod.getNativeStatic(math, "min", "(DD)D"));
+			 mathFunctions.addMethod("maxDouble", JavaNativeMethod.getNativeStatic(math, "max", "(DD)D"));
 
-			 mathFunctions.addMethod("roundDouble", JavaMethod.getNativeStatic(math, "round", "(D)J"));
-			 mathFunctions.addMethod("roundFloat", JavaMethod.getNativeStatic(math, "round", "(F)J"));
-			 mathFunctions.addMethod("absInteger", JavaMethod.getNativeStatic(math, "abs", "(I)I"));
-			 mathFunctions.addMethod("pow", JavaMethod.getNativeStatic(math, "pow", "(DD)D"));
+			 mathFunctions.addMethod("roundDouble", JavaNativeMethod.getNativeStatic(math, "round", "(D)J"));
+			 mathFunctions.addMethod("roundFloat", JavaNativeMethod.getNativeStatic(math, "round", "(F)J"));
+			 mathFunctions.addMethod("absInteger", JavaNativeMethod.getNativeStatic(math, "abs", "(I)I"));
+			 mathFunctions.addMethod("pow", JavaNativeMethod.getNativeStatic(math, "pow", "(DD)D"));
 
 			 nativeClasses.put("math::Functions", mathFunctions);
 		 }

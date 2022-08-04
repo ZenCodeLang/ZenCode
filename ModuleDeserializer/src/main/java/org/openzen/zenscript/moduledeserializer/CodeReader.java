@@ -36,6 +36,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.ContinueStatement;
@@ -201,7 +203,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public DefinitionMemberRef readMember(TypeContext context, TypeID type) {
+	public DefinitionMemberRef readMember(TypeSerializationContext context, TypeID type) {
 		int memberId = input.readVarUInt();
 		if (memberId == 0) {
 			return null;
@@ -218,12 +220,12 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public EnumConstantMember readEnumConstant(TypeContext context) {
+	public EnumConstantMember readEnumConstant(TypeSerializationContext context) {
 		return enumConstantMembers.get(readUInt());
 	}
 
 	@Override
-	public VariantOptionRef readVariantOption(TypeContext context, TypeID type) {
+	public VariantOptionInstance readVariantOption(TypeSerializationContext context, TypeID type) {
 		return variantOptions.get(readUInt()).instance(type, context.getMapper());
 	}
 
@@ -233,7 +235,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public TypeID deserializeType(TypeContext context) {
+	public TypeID deserializeType(TypeSerializationContext context) {
 		int type = input.readVarUInt();
 		switch (type) {
 			case TypeEncoding.TYPE_NONE:
@@ -303,7 +305,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case TypeEncoding.TYPE_GENERIC_MAP: {
 				TypeParameter parameter = deserializeTypeParameter(context);
-				TypeContext inner = new TypeContext(context, context.thisType, parameter);
+				TypeSerializationContext inner = new TypeSerializationContext(context, context.thisType, new TypeParameter[] { parameter });
 				TypeID value = deserializeType(inner);
 				return registry.getGenericMap(value, parameter);
 			}
@@ -349,14 +351,14 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public FunctionHeader deserializeHeader(TypeContext context) {
+	public FunctionHeader deserializeHeader(TypeSerializationContext context) {
 		TypeParameter[] typeParameters = TypeParameter.NONE;
 
 		int flags = input.readVarUInt();
-		TypeContext inner;
+		TypeSerializationContext inner;
 		if ((flags & FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS) > 0) {
 			typeParameters = deserializeTypeParameters(context);
-			inner = new TypeContext(context, context.thisType, typeParameters);
+			inner = new TypeSerializationContext(context, context.thisType, typeParameters);
 		} else {
 			inner = context;
 		}
@@ -372,7 +374,7 @@ public class CodeReader implements CodeSerializationInput {
 		FunctionParameter[] parameters = FunctionParameter.NONE;
 		if ((flags & FunctionHeaderEncoding.FLAG_PARAMETERS) > 0) {
 			parameters = new FunctionParameter[readUInt()];
-			StatementContext statementContext = new StatementContext(context);
+			StatementContext statementContext = context.forMethod();
 			for (int i = 0; i < parameters.length; i++) {
 				TypeID type = deserializeType(inner);
 				String name = readString();
@@ -392,7 +394,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public TypeParameter deserializeTypeParameter(TypeContext context) {
+	public TypeParameter deserializeTypeParameter(TypeSerializationContext context) {
 		int flags = readUInt();
 		CodePosition position = CodePosition.UNKNOWN;
 		String name = null;
@@ -402,7 +404,7 @@ public class CodeReader implements CodeSerializationInput {
 			name = readString();
 
 		TypeParameter result = new TypeParameter(position, name);
-		TypeContext inner = new TypeContext(context, context.thisType, result);
+		TypeSerializationContext inner = new TypeSerializationContext(context, context.thisType, new TypeParameter[] { result });
 		if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
 			int bounds = readUInt();
 			for (int i = 0; i < bounds; i++)
@@ -413,7 +415,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public TypeParameter[] deserializeTypeParameters(TypeContext context) {
+	public TypeParameter[] deserializeTypeParameters(TypeSerializationContext context) {
 		TypeParameter[] result = new TypeParameter[readUInt()];
 		int[] allflags = new int[result.length];
 		for (int i = 0; i < result.length; i++) {
@@ -439,8 +441,8 @@ public class CodeReader implements CodeSerializationInput {
 		return result;
 	}
 
-	private void readTypeParameterBounds(TypeContext context, int[] allFlags, TypeParameter[] result) {
-		TypeContext inner = new TypeContext(context, context.thisType, result);
+	private void readTypeParameterBounds(TypeSerializationContext context, int[] allFlags, TypeParameter[] result) {
+		TypeSerializationContext inner = new TypeSerializationContext(context, context.thisType, result);
 		for (int i = 0; i < result.length; i++) {
 			int flags = allFlags[i];
 			if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
@@ -452,7 +454,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public CallArguments deserializeArguments(StatementContext context) {
+	public CallArguments deserializeArguments(StatementSerializationContext context) {
 		TypeID[] typeArguments = new TypeID[readUInt()];
 		for (int i = 0; i < typeArguments.length; i++)
 			typeArguments[i] = deserializeType(context);
@@ -465,7 +467,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public Statement deserializeStatement(StatementContext context) {
+	public Statement deserializeStatement(StatementSerializationContext context) {
 		int type = readUInt();
 		int flags = type == StatementEncoding.TYPE_NULL ? 0 : readUInt();
 		CodePosition position = (flags & StatementEncoding.FLAG_POSITION) > 0 ? deserializePosition() : CodePosition.UNKNOWN;
@@ -760,7 +762,7 @@ public class CodeReader implements CodeSerializationInput {
 				TypeID toType = deserializeType(context);
 
 				//FIXME: I have no idea if this works?
-				final ImplementationMemberRef definitionMemberRef = (ImplementationMemberRef) readMember(context, toType);
+				final ImplementationMemberInstance definitionMemberRef = (ImplementationMemberInstance) readMember(context, toType);
 				return new InterfaceCastExpression(position, value, definitionMemberRef);
 			}
 			case ExpressionEncoding.TYPE_IS: {
@@ -906,7 +908,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_VARIANT_VALUE: {
 				TypeID type = deserializeType(context);
-				VariantOptionRef option = readVariantOption(context, type);
+				VariantOptionInstance option = readVariantOption(context, type);
 				Expression[] arguments = new Expression[option.types.length];
 				for (int i = 0; i < arguments.length; i++)
 					arguments[i] = deserializeExpression(context);
@@ -957,7 +959,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new EnumConstantSwitchValue(readEnumConstant(context));
 			case SwitchValueEncoding.TYPE_VARIANT_OPTION: {
 				TypeID t = deserializeType(context);
-				VariantOptionRef option = readVariantOption(context, t);
+				VariantOptionInstance option = readVariantOption(context, t);
 				String[] names = new String[option.types.length];
 				if (localVariableNames)
 					for (int i = 0; i < names.length; i++)
@@ -979,7 +981,7 @@ public class CodeReader implements CodeSerializationInput {
 		code.enqueue(operation);
 	}
 
-	private TypeParameterBound deserializeTypeParameterBound(TypeContext context) {
+	private TypeParameterBound deserializeTypeParameterBound(TypeSerializationContext context) {
 		int type = readUInt();
 		switch (type) {
 			case TypeParameterEncoding.TYPE_SUPER_BOUND:

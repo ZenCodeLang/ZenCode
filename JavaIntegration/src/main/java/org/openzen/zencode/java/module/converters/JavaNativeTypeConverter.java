@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -305,9 +305,9 @@ public class JavaNativeTypeConverter {
 		}
 
 		header = header.withGenericArguments(new GenericMapper(mapping));
-		JavaMethod method = new JavaMethod(
+		JavaNativeMethod method = new JavaNativeMethod(
 				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
-				JavaMethod.Kind.INTERFACE,
+				JavaNativeMethod.Kind.INTERFACE,
 				functionalInterfaceMethod.getName(),
 				false,
 				getMethodDescriptor(functionalInterfaceMethod),

@@ -32,7 +32,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 /**
  * @author Hoofdgebruiker
@@ -55,7 +55,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	}
 
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaMethod method = scope.context.getJavaMethod(member);
+		JavaNativeMethod method = scope.context.getJavaMethod(member);
 		if (!method.compile)
 			return;
 

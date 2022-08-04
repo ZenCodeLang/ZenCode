@@ -16,7 +16,7 @@ import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(context.getJavaClass(definition), JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -82,7 +82,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaNativeMethod method = context.getJavaMethod(member);
 		if (!method.compile) {
 			return null;
 		}
@@ -218,7 +218,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaNativeMethod method = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
@@ -263,7 +263,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
 
 
@@ -300,7 +300,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;
@@ -324,7 +324,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
@@ -354,7 +354,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCaller(CallerMember member) {
 		//It's gonna be a method anyways, so why not reuse the code ^^
-		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
 		final MethodMember call = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
 		call.body = member.body;
 		call.annotations = member.annotations;

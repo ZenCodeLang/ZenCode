@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.List;
 
 public interface ExpressionBuilder {
-	Expression binary(BinaryExpression.Operator operator, Expression left, Expression right);
+	Expression andAnd(Expression left, Expression right);
 
 	Expression callStatic(MethodInstance method, CallArguments arguments);
 
@@ -43,7 +43,7 @@ public interface ExpressionBuilder {
 
 	Expression getStaticField(FieldInstance field);
 
-	Expression interfaceCast(ImplementationMember implementation, Expression value);
+	Expression interfaceCast(ImplementationMemberInstance implementation, Expression value);
 
 	Expression invalid(CompileError error);
 
@@ -60,6 +60,8 @@ public interface ExpressionBuilder {
 	Expression newRange(Expression from, Expression to);
 
 	Expression match(Expression value, TypeID resultingType, MatchExpression.Case[] cases);
+
+	Expression orOr(Expression left, Expression right);
 
 	Expression panic(TypeID type, Expression value);
 
@@ -80,6 +82,4 @@ public interface ExpressionBuilder {
 	Expression tryRethrowAsException(Expression value, TypeID resultingType);
 
 	Expression tryRethrowAsResult(Expression value, TypeID resultingType);
-
-	Expression unary(UnaryExpression.Operator operator, Expression value);
 }

@@ -4,14 +4,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -44,29 +42,29 @@ public interface CodeSerializationInput {
 
 	HighLevelDefinition readDefinition();
 
-	DefinitionMemberRef readMember(TypeContext context, TypeID type);
+	DefinitionMemberRef readMember(TypeSerializationContext context, TypeID type);
 
-	EnumConstantMember readEnumConstant(TypeContext context);
+	EnumConstantMember readEnumConstant(TypeSerializationContext context);
 
-	VariantOptionRef readVariantOption(TypeContext context, TypeID type);
+	VariantOptionInstance readVariantOption(TypeSerializationContext context, TypeID type);
 
 	AnnotationDefinition readAnnotationType();
 
-	TypeID deserializeType(TypeContext context);
+	TypeID deserializeType(TypeSerializationContext context);
 
 	CodePosition deserializePosition();
 
-	FunctionHeader deserializeHeader(TypeContext context);
+	FunctionHeader deserializeHeader(TypeSerializationContext context);
 
-	CallArguments deserializeArguments(StatementContext context);
+	CallArguments deserializeArguments(StatementSerializationContext context);
 
-	Statement deserializeStatement(StatementContext context);
+	Statement deserializeStatement(StatementSerializationContext context);
 
-	Expression deserializeExpression(StatementContext context);
+	Expression deserializeExpression(StatementSerializationContext context);
 
-	TypeParameter deserializeTypeParameter(TypeContext context);
+	TypeParameter deserializeTypeParameter(TypeSerializationContext context);
 
-	TypeParameter[] deserializeTypeParameters(TypeContext context);
+	TypeParameter[] deserializeTypeParameters(TypeSerializationContext context);
 
 	void enqueueMembers(DecodingOperation operation);
 

@@ -2,12 +2,15 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +18,7 @@ import java.util.List;
 public class VariantDefinition extends HighLevelDefinition {
 	public final List<Option> options = new ArrayList<>();
 
-	public VariantDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
+	public VariantDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
@@ -37,6 +40,12 @@ public class VariantDefinition extends HighLevelDefinition {
 			collector.variantOption(option);
 	}
 
+	@Override
+	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {
+		for (Option option : options)
+			members.contextMember(option);
+	}
+
 	public static class Option extends Taggable {
 		public final CodePosition position;
 		public final VariantDefinition variant;
@@ -52,8 +61,8 @@ public class VariantDefinition extends HighLevelDefinition {
 			this.types = types;
 		}
 
-		public VariantOptionRef instance(TypeID variantType, GenericMapper mapper) {
-			return new VariantOptionRef(this, variantType, mapper.map(types));
+		public VariantOptionInstance instance(TypeID variantType, GenericMapper mapper) {
+			return new VariantOptionInstance(this, variantType, mapper.map(types));
 		}
 	}
 }

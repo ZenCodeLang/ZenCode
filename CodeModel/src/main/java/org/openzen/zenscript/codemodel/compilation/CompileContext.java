@@ -95,7 +95,7 @@ public class CompileContext extends AbstractTypeBuilder {
 			MemberSet.Builder resolution = MemberSet.create();
 			GenericMapper mapper = new GenericMapper(mapping);
 			for (IDefinitionMember member : expansion.members)
-				member.registerTo(resolution, mapper);
+				member.registerTo(type, resolution, mapper);
 
 			resolutions.add(resolution.build());
 		}

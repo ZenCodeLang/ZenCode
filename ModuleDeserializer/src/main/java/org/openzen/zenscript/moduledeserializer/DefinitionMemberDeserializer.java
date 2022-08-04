@@ -8,6 +8,7 @@ package org.openzen.zenscript.moduledeserializer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
@@ -45,6 +46,7 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -89,7 +91,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 		return reader.readString();
 	}
 
-	private IDefinitionMember deserializeMember(TypeContext context, HighLevelDefinition definition, TypeID supertype) {
+	private IDefinitionMember deserializeMember(TypeSerializationContext context, HighLevelDefinition definition, TypeID supertype) {
 		int kind = reader.readUInt();
 		int flags = 0;
 		CodePosition position = CodePosition.UNKNOWN;
@@ -107,7 +109,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				String name = readName(flags);
 				TypeID type = reader.deserializeType(context);
 
-				ConstMember result = new ConstMember(position, definition, modifiers, name, type, null);
+				ConstMember result = new ConstMember(position, definition, new Modifiers(modifiers), name, type, null);
 				reader.enqueueCode(reader -> result.value = reader.deserializeExpression(new StatementContext(context)));
 				member = result;
 				break;

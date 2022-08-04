@@ -4,15 +4,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
 import java.util.Collections;
@@ -30,27 +27,27 @@ public class InvalidAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public List<FunctionHeader> getInitializers(BaseScope scope) {
+	public List<AnnotationInitializer> getInitializers(TypeBuilder types) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ExpressionScope getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
+	public ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
+	public ExpressionCompiler getScopeForType(HighLevelDefinition definition, DefinitionCompiler compiler) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public ExpressionScope getScopeForStatement(Statement statement, StatementScope scope) {
+	public ExpressionCompiler getScopeForStatement(Statement statement, StatementCompiler compiler) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
+	public ExpressionCompiler getScopeForParameter(FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
@@ -75,22 +72,22 @@ public class InvalidAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
+	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeSerializationContext context, IDefinitionMember member) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context) {
+	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context) {
+	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementSerializationContext context) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
-	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 }

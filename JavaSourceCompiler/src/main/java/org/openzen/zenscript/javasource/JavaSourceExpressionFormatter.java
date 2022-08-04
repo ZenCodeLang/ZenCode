@@ -23,7 +23,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaNativeTranslator;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
@@ -94,8 +94,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null) {
 			return visitBuiltinCall(expression, expression.member.getBuiltin());
 		} else {
-			JavaMethod method = context.getJavaMethod(expression.member);
-			if (method.kind == JavaMethod.Kind.COMPILED) {
+			JavaNativeMethod method = context.getJavaMethod(expression.member);
+			if (method.kind == JavaNativeMethod.Kind.COMPILED) {
 				return (ExpressionString) method.translation.translate(expression, this);
 			} else {
 				return compileCall(method, expression.target, expression.arguments);
@@ -103,7 +103,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		}
 	}
 
-	private ExpressionString compileCall(JavaMethod method, Expression target, CallArguments arguments) {
+	private ExpressionString compileCall(JavaNativeMethod method, Expression target, CallArguments arguments) {
 		switch (method.kind) {
 			case EXPANSION: {
 				StringBuilder output = new StringBuilder();
@@ -131,11 +131,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null)
 			return visitBuiltinCallStatic(expression, expression.member.getBuiltin());
 
-		JavaMethod method = context.getJavaMethod(expression.member);
+		JavaNativeMethod method = context.getJavaMethod(expression.member);
 		if (method == null)
 			throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
 
-		if (method.kind == JavaMethod.Kind.COMPILED)
+		if (method.kind == JavaNativeMethod.Kind.COMPILED)
 			return (ExpressionString) method.translation.translate(expression, this);
 
 		StringBuilder result = new StringBuilder();
@@ -180,11 +180,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			}
 		}
 
-		JavaMethod method = context.getJavaMethod(expression.member);
+		JavaNativeMethod method = context.getJavaMethod(expression.member);
 		if (method == null)
 			throw new RuntimeException(expression.position + ": No tag for caster");
 
-		if (method.kind == JavaMethod.Kind.COMPILED) {
+		if (method.kind == JavaNativeMethod.Kind.COMPILED) {
 			return (ExpressionString) method.translation.translate(expression, this);
 		} else {
 			return compileCall(method, expression.target, CallArguments.EMPTY);
@@ -392,7 +392,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return target.unaryPostfix(JavaOperator.MEMBER, "." + field.name);
 		}
 
-		JavaMethod method = context.getJavaMethod(expression.getter);
+		JavaNativeMethod method = context.getJavaMethod(expression.getter);
 		StringBuilder result = new StringBuilder();
 		if (!target.value.equals("this") || scope.hasLocalVariable(method.name)) {
 			result.append(target.value);
@@ -470,7 +470,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			}
 		}
 
-		JavaMethod method = context.getJavaMethod(expression.constructor);
+		JavaNativeMethod method = context.getJavaMethod(expression.constructor);
 		switch (method.kind) {
 			case EXPANSION: {
 				StringBuilder output = new StringBuilder();
@@ -577,7 +577,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetter(SetterExpression expression) {
-		JavaMethod setter = context.getJavaMethod(expression.setter);
+		JavaNativeMethod setter = context.getJavaMethod(expression.setter);
 		return new ExpressionString(
 				getValue(expression.target) + "." + setter.name + "(" + expression.value.accept(this) + ")",
 				JavaOperator.CALL);
@@ -1317,7 +1317,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONTAINS: {
-				JavaMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID) call.target.type);
+				JavaNativeMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID) call.target.type);
 				return callAsStatic(scope.fileScope.importer.importType(method.cls) + '.' + method.name, call);
 			}
 			case ARRAY_EQUALS:

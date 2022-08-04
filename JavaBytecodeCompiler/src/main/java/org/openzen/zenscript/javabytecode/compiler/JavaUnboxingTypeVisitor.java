@@ -2,18 +2,18 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
 
-	private static final JavaMethod UNBOX_BOOLEAN = JavaMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z");
-	private static final JavaMethod UNBOX_BYTE = JavaMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B");
-	private static final JavaMethod UNBOX_SHORT = JavaMethod.getNativeVirtual(JavaClass.SHORT, "shortValue", "()S");
-	private static final JavaMethod UNBOX_INTEGER = JavaMethod.getNativeVirtual(JavaClass.INTEGER, "intValue", "()I");
-	private static final JavaMethod UNBOX_LONG = JavaMethod.getNativeVirtual(JavaClass.LONG, "longValue", "()J");
-	private static final JavaMethod UNBOX_FLOAT = JavaMethod.getNativeVirtual(JavaClass.FLOAT, "floatValue", "()F");
-	private static final JavaMethod UNBOX_DOUBLE = JavaMethod.getNativeVirtual(JavaClass.DOUBLE, "doubleValue", "()D");
-	private static final JavaMethod UNBOX_CHARACTER = JavaMethod.getNativeVirtual(JavaClass.CHARACTER, "charValue", "()C");
+	private static final JavaNativeMethod UNBOX_BOOLEAN = JavaNativeMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z");
+	private static final JavaNativeMethod UNBOX_BYTE = JavaNativeMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B");
+	private static final JavaNativeMethod UNBOX_SHORT = JavaNativeMethod.getNativeVirtual(JavaClass.SHORT, "shortValue", "()S");
+	private static final JavaNativeMethod UNBOX_INTEGER = JavaNativeMethod.getNativeVirtual(JavaClass.INTEGER, "intValue", "()I");
+	private static final JavaNativeMethod UNBOX_LONG = JavaNativeMethod.getNativeVirtual(JavaClass.LONG, "longValue", "()J");
+	private static final JavaNativeMethod UNBOX_FLOAT = JavaNativeMethod.getNativeVirtual(JavaClass.FLOAT, "floatValue", "()F");
+	private static final JavaNativeMethod UNBOX_DOUBLE = JavaNativeMethod.getNativeVirtual(JavaClass.DOUBLE, "doubleValue", "()D");
+	private static final JavaNativeMethod UNBOX_CHARACTER = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "charValue", "()C");
 
 	private final JavaWriter writer;
 
@@ -24,7 +24,7 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 
 	@Override
 	public Void visitBasic(TypeID context, BasicTypeID basic) throws RuntimeException {
-		final JavaMethod method;
+		final JavaNativeMethod method;
 
 		switch (basic) {
 			case BOOL:

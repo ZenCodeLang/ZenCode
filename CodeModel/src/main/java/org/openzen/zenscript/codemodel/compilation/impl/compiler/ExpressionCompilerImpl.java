@@ -9,8 +9,9 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.expression.InvalidCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 
@@ -131,9 +132,9 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	}
 
 	@Override
-	public ExpressionCompiler withLocalVariables(List<LocalVariable> variables) {
+	public ExpressionCompiler withLocalVariables(List<VarStatement> variables) {
 		LocalSymbols newLocals = new LocalSymbols(locals);
-		for (LocalVariable variable : variables) {
+		for (VarStatement variable : variables) {
 			newLocals.add(variable);
 		}
 		return new ExpressionCompilerImpl(context, localType, thrownType, newLocals, header);
@@ -157,8 +158,8 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Expression binary(BinaryExpression.Operator operator, Expression left, Expression right) {
-			return new BinaryExpression(position, left, right, operator);
+		public Expression andAnd(Expression left, Expression right) {
+			return new AndAndExpression(position, left, right);
 		}
 
 		@Override
@@ -207,6 +208,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression getInstanceField(Expression target, FieldInstance field) {
+			return null;
+		}
+
+		@Override
 		public Expression getFunctionParameter(FunctionParameter parameter) {
 			return new GetFunctionParameterExpression(position, parameter);
 		}
@@ -217,7 +223,12 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Expression interfaceCast(ImplementationMember implementation, Expression value) {
+		public Expression getStaticField(FieldInstance field) {
+			return new GetStaticFieldExpression(position, field);
+		}
+
+		@Override
+		public Expression interfaceCast(ImplementationMemberInstance implementation, Expression value) {
 			return new InterfaceCastExpression(position, value, implementation);
 		}
 
@@ -262,6 +273,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression orOr(Expression left, Expression right) {
+			return new OrOrExpression(position, left, right);
+		}
+
+		@Override
 		public Expression panic(TypeID type, Expression value) {
 			return new PanicExpression(position, type, value);
 		}
@@ -272,8 +288,18 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression setInstanceField(Expression target, FieldInstance field, Expression value) {
+			return new SetFieldExpression(position, target, field, value);
+		}
+
+		@Override
 		public Expression setLocalVariable(VarStatement variable, Expression value) {
 			return new SetLocalVariableExpression(position, variable, value);
+		}
+
+		@Override
+		public Expression setStaticField(FieldInstance field, Expression value) {
+			return new SetStaticFieldExpression(position, field, value);
 		}
 
 		@Override
@@ -300,11 +326,6 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		public Expression tryRethrowAsResult(Expression value, TypeID resultingType) {
 			return new TryRethrowAsResultExpression(position, resultingType, value);
 		}
-
-		@Override
-		public Expression unary(UnaryExpression.Operator operator, Expression value) {
-			return new UnaryExpression(position, value, operator, types());
-		}
 	}
 
 	private class LocalVariableCompiling implements CompilingExpression {
@@ -327,8 +348,8 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Optional<StaticCallable> call() {
-			return Optional.empty(); // TODO
+		public Optional<CompilingCallable> call() {
+			throw new UnsupportedOperationException("Not yet implemented"); // TODO - forward to call operator
 		}
 
 		@Override
@@ -365,7 +386,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Optional<StaticCallable> call() {
+		public Optional<CompilingCallable> call() {
 			return Optional.empty(); // TODO
 		}
 

@@ -36,7 +36,7 @@ public final class InstanceCallable {
 		return builder.invalid(CompileErrors.invalidPostfix());
 	}
 
-	public StaticCallable bind(Expression instance, TypeID[] typeArguments) {
+	public CompilingCallable bind(Expression instance, TypeID[] typeArguments) {
 		return new BoundInstanceCallable(this, instance, typeArguments);
 	}
 

@@ -22,7 +22,7 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
@@ -33,8 +33,8 @@ public class JavaSourceSyntheticHelperGenerator {
 	private final JavaSourceFormattingSettings settings;
 	private final Map<String, List<String>> members = new HashMap<>();
 	private final JavaClass arrayHelpers = new JavaClass("zsynthetic", "ArrayHelpers", JavaClass.Kind.CLASS);
-	private final Map<ArrayKind, JavaMethod> existingContains = new HashMap<>();
-	private final Map<ArrayKind, JavaMethod> existingIndexOf = new HashMap<>();
+	private final Map<ArrayKind, JavaNativeMethod> existingContains = new HashMap<>();
+	private final Map<ArrayKind, JavaNativeMethod> existingIndexOf = new HashMap<>();
 	private final JavaSourceModule helpers;
 
 	public JavaSourceSyntheticHelperGenerator(JavaSourceModule helpers, JavaContext context, JavaSourceFormattingSettings settings) {
@@ -43,7 +43,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		this.settings = settings;
 	}
 
-	public JavaMethod createArrayContains(ArrayTypeID type) {
+	public JavaNativeMethod createArrayContains(ArrayTypeID type) {
 		ArrayKind kind = type.elementType.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
@@ -52,12 +52,12 @@ public class JavaSourceSyntheticHelperGenerator {
 		addMember(arrayHelpers, method);
 
 		String descriptor = "(" + context.getDescriptor(type) + context.getDescriptor(type.elementType) + ")Z";
-		JavaMethod sourceMethod = JavaMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
+		JavaNativeMethod sourceMethod = JavaNativeMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}
 
-	public JavaMethod createArrayIndexOf(ArrayTypeID type) {
+	public JavaNativeMethod createArrayIndexOf(ArrayTypeID type) {
 		ArrayKind kind = type.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
@@ -66,7 +66,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		addMember(arrayHelpers, method);
 
 		String descriptor = "(" + context.getDescriptor(type) + ")I";
-		JavaMethod sourceMethod = JavaMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
+		JavaNativeMethod sourceMethod = JavaNativeMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}

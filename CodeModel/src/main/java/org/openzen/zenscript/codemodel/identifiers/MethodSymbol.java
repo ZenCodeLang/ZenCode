@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.identifiers;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -20,6 +21,8 @@ public interface MethodSymbol {
 	Modifiers getModifiers();
 
 	String getName();
+
+	Optional<OperatorType> getOperator();
 
 	FunctionHeader getHeader();
 

@@ -41,7 +41,7 @@ import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaImplementation;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 /**
  * @author Hoofdgebruiker
@@ -79,7 +79,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	}
 
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaMethod method = module.getMethodInfo(member);
+		JavaNativeMethod method = module.getMethodInfo(member);
 		if (!method.compile)
 			return;
 

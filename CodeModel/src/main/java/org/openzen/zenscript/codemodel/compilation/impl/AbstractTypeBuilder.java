@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.compilation.impl;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -64,6 +66,16 @@ public abstract class AbstractTypeBuilder implements TypeBuilder {
 				}
 
 				return AbstractTypeBuilder.this.resolve(position, name);
+			}
+
+			@Override
+			public Optional<AnnotationDefinition> resolveAnnotation(List<GenericName> name) {
+				return AbstractTypeBuilder.this.resolveAnnotation(name);
+			}
+
+			@Override
+			public ExpressionCompiler getDefaultValueCompiler() {
+				return AbstractTypeBuilder.this.getDefaultValueCompiler();
 			}
 
 			@Override

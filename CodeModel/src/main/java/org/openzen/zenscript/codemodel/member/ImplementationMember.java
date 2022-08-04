@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -44,7 +45,9 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		FunctionHeader header = new FunctionHeader(mapper.map(type));
+		TypeID implementsType = mapper.map(type);
+		FunctionHeader header = new FunctionHeader(implementsType);
+		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(this, targetType, implementsType);
 		members.implicitCast(new InstanceCallableMethod() {
 			@Override
 			public FunctionHeader getHeader() {
@@ -58,7 +61,7 @@ public class ImplementationMember extends DefinitionMember {
 
 			@Override
 			public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
-				return builder.interfaceCast(ImplementationMember.this, instance);
+				return builder.interfaceCast(implementationInstance, instance);
 			}
 		});
 

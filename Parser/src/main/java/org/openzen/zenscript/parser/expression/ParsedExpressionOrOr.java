@@ -3,7 +3,6 @@ package org.openzen.zenscript.parser.expression;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.expression.BinaryExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
@@ -36,8 +35,7 @@ public class ParsedExpressionOrOr extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			return compiler.at(position).binary(
-					BinaryExpression.Operator.OR_OR,
+			return compiler.at(position).orOr(
 					left.cast(cast(BasicTypeID.BOOL)).value,
 					right.cast(cast(BasicTypeID.BOOL)).value);
 		}

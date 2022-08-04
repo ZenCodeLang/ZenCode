@@ -113,8 +113,14 @@ public class ParsedAnnotation {
 			TypeID[] types = type.compileTypeArguments(compiler.types());
 			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-			MatchedCallArguments<StaticCallableMethod> matched
-					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			MatchedCallArguments<AnnotationInitializer> matched = MatchedCallArguments.match(
+					evalScope,
+					position,
+					annotationType.getInitializers(compiler.types()),
+					null,
+					types,
+					arguments
+			);
 			return matched.getArguments()
 					.map(args -> annotationType.createForMember(position, args))
 					.orElseGet(() -> new InvalidMemberAnnotation(position, matched.getError().orElse(null)));
@@ -127,8 +133,14 @@ public class ParsedAnnotation {
 			TypeID[] types = type.compileTypeArguments(compiler.types());
 			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-			MatchedCallArguments<StaticCallableMethod> matched
-					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			MatchedCallArguments<AnnotationInitializer> matched = MatchedCallArguments.match(
+					evalScope,
+					position,
+					annotationType.getInitializers(compiler.types()),
+					null,
+					types,
+					arguments
+			);
 			return matched.getArguments()
 					.map(args -> annotationType.createForDefinition(position, args))
 					.orElseGet(() -> new InvalidDefinitionAnnotation(position, matched.getError().orElse(null)));
@@ -141,8 +153,14 @@ public class ParsedAnnotation {
 			TypeID[] types = type.compileTypeArguments(compiler.types());
 			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-			MatchedCallArguments<StaticCallableMethod> matched
-					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			MatchedCallArguments<AnnotationInitializer> matched = MatchedCallArguments.match(
+					evalScope,
+					position,
+					annotationType.getInitializers(compiler.types()),
+					null,
+					types,
+					arguments
+			);
 			return matched.getArguments()
 					.map(args -> annotationType.createForStatement(position, args))
 					.orElseGet(() -> new InvalidStatementAnnotation(position, matched.getError().orElse(null)));
@@ -155,8 +173,14 @@ public class ParsedAnnotation {
 			TypeID[] types = type.compileTypeArguments(compiler.types());
 			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-			MatchedCallArguments<StaticCallableMethod> matched
-					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			MatchedCallArguments<AnnotationInitializer> matched = MatchedCallArguments.match(
+					evalScope,
+					position,
+					annotationType.getInitializers(compiler.types()),
+					null,
+					types,
+					arguments
+			);
 			return matched.getArguments()
 					.map(args -> annotationType.createForParameter(position, args))
 					.orElseGet(() -> new InvalidParameterAnnotation(position, matched.getError().orElse(null)));

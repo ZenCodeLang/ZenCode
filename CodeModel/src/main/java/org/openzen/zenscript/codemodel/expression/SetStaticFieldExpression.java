@@ -1,13 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 
 public class SetStaticFieldExpression extends Expression {
-	public final FieldMemberRef field;
+	public final FieldInstance field;
 	public final Expression value;
 
-	public SetStaticFieldExpression(CodePosition position, FieldMemberRef field, Expression value) {
+	public SetStaticFieldExpression(CodePosition position, FieldInstance field, Expression value) {
 		super(position, field.getType(), value.thrownType);
 
 		this.field = field;

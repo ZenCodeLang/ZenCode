@@ -4,7 +4,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
@@ -12,19 +11,23 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class StatementCompilerImpl implements StatementCompiler {
+	private final CompileContext context;
 	private final ExpressionCompiler expressionCompiler;
 	private final TypeBuilder types;
+	private final LocalType localType;
 	private final LocalSymbols locals;
 	private final FunctionHeader functionHeader;
 
-	public StatementCompilerImpl(TypeBuilder types, FunctionHeader functionHeader, LocalSymbols locals) {
+	public StatementCompilerImpl(CompileContext context, TypeBuilder types, LocalType localType, FunctionHeader functionHeader, LocalSymbols locals) {
+		this.context = context;
 		this.types = types;
+		this.localType = localType;
 		this.functionHeader = functionHeader;
 		this.locals = locals;
+		expressionCompiler = new ExpressionCompilerImpl(context, localType, functionHeader.thrownType, locals, functionHeader);
 	}
 
 	@Override
@@ -41,6 +44,11 @@ public class StatementCompilerImpl implements StatementCompiler {
 	}
 
 	@Override
+	public ExpressionCompiler expressions() {
+		return expressionCompiler;
+	}
+
+	@Override
 	public SwitchValue compileSwitchValue(CompilableExpression expression, TypeID type) {
 		return expression.asSwitchValue(type, expressionCompiler);
 	}
@@ -52,17 +60,17 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public ResolvedType resolve(TypeID type) {
-		List<ExpansionSymbol> expansions = null;
+		return context.resolve(type);
 	}
 
 	@Override
 	public StatementCompiler forBlock() {
-		return new StatementCompilerImpl(types, functionHeader, new LocalSymbols(locals));
+		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals));
 	}
 
 	@Override
 	public StatementCompiler forLoop(LoopStatement loop) {
-		return new StatementCompilerImpl(types, functionHeader, new LocalSymbols(locals, loop));
+		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals, loop));
 	}
 
 	@Override
@@ -71,19 +79,19 @@ public class StatementCompilerImpl implements StatementCompiler {
 				this.locals,
 				statement,
 				Arrays.stream(statement.loopVariables).map(v -> v.name).toArray(String[]::new));
-		return new StatementCompilerImpl(types, functionHeader, locals);
+		return new StatementCompilerImpl(context, types, localType, functionHeader, locals);
 	}
 
 	@Override
 	public StatementCompiler forSwitch(SwitchStatement statement) {
-		return new StatementCompilerImpl(types, functionHeader, new LocalSymbols(locals, statement));
+		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals, statement));
 	}
 
 	@Override
 	public StatementCompiler forCatch(VarStatement exceptionVariable) {
 		LocalSymbols locals = new LocalSymbols(this.locals);
 		locals.add(exceptionVariable);
-		return new StatementCompilerImpl(types, functionHeader, locals);
+		return new StatementCompilerImpl(context, types, localType, functionHeader, locals);
 	}
 
 	@Override

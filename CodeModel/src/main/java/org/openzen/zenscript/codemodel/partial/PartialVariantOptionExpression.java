@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -19,9 +19,9 @@ import java.util.List;
 
 public class PartialVariantOptionExpression implements IPartialExpression {
 	private final CodePosition position;
-	private final VariantOptionRef option;
+	private final VariantOptionInstance option;
 
-	public PartialVariantOptionExpression(CodePosition position, VariantOptionRef option) {
+	public PartialVariantOptionExpression(CodePosition position, VariantOptionInstance option) {
 		this.position = position;
 		this.option = option;
 	}

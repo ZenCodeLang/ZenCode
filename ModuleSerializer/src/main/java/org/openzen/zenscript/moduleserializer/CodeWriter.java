@@ -27,7 +27,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
@@ -227,7 +227,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void write(VariantOptionRef option) {
+	public void write(VariantOptionInstance option) {
 		HighLevelDefinition definition = option.getOption().variant;
 		write(definition);
 		writeUInt(definition.getTag(EncodingDefinition.class).variantOptions.indexOf(option));

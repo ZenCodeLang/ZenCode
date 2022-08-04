@@ -4,12 +4,12 @@ import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public class VariantOptionRef {
+public class VariantOptionInstance {
 	public final TypeID variant;
 	public final TypeID[] types;
 	private final VariantDefinition.Option option;
 
-	public VariantOptionRef(VariantDefinition.Option option, TypeID variant, TypeID[] types) {
+	public VariantOptionInstance(VariantDefinition.Option option, TypeID variant, TypeID[] types) {
 		this.option = option;
 		this.variant = variant;
 		this.types = types;

@@ -1,6 +1,5 @@
 package org.openzen.zenscript.parser.expression;
 
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
@@ -60,7 +59,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 	}
 
-	private static class Compiling extends AbstractCompilingExpression implements StaticCallable {
+	private static class Compiling extends AbstractCompilingExpression implements CompilingCallable {
 		private final String name;
 		private final CompilingExpression resolved; // can be null
 
@@ -92,9 +91,9 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 
 		@Override
-		public Optional<StaticCallable> call() {
+		public Optional<CompilingCallable> call() {
 			if (resolved == null) {
-				return Optional.of(new StaticCallable(Collections.singletonList(this)));
+				return Optional.of(this);
 			} else {
 				return resolved.call();
 			}
@@ -124,29 +123,24 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 
 		// ###########################################
-		// ###   ResolvedCallable implementation   ###
+		// ###  CompilingCallable implementation   ###
 		// ### (only used on unresolved variables) ###
 		// ###########################################
 
 		@Override
-		public Expression call(ExpressionCompiler compiler, CodePosition position, TypeID[] typeArguments, CompilingExpression... arguments) {
+		public Expression call(ExpressionCompiler compiler, CodePosition position, CompilingExpression... arguments) {
 			return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
 		}
 
 		@Override
-		public CastedExpression casted(ExpressionCompiler compiler, CodePosition position, CastedEval cast, TypeID[] typeArguments, CompilingExpression... arguments) {
+		public CastedExpression casted(ExpressionCompiler compiler, CodePosition position, CastedEval cast, CompilingExpression... arguments) {
 			TypeID type = cast.type.simplified();
 			ResolvedType resolvedType = compiler.resolve(type);
 			return resolvedType.getContextMember(name)
 					.map(member -> member.call()
-							.map(c -> c.casted(compiler, position, cast, typeArguments, arguments))
+							.map(c -> c.casted(compiler, position, cast, arguments))
 							.orElseGet(() -> cast.invalid(CompileErrors.cannotCall())))
 					.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
-		}
-
-		@Override
-		public Optional<FunctionHeader> getSingleHeader() {
-			return Optional.empty();
 		}
 	}
 

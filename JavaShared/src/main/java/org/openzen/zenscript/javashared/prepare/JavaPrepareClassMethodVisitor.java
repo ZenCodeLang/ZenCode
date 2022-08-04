@@ -175,11 +175,11 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		return null;
 	}
 
-	private JavaMethod.Kind getKind(DefinitionMember member) {
+	private JavaNativeMethod.Kind getKind(DefinitionMember member) {
 		if (member instanceof ConstructorMember)
-			return JavaMethod.Kind.CONSTRUCTOR;
+			return JavaNativeMethod.Kind.CONSTRUCTOR;
 
-		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.INSTANCE;
+		return member.isStatic() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.INSTANCE;
 	}
 
 	private String getOperatorName(OperatorType operator) {
@@ -267,7 +267,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaMethod method = null;
+		JavaNativeMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 
@@ -275,9 +275,9 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		if (member.getOverrides() != null) {
 			MethodSymbol base = member.getOverrides();
 
-			JavaMethod baseMethod = context.getJavaMethod(base);
+			JavaNativeMethod baseMethod = context.getJavaMethod(base);
 
-			method = new JavaMethod(
+			method = new JavaNativeMethod(
 					cls,
 					baseMethod.kind,
 					baseMethod.name,
@@ -288,7 +288,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					header.useTypeParameters());
 		} else if (method == null) {
 			if (member instanceof ConstructorMember) {
-				method = new JavaMethod(
+				method = new JavaNativeMethod(
 						cls,
 						getKind(member),
 						name,
@@ -299,7 +299,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						header.useTypeParameters()
 				);
 			} else {
-				method = new JavaMethod(
+				method = new JavaNativeMethod(
 						cls,
 						getKind(member),
 						name,

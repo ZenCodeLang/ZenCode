@@ -139,13 +139,13 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 
 	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaMethod method = null;
+		JavaNativeMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null) {
 
 			if (member instanceof ConstructorMember) {
-				method = new JavaMethod(
+				method = new JavaNativeMethod(
 						cls,
 						getKind(member),
 						name,
@@ -156,14 +156,14 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 						header.useTypeParameters()
 				);
 			} else {
-				final JavaMethod.Kind kind = getKind(member);
+				final JavaNativeMethod.Kind kind = getKind(member);
 				final String descriptor;
-				if (kind == JavaMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
+				if (kind == JavaNativeMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
 					descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
 				} else {
 					descriptor = context.getMethodDescriptor(header);
 				}
-				method = new JavaMethod(
+				method = new JavaNativeMethod(
 						cls,
 						kind,
 						name,
@@ -185,8 +185,8 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		module.setMethodInfo(member, method);
 	}
 
-	private JavaMethod.Kind getKind(DefinitionMember member) {
-		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.EXPANSION;
+	private JavaNativeMethod.Kind getKind(DefinitionMember member) {
+		return member.isStatic() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.EXPANSION;
 	}
 
 	private String getOperatorName(OperatorType operator) {

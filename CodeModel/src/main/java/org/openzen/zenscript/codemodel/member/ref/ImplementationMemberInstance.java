@@ -8,18 +8,18 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public class ImplementationMemberRef implements DefinitionMemberRef {
+public class ImplementationMemberInstance {
 	public final ImplementationMember member;
 	public final TypeID implementsType;
 	private final TypeID type;
 
-	public ImplementationMemberRef(ImplementationMember member, TypeID owner, TypeID implementsType) {
+	public ImplementationMemberInstance(ImplementationMember member, TypeID owner, TypeID implementsType) {
 		this.member = member;
 		this.type = owner;
 		this.implementsType = implementsType;
 	}
 
-	@Override
+/*	@Override
 	public CodePosition getPosition() {
 		return member.position;
 	}
@@ -57,5 +57,5 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	@Override
 	public IDefinitionMember getTarget() {
 		return member;
-	}
+	}*/
 }

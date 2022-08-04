@@ -5,18 +5,17 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
 import java.lang.reflect.Method;
 
 public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	public final Method functionalInterfaceMethod;
-	public final JavaMethod method;
+	public final JavaNativeMethod method;
 
-	public JavaFunctionalInterfaceTypeID(FunctionHeader header, Method functionalInterfaceMethod, JavaMethod method) {
+	public JavaFunctionalInterfaceTypeID(FunctionHeader header, Method functionalInterfaceMethod, JavaNativeMethod method) {
 		super(header);
 
 		this.functionalInterfaceMethod = functionalInterfaceMethod;

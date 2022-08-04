@@ -5,17 +5,19 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
+
+import java.util.List;
 
 public interface AnnotationDefinition {
 	String getAnnotationName();
 
-	StaticCallable getInitializers();
+	List<AnnotationInitializer> getInitializers(TypeBuilder types);
 
 	ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler);
 
@@ -37,7 +39,7 @@ public interface AnnotationDefinition {
 
 	DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeSerializationContext context);
 
-	StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
+	StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementSerializationContext context);
 
 	ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeSerializationContext context);
 }

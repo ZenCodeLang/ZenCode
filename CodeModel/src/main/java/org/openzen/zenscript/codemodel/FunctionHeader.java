@@ -125,19 +125,6 @@ public class FunctionHeader {
 		return parameters.length > 0 && parameters[parameters.length - 1].variadic;
 	}
 
-	public boolean isVariadicCall(CallArguments arguments, TypeScope scope) {
-		if (!isVariadic())
-			return false;
-		if (arguments.arguments.length < parameters.length - 1)
-			return false;
-		if (arguments.arguments.length != parameters.length)
-			return true;
-		if (scope.getTypeMembers(arguments.arguments[arguments.arguments.length - 1].type).canCastImplicit(parameters[parameters.length - 1].type))
-			return false;
-
-		return true;
-	}
-
 	public boolean isVariadicCall(CallArguments arguments) {
 		if (!isVariadic())
 			return false;
@@ -219,46 +206,6 @@ public class FunctionHeader {
 		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultParameters);
 	}
 
-	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
-		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
-			return false;
-
-		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
-		final boolean variadicCall = header.isVariadicCall(arguments, scope);
-		for (int i = 0; i < arguments.arguments.length; i++) {
-			if (!arguments.arguments[i].type.equals(header.getParameterType(variadicCall, i)))
-				return false;
-		}
-
-		return true;
-	}
-
-	public boolean matchesImplicitly(CallArguments arguments, TypeScope scope) {
-		if (!accepts(arguments.arguments.length))
-			return false;
-
-		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
-		if (isVariadic()) {
-			boolean matches = true;
-			for (int i = 0; i < arguments.arguments.length; i++) {
-				if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.getParameterType(true, i))) {
-					matches = false;
-					break;
-				}
-			}
-			if (matches) {
-				return true;
-			}
-		}
-
-		for (int i = 0; i < arguments.arguments.length; i++) {
-			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
-				return false;
-		}
-
-		return true;
-	}
-
 	public String getCanonicalWithoutReturnType() {
 		StringBuilder result = new StringBuilder();
 		if (getNumberOfTypeParameters() > 0) {
@@ -291,18 +238,6 @@ public class FunctionHeader {
 				return true;
 
 		return false;
-	}
-
-	public boolean accepts(TypeScope scope, Expression... arguments) {
-		if (parameters.length != arguments.length)
-			return false;
-
-		for (int i = 0; i < arguments.length; i++) {
-			if (!scope.getTypeMembers(arguments[i].type).canCastImplicit(parameters[i].type))
-				return false;
-		}
-
-		return true;
 	}
 
 	public boolean canOverride(FunctionHeader other) {

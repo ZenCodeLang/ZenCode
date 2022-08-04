@@ -16,6 +16,8 @@ public interface StatementCompiler {
 
 	Expression compile(CompilableExpression expression, TypeID type);
 
+	ExpressionCompiler expressions();
+
 	SwitchValue compileSwitchValue(CompilableExpression expression, TypeID type);
 
 	TypeBuilder types();
