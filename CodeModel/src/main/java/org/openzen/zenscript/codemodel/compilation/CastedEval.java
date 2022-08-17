@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
-import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -36,7 +35,7 @@ public class CastedEval {
 
 		Optional<StaticCallable> implicitConstructor = resolvedTargetType.findImplicitConstructor();
 		if (implicitConstructor.isPresent()) {
-			CastedExpression fromImplicitConstructor = implicitConstructor.get().casted(compiler, position, this, null, new WrappedCompilingExpression(compiler, position, value));
+			CastedExpression fromImplicitConstructor = implicitConstructor.get().casted(compiler, position, this, null, value.wrap(compiler));
 			if (!fromImplicitConstructor.isFailed())
 				return fromImplicitConstructor;
 		}

@@ -1,10 +1,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -12,7 +9,6 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
@@ -22,14 +18,12 @@ public class ConstructorMember extends FunctionalMember {
 			CodePosition position,
 			HighLevelDefinition definition,
 			Modifiers modifiers,
-			FunctionHeader header,
-			BuiltinID builtin) {
+			FunctionHeader header) {
 		super(
 				position,
 				definition,
 				modifiers,
-				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters),
-				builtin);
+				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters));
 	}
 
 	public boolean isConstructorForwarded() {
@@ -80,6 +74,11 @@ public class ConstructorMember extends FunctionalMember {
 	@Override
 	public String getName() {
 		return "this";
+	}
+
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.empty();
 	}
 
 	@Override

@@ -4,12 +4,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
@@ -42,8 +38,11 @@ public class VariantDefinition extends HighLevelDefinition {
 
 	@Override
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {
-		for (Option option : options)
-			members.contextMember(option);
+		for (Option option : options) {
+			VariantOptionInstance instance = new VariantOptionInstance(option, type, mapper.map(option.types));
+			members.contextMember(option.name, instance);
+			members.switchValue(option.name, instance);
+		}
 	}
 
 	public static class Option extends Taggable {

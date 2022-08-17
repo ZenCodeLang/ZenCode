@@ -2,6 +2,7 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
@@ -96,7 +97,7 @@ public class ParsedAlias extends ParsedDefinition {
 		}
 
 		@Override
-		public TypeSymbol getDefinition() {
+		public HighLevelDefinition getDefinition() {
 			return compiled;
 		}
 

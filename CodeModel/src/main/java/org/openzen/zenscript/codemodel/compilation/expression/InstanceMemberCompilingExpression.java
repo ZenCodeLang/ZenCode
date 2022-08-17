@@ -39,7 +39,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 	public Optional<CompilingCallable> call() {
 		return compiler.resolve(instance.type)
 				.findMethod(name.name)
-				.map(method -> method.bind(instance, name.arguments));
+				.map(method -> method.bind(compiler, instance, name.arguments));
 	}
 
 	@Override

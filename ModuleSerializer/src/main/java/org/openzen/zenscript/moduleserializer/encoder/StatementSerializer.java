@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.ContinueStatement;
@@ -31,7 +31,7 @@ import org.openzen.zenscript.moduleserialization.StatementEncoding;
 /**
  * @author Hoofdgebruiker
  */
-public class StatementSerializer implements StatementVisitorWithContext<StatementContext, Void> {
+public class StatementSerializer implements StatementVisitorWithContext<StatementSerializationContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean positions;
 	private final boolean localVariableNames;
@@ -59,20 +59,20 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitBlock(StatementContext context, BlockStatement statement) {
+	public Void visitBlock(StatementSerializationContext context, BlockStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_BLOCK);
 		int flags = getFlags(statement);
 		encode(flags, statement);
 
 		output.writeUInt(statement.statements.length);
-		StatementContext inner = new StatementContext(context);
+		StatementSerializationContext inner = new StatementSerializationContext(context);
 		for (Statement s : statement.statements)
 			output.serialize(inner, s);
 		return null;
 	}
 
 	@Override
-	public Void visitBreak(StatementContext context, BreakStatement statement) {
+	public Void visitBreak(StatementSerializationContext context, BreakStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_BREAK);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -82,7 +82,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitContinue(StatementContext context, ContinueStatement statement) {
+	public Void visitContinue(StatementSerializationContext context, ContinueStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_CONTINUE);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -92,7 +92,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitDoWhile(StatementContext context, DoWhileStatement statement) {
+	public Void visitDoWhile(StatementSerializationContext context, DoWhileStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_DO_WHILE);
 		int flags = getFlags(statement);
 		if (statement.label != null)
@@ -102,13 +102,13 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.serialize(context, statement.condition);
 		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
 			output.writeString(statement.label);
-		StatementContext inner = new StatementContext(context, statement);
+		StatementSerializationContext inner = context.forLoop(statement);
 		output.serialize(inner, statement.content);
 		return null;
 	}
 
 	@Override
-	public Void visitEmpty(StatementContext context, EmptyStatement statement) {
+	public Void visitEmpty(StatementSerializationContext context, EmptyStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_EMPTY);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -116,7 +116,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitExpression(StatementContext context, ExpressionStatement statement) {
+	public Void visitExpression(StatementSerializationContext context, ExpressionStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_EXPRESSION);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -125,7 +125,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitForeach(StatementContext context, ForeachStatement statement) {
+	public Void visitForeach(StatementSerializationContext context, ForeachStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_FOREACH);
 		int flags = getFlags(statement);
 		if (localVariableNames)
@@ -137,7 +137,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 			for (VarStatement loopVariable : statement.loopVariables)
 				output.writeString(loopVariable.name);
 		}
-		StatementContext inner = new StatementContext(context, statement);
+		StatementSerializationContext inner = context.forLoop(statement);
 		for (VarStatement variable : statement.loopVariables)
 			inner.add(variable);
 
@@ -146,7 +146,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitIf(StatementContext context, IfStatement statement) {
+	public Void visitIf(StatementSerializationContext context, IfStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_IF);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -157,7 +157,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitLock(StatementContext context, LockStatement statement) {
+	public Void visitLock(StatementSerializationContext context, LockStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_LOCK);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -167,7 +167,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitReturn(StatementContext context, ReturnStatement statement) {
+	public Void visitReturn(StatementSerializationContext context, ReturnStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_RETURN);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -176,7 +176,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitSwitch(StatementContext context, SwitchStatement statement) {
+	public Void visitSwitch(StatementSerializationContext context, SwitchStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_RETURN);
 		int flags = getFlags(statement);
 		if (statement.label != null)
@@ -190,7 +190,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 			output.writeString(statement.label);
 		output.writeUInt(statement.cases.size());
 
-		StatementContext inner = new StatementContext(context, statement);
+		StatementSerializationContext inner = context.forLoop(statement);
 		for (SwitchCase case_ : statement.cases) {
 			output.serialize(context, case_.value);
 			output.writeUInt(case_.statements.length);
@@ -202,7 +202,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitThrow(StatementContext context, ThrowStatement statement) {
+	public Void visitThrow(StatementSerializationContext context, ThrowStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_THROW);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -211,7 +211,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitTryCatch(StatementContext context, TryCatchStatement statement) {
+	public Void visitTryCatch(StatementSerializationContext context, TryCatchStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_TRY_CATCH);
 		int flags = getFlags(statement);
 		encode(flags, statement);
@@ -220,7 +220,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitVar(StatementContext context, VarStatement statement) {
+	public Void visitVar(StatementSerializationContext context, VarStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_VAR);
 		int flags = getFlags(statement);
 		if (statement.isFinal)
@@ -239,7 +239,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	}
 
 	@Override
-	public Void visitWhile(StatementContext context, WhileStatement statement) {
+	public Void visitWhile(StatementSerializationContext context, WhileStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_WHILE);
 		int flags = getFlags(statement);
 		if (statement.label != null)
@@ -249,7 +249,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.serialize(context, statement.condition);
 		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
 			output.writeString(statement.label);
-		output.serialize(new StatementContext(context, statement), statement.content);
+		output.serialize(new StatementSerializationContext(context, statement), statement.content);
 		return null;
 	}
 }

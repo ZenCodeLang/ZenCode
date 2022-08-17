@@ -38,7 +38,7 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 	@Override
 	public Optional<CompilingCallable> call() {
 		return compiler.resolve(type).findStaticMethod(name.name)
-				.map(member -> member.bindTypeArguments(name.arguments));
+				.map(member -> member.bindTypeArguments(compiler, name.arguments));
 	}
 
 	@Override

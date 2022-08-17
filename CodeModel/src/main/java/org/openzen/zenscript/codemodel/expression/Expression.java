@@ -2,28 +2,20 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
+import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-public abstract class Expression implements IPartialExpression {
+public abstract class Expression {
 	public static final Expression[] NONE = new Expression[0];
 
 	public final CodePosition position;
@@ -84,24 +76,11 @@ public abstract class Expression implements IPartialExpression {
 				if (body == function.body)
 					return function;
 
-				return new FunctionExpression(function.position, function.type, function.closure, function.header, body);
+				return new FunctionExpression(function.position, function.closure, function.header, body);
 			} else {
 				return expression;
 			}
 		});
-	}
-
-	@Override
-	public Expression eval() {
-		return this;
-	}
-
-	public Expression castExplicit(CodePosition position, TypeScope scope, TypeID asType, boolean optional) {
-		return scope.getTypeMembers(type).castExplicit(position, this, asType, optional);
-	}
-
-	public Expression castImplicit(CodePosition position, TypeScope scope, TypeID asType) {
-		return scope.getTypeMembers(type).castImplicit(position, this, asType, true);
 	}
 
 	/**
@@ -114,54 +93,15 @@ public abstract class Expression implements IPartialExpression {
 		return false;
 	}
 
-	@Override
-	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
-		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
-		return group.predictCallTypes(position, scope, hints, arguments);
-	}
-
-	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
-		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
-		return group.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().accepts(arguments) && !method.member.isStatic())
-				.map(method -> method.member.getHeader())
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
-		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
-		return group.call(position, scope, this, arguments, false);
-	}
-
-	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
-		TypeMembers members = scope.getTypeMembers(type);
-		IPartialExpression result = members.getMemberExpression(position, scope, this, name, false);
-
-		if(result != null){
-			return result;
-		}
-
-		if(members.hasOperator(OperatorType.MEMBERGETTER)){
-			TypeMemberGroup memberGetter = members.getOrCreateGroup(OperatorType.MEMBERGETTER);
-			return memberGetter.call(position, scope, this, new CallArguments(new ConstantStringExpression(position, name.name)), false);
-		}
-
-		throw new CompileException(position, CompileErrors.noMemberInType(type, name.name));
-	}
-
-	@Override
-	public TypeID[] getTypeArguments() {
-		return null;
-	}
-
 	public void forEachStatement(Consumer<Statement> consumer) {
 
 	}
 
 	public Optional<CompileTimeConstant> evaluate() {
 		return Optional.empty();
+	}
+
+	public final CompilingExpression wrap(ExpressionCompiler compiler) {
+		return new WrappedCompilingExpression(compiler, this);
 	}
 }

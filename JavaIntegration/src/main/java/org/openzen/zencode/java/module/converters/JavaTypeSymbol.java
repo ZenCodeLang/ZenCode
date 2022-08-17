@@ -1,5 +1,6 @@
 package org.openzen.zencode.java.module.converters;
 
+import org.openzen.zencode.java.module.JavaNativeTypeMembers;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
@@ -54,7 +55,7 @@ public class JavaTypeSymbol implements TypeSymbol {
 
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
-		return new JavaTypeMembers(cls, typeArguments);
+		return new JavaNativeTypeMembers(cls, typeArguments);
 	}
 
 	@Override

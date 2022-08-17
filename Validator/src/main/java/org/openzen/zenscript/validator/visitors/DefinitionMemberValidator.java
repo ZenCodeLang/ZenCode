@@ -61,7 +61,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				member.getEffectiveModifiers(),
-				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
+				Modifiers.FLAG_PUBLIC | Modifiers.FLAG_PROTECTED | Modifiers.FLAG_PRIVATE,
 				member.position,
 				"Invalid modifier");
 		if (member.getType() != member.value.type) {
@@ -98,7 +98,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			ValidationUtils.validateModifiers(
 					validator,
 					member.getEffectiveModifiers(),
-					Modifiers.PRIVATE,
+					Modifiers.FLAG_PRIVATE,
 					member.position,
 					"Invalid modifier");
 		}

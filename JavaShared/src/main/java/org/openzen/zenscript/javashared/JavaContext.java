@@ -18,9 +18,10 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
@@ -38,7 +39,6 @@ public abstract class JavaContext {
 	public final ZSPackage modulePackage;
 	public final String basePackage;
 	public final IZSLogger logger;
-	private final GlobalTypeRegistry registry;
 	private final Map<String, JavaSynthesizedFunction> functions = new HashMap<>();
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
 	private final JavaCompileSpace space;
@@ -47,7 +47,6 @@ public abstract class JavaContext {
 	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
 		this.logger = logger;
 		this.space = space;
-		this.registry = space.getRegistry();
 
 		this.modulePackage = modulePackage;
 		this.basePackage = basePackage;
@@ -116,7 +115,7 @@ public abstract class JavaContext {
 		// Needs special handling due to it just implementing BiFunction/Function.
 		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType, tType);
 		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, tType);
-		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, registry.getGeneric(t), tType);
+		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, new GenericTypeID(t), tType);
 	}
 
 	private void registerFunction(String id, Class<?> clazz, String methodName, TypeParameter[] typeParameters, TypeID returnType, TypeID... parameterTypes) {
@@ -134,7 +133,7 @@ public abstract class JavaContext {
 		for (int i = 0; i < clazz.getTypeParameters().length; i++) {
 			final TypeParameter typeParameter = paramConverter.apply(getTypeParameter(i));
 			parameters[i] = typeParameter;
-			parameterMapping.put(clazz.getTypeParameters()[i].getName(), registry.getGeneric(typeParameter));
+			parameterMapping.put(clazz.getTypeParameters()[i].getName(), new GenericTypeID(typeParameter));
 		}
 		final Optional<Method> foundMethod = Arrays.stream(clazz.getMethods()).filter(method -> !Modifier.isStatic(method.getModifiers()) && !method.isDefault()).findFirst();
 		if (foundMethod.isPresent()) {
@@ -192,8 +191,6 @@ public abstract class JavaContext {
 			default:
 				throw new IllegalArgumentException(String.format("Unknown Type: '%s'", type));
 		}
-
-
 	}
 
 	private TypeID convertTypeToTypeID(Map<String, GenericTypeID> paramMap, Type type) {
@@ -323,16 +320,16 @@ public abstract class JavaContext {
 		return getJavaModule(definition.getModule()).getFieldInfo(field);
 	}
 
-	public JavaField getJavaField(DefinitionMemberRef member) {
-		return getJavaField(member.getTarget());
+	public JavaField getJavaField(FieldInstance member) {
+		return getJavaField(member.field);
 	}
 
 	public JavaMethod getJavaMethod(MethodSymbol method) {
 		return getJavaModule(method.getDefiningType().getModule()).getMethodInfo(method);
 	}
 
-	public JavaMethod getJavaMethod(DefinitionMemberRef member) {
-		return getJavaMethod(member.getTarget());
+	public JavaMethod getJavaMethod(MethodInstance member) {
+		return getJavaMethod(member.method);
 	}
 
 	public JavaVariantOption getJavaVariantOption(VariantDefinition.Option option) {
@@ -405,7 +402,7 @@ public abstract class JavaContext {
 						alreadyKnownTypeParameters.put(parameter.type, typeParameter);
 					}
 
-					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter), Character.toString((char) ('a' + parameters.size()))));
+					parameters.add(new FunctionParameter(new GenericTypeID(typeParameter), Character.toString((char) ('a' + parameters.size()))));
 				}
 			}
 			TypeID returnType;
@@ -416,7 +413,7 @@ public abstract class JavaContext {
 				} else {
 					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
 					typeParameters.add(typeParameter);
-					returnType = registry.getGeneric(typeParameter);
+					returnType = new GenericTypeID(typeParameter);
 				}
 			}
 			function = new JavaSynthesizedFunction(
@@ -504,7 +501,7 @@ public abstract class JavaContext {
 				range = new JavaSynthesizedRange(cls, TypeParameter.NONE, type.baseType);
 			} else {
 				TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, "T");
-				range = new JavaSynthesizedRange(cls, new TypeParameter[]{typeParameter}, registry.getGeneric(typeParameter));
+				range = new JavaSynthesizedRange(cls, new TypeParameter[]{typeParameter}, new GenericTypeID(typeParameter));
 			}
 			ranges.put(id, range);
 			getTypeGenerator().synthesizeRange(range);
@@ -552,9 +549,5 @@ public abstract class JavaContext {
 			startBuilder.append("Ljava/lang/Class;");
 		}
 		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
-	}
-
-	public GlobalTypeRegistry getRegistry() {
-		return registry;
 	}
 }

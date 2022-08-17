@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +20,10 @@ public class FunctionExpression extends Expression {
 
 	public FunctionExpression(
 			CodePosition position,
-			TypeID type,
 			LambdaClosure closure,
 			FunctionHeader header,
 			Statement body) {
-		super(position, type, body.thrownType);
+		super(position, new FunctionTypeID(header), body.thrownType);
 
 		this.header = header;
 		this.closure = closure;
@@ -44,7 +43,7 @@ public class FunctionExpression extends Expression {
 	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
-		return tBody == body ? this : new FunctionExpression(position, type, closure, header, tBody);
+		return tBody == body ? this : new FunctionExpression(position, closure, header, tBody);
 	}
 
 	@Override

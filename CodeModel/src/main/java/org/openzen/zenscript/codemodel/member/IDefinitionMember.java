@@ -5,7 +5,6 @@ import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 public interface IDefinitionMember {
@@ -20,8 +19,6 @@ public interface IDefinitionMember {
 	HighLevelDefinition getDefinition();
 
 	String describe();
-
-	BuiltinID getBuiltin();
 
 	void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper);
 

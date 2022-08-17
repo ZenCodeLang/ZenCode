@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaImplementation;
@@ -47,12 +46,7 @@ public class JavaNativeClassConverter {
 
 	public TypeSymbol convertClass(Class<?> cls) {
 		Optional<TypeSymbol> maybeKnown = checkRegistry(cls);
-
-		final boolean foundRegistry = definition != null;
-
-		if (!foundRegistry) {
-			definition = getDefinitionForClass(cls);
-		}
+		TypeSymbol definition = maybeKnown.orElseGet(() -> getDefinitionForClass(cls));
 		final JavaClass javaClass = getJavaClassFor(cls, definition);
 
 		//Moved up here so that circular dependencies are caught (hopefully)
@@ -62,10 +56,10 @@ public class JavaNativeClassConverter {
 		if (!shouldLoadClass(cls)) {
 			return definition;
 		}
-		return fillDefinition(cls, definition, javaClass, foundRegistry);
+		return fillDefinition(cls, definition, javaClass, maybeKnown.isPresent());
 	}
 
-	private JavaClass getJavaClassFor(Class<?> cls, HighLevelDefinition definition) {
+	private JavaClass getJavaClassFor(Class<?> cls, TypeSymbol definition) {
 		final String internalName = getInternalName(cls);
 		final JavaClass.Kind kind;
 
@@ -126,23 +120,26 @@ public class JavaNativeClassConverter {
 	private Optional<TypeSymbol> checkRegistry(Class<?> cls) {
 		String name = cls.getCanonicalName();
 		if (!name.startsWith("java.lang.") && !name.startsWith("java.util.")) {
-			return null;
+			return Optional.empty();
 		}
 
 		name = name.substring("java.lang.".length());
 		for (DefinitionTypeID definition : typeConversionContext.registry.getDefinitions()) {
-			final HighLevelDefinition highLevelDefinition = definition.definition;
-			for (DefinitionAnnotation annotation : highLevelDefinition.annotations) {
-				if (annotation instanceof NativeDefinitionAnnotation) {
-					final String identifier = ((NativeDefinitionAnnotation) annotation).getIdentifier();
-					if (identifier.equals(name) || identifier.equals("stdlib::" + name)) {
-						return highLevelDefinition;
+			final TypeSymbol type = definition.definition;
+			if (type instanceof HighLevelDefinition) {
+				HighLevelDefinition highLevelDefinition = (HighLevelDefinition) type;
+				for (DefinitionAnnotation annotation : highLevelDefinition.annotations) {
+					if (annotation instanceof NativeDefinitionAnnotation) {
+						final String identifier = ((NativeDefinitionAnnotation) annotation).getIdentifier();
+						if (identifier.equals(name) || identifier.equals("stdlib::" + name)) {
+							return Optional.of(highLevelDefinition);
+						}
 					}
 				}
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 
@@ -326,13 +323,13 @@ public class JavaNativeClassConverter {
 
 		if (!hasConstructor && !foundRegistry) {
 			// no constructor! make a private constructor so the compiler doesn't add one
-			ConstructorMember member = new ConstructorMember(CodePosition.BUILTIN, definition, Modifiers.PRIVATE, new FunctionHeader(BasicTypeID.VOID), BuiltinID.CLASS_DEFAULT_CONSTRUCTOR);
+			ConstructorMember member = new ConstructorMember(CodePosition.BUILTIN, definition, Modifiers.FLAG_PRIVATE, new FunctionHeader(BasicTypeID.VOID));
 			definition.addMember(member);
 		}
 	}
 
 	private void fillFields(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
-		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
+		TypeID thisType = DefinitionTypeID.createThis(definition);
 		for (Field field : cls.getDeclaredFields()) {
 			if (!Modifier.isPublic(field.getModifiers()))
 				continue;
@@ -355,7 +352,7 @@ public class JavaNativeClassConverter {
 		}
 
 		TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
-		final FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, typeConversionContext.registry, 0, 0, null);
+		final FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, Modifiers.NONE, Modifiers.NONE);
 		definition.addMember(fieldMember);
 		typeConversionContext.compiled.setFieldInfo(fieldMember, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		return true;
@@ -403,9 +400,7 @@ public class JavaNativeClassConverter {
 				if(!(typeID instanceof DefinitionTypeID)){
 					return;
 				}
-				DefinitionTypeID superDefTypeId = (DefinitionTypeID) typeID;
-				DefinitionTypeID definitionTypeID = typeConversionContext.registry.getForMyDefinition(definition);
-				definition.setSuperType(typeConversionContext.registry.getForDefinition(superDefTypeId.definition, definitionTypeID));
+				definition.setSuperType(typeID);
 			}
 		}
 	}

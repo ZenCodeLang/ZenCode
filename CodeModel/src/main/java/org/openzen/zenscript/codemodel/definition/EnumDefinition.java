@@ -2,27 +2,17 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import static org.openzen.zencode.shared.CodePosition.BUILTIN;
-import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
-import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 
 public class EnumDefinition extends HighLevelDefinition {
 	public TypeID asType;
@@ -62,16 +52,11 @@ public class EnumDefinition extends HighLevelDefinition {
 		//	castImplicit(definition, ENUM_TO_STRING, STRING);
 		//}
 		for (EnumConstantMember constant : enumConstants) {
-			members.contextMember(constant);
+			members.contextMember(constant.name, constant);
 		}
 
 		if (members.hasNoConstructor()) {
-			members.constructor(new ConstructorMember(
-					BUILTIN,
-					definition,
-					Modifiers.PRIVATE,
-					new FunctionHeader(VOID),
-					ENUM_EMPTY_CONSTRUCTOR).ref(type), TypeMemberPriority.SPECIFIED);
+			members.constructor(new MethodInstance(BuiltinMethodSymbol.ENUM_EMPTY_CONSTRUCTOR));
 		}
 	}
 

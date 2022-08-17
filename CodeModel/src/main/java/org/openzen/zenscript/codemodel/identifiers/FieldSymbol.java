@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.identifiers;
 
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -14,6 +15,8 @@ public interface FieldSymbol {
 	String getName();
 
 	TypeID getType();
+
+	Modifiers getModifiers();
 
 	/* Calculates the compile-time value of this constant field, if applicable */
 	default Optional<CompileTimeConstant> evaluate() {

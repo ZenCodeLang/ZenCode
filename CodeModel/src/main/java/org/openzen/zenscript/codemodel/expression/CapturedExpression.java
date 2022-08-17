@@ -12,12 +12,5 @@ public abstract class CapturedExpression extends Expression {
 		this.closure = closure;
 	}
 
-	@Override
-	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
-		CapturedExpression result = new CapturedClosureExpression(position, this, closure);
-		closure.add(result);
-		return result;
-	}
-
 	public abstract <T> T accept(CapturedExpressionVisitor<T> visitor);
 }

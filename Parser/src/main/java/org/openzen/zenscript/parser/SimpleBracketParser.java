@@ -1,35 +1,31 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class SimpleBracketParser implements BracketExpressionParser {
-	private final FunctionalMemberRef method;
-	private final TypeID targetType;
+	private final MethodSymbol method;
 
-	public SimpleBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
-		if (!method.isStatic())
+	public SimpleBracketParser(MethodSymbol method) {
+		if (!method.getModifiers().isStatic())
 			throw new IllegalArgumentException("Method must be static");
 		if (method.getHeader().getNumberOfTypeParameters() > 0)
 			throw new IllegalArgumentException("Method cannot have type parameters");
 
 		this.method = method;
-		this.targetType = registry.getForDefinition(method.getTarget().definition);
 	}
 
 	@Override
-	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
+	public CompilableExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		StringBuilder string = new StringBuilder();
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 			ZSTokenType peekType = tokens.peek().getType();
@@ -45,23 +41,26 @@ public class SimpleBracketParser implements BracketExpressionParser {
 		return new StaticMethodCallExpression(position, string.toString());
 	}
 
-	private class StaticMethodCallExpression extends ParsedExpression {
+	private class StaticMethodCallExpression implements CompilableExpression {
+		private final CodePosition position;
 		private final String value;
 
 		public StaticMethodCallExpression(CodePosition position, String value) {
-			super(position);
-
+			this.position = position;
 			this.value = value;
 		}
 
 		@Override
-		public IPartialExpression compile(ExpressionScope scope) {
-			return new CallStaticExpression(position, targetType, method, method.getHeader(), new CallArguments(new ConstantStringExpression(position, value)));
+		public CodePosition getPosition() {
+			return position;
 		}
 
 		@Override
-		public boolean hasStrongType() {
-			return true;
+		public CompilingExpression compile(ExpressionCompiler compiler) {
+			return compiler
+					.at(position)
+					.callStatic(new MethodInstance(method), new CallArguments(new ConstantStringExpression(position, value)))
+					.wrap(compiler);
 		}
 	}
 }

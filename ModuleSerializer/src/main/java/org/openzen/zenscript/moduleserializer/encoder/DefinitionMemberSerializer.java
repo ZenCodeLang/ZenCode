@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
-import org.openzen.zenscript.codemodel.context.TypeContext;
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
@@ -21,6 +19,8 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.EncodingDefinition;
@@ -29,7 +29,7 @@ import org.openzen.zenscript.moduleserializer.SerializationOptions;
 /**
  * @author Hoofdgebruiker
  */
-public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<TypeContext, Void> {
+public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<TypeSerializationContext, Void> {
 	private final SerializationOptions options;
 	private final CodeSerializationOutput output;
 
@@ -38,7 +38,7 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 		this.output = output;
 	}
 
-	private EncodingDefinition visit(TypeContext context, HighLevelDefinition definition) {
+	private EncodingDefinition visit(TypeSerializationContext context, HighLevelDefinition definition) {
 		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
 
 		output.serialize(context, definition.getSuperType());
@@ -51,13 +51,13 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	}
 
 	@Override
-	public Void visitClass(TypeContext context, ClassDefinition definition) {
+	public Void visitClass(TypeSerializationContext context, ClassDefinition definition) {
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitInterface(TypeContext context, InterfaceDefinition definition) {
+	public Void visitInterface(TypeSerializationContext context, InterfaceDefinition definition) {
 		visit(context, definition);
 
 		output.writeUInt(definition.baseInterfaces.size());
@@ -68,11 +68,11 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	}
 
 	@Override
-	public Void visitEnum(TypeContext context, EnumDefinition definition) {
+	public Void visitEnum(TypeSerializationContext context, EnumDefinition definition) {
 		visit(context, definition);
 
 		output.writeUInt(definition.enumConstants.size());
-		StatementContext initContext = new StatementContext(context);
+		StatementSerializationContext initContext = new StatementSerializationContext(context);
 		for (EnumConstantMember constant : definition.enumConstants) {
 			int flags = 0;
 			if (constant.position != CodePosition.UNKNOWN && options.positions)
@@ -92,32 +92,32 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	}
 
 	@Override
-	public Void visitStruct(TypeContext context, StructDefinition definition) {
+	public Void visitStruct(TypeSerializationContext context, StructDefinition definition) {
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(TypeContext context, FunctionDefinition definition) {
+	public Void visitFunction(TypeSerializationContext context, FunctionDefinition definition) {
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitExpansion(TypeContext context, ExpansionDefinition definition) {
+	public Void visitExpansion(TypeSerializationContext context, ExpansionDefinition definition) {
 		visit(context, definition);
 		output.serialize(context, definition.target);
 		return null;
 	}
 
 	@Override
-	public Void visitAlias(TypeContext context, AliasDefinition definition) {
+	public Void visitAlias(TypeSerializationContext context, AliasDefinition definition) {
 		output.serialize(context, definition.type);
 		return null;
 	}
 
 	@Override
-	public Void visitVariant(TypeContext context, VariantDefinition variant) {
+	public Void visitVariant(TypeSerializationContext context, VariantDefinition variant) {
 		visit(context, variant);
 
 		output.writeUInt(variant.options.size());

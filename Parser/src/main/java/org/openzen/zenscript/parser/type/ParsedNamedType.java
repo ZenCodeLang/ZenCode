@@ -6,7 +6,6 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -46,11 +45,11 @@ public class ParsedNamedType implements IParsedType {
 
 	@Override
 	public Optional<AnnotationDefinition> compileAnnotation(TypeBuilder typeBuilder) {
-		return typeBuilder.resolveAnnotation(name);
-		if (name.size() != 1)
-			return null;
+		List<GenericName> genericNames = new ArrayList<>();
+		for (ParsedNamePart namePart : name)
+			genericNames.add(namePart.compile(typeBuilder));
 
-		return scope.getAnnotation(name.get(0).name);
+		return typeBuilder.resolveAnnotation(genericNames);
 	}
 
 	@Override

@@ -3,22 +3,15 @@ package org.openzen.zenscript.codemodel.definition;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
 import java.util.List;
 
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.VOID;
-import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 
 public class StructDefinition extends HighLevelDefinition {
 	public StructDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {

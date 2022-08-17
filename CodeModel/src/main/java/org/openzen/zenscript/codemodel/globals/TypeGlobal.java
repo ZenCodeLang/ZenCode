@@ -1,16 +1,19 @@
-package org.openzen.zenscript.codemodel.type;
+package org.openzen.zenscript.codemodel.globals;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.TypeCompilingExpression;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
-public class TypeSymbol implements ISymbol {
+public class TypeGlobal implements IGlobal {
 	private final HighLevelDefinition definition;
 
-	public TypeSymbol(HighLevelDefinition definition) {
+	public TypeGlobal(HighLevelDefinition definition) {
 		this.definition = definition;
 	}
 

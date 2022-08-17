@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 
@@ -64,11 +65,11 @@ public class JavaCompiledModule {
 		return writer.getOutput();
 	}
 
-	public void setClassInfo(HighLevelDefinition definition, JavaClass cls) {
+	public void setClassInfo(TypeSymbol definition, JavaClass cls) {
 		classes.put(definition, cls);
 	}
 
-	public void setExpansionClassInfo(HighLevelDefinition definition, JavaClass cls) {
+	public void setExpansionClassInfo(TypeSymbol definition, JavaClass cls) {
 		expansionClasses.put(definition, cls);
 	}
 
@@ -88,19 +89,19 @@ public class JavaCompiledModule {
 		return cls;
 	}
 
-	public JavaClass optClassInfo(HighLevelDefinition definition) {
+	public JavaClass optClassInfo(TypeSymbol definition) {
 		return classes.get(definition);
 	}
 
-	public boolean hasClassInfo(HighLevelDefinition definition) {
+	public boolean hasClassInfo(TypeSymbol definition) {
 		return classes.containsKey(definition);
 	}
 
-	public void setNativeClassInfo(HighLevelDefinition definition, JavaNativeClass cls) {
+	public void setNativeClassInfo(TypeSymbol definition, JavaNativeClass cls) {
 		nativeClasses.put(definition, cls);
 	}
 
-	public JavaNativeClass getNativeClassInfo(HighLevelDefinition definition) {
+	public JavaNativeClass getNativeClassInfo(TypeSymbol definition) {
 		return nativeClasses.get(definition);
 	}
 
@@ -166,7 +167,7 @@ public class JavaCompiledModule {
 
 	public JavaMethod getMethodInfo(MethodSymbol member) {
 		if (member == BuiltinMethodSymbol.CLASS_DEFAULT_CONSTRUCTOR) // TODO: handle this differently
-			return new JavaNativeMethod(getClassInfo(member.getDefiningType()), JavaNativeMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.PUBLIC, false);
+			return new JavaNativeMethod(getClassInfo(member.getDefiningType()), JavaNativeMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.FLAG_PUBLIC, false);
 
 		JavaMethod method = methods.get(member);
 		if (method == null)

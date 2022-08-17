@@ -16,14 +16,12 @@ import java.util.Optional;
 public class StatementCompilerImpl implements StatementCompiler {
 	private final CompileContext context;
 	private final ExpressionCompiler expressionCompiler;
-	private final TypeBuilder types;
 	private final LocalType localType;
 	private final LocalSymbols locals;
 	private final FunctionHeader functionHeader;
 
-	public StatementCompilerImpl(CompileContext context, TypeBuilder types, LocalType localType, FunctionHeader functionHeader, LocalSymbols locals) {
+	public StatementCompilerImpl(CompileContext context, LocalType localType, FunctionHeader functionHeader, LocalSymbols locals) {
 		this.context = context;
-		this.types = types;
 		this.localType = localType;
 		this.functionHeader = functionHeader;
 		this.locals = locals;
@@ -55,7 +53,7 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public TypeBuilder types() {
-		return types;
+		return context;
 	}
 
 	@Override
@@ -65,33 +63,32 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public StatementCompiler forBlock() {
-		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals));
+		return new StatementCompilerImpl(context, localType, functionHeader, locals.forBlock());
 	}
 
 	@Override
 	public StatementCompiler forLoop(LoopStatement loop) {
-		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals, loop));
+		return new StatementCompilerImpl(context, localType, functionHeader, locals.forLoop(loop, loop.label));
 	}
 
 	@Override
 	public StatementCompiler forForeach(ForeachStatement statement) {
-		LocalSymbols locals = new LocalSymbols(
-				this.locals,
+		LocalSymbols locals = this.locals.forLoop(
 				statement,
 				Arrays.stream(statement.loopVariables).map(v -> v.name).toArray(String[]::new));
-		return new StatementCompilerImpl(context, types, localType, functionHeader, locals);
+		return new StatementCompilerImpl(context, localType, functionHeader, locals);
 	}
 
 	@Override
 	public StatementCompiler forSwitch(SwitchStatement statement) {
-		return new StatementCompilerImpl(context, types, localType, functionHeader, new LocalSymbols(locals, statement));
+		return new StatementCompilerImpl(context, localType, functionHeader, locals.forLoop(statement, statement.label));
 	}
 
 	@Override
 	public StatementCompiler forCatch(VarStatement exceptionVariable) {
-		LocalSymbols locals = new LocalSymbols(this.locals);
+		LocalSymbols locals = this.locals.forBlock();
 		locals.add(exceptionVariable);
-		return new StatementCompilerImpl(context, types, localType, functionHeader, locals);
+		return new StatementCompilerImpl(context, localType, functionHeader, locals);
 	}
 
 	@Override

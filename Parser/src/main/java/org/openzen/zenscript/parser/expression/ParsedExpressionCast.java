@@ -10,7 +10,7 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedTypeBasic;
+import org.openzen.zenscript.parser.type.ParsedBasicType;
 
 import java.util.Optional;
 
@@ -38,7 +38,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 			return Optional.empty();
 
 		ParsedFunctionHeader header = value.toLambdaHeader();
-		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
+		if (header.returnType != ParsedBasicType.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a return type");
 
 		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null);
@@ -50,7 +50,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 			throw new ParseException(position, "Not a valid lambda header");
 
 		ParsedFunctionParameter parameter = value.toLambdaParameter();
-		if (parameter.type != ParsedTypeBasic.UNDETERMINED)
+		if (parameter.type != ParsedBasicType.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a type");
 
 		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);

@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.constant.EnumValueConstant;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -19,8 +19,8 @@ public class EnumConstantExpression extends Expression {
 		this.value = value;
 	}
 
-	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
-		super(position, registry.getForDefinition(type), null);
+	public EnumConstantExpression(CodePosition position, EnumDefinition type, EnumConstantMember value) {
+		super(position, DefinitionTypeID.create(type, TypeID.NONE), null);
 
 		this.value = value;
 	}

@@ -8,10 +8,8 @@ import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 public abstract class FunctionalMember extends DefinitionMember implements MethodSymbol {
-	public final BuiltinID builtin;
 	public FunctionHeader header;
 	public Statement body = null;
 
@@ -19,12 +17,9 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 			CodePosition position,
 			HighLevelDefinition definition,
 			Modifiers modifiers,
-			FunctionHeader header,
-			BuiltinID builtin) {
+			FunctionHeader header) {
 		super(position, definition, modifiers);
-
 		this.header = header;
-		this.builtin = builtin;
 	}
 
 	public void setBody(Statement body) {
@@ -34,11 +29,6 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	public abstract String getCanonicalName();
 
 	public abstract FunctionalKind getKind();
-
-	@Override
-	public BuiltinID getBuiltin() {
-		return builtin;
-	}
 
 	@Override
 	public Modifiers getModifiers() {
@@ -58,7 +48,7 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 
 	@Override
 	public boolean isAbstract() {
-		return body == null && builtin == null;
+		return body == null;
 	}
 
 	/* MethodSymbol implementation */

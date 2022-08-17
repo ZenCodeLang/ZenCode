@@ -620,7 +620,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	@Override
 	public Modifiers getModifiers() {
-		return new Modifiers(Modifiers.PUBLIC | Modifiers.FINAL);
+		return Modifiers.PUBLIC.withFinal();
 	}
 
 	@Override

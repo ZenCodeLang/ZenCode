@@ -48,19 +48,13 @@ public interface ResolvedType {
 	 * @param name member name
 	 * @return true if it's a resolved member
 	 */
-	Optional<CompilingExpression> getContextMember(String name);
+	Optional<CompilableExpression> getContextMember(String name);
 
 	Optional<SwitchMember> findSwitchMember(String name);
 
 	Optional<Comparator> compare();
 
     Optional<IteratorMemberRef> findIterator(int variables);
-
-	interface InstanceSetter {
-		TypeID getType();
-
-		Expression apply(ExpressionBuilder builder, Expression instance, Expression value);
-	}
 
 	interface SwitchMember {
 		SwitchValue toSwitchValue(String[] bindingNames);

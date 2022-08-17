@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -26,7 +26,7 @@ public class CompileContext extends AbstractTypeBuilder {
 	private final ZSPackage rootPackage;
 	private final ZSPackage modulePackage;
 	private final List<ExpansionDefinition> expansions;
-	private final Map<String, ISymbol> globals;
+	private final Map<String, IGlobal> globals;
 	private final Map<String, CompilingDefinition> compiling = new HashMap<>();
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 
@@ -34,7 +34,7 @@ public class CompileContext extends AbstractTypeBuilder {
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globals,
+			Map<String, IGlobal> globals,
 			List<AnnotationDefinition> annotations
 	) {
 		this.rootPackage = rootPackage;
@@ -53,7 +53,7 @@ public class CompileContext extends AbstractTypeBuilder {
 	 * @return expression compiler
 	 */
 	public ExpressionCompiler createStaticCompiler() {
-		return new ExpressionCompilerImpl(this, null, null, LocalSymbols.empty(), null);
+		return new ExpressionCompilerImpl(this,null, null, LocalSymbols.empty(), null);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class CompileContext extends AbstractTypeBuilder {
 		expansions.add(expansion);
 	}
 
-	public Optional<ISymbol> findGlobal(String name) {
+	public Optional<IGlobal> findGlobal(String name) {
 		return Optional.ofNullable(globals.get(name));
 	}
 

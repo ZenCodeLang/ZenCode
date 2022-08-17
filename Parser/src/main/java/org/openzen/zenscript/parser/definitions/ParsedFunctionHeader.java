@@ -13,7 +13,7 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedTypeBasic;
+import org.openzen.zenscript.parser.type.ParsedBasicType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +59,7 @@ public class ParsedFunctionHeader {
 				ZSToken argName = tokens.required(T_IDENTIFIER, "identifier expected");
 				boolean variadic = tokens.optional(T_DOT3) != null;
 
-				IParsedType type = ParsedTypeBasic.UNDETERMINED;
+				IParsedType type = ParsedBasicType.UNDETERMINED;
 				if (tokens.optional(K_AS) != null || tokens.optional(T_COLON) != null) {
 					type = IParsedType.parse(tokens);
 				}
@@ -72,7 +72,7 @@ public class ParsedFunctionHeader {
 			tokens.required(T_BRCLOSE, ") expected");
 		}
 
-		IParsedType returnType = ParsedTypeBasic.UNDETERMINED;
+		IParsedType returnType = ParsedBasicType.UNDETERMINED;
 		if (tokens.optional(K_AS) != null || tokens.optional(T_COLON) != null)
 			returnType = IParsedType.parse(tokens);
 

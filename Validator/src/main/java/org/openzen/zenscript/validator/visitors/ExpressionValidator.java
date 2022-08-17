@@ -14,6 +14,9 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
@@ -113,11 +116,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCapturedClosure(CapturedClosureExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedDirect(CapturedDirectExpression expression) {
 		return null;
 	}
 
@@ -730,14 +728,14 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	private void checkMemberAccess(CodePosition position, DefinitionMemberRef member) {
-		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getTarget().getEffectiveModifiers())) {
+	private void checkMemberAccess(CodePosition position, MethodInstance member) {
+		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getModifiers())) {
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.describe());
 		}
 	}
 
-	private void checkFieldAccess(CodePosition position, FieldMemberRef field) {
-		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), field.getTarget().getEffectiveModifiers()))
+	private void checkFieldAccess(CodePosition position, FieldSymbol field) {
+		if (!scope.getAccessScope().hasAccessTo(field.getDefiningType().getAccessScope(), field.getModifiers()))
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.describe());
 	}
 

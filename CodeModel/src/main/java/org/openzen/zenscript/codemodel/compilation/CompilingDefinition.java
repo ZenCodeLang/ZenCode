@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Set;
 public interface CompilingDefinition {
 	String getName();
 
-	TypeSymbol getDefinition();
+	HighLevelDefinition getDefinition();
 
 	boolean isInner();
 

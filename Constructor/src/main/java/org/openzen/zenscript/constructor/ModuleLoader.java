@@ -9,12 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Stack;
-import java.util.function.Consumer;
 
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.constructor.module.logging.*;
 
@@ -28,11 +24,9 @@ public class ModuleLoader {
 	private final HashSet<String> compilingModulesSet = new HashSet<>();
 	private final Stack<String> compilingModulesStack = new Stack<>();
 
-	private final GlobalTypeRegistry registry;
 	private final ModuleLogger exceptionLogger;
 
-	public ModuleLoader(GlobalTypeRegistry registry, ModuleLogger exceptionLogger) {
-		this.registry = registry;
+	public ModuleLoader(ModuleLogger exceptionLogger) {
 		this.exceptionLogger = exceptionLogger;
 	}
 
@@ -55,7 +49,7 @@ public class ModuleLoader {
 		compilingModulesSet.add(name);
 		compilingModulesStack.add(name);
 
-		SemanticModule module = modules.get(name).load(this, registry, exceptionLogger);
+		SemanticModule module = modules.get(name).load(this, exceptionLogger);
 		moduleCache.put(name, module);
 
 		compilingModulesSet.remove(name);

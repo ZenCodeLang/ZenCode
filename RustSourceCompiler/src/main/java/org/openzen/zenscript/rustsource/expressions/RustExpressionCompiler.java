@@ -95,11 +95,6 @@ public class RustExpressionCompiler {
 		}
 
 		@Override
-		public ExpressionString visitCapturedDirect(CapturedDirectExpression expression) {
-			return null;
-		}
-
-		@Override
 		public ExpressionString visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
 			return null;
 		}

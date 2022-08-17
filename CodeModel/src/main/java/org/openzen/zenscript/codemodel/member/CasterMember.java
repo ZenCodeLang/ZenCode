@@ -1,13 +1,9 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
@@ -20,9 +16,8 @@ public class CasterMember extends FunctionalMember {
 			CodePosition position,
 			HighLevelDefinition definition,
 			Modifiers modifiers,
-			TypeID toType,
-			BuiltinID builtin) {
-		super(position, definition, modifiers, new FunctionHeader(toType), builtin);
+			TypeID toType) {
+		super(position, definition, modifiers, new FunctionHeader(toType));
 
 		this.toType = toType;
 	}
@@ -80,7 +75,16 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.of(OperatorType.CAST);
+	}
+
+	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
+	}
+
+	void setOverrides(MethodInstance overrides) {
+		this.overrides = overrides;
 	}
 }

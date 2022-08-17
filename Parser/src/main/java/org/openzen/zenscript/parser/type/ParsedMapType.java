@@ -3,11 +3,11 @@ package org.openzen.zenscript.parser.type;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public class ParsedTypeAssociative implements IParsedType {
+public class ParsedMapType implements IParsedType {
 	public final IParsedType key;
 	public final IParsedType value;
 
-	public ParsedTypeAssociative(IParsedType key, IParsedType value) {
+	public ParsedMapType(IParsedType key, IParsedType value) {
 		this.key = key;
 		this.value = value;
 	}

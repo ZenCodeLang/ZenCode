@@ -5,11 +5,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
-public class ParsedTypeGenericMap implements IParsedType {
+public class ParsedGenericMapType implements IParsedType {
 	private final ParsedTypeParameter key;
 	private final IParsedType value;
 
-	public ParsedTypeGenericMap(ParsedTypeParameter key, IParsedType value) {
+	public ParsedGenericMapType(ParsedTypeParameter key, IParsedType value) {
 		this.key = key;
 		this.value = value;
 	}

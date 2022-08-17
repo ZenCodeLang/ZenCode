@@ -18,10 +18,10 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.moduleserialization.ModuleEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionSerializer;
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
@@ -72,7 +72,7 @@ public class ModuleSerializer {
 			for (ScriptBlock script : module.scripts) {
 				//FIXME: Which position?
 				final CodePosition position = script.statements.isEmpty() ? CodePosition.UNKNOWN : script.statements.get(0).position;
-				StatementContext context = new StatementContext(position, moduleContext, null);
+				StatementSerializationContext context = new StatementSerializationContext(position, moduleContext, null);
 				for (Statement statement : script.statements) {
 					tableBuilder.serialize(context, statement);
 				}
@@ -201,7 +201,7 @@ public class ModuleSerializer {
 				output.writeUInt(script.statements.size());
 				//FIXME: Which position?
 				final CodePosition position = script.statements.isEmpty() ? CodePosition.UNKNOWN : script.statements.get(0).position;
-				StatementContext context = new StatementContext(position, module, null);
+				StatementSerializationContext context = new StatementSerializationContext(position, module, null);
 				for (Statement statement : script.statements) {
 					output.serialize(context, statement);
 				}

@@ -18,7 +18,7 @@ import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.USIZE;
 
 public class ArrayTypeSymbol implements TypeSymbol {
-	private final Modifiers MODIFIERS = new Modifiers(Modifiers.PUBLIC);
+	private final Modifiers MODIFIERS = Modifiers.PUBLIC;
 
 	public static final TypeParameter ELEMENT = new TypeParameter(BUILTIN, "E");
 	public static final GenericTypeID ELEMENT_TYPE = new GenericTypeID(ELEMENT);

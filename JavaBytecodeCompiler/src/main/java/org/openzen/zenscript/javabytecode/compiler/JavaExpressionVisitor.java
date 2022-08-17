@@ -1783,11 +1783,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
-	public Void visitCapturedDirect(CapturedDirectExpression expression) {
-		return expression.accept(capturedExpressionVisitor);
-	}
-
-	@Override
 	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
 		return expression.accept(capturedExpressionVisitor);
 	}

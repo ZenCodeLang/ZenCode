@@ -38,5 +38,4 @@ public class JavaEnumMapper {
 	public void registerMapping(EnumDefinition definition, EnumConstantMember member, String name) {
 		this.definitionMap.computeIfAbsent(definition, definition1 -> new HashMap<>()).put(member, name);
 	}
-
 }

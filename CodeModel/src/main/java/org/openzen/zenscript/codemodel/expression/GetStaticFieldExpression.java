@@ -13,11 +13,6 @@ public class GetStaticFieldExpression extends Expression {
 	}
 
 	@Override
-	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
-		return new CapturedDirectExpression(position, closure, this);
-	}
-
-	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGetStaticField(this);
 	}

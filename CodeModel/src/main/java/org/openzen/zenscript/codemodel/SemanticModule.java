@@ -6,8 +6,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,9 +27,7 @@ public class SemanticModule {
 	public final ZSPackage modulePackage;
 	public final PackageDefinitions definitions;
 	public final List<ScriptBlock> scripts;
-	public final Map<String, ISymbol> globals = new HashMap<>();
-
-	public final GlobalTypeRegistry registry;
+	public final Map<String, IGlobal> globals = new HashMap<>();
 	public final List<ExpansionDefinition> expansions;
 	public final AnnotationDefinition[] annotations;
 	public final IZSLogger logger;
@@ -44,7 +41,6 @@ public class SemanticModule {
 			ZSPackage modulePackage,
 			PackageDefinitions definitions,
 			List<ScriptBlock> scripts,
-			GlobalTypeRegistry registry,
 			List<ExpansionDefinition> expansions,
 			AnnotationDefinition[] annotations,
 			IZSLogger logger) {
@@ -59,7 +55,6 @@ public class SemanticModule {
 		this.definitions = definitions;
 		this.scripts = scripts;
 
-		this.registry = registry;
 		this.expansions = expansions;
 		this.annotations = annotations;
 		this.logger = logger;
@@ -92,14 +87,13 @@ public class SemanticModule {
 				modulePackage,
 				definitions,
 				processedScripts,
-				registry,
 				expansions,
 				annotations,
 				logger);
 	}
 
 	public ModuleContext getContext() {
-		return new ModuleContext(registry, module, expansions, rootPackage);
+		return new ModuleContext(module, expansions, rootPackage);
 	}
 
 	public enum State {

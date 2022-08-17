@@ -112,7 +112,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.FIELD);
 
 		output.append(indent);
-		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
+		modifiers(member.getEffectiveModifiers() | Modifiers.FLAG_STATIC | Modifiers.FLAG_FINAL);
 		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
@@ -129,13 +129,13 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		output.append(indent);
 		int modifiers = 0;
 		if (member.isStatic())
-			modifiers |= Modifiers.STATIC;
+			modifiers |= Modifiers.FLAG_STATIC;
 		if (member.isFinal())
-			modifiers |= Modifiers.FINAL;
+			modifiers |= Modifiers.FLAG_FINAL;
 		if (member.autoGetterAccess != 0 && (member.isFinal() ? member.autoSetterAccess == 0 : member.autoGetterAccess == member.autoSetterAccess))
 			modifiers |= member.autoGetterAccess;
 		else
-			modifiers |= Modifiers.PRIVATE;
+			modifiers |= Modifiers.FLAG_PRIVATE;
 
 		this.modifiers(modifiers);
 

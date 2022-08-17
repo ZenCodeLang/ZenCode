@@ -222,11 +222,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
-	public Void visitCapturedDirect(CapturedDirectExpression expression) {
-		return expression.value.accept(this);
-	}
-
-	@Override
 	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
 		return null;
 	}

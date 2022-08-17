@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
@@ -27,7 +26,7 @@ public class JavaSourceCompiler {
 	public final JavaSourceFormattingSettings settings;
 	public final JavaSourceModule helpers;
 
-	public JavaSourceCompiler(GlobalTypeRegistry registry) {
+	public JavaSourceCompiler() {
 		helpers = new JavaSourceModule(new Module("helpers"), FunctionParameter.NONE);
 		settings = new JavaSourceFormattingSettings.Builder().build();
 	}

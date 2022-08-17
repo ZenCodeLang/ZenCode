@@ -3,7 +3,6 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
@@ -54,7 +53,7 @@ public class ParsedField extends ParsedDefinitionMember {
 		compiled = new FieldMember(
 				position,
 				definition,
-				modifiers | (isFinal ? Modifiers.FINAL : 0),
+				modifiers | (isFinal ? Modifiers.FLAG_FINAL : 0),
 				name,
 				context.getThisType(),
 				type.compile(context),

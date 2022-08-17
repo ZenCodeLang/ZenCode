@@ -7,7 +7,5 @@ public interface CapturedExpressionVisitor<T> {
 
 	T visitCapturedLocal(CapturedLocalVariableExpression expression);
 
-	T visitCapturedDirect(CapturedDirectExpression expression);
-
 	T visitRecaptured(CapturedClosureExpression expression);
 }

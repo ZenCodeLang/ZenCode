@@ -13,8 +13,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitCapturedClosure(C context, CapturedClosureExpression expression);
 
-	R visitCapturedDirect(C context, CapturedDirectExpression expression);
-
 	R visitCapturedLocalVariable(C context, CapturedLocalVariableExpression expression);
 
 	R visitCapturedParameter(C context, CapturedParameterExpression expression);

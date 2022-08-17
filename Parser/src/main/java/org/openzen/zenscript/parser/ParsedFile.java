@@ -114,6 +114,11 @@ public class ParsedFile {
 			}
 		}
 
+		PackageDefinitions packageDefinitions = new PackageDefinitions();
+		for (CompilingDefinition definition : definitions) {
+			packageDefinitions.add(definition.getDefinition());
+		}
+
 		if (failed) {
 			return new SemanticModule(
 					pkg.module,
@@ -122,9 +127,8 @@ public class ParsedFile {
 					SemanticModule.State.INVALID,
 					rootPackage,
 					pkg.getPackage(),
-					definitions,
+					new PackageDefinitions(),
 					Collections.emptyList(),
-					registry.registry,
 					expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
 					registry.getAnnotations().toArray(new AnnotationDefinition[0]),
 					logger
@@ -164,7 +168,6 @@ public class ParsedFile {
 				pkg.getPackage(),
 				definitions,
 				scripts,
-				registry.registry,
 				expansions,
 				registry.getAnnotations(),
 				logger);
@@ -232,31 +235,31 @@ public class ParsedFile {
 			while (true) {
 				switch (tokens.peek().type) {
 					case K_PUBLIC:
-						modifiers |= Modifiers.PUBLIC;
+						modifiers |= Modifiers.FLAG_PUBLIC;
 						break;
 					case K_PRIVATE:
-						modifiers |= Modifiers.PRIVATE;
+						modifiers |= Modifiers.FLAG_PRIVATE;
 						break;
 					case K_INTERNAL:
-						modifiers |= Modifiers.INTERNAL;
+						modifiers |= Modifiers.FLAG_INTERNAL;
 						break;
 					case K_EXTERN:
-						modifiers |= Modifiers.EXTERN;
+						modifiers |= Modifiers.FLAG_EXTERN;
 						break;
 					case K_ABSTRACT:
-						modifiers |= Modifiers.ABSTRACT;
+						modifiers |= Modifiers.FLAG_ABSTRACT;
 						break;
 					case K_FINAL:
-						modifiers |= Modifiers.FINAL;
+						modifiers |= Modifiers.FLAG_FINAL;
 						break;
 					case K_PROTECTED:
-						modifiers |= Modifiers.PROTECTED;
+						modifiers |= Modifiers.FLAG_PROTECTED;
 						break;
 					case K_IMPLICIT:
-						modifiers |= Modifiers.IMPLICIT;
+						modifiers |= Modifiers.FLAG_IMPLICIT;
 						break;
 					case K_VIRTUAL:
-						modifiers |= Modifiers.VIRTUAL;
+						modifiers |= Modifiers.FLAG_VIRTUAL;
 						break;
 					default:
 						break outer;

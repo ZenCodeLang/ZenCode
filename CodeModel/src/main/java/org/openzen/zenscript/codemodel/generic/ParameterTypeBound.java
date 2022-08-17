@@ -25,17 +25,12 @@ public final class ParameterTypeBound implements TypeParameterBound {
 	}
 
 	@Override
-	public void registerMembers(LocalMemberCache cache, TypeMembers members) {
-		cache.get(type).copyMembersTo(members, TypeMemberPriority.FROM_TYPE_BOUNDS);
-	}
-
-	@Override
 	public Optional<ResolvedType> resolveMembers() {
 		return Optional.of(type.resolve());
 	}
 
 	@Override
-	public boolean matches(LocalMemberCache cache, TypeID type) {
+	public boolean matches(TypeID type) {
 		return cache.get(type).extendsOrImplements(this.type);
 	}
 

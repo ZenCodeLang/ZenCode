@@ -5,17 +5,17 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
 
 /**
  * @author Hoofdgebruiker
  */
-public class ExpressionSerializer implements ExpressionVisitorWithContext<StatementContext, Void> {
+public class ExpressionSerializer implements ExpressionVisitorWithContext<StatementSerializationContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean positions;
 	private final boolean localVariableNames;
@@ -43,7 +43,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitAndAnd(StatementContext context, AndAndExpression expression) {
+	public Void visitAndAnd(StatementSerializationContext context, AndAndExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_AND_AND);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -54,7 +54,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitArray(StatementContext context, ArrayExpression expression) {
+	public Void visitArray(StatementSerializationContext context, ArrayExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_ARRAY);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -67,7 +67,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCompare(StatementContext context, CompareExpression expression) {
+	public Void visitCompare(StatementSerializationContext context, CompareExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_COMPARE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -80,7 +80,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCall(StatementContext context, CallExpression expression) {
+	public Void visitCall(StatementSerializationContext context, CallExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -92,7 +92,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCallStatic(StatementContext context, CallStaticExpression expression) {
+	public Void visitCallStatic(StatementSerializationContext context, CallStaticExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CALL_STATIC);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -104,7 +104,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCapturedClosure(StatementContext context, CapturedClosureExpression expression) {
+	public Void visitCapturedClosure(StatementSerializationContext context, CapturedClosureExpression expression) {
 		if (expression.closure != context.getLambdaClosure())
 			throw new AssertionError("Closure invalid");
 
@@ -117,20 +117,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCapturedDirect(StatementContext context, CapturedDirectExpression expression) {
-		if (expression.closure != context.getLambdaClosure())
-			throw new AssertionError("Closure invalid");
-
-		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_DIRECT);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.serialize(context, expression.value);
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedLocalVariable(StatementContext context, CapturedLocalVariableExpression expression) {
+	public Void visitCapturedLocalVariable(StatementSerializationContext context, CapturedLocalVariableExpression expression) {
 		if (expression.closure != context.getLambdaClosure())
 			throw new AssertionError("Closure invalid");
 
@@ -143,7 +130,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCapturedParameter(StatementContext context, CapturedParameterExpression expression) {
+	public Void visitCapturedParameter(StatementSerializationContext context, CapturedParameterExpression expression) {
 		if (expression.closure != context.getLambdaClosure())
 			throw new AssertionError("Closure invalid");
 
@@ -156,7 +143,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCapturedThis(StatementContext context, CapturedThisExpression expression) {
+	public Void visitCapturedThis(StatementSerializationContext context, CapturedThisExpression expression) {
 		if (expression.closure != context.getLambdaClosure())
 			throw new AssertionError("Closure invalid");
 
@@ -168,7 +155,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCast(StatementContext context, CastExpression expression) {
+	public Void visitCast(StatementSerializationContext context, CastExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CAST);
 		int flags = getFlags(expression);
 		if (expression.isImplicit)
@@ -181,7 +168,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCheckNull(StatementContext context, CheckNullExpression expression) {
+	public Void visitCheckNull(StatementSerializationContext context, CheckNullExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CHECKNULL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -191,7 +178,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCoalesce(StatementContext context, CoalesceExpression expression) {
+	public Void visitCoalesce(StatementSerializationContext context, CoalesceExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_COALESCE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -202,31 +189,31 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConditional(StatementContext context, ConditionalExpression expression) {
+	public Void visitConditional(StatementSerializationContext context, ConditionalExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONDITIONAL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 
 		output.serialize(context, expression.condition);
-		output.serialize(context, expression.type);
+		output.serialize(context.types(), expression.type);
 		output.serialize(context, expression.ifThen);
 		output.serialize(context, expression.ifElse);
 		return null;
 	}
 
 	@Override
-	public Void visitConst(StatementContext context, ConstExpression expression) {
+	public Void visitConst(StatementSerializationContext context, ConstExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONST);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 
-		output.serialize(context, expression.constant.getType());
+		output.serialize(context.types(), expression.constant.getType());
 		output.write(context, expression.constant);
 		return null;
 	}
 
 	@Override
-	public Void visitConstantBool(StatementContext context, ConstantBoolExpression expression) {
+	public Void visitConstantBool(StatementSerializationContext context, ConstantBoolExpression expression) {
 		output.writeUInt(expression.value ? ExpressionEncoding.TYPE_CONSTANT_BOOL_TRUE : ExpressionEncoding.TYPE_CONSTANT_BOOL_FALSE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -234,7 +221,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantByte(StatementContext context, ConstantByteExpression expression) {
+	public Void visitConstantByte(StatementSerializationContext context, ConstantByteExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_BYTE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -244,7 +231,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantChar(StatementContext context, ConstantCharExpression expression) {
+	public Void visitConstantChar(StatementSerializationContext context, ConstantCharExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_CHAR);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -254,7 +241,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantDouble(StatementContext context, ConstantDoubleExpression expression) {
+	public Void visitConstantDouble(StatementSerializationContext context, ConstantDoubleExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_DOUBLE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -264,7 +251,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantFloat(StatementContext context, ConstantFloatExpression expression) {
+	public Void visitConstantFloat(StatementSerializationContext context, ConstantFloatExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_FLOAT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -274,7 +261,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantInt(StatementContext context, ConstantIntExpression expression) {
+	public Void visitConstantInt(StatementSerializationContext context, ConstantIntExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_INT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -284,7 +271,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantLong(StatementContext context, ConstantLongExpression expression) {
+	public Void visitConstantLong(StatementSerializationContext context, ConstantLongExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_LONG);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -294,7 +281,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantSByte(StatementContext context, ConstantSByteExpression expression) {
+	public Void visitConstantSByte(StatementSerializationContext context, ConstantSByteExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_SBYTE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -304,7 +291,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantShort(StatementContext context, ConstantShortExpression expression) {
+	public Void visitConstantShort(StatementSerializationContext context, ConstantShortExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_SHORT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -314,7 +301,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantString(StatementContext context, ConstantStringExpression expression) {
+	public Void visitConstantString(StatementSerializationContext context, ConstantStringExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_STRING);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -324,7 +311,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantUInt(StatementContext context, ConstantUIntExpression expression) {
+	public Void visitConstantUInt(StatementSerializationContext context, ConstantUIntExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_UINT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -334,7 +321,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantULong(StatementContext context, ConstantULongExpression expression) {
+	public Void visitConstantULong(StatementSerializationContext context, ConstantULongExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_ULONG);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -344,7 +331,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantUShort(StatementContext context, ConstantUShortExpression expression) {
+	public Void visitConstantUShort(StatementSerializationContext context, ConstantUShortExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_USHORT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -354,7 +341,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstantUSize(StatementContext context, ConstantUSizeExpression expression) {
+	public Void visitConstantUSize(StatementSerializationContext context, ConstantUSizeExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTANT_USIZE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -364,7 +351,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstructorThisCall(StatementContext context, ConstructorThisCallExpression expression) {
+	public Void visitConstructorThisCall(StatementSerializationContext context, ConstructorThisCallExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTRUCTOR_THIS_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -375,7 +362,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitConstructorSuperCall(StatementContext context, ConstructorSuperCallExpression expression) {
+	public Void visitConstructorSuperCall(StatementSerializationContext context, ConstructorSuperCallExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CONSTRUCTOR_SUPER_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -386,7 +373,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitEnumConstant(StatementContext context, EnumConstantExpression expression) {
+	public Void visitEnumConstant(StatementSerializationContext context, EnumConstantExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_ENUM_CONSTANT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -396,19 +383,19 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitFunction(StatementContext context, FunctionExpression expression) {
+	public Void visitFunction(StatementSerializationContext context, FunctionExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_FUNCTION);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 
-		StatementContext innerContext = new StatementContext(context, expression.header);
+		StatementSerializationContext innerContext = new StatementSerializationContext(context, expression.header);
 		output.serialize(context, expression.header);
 		output.serialize(innerContext, expression.body);
 		return null;
 	}
 
 	@Override
-	public Void visitGetField(StatementContext context, GetFieldExpression expression) {
+	public Void visitGetField(StatementSerializationContext context, GetFieldExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GET_FIELD);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -419,7 +406,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetFunctionParameter(StatementContext context, GetFunctionParameterExpression expression) {
+	public Void visitGetFunctionParameter(StatementSerializationContext context, GetFunctionParameterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GET_FUNCTION_PARAMETER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -429,7 +416,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetLocalVariable(StatementContext context, GetLocalVariableExpression expression) {
+	public Void visitGetLocalVariable(StatementSerializationContext context, GetLocalVariableExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GET_LOCAL_VARIABLE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -439,7 +426,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetMatchingVariantField(StatementContext context, GetMatchingVariantField expression) {
+	public Void visitGetMatchingVariantField(StatementSerializationContext context, GetMatchingVariantField expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GET_MATCHING_VARIANT_FIELD);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -449,7 +436,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetStaticField(StatementContext context, GetStaticFieldExpression expression) {
+	public Void visitGetStaticField(StatementSerializationContext context, GetStaticFieldExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GET_STATIC_FIELD);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -460,7 +447,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetter(StatementContext context, GetterExpression expression) {
+	public Void visitGetter(StatementSerializationContext context, GetterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GETTER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -471,7 +458,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGlobal(StatementContext context, GlobalExpression expression) {
+	public Void visitGlobal(StatementSerializationContext context, GlobalExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GLOBAL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -482,7 +469,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGlobalCall(StatementContext context, GlobalCallExpression expression) {
+	public Void visitGlobalCall(StatementSerializationContext context, GlobalCallExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GLOBAL_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -494,7 +481,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitInterfaceCast(StatementContext context, InterfaceCastExpression expression) {
+	public Void visitInterfaceCast(StatementSerializationContext context, InterfaceCastExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_INTERFACE_CAST);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -505,17 +492,17 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitInvalid(StatementContext context, InvalidExpression expression) {
+	public Void visitInvalid(StatementSerializationContext context, InvalidExpression expression) {
 		throw new UnsupportedOperationException("Invalid expression!");
 	}
 
 	@Override
-	public Void visitInvalidAssign(StatementContext context, InvalidAssignExpression expression) {
+	public Void visitInvalidAssign(StatementSerializationContext context, InvalidAssignExpression expression) {
 		throw new UnsupportedOperationException("Invalid Assign Expression");
 	}
 
 	@Override
-	public Void visitIs(StatementContext context, IsExpression expression) {
+	public Void visitIs(StatementSerializationContext context, IsExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_IS);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -526,7 +513,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitMakeConst(StatementContext context, MakeConstExpression expression) {
+	public Void visitMakeConst(StatementSerializationContext context, MakeConstExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_MAKE_CONST);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -536,7 +523,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitMap(StatementContext context, MapExpression expression) {
+	public Void visitMap(StatementSerializationContext context, MapExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_MAP);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -551,7 +538,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitMatch(StatementContext context, MatchExpression expression) {
+	public Void visitMatch(StatementSerializationContext context, MatchExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_MATCH);
 		int flags = getFlags(expression);
 		if (localVariableNames)
@@ -569,7 +556,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitNew(StatementContext context, NewExpression expression) {
+	public Void visitNew(StatementSerializationContext context, NewExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_NEW);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -581,7 +568,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitNull(StatementContext context, NullExpression expression) {
+	public Void visitNull(StatementSerializationContext context, NullExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_NULL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -590,7 +577,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitOrOr(StatementContext context, OrOrExpression expression) {
+	public Void visitOrOr(StatementSerializationContext context, OrOrExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_OR_OR);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -601,7 +588,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitPanic(StatementContext context, PanicExpression expression) {
+	public Void visitPanic(StatementSerializationContext context, PanicExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_PANIC);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -612,12 +599,12 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitPlatformSpecific(StatementContext context, Expression expression) {
+	public Void visitPlatformSpecific(StatementSerializationContext context, Expression expression) {
 		throw new UnsupportedOperationException("PlatformSpecific Expression");
 	}
 
 	@Override
-	public Void visitPostCall(StatementContext context, PostCallExpression expression) {
+	public Void visitPostCall(StatementSerializationContext context, PostCallExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_POST_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -628,7 +615,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitRange(StatementContext context, RangeExpression expression) {
+	public Void visitRange(StatementSerializationContext context, RangeExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_RANGE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -639,7 +626,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSameObject(StatementContext context, SameObjectExpression expression) {
+	public Void visitSameObject(StatementSerializationContext context, SameObjectExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SAME_OBJECT);
 		int flags = getFlags(expression);
 		if (expression.inverted)
@@ -652,7 +639,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSetField(StatementContext context, SetFieldExpression expression) {
+	public Void visitSetField(StatementSerializationContext context, SetFieldExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SET_FIELD);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -664,7 +651,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSetFunctionParameter(StatementContext context, SetFunctionParameterExpression expression) {
+	public Void visitSetFunctionParameter(StatementSerializationContext context, SetFunctionParameterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SET_FUNCTION_PARAMETER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -675,7 +662,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSetLocalVariable(StatementContext context, SetLocalVariableExpression expression) {
+	public Void visitSetLocalVariable(StatementSerializationContext context, SetLocalVariableExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SET_LOCAL_VARIABLE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -686,7 +673,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSetStaticField(StatementContext context, SetStaticFieldExpression expression) {
+	public Void visitSetStaticField(StatementSerializationContext context, SetStaticFieldExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SET_STATIC_FIELD);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -697,7 +684,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSetter(StatementContext context, SetterExpression expression) {
+	public Void visitSetter(StatementSerializationContext context, SetterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SETTER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -709,7 +696,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitStaticGetter(StatementContext context, StaticGetterExpression expression) {
+	public Void visitStaticGetter(StatementSerializationContext context, StaticGetterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_STATIC_GETTER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -719,7 +706,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitStaticSetter(StatementContext context, StaticSetterExpression expression) {
+	public Void visitStaticSetter(StatementSerializationContext context, StaticSetterExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_STATIC_SETTER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -730,7 +717,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSupertypeCast(StatementContext context, SupertypeCastExpression expression) {
+	public Void visitSupertypeCast(StatementSerializationContext context, SupertypeCastExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SUPERTYPE_CAST);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -741,7 +728,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitSubtypeCast(StatementContext context, SubtypeCastExpression expression) {
+	public Void visitSubtypeCast(StatementSerializationContext context, SubtypeCastExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SUBTYPE_CAST);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -752,7 +739,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitThis(StatementContext context, ThisExpression expression) {
+	public Void visitThis(StatementSerializationContext context, ThisExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_THIS);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -760,7 +747,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitThrow(StatementContext context, ThrowExpression expression) {
+	public Void visitThrow(StatementSerializationContext context, ThrowExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_THROW);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -771,7 +758,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitTryConvert(StatementContext context, TryConvertExpression expression) {
+	public Void visitTryConvert(StatementSerializationContext context, TryConvertExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_TRY_CONVERT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -782,7 +769,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitTryRethrowAsException(StatementContext context, TryRethrowAsExceptionExpression expression) {
+	public Void visitTryRethrowAsException(StatementSerializationContext context, TryRethrowAsExceptionExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_TRY_RETHROW_AS_EXCEPTION);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -794,7 +781,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitTryRethrowAsResult(StatementContext context, TryRethrowAsResultExpression expression) {
+	public Void visitTryRethrowAsResult(StatementSerializationContext context, TryRethrowAsResultExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_TRY_RETHROW_AS_RESULT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -805,7 +792,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitVariantValue(StatementContext context, VariantValueExpression expression) {
+	public Void visitVariantValue(StatementSerializationContext context, VariantValueExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_VARIANT_VALUE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -818,7 +805,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitWrapOptional(StatementContext context, WrapOptionalExpression expression) {
+	public Void visitWrapOptional(StatementSerializationContext context, WrapOptionalExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_WRAP_OPTIONAL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);

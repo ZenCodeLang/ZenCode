@@ -8,6 +8,7 @@ package org.openzen.zenscript.constructor.module;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
@@ -18,7 +19,6 @@ import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.logging.*;
@@ -47,7 +47,7 @@ public class SourceModuleReference implements ModuleReference {
 			try {
 				files.add(ParsedFile.parse(pkg, bracketParser, file));
 			} catch (ParseException ex) {
-				exceptionLogger.logCompileException(new CompileException(ex.position, CompileExceptionCode.PARSE_ERROR, ex.message));
+				exceptionLogger.logCompileException(new CompileException(ex.position, new CompileError(CompileExceptionCode.PARSE_ERROR, ex.message)));
 			}
 		}
 		for (SourcePackage subpkg : directory.getSubPackages()) {
@@ -63,10 +63,10 @@ public class SourceModuleReference implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger logger) {
-		SemanticModule[] dependencies = module.loadDependencies(loader, registry, logger);
+	public SemanticModule load(ModuleLoader loader, ModuleLogger logger) {
+		SemanticModule[] dependencies = module.loadDependencies(loader, logger);
 
-		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
+		ModuleSpace space = new ModuleSpace(new ArrayList<>());
 		for (SemanticModule module : dependencies) {
 			try {
 				space.addModule(module.name, module);
@@ -75,7 +75,7 @@ public class SourceModuleReference implements ModuleReference {
 			}
 		}
 
-		ZSPackage pkg = isStdlib ? registry.stdlib : new ZSPackage(null, getName());
+		ZSPackage pkg = isStdlib ? modules.stdlib : new ZSPackage(null, getName());
 		Module module = new Module(getName());
 		CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 

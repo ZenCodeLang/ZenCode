@@ -3,7 +3,6 @@ package org.openzen.zenscript.parser.type;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -86,63 +85,63 @@ public interface IParsedType {
 		switch (tokens.peek().type) {
 			case K_VOID:
 				tokens.next();
-				result = ParsedTypeBasic.VOID;
+				result = ParsedBasicType.VOID;
 				break;
 			case K_BOOL:
 				tokens.next();
-				result = ParsedTypeBasic.BOOL;
+				result = ParsedBasicType.BOOL;
 				break;
 			case K_BYTE:
 				tokens.next();
-				result = ParsedTypeBasic.BYTE;
+				result = ParsedBasicType.BYTE;
 				break;
 			case K_SBYTE:
 				tokens.next();
-				result = ParsedTypeBasic.SBYTE;
+				result = ParsedBasicType.SBYTE;
 				break;
 			case K_SHORT:
 				tokens.next();
-				result = ParsedTypeBasic.SHORT;
+				result = ParsedBasicType.SHORT;
 				break;
 			case K_USHORT:
 				tokens.next();
-				result = ParsedTypeBasic.USHORT;
+				result = ParsedBasicType.USHORT;
 				break;
 			case K_INT:
 				tokens.next();
-				result = ParsedTypeBasic.INT;
+				result = ParsedBasicType.INT;
 				break;
 			case K_UINT:
 				tokens.next();
-				result = ParsedTypeBasic.UINT;
+				result = ParsedBasicType.UINT;
 				break;
 			case K_LONG:
 				tokens.next();
-				result = ParsedTypeBasic.LONG;
+				result = ParsedBasicType.LONG;
 				break;
 			case K_ULONG:
 				tokens.next();
-				result = ParsedTypeBasic.ULONG;
+				result = ParsedBasicType.ULONG;
 				break;
 			case K_USIZE:
 				tokens.next();
-				result = ParsedTypeBasic.USIZE;
+				result = ParsedBasicType.USIZE;
 				break;
 			case K_FLOAT:
 				tokens.next();
-				result = ParsedTypeBasic.FLOAT;
+				result = ParsedBasicType.FLOAT;
 				break;
 			case K_DOUBLE:
 				tokens.next();
-				result = ParsedTypeBasic.DOUBLE;
+				result = ParsedBasicType.DOUBLE;
 				break;
 			case K_CHAR:
 				tokens.next();
-				result = ParsedTypeBasic.CHAR;
+				result = ParsedBasicType.CHAR;
 				break;
 			case K_STRING: {
 				tokens.next();
-				result = ParsedTypeBasic.STRING;
+				result = ParsedBasicType.STRING;
 				break;
 			}
 			case K_FUNCTION: {
@@ -171,7 +170,7 @@ public interface IParsedType {
 				case T_DOT2: {
 					tokens.next();
 					IParsedType to = parse(tokens);
-					result = new ParsedTypeRange(position, result, to);
+					result = new ParsedRangeType(position, result, to);
 					break;
 				}
 				case T_SQOPEN:
@@ -181,17 +180,17 @@ public interface IParsedType {
 						dimension++;
 
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
-						result = new ParsedTypeArray(result, dimension);
+						result = new ParsedArrayType(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
 						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
-						result = new ParsedTypeGenericMap(parameter, result);
+						result = new ParsedGenericMapType(parameter, result);
 					} else {
 						IParsedType keyType = parse(tokens);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
-						result = new ParsedTypeAssociative(keyType, result);
+						result = new ParsedMapType(keyType, result);
 					}
 					break;
 				case T_QUEST:

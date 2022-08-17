@@ -151,11 +151,6 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	@Override
-	public ExpressionString visitCapturedDirect(CapturedDirectExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
 	public ExpressionString visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
 		return new ExpressionString(expression.variable.name, JavaOperator.PRIMARY);
 	}

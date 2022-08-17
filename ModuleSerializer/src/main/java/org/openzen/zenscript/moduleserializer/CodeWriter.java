@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
@@ -35,10 +36,8 @@ import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.ExpressionSerializer;
 import org.openzen.zenscript.moduleserializer.encoder.MemberSerializer;
-import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.moduleserializer.encoder.StatementSerializer;
 import org.openzen.zenscript.moduleserializer.encoder.SwitchValueSerializer;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -207,9 +206,6 @@ public class CodeWriter implements CodeSerializationOutput {
 		if (member == null) {
 			writeInt(0);
 			return;
-		} else if (member.getTarget().getBuiltin() != null) {
-			writeInt(-member.getTarget().getBuiltin().ordinal() - 1); // TODO: use something else?
-			return;
 		}
 
 		IDefinitionMember member_ = member.getTarget();
@@ -239,7 +235,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeID type) {
+	public void serialize(TypeSerializationContext context, TypeID type) {
 		if (type == null) {
 			writeUInt(TypeEncoding.TYPE_NONE);
 		} else {
@@ -248,19 +244,19 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeParameter parameter) {
+	public void serialize(TypeSerializationContext context, TypeParameter parameter) {
 		int flags = serializeInitial(parameter);
 		serializeRemaining(flags, context, parameter);
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeParameter[] parameters) {
+	public void serialize(TypeSerializationContext context, TypeParameter[] parameters) {
 		writeUInt(parameters.length);
 		int[] flags = new int[parameters.length];
 		for (int i = 0; i < parameters.length; i++)
 			flags[i] = serializeInitial(parameters[i]);
 
-		TypeContext inner = new TypeContext(context, context.thisType, parameters);
+		TypeSerializationContext inner = new TypeSerializationContext(context, context.thisType, parameters);
 		for (int i = 0; i < parameters.length; i++)
 			serializeRemaining(flags[i], inner, parameters[i]);
 	}
@@ -281,7 +277,7 @@ public class CodeWriter implements CodeSerializationOutput {
 		return flags;
 	}
 
-	private void serializeRemaining(int flags, TypeContext context, TypeParameter parameter) {
+	private void serializeRemaining(int flags, TypeSerializationContext context, TypeParameter parameter) {
 		if (currentStage == code || currentStage == members) {
 			if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
 				writeUInt(parameter.bounds.size());
@@ -300,7 +296,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, IDefinitionMember member) {
+	public void serialize(TypeSerializationContext context, IDefinitionMember member) {
 		if (member == null) {
 			output.writeVarUInt(0);
 		} else {
@@ -309,7 +305,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, Statement statement) {
+	public void serialize(StatementSerializationContext context, Statement statement) {
 		if (statement == null) {
 			output.writeVarUInt(0);
 		} else {
@@ -318,7 +314,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, Expression expression) {
+	public void serialize(StatementSerializationContext context, Expression expression) {
 		if (expression == null) {
 			output.writeVarUInt(0);
 		} else {
@@ -356,7 +352,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, FunctionHeader header) {
+	public void serialize(TypeSerializationContext context, FunctionHeader header) {
 		int flags = 0;
 		if (header.typeParameters.length > 0)
 			flags |= FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS;
@@ -380,7 +376,7 @@ public class CodeWriter implements CodeSerializationOutput {
 			serialize(context, header.thrownType);
 
 		if ((flags & FunctionHeaderEncoding.FLAG_PARAMETERS) > 0) {
-			StatementContext statementContext = new StatementContext(context);
+			StatementSerializationContext statementContext = new StatementSerializationContext(context, FunctionHeader.PLACEHOLDER);
 			writeUInt(header.parameters.length);
 			for (FunctionParameter parameter : header.parameters) {
 				// TODO: annotations
@@ -399,7 +395,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, CallArguments arguments) {
+	public void serialize(StatementSerializationContext context, CallArguments arguments) {
 		output.writeVarUInt(arguments.typeArguments.length);
 		for (TypeID typeArgument : arguments.typeArguments)
 			serialize(context, typeArgument);
@@ -410,7 +406,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, SwitchValue value) {
+	public void serialize(StatementSerializationContext context, SwitchValue value) {
 		if (value == null) {
 			output.writeVarUInt(SwitchValueEncoding.TYPE_NULL);
 		} else {

@@ -48,7 +48,7 @@ public final class StaticCallable {
 		return method.call(builder, arguments);
 	}
 
-	public CompilingCallable bindTypeArguments(TypeID[] typeArguments) {
-		return new BoundStaticCallable(this, typeArguments);
+	public CompilingCallable bindTypeArguments(ExpressionCompiler compiler, TypeID[] typeArguments) {
+		return new BoundStaticCallable(compiler, this, typeArguments);
 	}
 }

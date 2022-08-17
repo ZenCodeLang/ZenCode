@@ -1,29 +1,21 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class InvalidExpression extends Expression {
-	public final CompileExceptionCode code;
-	public final String message;
+	public final CompileError error;
 
-	public InvalidExpression(CodePosition position, TypeID type, CompileExceptionCode code, String message) {
+	public InvalidExpression(CodePosition position, TypeID type, CompileError error) {
 		super(position, type, null);
 
-		this.code = code;
-		this.message = message;
+		this.error = error;
 	}
 
 	public InvalidExpression(TypeID type, CompileException cause) {
-		this(cause.position, type, cause.code, cause.message);
-	}
-
-	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
-		return new InvalidAssignExpression(position, this, value);
+		this(cause.position, type, cause.error);
 	}
 
 	@Override
@@ -38,11 +30,6 @@ public class InvalidExpression extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

@@ -1,6 +1,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -20,7 +21,7 @@ public class ParsedClass extends BaseParsedDefinition {
 	private final List<ParsedTypeParameter> parameters;
 	private final IParsedType superclass;
 
-	public ParsedClass(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType superclass) {
+	public ParsedClass(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType superclass) {
 		super(position, modifiers, annotations);
 
 		this.name = name;
@@ -28,7 +29,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		this.superclass = superclass;
 	}
 
-	public static ParsedClass parseClass(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
+	public static ParsedClass parseClass(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 

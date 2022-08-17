@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import java.util.Optional;
 
 public class MapTypeSymbol implements TypeSymbol {
-	private final Modifiers MODIFIERS = new Modifiers(Modifiers.PUBLIC);
+	private final Modifiers MODIFIERS = Modifiers.PUBLIC;
 
 	public static final TypeParameter KEY_PARAMETER = new TypeParameter(CodePosition.BUILTIN, "K");
 	public static final TypeParameter VALUE_PARAMETER = new TypeParameter(CodePosition.BUILTIN, "V");

@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.identifiers.instances;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.compilation.StaticCallableMethod;
@@ -35,6 +36,10 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 
 	public String getName() {
 		return method.getName();
+	}
+
+	public Modifiers getModifiers() {
+		return method.getModifiers();
 	}
 
 	@Override

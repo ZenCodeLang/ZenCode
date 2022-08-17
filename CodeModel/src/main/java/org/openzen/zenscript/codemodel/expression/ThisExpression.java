@@ -1,20 +1,11 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ThisExpression extends Expression {
 	public ThisExpression(CodePosition position, TypeID type) {
 		super(position, type, null);
-	}
-
-	@Override
-	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
-		CapturedExpression result = new CapturedThisExpression(position, type, closure);
-		closure.add(result);
-		return result;
 	}
 
 	@Override
@@ -29,11 +20,6 @@ public class ThisExpression extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

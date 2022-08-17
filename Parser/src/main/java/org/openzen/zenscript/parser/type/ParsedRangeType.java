@@ -6,12 +6,12 @@ import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public class ParsedTypeRange implements IParsedType {
+public class ParsedRangeType implements IParsedType {
 	private final CodePosition position;
 	private final IParsedType from;
 	private final IParsedType to;
 
-	public ParsedTypeRange(CodePosition position, IParsedType from, IParsedType to) {
+	public ParsedRangeType(CodePosition position, IParsedType from, IParsedType to) {
 		this.position = position;
 		this.from = from;
 		this.to = to;

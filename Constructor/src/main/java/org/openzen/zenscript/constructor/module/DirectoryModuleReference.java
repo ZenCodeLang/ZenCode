@@ -24,12 +24,11 @@ import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.codemodel.type.TypeSymbol;
+import org.openzen.zenscript.codemodel.globals.TypeGlobal;
 import org.openzen.zenscript.constructor.module.logging.*;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedFile;
@@ -55,7 +54,7 @@ public class DirectoryModuleReference implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger exceptionLogger) {
+	public SemanticModule load(ModuleLoader loader, ModuleLogger exceptionLogger) {
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
 
@@ -78,7 +77,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			}
 
 			// TODO: annotation type registration
-			ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
+			ModuleSpace space = new ModuleSpace(new ArrayList<>());
 			SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 			for (int i = 0; i < dependencies.length; i++) {
 				String dependencyName = dependencyNames.get(i);
@@ -93,7 +92,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			}
 
 			ParsedModule parsedModule = new ParsedModule(moduleName, directory, jsonFile, exceptionLogger);
-			ZSPackage pkg = isStdlib ? registry.stdlib : new ZSPackage(null, parsedModule.packageName);
+			ZSPackage pkg = isStdlib ? stdlib : new ZSPackage(null, parsedModule.packageName);
 			Module module = new Module(moduleName);
 			CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 
@@ -106,7 +105,7 @@ public class DirectoryModuleReference implements ModuleReference {
 					JSONObject global = globals.getJSONObject(key);
 					switch (global.getString("type")) {
 						case "Definition":
-							result.globals.put(key, new TypeSymbol(result.definitions.getDefinition(global.getString("definition"))));
+							result.globals.put(key, new TypeGlobal(result.definitions.getDefinition(global.getString("definition"))));
 							break;
 						default:
 							throw new ConstructorException("Invalid global type: " + global.getString("type"));

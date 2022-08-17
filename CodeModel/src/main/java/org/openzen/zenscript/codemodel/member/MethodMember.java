@@ -1,22 +1,19 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public class MethodMember extends FunctionalMember {
 	public final String name;
-	private MethodSymbol overrides;
+	private MethodInstance overrides;
 
-	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
-		super(position, definition, modifiers, header, builtin);
+	public MethodMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, FunctionHeader header) {
+		super(position, definition, modifiers, header);
 
 		this.name = name;
 	}
@@ -32,16 +29,11 @@ public class MethodMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addMethod(name, ref(type.type, mapper), priority);
-	}
-
-	@Override
-	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
 		if (isStatic()) {
-			members.staticMethod(name, mapper.map(this));
+			members.staticMethod(name, mapper.map(targetType, this));
 		} else {
-			members.method(name, mapper.map(this));
+			members.method(name, mapper.map(targetType, this));
 		}
 	}
 
@@ -73,11 +65,11 @@ public class MethodMember extends FunctionalMember {
 	}
 
 	@Override
-	public MethodSymbol getOverrides() {
-		return overrides;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
 	}
 
-	public void setOverrides(MethodSymbol overrides) {
+	public void setOverrides(MethodInstance overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(overrides.getHeader());
 	}
@@ -85,5 +77,10 @@ public class MethodMember extends FunctionalMember {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.empty();
 	}
 }

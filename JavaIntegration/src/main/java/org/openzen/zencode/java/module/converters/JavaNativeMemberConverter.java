@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -40,8 +41,7 @@ public class JavaNativeMemberConverter {
 				CodePosition.NATIVE,
 				definition,
 				Modifiers.PUBLIC,
-				header,
-				null);
+				header);
 	}
 
 	public MethodMember asMethod(TypeVariableContext context, HighLevelDefinition definition, Method method, String methodName) {
@@ -52,8 +52,7 @@ public class JavaNativeMemberConverter {
 				definition,
 				headerConverter.getMethodModifiers(method),
 				name,
-				header,
-				null);
+				header);
 	}
 
 	public OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, OperatorType operatorType) {
@@ -69,8 +68,7 @@ public class JavaNativeMemberConverter {
 				definition,
 				headerConverter.getMethodModifiers(method),
 				operatorType,
-				header,
-				null);
+				header);
 	}
 
 	public GetterMember asGetter(TypeVariableContext context, HighLevelDefinition definition, Method method, String getterName) {
@@ -81,7 +79,7 @@ public class JavaNativeMemberConverter {
 		if (name == null)
 			name = translateGetterName(method.getName());
 
-		return new GetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type, null);
+		return new GetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type);
 	}
 
 	public SetterMember asSetter(TypeVariableContext context, HighLevelDefinition definition, Method method, String setterName) {
@@ -95,16 +93,16 @@ public class JavaNativeMemberConverter {
 		if (name == null)
 			name = translateSetterName(method.getName());
 
-		return new SetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type, null);
+		return new SetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type);
 	}
 
 	public CasterMember asCaster(TypeVariableContext context, HighLevelDefinition definition, Method method, boolean implicit) {
-		int modifiers = Modifiers.PUBLIC;
+		Modifiers modifiers = Modifiers.PUBLIC;
 		if (implicit)
-			modifiers |= Modifiers.IMPLICIT;
+			modifiers = modifiers.withImplicit();
 
 		TypeID toType = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
-		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType, null);
+		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType);
 	}
 
 	public String translateGetterName(String name) {
@@ -153,7 +151,7 @@ public class JavaNativeMemberConverter {
 				.getModifiers(), result.isGeneric());
 	}
 
-	public FunctionalMemberRef loadStaticMethod(Method method, HighLevelDefinition definition) {
+	public MethodInstance loadStaticMethod(Method method, HighLevelDefinition definition) {
 		if (!Modifier.isStatic(method.getModifiers()))
 			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
 
@@ -166,7 +164,7 @@ public class JavaNativeMemberConverter {
 					.filter(m -> m instanceof MethodMember)
 					.map(m -> ((MethodMember) m))
 					.filter(m -> {
-						final JavaNativeMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
+						final JavaNativeMethod methodInfo = (JavaNativeMethod) typeConversionContext.compiled.optMethodInfo(m);
 						return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
 					})
 					.findAny();
@@ -175,7 +173,7 @@ public class JavaNativeMemberConverter {
 				return matchingMember.get().ref(typeConversionContext.registry.getForDefinition(definition));
 			}
 		}
-		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), headerConverter.getHeader(typeConversionContext.context, method), null);
+		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC.withStatic(), method.getName(), headerConverter.getHeader(typeConversionContext.context, method));
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
 		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaNativeMethod(jcls, JavaNativeMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));

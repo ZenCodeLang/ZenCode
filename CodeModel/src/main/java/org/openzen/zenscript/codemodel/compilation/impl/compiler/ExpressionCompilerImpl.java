@@ -1,17 +1,17 @@
 package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.codemodel.compilation.expression.TypeCompilingExpression;
-import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.expression.*;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.compilation.expression.InvalidCompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 
@@ -71,21 +71,14 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 	@Override
 	public Optional<CompilingExpression> resolve(CodePosition position, GenericName name) {
-		Optional<VarStatement> localVariable = locals.findLocalVariable(name.name);
+		Optional<LocalExpression> localVariable = locals.findLocalVariable(position, name.name);
 		if (localVariable.isPresent()) {
-			return Optional.of(new LocalVariableCompiling(position, localVariable.get()));
+			return Optional.of(localVariable.get().compile(this));
 		}
 
-		Optional<ISymbol> global = context.findGlobal(name.name);
+		Optional<IGlobal> global = context.findGlobal(name.name);
 		if (global.isPresent())
 			return global.map(g -> g.getExpression(position, name.arguments).compile(this));
-
-		if (header != null) {
-			for (FunctionParameter parameter : header.parameters) {
-				if (parameter.name.equals(name.name))
-					return Optional.of(new ParameterCompiling(this, position, parameter));
-			}
-		}
 
 		return context.resolve(position, Collections.singletonList(name))
 				.map(type -> new TypeCompilingExpression(this, position, type));
@@ -133,7 +126,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 	@Override
 	public ExpressionCompiler withLocalVariables(List<VarStatement> variables) {
-		LocalSymbols newLocals = new LocalSymbols(locals);
+		LocalSymbols newLocals = locals.forBlock();
 		for (VarStatement variable : variables) {
 			newLocals.add(variable);
 		}
@@ -141,8 +134,9 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	}
 
 	@Override
-	public ExpressionCompiler forFunction(FunctionHeader header) {
-		return new ExpressionCompilerImpl(context, localType, thrownType, locals, header);
+	public StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header) {
+		LocalSymbols newLocals = locals.forLambda(closure, header);
+		return new StatementCompilerImpl(context, localType, header, newLocals);
 	}
 
 	@Override
@@ -234,17 +228,22 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 		@Override
 		public Expression invalid(CompileError error) {
-			return new InvalidExpression(position, BasicTypeID.INVALID, error.code, error.description);
+			return new InvalidExpression(position, BasicTypeID.INVALID, error);
 		}
 
 		@Override
 		public Expression invalid(CompileError error, TypeID type) {
-			return new InvalidExpression(position, type, error.code, error.description);
+			return new InvalidExpression(position, type, error);
 		}
 
 		@Override
 		public Expression is(Expression value, TypeID type) {
 			return new IsExpression(position, value, type);
+		}
+
+		@Override
+		public Expression lambda(LambdaClosure closure, FunctionHeader header, Statement body) {
+			return new FunctionExpression(position, closure, header, body);
 		}
 
 		@Override
@@ -325,116 +324,6 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression tryRethrowAsResult(Expression value, TypeID resultingType) {
 			return new TryRethrowAsResultExpression(position, resultingType, value);
-		}
-	}
-
-	private class LocalVariableCompiling implements CompilingExpression {
-		private final CodePosition position;
-		private final VarStatement variable;
-
-		public LocalVariableCompiling(CodePosition position, VarStatement variable) {
-			this.position = position;
-			this.variable = variable;
-		}
-
-		@Override
-		public Expression eval() {
-			return at(position).getLocalVariable(variable);
-		}
-
-		@Override
-		public CastedExpression cast(CastedEval cast) {
-			return cast.of(eval());
-		}
-
-		@Override
-		public Optional<CompilingCallable> call() {
-			throw new UnsupportedOperationException("Not yet implemented"); // TODO - forward to call operator
-		}
-
-		@Override
-		public CompilingExpression getMember(CodePosition position, GenericName name) {
-			return new InstanceMemberCompilingExpression(ExpressionCompilerImpl.this, position, eval(), name);
-		}
-
-		@Override
-		public CompilingExpression assign(CompilingExpression value) {
-			return new LocalVariableCompilingAssignment(position, variable, value);
-		}
-	}
-
-	private class LocalVariableCompilingAssignment implements CompilingExpression {
-		private final CodePosition position;
-		private final VarStatement variable;
-		private final CompilingExpression value;
-
-		public LocalVariableCompilingAssignment(CodePosition position, VarStatement variable, CompilingExpression value) {
-			this.position = position;
-			this.variable = variable;
-			this.value = value;
-		}
-
-		@Override
-		public Expression eval() {
-			CastedEval cast = CastedEval.implicit(ExpressionCompilerImpl.this, position, variable.type);
-			return at(position).setLocalVariable(variable, value.cast(cast).value);
-		}
-
-		@Override
-		public CastedExpression cast(CastedEval cast) {
-			return cast.of(eval());
-		}
-
-		@Override
-		public Optional<CompilingCallable> call() {
-			return Optional.empty(); // TODO
-		}
-
-		@Override
-		public CompilingExpression getMember(CodePosition position, GenericName name) {
-			return new InstanceMemberCompilingExpression(ExpressionCompilerImpl.this, position, eval(), name);
-		}
-
-		@Override
-		public CompilingExpression assign(CompilingExpression value) {
-			throw new UnsupportedOperationException("To be implemented"); // TODO
-		}
-	}
-
-	private static class ParameterCompiling extends AbstractCompilingExpression {
-		private final FunctionParameter parameter;
-
-		public ParameterCompiling(ExpressionCompiler compiler, CodePosition position, FunctionParameter parameter) {
-			super(compiler, position);
-
-			this.parameter = parameter;
-		}
-
-		@Override
-		public Expression eval() {
-			return compiler.at(position).getFunctionParameter(parameter);
-		}
-
-		@Override
-		public CompilingExpression assign(CompilingExpression value) {
-			return new SetParameterCompiling(compiler, position, parameter, value);
-		}
-	}
-
-	private static class SetParameterCompiling extends AbstractCompilingExpression {
-		private final FunctionParameter parameter;
-		private final CompilingExpression value;
-
-		public SetParameterCompiling(ExpressionCompiler compiler, CodePosition position, FunctionParameter parameter, CompilingExpression value) {
-			super(compiler, position);
-
-			this.parameter = parameter;
-			this.value = value;
-		}
-
-		@Override
-		public Expression eval() {
-			return compiler.at(position).setFunctionParameter(parameter, value.cast(cast(parameter.type)).value);
 		}
 	}
 }

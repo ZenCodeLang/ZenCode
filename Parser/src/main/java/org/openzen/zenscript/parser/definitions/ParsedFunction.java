@@ -2,6 +2,8 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -25,7 +27,7 @@ public class ParsedFunction extends ParsedDefinition {
 	private final ParsedFunctionBody body;
 	private final String name;
 
-	private ParsedFunction(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body) {
+	private ParsedFunction(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body) {
 		super(position, modifiers, annotations);
 
 		this.header = header;
@@ -35,7 +37,7 @@ public class ParsedFunction extends ParsedDefinition {
 
 	public static ParsedFunction parseFunction(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser parser
 	) throws ParseException {
@@ -75,7 +77,7 @@ public class ParsedFunction extends ParsedDefinition {
 		}
 
 		@Override
-		public TypeSymbol getDefinition() {
+		public HighLevelDefinition getDefinition() {
 			return compiled;
 		}
 

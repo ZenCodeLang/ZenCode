@@ -8,8 +8,8 @@ import java.util.Stack;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 
 public class ModuleRegistry {
 	private final Map<String, ModuleReference> modules = new HashMap<>();
@@ -38,7 +38,7 @@ public class ModuleRegistry {
 		loading.add(name);
 
 		if (!modules.containsKey(name))
-			throw new CompileException(CodePosition.META, CompileExceptionCode.NO_SUCH_MODULE, "Module not found: " + name);
+			throw new CompileException(CodePosition.META, CompileErrors.noSuchModule(name));
 		SemanticModule result = modules.get(name).load(this);
 
 		loadingStack.pop();

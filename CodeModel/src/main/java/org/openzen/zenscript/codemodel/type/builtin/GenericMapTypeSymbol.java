@@ -21,7 +21,7 @@ import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 public class GenericMapTypeSymbol implements TypeSymbol {
 	public static final GenericMapTypeSymbol INSTANCE = new GenericMapTypeSymbol();
 
-	private final Modifiers MODIFIERS = new Modifiers(Modifiers.PUBLIC);
+	private final Modifiers MODIFIERS = Modifiers.PUBLIC;
 
 	public static final TypeParameter PARAMETER = new TypeParameter(CodePosition.BUILTIN, "P");
 	public static final TypeParameter VALUE = new TypeParameter(CodePosition.BUILTIN, "V");

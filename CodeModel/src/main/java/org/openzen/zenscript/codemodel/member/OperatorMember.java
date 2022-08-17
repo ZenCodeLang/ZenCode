@@ -2,23 +2,23 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class OperatorMember extends FunctionalMember {
 	public final OperatorType operator;
-	private FunctionalMemberRef overrides;
+	private MethodInstance overrides;
 
 	public OperatorMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			OperatorType operator,
-			FunctionHeader header,
-			BuiltinID builtin) {
-		super(position, definition, modifiers, header, builtin);
+			FunctionHeader header) {
+		super(position, definition, modifiers, header);
 
 		this.operator = operator;
 	}
@@ -34,13 +34,13 @@ public class OperatorMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addOperator(operator, ref(type.type, mapper), priority);
+	public String describe() {
+		return operator.operator + header.toString();
 	}
 
 	@Override
-	public String describe() {
-		return operator.operator + header.toString();
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		members.operator(mapper.map(targetType, this));
 	}
 
 	@Override
@@ -54,23 +54,33 @@ public class OperatorMember extends FunctionalMember {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = super.getEffectiveModifiers();
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = super.getEffectiveModifiers();
 		if (overrides != null) {
-			if (overrides.getTarget().isPublic())
-				result |= Modifiers.PUBLIC;
-			if (overrides.getTarget().isProtected())
-				result |= Modifiers.PROTECTED;
+			if (overrides.getModifiers().isPublic())
+				result = result.withPublic();
+			if (overrides.getModifiers().isProtected())
+				result = result.withProtected();
 		}
 		return result;
 	}
 
 	@Override
-	public FunctionalMemberRef getOverrides() {
-		return overrides;
+	public String getName() {
+		return operator.operator;
 	}
 
-	public void setOverrides(FunctionalMemberRef overrides) {
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.of(operator);
+	}
+
+	@Override
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
+	}
+
+	public void setOverrides(MethodInstance overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(overrides.getHeader());
 	}

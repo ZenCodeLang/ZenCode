@@ -1,10 +1,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -12,7 +9,6 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
@@ -27,9 +23,8 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 			HighLevelDefinition definition,
 			Modifiers modifiers,
 			String name,
-			TypeID type,
-			BuiltinID builtin) {
-		super(position, definition, modifiers, type, builtin);
+			TypeID type) {
+		super(position, definition, modifiers, type);
 
 		this.name = name;
 	}
@@ -46,7 +41,7 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 
 	@Override
 	public boolean isAbstract() {
-		return body == null && builtin == null;
+		return body == null;
 	}
 
 	@Override
@@ -56,7 +51,7 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-
+		members.getter(mapper.map(targetType, this));
 	}
 
 	@Override
@@ -110,6 +105,11 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.empty();
 	}
 
 	@Override

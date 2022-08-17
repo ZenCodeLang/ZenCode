@@ -14,7 +14,7 @@ import java.util.Optional;
 public class OptionalTypeSymbol implements TypeSymbol {
 	public static final OptionalTypeSymbol INSTANCE = new OptionalTypeSymbol();
 
-	private final Modifiers MODIFIERS = new Modifiers(Modifiers.PUBLIC);
+	private final Modifiers MODIFIERS = Modifiers.PUBLIC;
 
 	@Override
 	public Module getModule() {

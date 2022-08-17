@@ -5,20 +5,15 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
-import org.openzen.zenscript.codemodel.context.TypeContext;
-import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitorWithContext;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
 
 /**
  * @author Hoofdgebruiker
  */
-public class SwitchValueSerializer implements SwitchValueVisitorWithContext<TypeContext, Void> {
+public class SwitchValueSerializer implements SwitchValueVisitorWithContext<TypeSerializationContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean localVariableNames;
 
@@ -28,35 +23,35 @@ public class SwitchValueSerializer implements SwitchValueVisitorWithContext<Type
 	}
 
 	@Override
-	public Void acceptInt(TypeContext context, IntSwitchValue value) {
+	public Void acceptInt(TypeSerializationContext context, IntSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_INT);
 		output.writeInt(value.value);
 		return null;
 	}
 
 	@Override
-	public Void acceptChar(TypeContext context, CharSwitchValue value) {
+	public Void acceptChar(TypeSerializationContext context, CharSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_CHAR);
 		output.writeUInt(value.value);
 		return null;
 	}
 
 	@Override
-	public Void acceptString(TypeContext context, StringSwitchValue value) {
+	public Void acceptString(TypeSerializationContext context, StringSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_STRING);
 		output.writeString(value.value);
 		return null;
 	}
 
 	@Override
-	public Void acceptEnumConstant(TypeContext context, EnumConstantSwitchValue value) {
+	public Void acceptEnumConstant(TypeSerializationContext context, EnumConstantSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_ENUM);
 		output.write(value.constant);
 		return null;
 	}
 
 	@Override
-	public Void acceptVariantOption(TypeContext context, VariantOptionSwitchValue value) {
+	public Void acceptVariantOption(TypeSerializationContext context, VariantOptionSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_VARIANT_OPTION);
 		output.write(value.option);
 		if (localVariableNames) {
@@ -64,5 +59,10 @@ public class SwitchValueSerializer implements SwitchValueVisitorWithContext<Type
 				output.writeString(parameter);
 		}
 		return null;
+	}
+
+	@Override
+	public Void acceptError(TypeSerializationContext context, ErrorSwitchValue value) {
+		throw new UnsupportedOperationException("Cannot serialize errors");
 	}
 }

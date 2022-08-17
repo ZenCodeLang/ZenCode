@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -26,7 +27,7 @@ public class EscapableBracketParser implements BracketExpressionParser {
 
 		//This list will contain the BEP calls
 		//If this is only a normal BEP, then it will contain exactly one String ParsedExpression.
-		final List<ParsedExpression> parts = new ArrayList<>();
+		final List<CompilableExpression> parts = new ArrayList<>();
 
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 			ZSTokenType peekType = tokens.peek().getType();
@@ -79,11 +80,16 @@ public class EscapableBracketParser implements BracketExpressionParser {
 
 	private static class EscapableBracketExpression implements CompilableExpression {
 		private final CodePosition position;
-		private final List<ParsedExpression> parts;
+		private final List<CompilableExpression> parts;
 
-		public EscapableBracketExpression(CodePosition position, List<ParsedExpression> parts) {
+		public EscapableBracketExpression(CodePosition position, List<CompilableExpression> parts) {
 			this.position = position;
 			this.parts = parts;
+		}
+
+		@Override
+		public CodePosition getPosition() {
+			return position;
 		}
 
 		@Override
@@ -113,7 +119,7 @@ public class EscapableBracketParser implements BracketExpressionParser {
 
 			Expression result = parts.get(0).cast(asString).value;
 			for (int i = 1; i < parts.size(); i++) {
-				result = concat.cast(compiler.at(position), asString, result, parts.get(i)).value;
+				result = concat.cast(compiler, position, asString, result, TypeID.NONE, parts.get(i)).value;
 			}
 			return result;
 		}

@@ -42,14 +42,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 
 	@Override
-	public ExpressionString visitBinary(BinaryExpression expression) {
-		switch (expression.operator) {
-			default:
-				throw new UnsupportedOperationException("Unknown operator: " + expression.operator);
-		}
-	}
-
-	@Override
 	public ExpressionString visitCompare(CompareExpression expression) {
 		return binary(
 				expression.left,
@@ -213,11 +205,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitCapturedClosure(CapturedClosureExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public ExpressionString visitCapturedDirect(CapturedDirectExpression expression) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
@@ -429,7 +416,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(typeFormatter.format(expression.type));
 		result.append('.');
-		result.append(expression.field.member.name);
+		result.append(expression.field.getName());
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -550,7 +537,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSetField(SetFieldExpression expression) {
 		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.field.member.name + " = " + expression.value.accept(this).value,
+				expression.target.accept(this) + "." + expression.field.getName() + " = " + expression.value.accept(this).value,
 				ZenScriptOperator.ASSIGN);
 	}
 
@@ -571,7 +558,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
 		return new ExpressionString(
-				typeFormatter.format(expression.type) + "." + expression.field.member.name + " = " + expression.value.accept(this).value,
+				typeFormatter.format(expression.type) + "." + expression.field.getName() + " = " + expression.value.accept(this).value,
 				ZenScriptOperator.ASSIGN);
 	}
 

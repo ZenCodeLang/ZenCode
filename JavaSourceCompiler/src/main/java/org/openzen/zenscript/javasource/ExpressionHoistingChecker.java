@@ -47,11 +47,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitCapturedDirect(CapturedDirectExpression expression) {
-		return false;
-	}
-
-	@Override
 	public Boolean visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
 		return false;
 	}

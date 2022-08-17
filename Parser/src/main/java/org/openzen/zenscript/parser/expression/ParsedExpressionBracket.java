@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
-import org.openzen.zenscript.parser.type.ParsedTypeBasic;
+import org.openzen.zenscript.parser.type.ParsedBasicType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class ParsedExpressionBracket extends ParsedExpression {
 		for (CompilableExpression expression : expressions)
 			parameters.add(expression.toLambdaParameter());
 
-		return new ParsedFunctionHeader(position, parameters, ParsedTypeBasic.UNDETERMINED);
+		return new ParsedFunctionHeader(position, parameters, ParsedBasicType.UNDETERMINED);
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {

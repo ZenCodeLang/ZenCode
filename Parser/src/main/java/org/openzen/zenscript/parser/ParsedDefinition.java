@@ -1,6 +1,7 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilableType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -10,16 +11,16 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
 public abstract class ParsedDefinition implements CompilableType {
 	public final CodePosition position;
-	public final int modifiers;
+	public final Modifiers modifiers;
 	public final ParsedAnnotation[] annotations;
 
-	public ParsedDefinition(CodePosition position, int modifiers, ParsedAnnotation[] annotations) {
+	public ParsedDefinition(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations) {
 		this.position = position;
 		this.modifiers = modifiers;
 		this.annotations = annotations;
 	}
 
-	public static ParsedDefinition parse(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
+	public static ParsedDefinition parse(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		if (tokens.optional(K_CLASS) != null) {
 			return ParsedClass.parseClass(position, modifiers, annotations, tokens);
 		} else if (tokens.optional(K_INTERFACE) != null) {

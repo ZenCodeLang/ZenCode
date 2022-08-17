@@ -21,8 +21,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -35,6 +33,8 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
+import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -136,8 +136,8 @@ public class TableBuilder implements CodeSerializationOutput {
 
 	public void serialize(ModuleContext context, HighLevelDefinition definition) {
 		definition.accept(context, definitionSerializer);
-		DefinitionTypeID thisType = context.registry.getForMyDefinition(definition);
-		definition.accept(new TypeContext(context, definition.typeParameters, thisType), definitionMemberSerializer);
+		TypeID thisType = DefinitionTypeID.createThis(definition);
+		definition.accept(new TypeSerializationContext(context, thisType, definition.typeParameters), definitionMemberSerializer);
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void write(TypeContext context, DefinitionMemberRef member) {
+	public void write(TypeSerializationContext context, DefinitionMemberRef member) {
 		if (member != null && member.getTarget().getBuiltin() == null) {
 			if (prepare(member.getTarget().getDefinition()).mark(member.getTarget()))
 				members.add(member.getTarget());
@@ -223,18 +223,18 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, IDefinitionMember member) {
+	public void serialize(TypeSerializationContext context, IDefinitionMember member) {
 		member.accept(context, memberSerializer);
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeID type) {
+	public void serialize(TypeSerializationContext context, TypeID type) {
 		if (type != null)
 			type.accept(context, typeSerializer);
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeParameter parameter) {
+	public void serialize(TypeSerializationContext context, TypeParameter parameter) {
 		int typeParameterFlags = 0;
 		if (parameter.position != CodePosition.UNKNOWN && options.positions)
 			typeParameterFlags |= TypeParameterEncoding.FLAG_POSITION;
@@ -254,8 +254,8 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, TypeParameter[] parameters) {
-		TypeContext inner = new TypeContext(context, context.thisType, parameters);
+	public void serialize(TypeSerializationContext context, TypeParameter[] parameters) {
+		TypeSerializationContext inner = new TypeSerializationContext(context, context.thisType, parameters);
 		for (TypeParameter parameter : parameters)
 			serialize(inner, parameter);
 	}
@@ -266,11 +266,11 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(TypeContext context, FunctionHeader header) {
+	public void serialize(TypeSerializationContext context, FunctionHeader header) {
 		serialize(context, header.typeParameters);
 		serialize(context, header.getReturnType());
 
-		StatementContext statementContext = new StatementContext(context, header);
+		StatementSerializationContext statementContext = new StatementSerializationContext(context, header);
 		for (FunctionParameter parameter : header.parameters) {
 			// TODO: annotations
 			serialize(context, parameter.type);
@@ -280,7 +280,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, CallArguments arguments) {
+	public void serialize(StatementSerializationContext context, CallArguments arguments) {
 		for (TypeID typeArgument : arguments.typeArguments)
 			serialize(context, typeArgument);
 
@@ -289,19 +289,19 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void serialize(StatementContext context, Statement statement) {
+	public void serialize(StatementSerializationContext context, Statement statement) {
 		if (statement != null)
 			statement.accept(context, statements);
 	}
 
 	@Override
-	public void serialize(StatementContext context, Expression expression) {
+	public void serialize(StatementSerializationContext context, Expression expression) {
 		if (expression != null)
 			expression.accept(context, expressions);
 	}
 
 	@Override
-	public void serialize(StatementContext context, SwitchValue value) {
+	public void serialize(StatementSerializationContext context, SwitchValue value) {
 		if (value != null)
 			value.accept(context, switchValues);
 	}

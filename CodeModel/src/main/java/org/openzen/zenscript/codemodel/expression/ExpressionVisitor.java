@@ -5,8 +5,6 @@ public interface ExpressionVisitor<T> {
 
 	T visitArray(ArrayExpression expression);
 
-	T visitBinary(BinaryExpression expression);
-
 	T visitCompare(CompareExpression expression);
 
 	T visitCall(CallExpression expression);
@@ -14,8 +12,6 @@ public interface ExpressionVisitor<T> {
 	T visitCallStatic(CallStaticExpression expression);
 
 	T visitCapturedClosure(CapturedClosureExpression expression);
-
-	T visitCapturedDirect(CapturedDirectExpression expression);
 
 	T visitCapturedLocalVariable(CapturedLocalVariableExpression expression);
 
@@ -88,11 +84,11 @@ public interface ExpressionVisitor<T> {
 	T visitInterfaceCast(InterfaceCastExpression expression);
 
 	default T visitInvalid(InvalidExpression expression) {
-		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.message);
+		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.error.description);
 	}
 
 	default T visitInvalidAssign(InvalidAssignExpression expression) {
-		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.target.message);
+		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.target.error.description);
 	}
 
 	T visitIs(IsExpression expression);
@@ -146,8 +142,6 @@ public interface ExpressionVisitor<T> {
 	T visitTryRethrowAsException(TryRethrowAsExceptionExpression expression);
 
 	T visitTryRethrowAsResult(TryRethrowAsResultExpression expression);
-
-	T visitUnary(UnaryExpression expression);
 
 	T visitVariantValue(VariantValueExpression expression);
 

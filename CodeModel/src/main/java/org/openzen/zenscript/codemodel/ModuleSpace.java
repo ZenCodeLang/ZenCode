@@ -8,8 +8,7 @@ import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinit
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,16 +17,15 @@ import java.util.Map;
 
 public final class ModuleSpace {
 	public final ZSPackage rootPackage = new ZSPackage(null, "");
-	public final GlobalTypeRegistry registry;
 	public final ZSPackage globalsPackage = new ZSPackage(null, "");
+	public final ZSPackage stdlib = new ZSPackage(rootPackage, "stdlib");
+
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
-	private final Map<String, ISymbol> globals = new HashMap<>();
+	private final Map<String, IGlobal> globals = new HashMap<>();
 	private final List<AnnotationDefinition> annotations;
 	private final Map<String, SemanticModule> modules = new HashMap<>();
 
-	public ModuleSpace(GlobalTypeRegistry registry, List<AnnotationDefinition> annotations) {
-		this.registry = registry;
-
+	public ModuleSpace(List<AnnotationDefinition> annotations) {
 		annotations.add(NativeAnnotationDefinition.INSTANCE);
 		annotations.add(PreconditionAnnotationDefinition.INSTANCE);
 		this.annotations = annotations;
@@ -38,7 +36,7 @@ public final class ModuleSpace {
 		rootPackage.add(name, dependency.modulePackage);
 		dependency.definitions.registerExpansionsTo(expansions);
 
-		for (Map.Entry<String, ISymbol> globalEntry : dependency.globals.entrySet()) {
+		for (Map.Entry<String, IGlobal> globalEntry : dependency.globals.entrySet()) {
 			if (globals.containsKey(globalEntry.getKey()))
 				throw new CompileException(CodePosition.META, CompileErrors.duplicateGlobal(globalEntry.getKey()));
 
@@ -46,7 +44,7 @@ public final class ModuleSpace {
 		}
 	}
 
-	public void addGlobal(String name, ISymbol global) {
+	public void addGlobal(String name, IGlobal global) {
 		globals.put(name, global);
 	}
 
@@ -62,7 +60,7 @@ public final class ModuleSpace {
 		return expansions;
 	}
 
-	public Map<String, ISymbol> collectGlobals() {
+	public Map<String, IGlobal> collectGlobals() {
 		return globals;
 	}
 

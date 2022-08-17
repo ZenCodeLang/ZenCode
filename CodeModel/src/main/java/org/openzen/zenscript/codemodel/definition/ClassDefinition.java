@@ -7,14 +7,11 @@ import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
 import java.util.List;
 
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.VOID;
-import static org.openzen.zenscript.codemodel.type.member.BuiltinID.STRUCT_EMPTY_CONSTRUCTOR;
-import static org.openzen.zenscript.codemodel.type.member.BuiltinID.STRUCT_VALUE_CONSTRUCTOR;
 
 public class ClassDefinition extends HighLevelDefinition {
 	public ClassDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers) {

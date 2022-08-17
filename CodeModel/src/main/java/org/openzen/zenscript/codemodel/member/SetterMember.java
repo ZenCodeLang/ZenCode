@@ -9,7 +9,6 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
@@ -25,13 +24,11 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 			HighLevelDefinition definition,
 			Modifiers modifiers,
 			String name,
-			TypeID type,
-			BuiltinID builtin) {
+			TypeID type) {
 		super(position,
 				definition,
 				modifiers,
-				type,
-				builtin);
+				type);
 
 		this.name = name;
 		this.parameter = new FunctionParameter(type, "value");
@@ -48,7 +45,7 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-
+		members.setter(mapper.map(targetType, this));
 	}
 
 	@Override
@@ -88,7 +85,7 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 
 	@Override
 	public boolean isAbstract() {
-		return body == null && builtin == null;
+		return body == null;
 	}
 
 	@Override
@@ -109,6 +106,11 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.empty();
 	}
 
 	@Override

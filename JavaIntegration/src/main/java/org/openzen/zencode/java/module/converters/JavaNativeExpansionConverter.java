@@ -51,7 +51,7 @@ public class JavaNativeExpansionConverter {
 		if (expandedType == null)
 			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
 
-		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, packageInfo.getModule(), packageInfo.getPkg(), Modifiers.PUBLIC, null);
+		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, packageInfo.getModule(), packageInfo.getPkg(), Modifiers.PUBLIC);
 		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 		expansion.target = expandedType;
 		typeConversionContext.definitionByClass.put(cls, expansion);
@@ -116,9 +116,9 @@ public class JavaNativeExpansionConverter {
 	private void fillCaster(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Caster casterAnnotation) {
 		checkExpandedType(classFromType, method);
 		boolean implicit = casterAnnotation.implicit();
-		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		Modifiers modifiers = new Modifiers(headerConverter.getMethodModifiers(method) ^ Modifiers.FLAG_STATIC);
 		if (implicit) {
-			modifiers |= Modifiers.IMPLICIT;
+			modifiers = modifiers.withImplicit();
 		}
 		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
 		TypeID toType = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
@@ -131,7 +131,7 @@ public class JavaNativeExpansionConverter {
 	private void fillGetter(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Getter getterAnnotation) {
 		checkExpandedType(classFromType, method);
 		TypeID type = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
-		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		Modifiers modifiers = new Modifiers(headerConverter.getMethodModifiers(method) ^ Modifiers.FLAG_STATIC);
 		final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
 		final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
@@ -146,7 +146,7 @@ public class JavaNativeExpansionConverter {
 			throw new IllegalArgumentException("Cannot add extension setter " + method + " as it does not have a single parameter for the set value!");
 		}
 		TypeID type = typeConverter.loadStoredType(typeConversionContext.context, expansionParameters[0]);
-		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		Modifiers modifiers = new Modifiers(headerConverter.getMethodModifiers(method) ^ Modifiers.FLAG_STATIC);
 		final String name = setterAnnotation.value().isEmpty() ? memberConverter.translateSetterName(method.getName()) : setterAnnotation.value();
 		final SetterMember member = new SetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
@@ -162,7 +162,7 @@ public class JavaNativeExpansionConverter {
 		final Parameter[] parameters = getExpansionParameters(method);
 
 		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, new Modifiers(headerConverter.getMethodModifiers(method) ^ Modifiers.FLAG_STATIC), name, header);
 
 		expansion.addMember(member);
 		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
@@ -173,7 +173,7 @@ public class JavaNativeExpansionConverter {
 
 		final Parameter[] parameters = method.getParameters();
 		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method), name, header, null);
+		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, new Modifiers(headerConverter.getMethodModifiers(method)), name, header);
 
 		expansion.addMember(member);
 		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
@@ -186,7 +186,7 @@ public class JavaNativeExpansionConverter {
 
 		final OperatorType operatorType = getOperatorTypeFrom(operator);
 		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-		final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, operatorType, header, null);
+		final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, new Modifiers(headerConverter.getMethodModifiers(method) ^ Modifiers.FLAG_STATIC), operatorType, header);
 
 		expansion.addMember(member);
 		typeConversionContext.compiled.setMethodInfo(member, JavaNativeMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));

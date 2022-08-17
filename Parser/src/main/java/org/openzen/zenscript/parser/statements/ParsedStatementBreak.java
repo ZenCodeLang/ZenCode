@@ -1,14 +1,11 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 

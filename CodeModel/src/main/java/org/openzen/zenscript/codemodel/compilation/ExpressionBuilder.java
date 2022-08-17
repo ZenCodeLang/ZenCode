@@ -1,11 +1,13 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CompileError;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
@@ -50,6 +52,8 @@ public interface ExpressionBuilder {
 	Expression invalid(CompileError error, TypeID type);
 
 	Expression is(Expression value, TypeID type);
+
+	Expression lambda(LambdaClosure closure, FunctionHeader header, Statement body);
 
 	Expression newArray(ArrayTypeID type, Expression[] values);
 

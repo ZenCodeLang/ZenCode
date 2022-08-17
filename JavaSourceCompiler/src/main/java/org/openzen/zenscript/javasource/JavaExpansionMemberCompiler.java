@@ -62,7 +62,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.METHOD);
 		output.append(indent);
 
-		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC);
+		modifiers(member.getEffectiveModifiers() | Modifiers.FLAG_STATIC);
 		if (member.isStatic())
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		else
@@ -78,7 +78,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
-		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
+		modifiers(member.getEffectiveModifiers() | Modifiers.FLAG_STATIC | Modifiers.FLAG_FINAL);
 		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
@@ -95,13 +95,13 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		output.append(indent);
 		int modifiers = 0;
 		if (member.isStatic())
-			modifiers |= Modifiers.STATIC;
+			modifiers |= Modifiers.FLAG_STATIC;
 		if (member.isFinal())
-			modifiers |= Modifiers.FINAL;
+			modifiers |= Modifiers.FLAG_FINAL;
 		if (member.autoGetterAccess != 0 && (member.isFinal() ? member.autoSetterAccess == 0 : member.autoGetterAccess == member.autoSetterAccess))
 			modifiers |= member.autoGetterAccess;
 		else
-			modifiers |= Modifiers.PRIVATE;
+			modifiers |= Modifiers.FLAG_PRIVATE;
 
 		this.modifiers(modifiers);
 

@@ -10,7 +10,7 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.serialization.DeserializationException;
+import org.openzen.zenscript.codemodel.serialization.*;
 import compactio.CompactBytesDataInput;
 import compactio.CompactDataInput;
 
@@ -23,8 +23,6 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.VirtualSourceFile;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
-import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
@@ -36,11 +34,10 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
-import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
@@ -165,14 +162,14 @@ public class ModuleDeserializer {
 		CodePosition position = CodePosition.UNKNOWN;
 		String name = null;
 		TypeParameter[] typeParameters = TypeParameter.NONE;
-		int modifiers = reader.readUInt();
+		Modifiers modifiers = new Modifiers(reader.readUInt());
 		if ((flags & DefinitionEncoding.FLAG_POSITION) > 0)
 			position = reader.deserializePosition();
 		ZSPackage pkg = context.root.getRecursive(reader.readString());
 		if ((flags & DefinitionEncoding.FLAG_NAME) > 0)
 			name = reader.readString();
 		if ((flags & DefinitionEncoding.FLAG_TYPE_PARAMETERS) > 0)
-			typeParameters = reader.deserializeTypeParameters(new TypeContext(position, context, TypeParameter.NONE, null));
+			typeParameters = reader.deserializeTypeParameters(new TypeSerializationContext(null, null, TypeParameter.NONE));
 
 		HighLevelDefinition result;
 		switch (type) {
@@ -198,7 +195,7 @@ public class ModuleDeserializer {
 				result = new AliasDefinition(position, context.module, pkg, name, modifiers, outer);
 				break;
 			case DefinitionEncoding.TYPE_EXPANSION:
-				result = new ExpansionDefinition(position, context.module, pkg, modifiers, outer);
+				result = new ExpansionDefinition(position, context.module, pkg, modifiers);
 				break;
 			default:
 				throw new DeserializationException("Invalid definition type: " + type);
@@ -217,13 +214,13 @@ public class ModuleDeserializer {
 		int innerClasses = reader.readUInt();
 		for (int i = 0; i < innerClasses; i++) {
 			CodePosition position = reader.deserializePosition();
-			int modifiers = reader.readUInt();
+			Modifiers modifiers = new Modifiers(reader.readUInt());
 			HighLevelDefinition inner = deserializeDefinition(reader, moduleContext, definition);
 			definition.addMember(new InnerDefinitionMember(position, inner, modifiers, definition));
 		}
 
 		reader.enqueueMembers(input -> {
-			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
+			TypeSerializationContext context = new TypeSerializationContext(null, DefinitionTypeID.createThis(definition), definition.typeParameters);
 			DefinitionMemberDeserializer memberDeserializer = new DefinitionMemberDeserializer(reader);
 			definition.accept(context, memberDeserializer);
 		});
@@ -263,7 +260,7 @@ public class ModuleDeserializer {
 				List<Statement> statements = new ArrayList<>();
 				//FIXME: Can we deserializePosition here?
 				final CodePosition position = CodePosition.UNKNOWN;
-				StatementContext context = new StatementContext(position, module.context, null);
+				StatementSerializationContext context = new StatementSerializationContext(position, module.context, null);
 				int numStatements = input.readUInt();
 				for (int j = 0; j < numStatements; j++)
 					statements.add(input.deserializeStatement(context));

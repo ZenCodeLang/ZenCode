@@ -41,7 +41,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PRIVATE | FLAG_ABSTRACT | FLAG_STATIC | FLAG_PROTECTED | FLAG_VIRTUAL,
 				definition.position,
 				"Invalid class modifier");
 		ValidationUtils.validateIdentifier(
@@ -61,7 +61,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				definition.position,
 				"Invalid interface modifier");
 		ValidationUtils.validateIdentifier(
@@ -78,7 +78,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				definition.position,
 				"Invalid enum modifier");
 		ValidationUtils.validateIdentifier(
@@ -92,9 +92,9 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitStruct(StructDefinition definition) {
-		int validModifiers = PUBLIC | INTERNAL | PROTECTED | PRIVATE;
+		int validModifiers = FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE;
 		if (definition.outerDefinition != null)
-			validModifiers |= STATIC;
+			validModifiers |= FLAG_STATIC;
 
 		ValidationUtils.validateModifiers(
 				validator,
@@ -116,7 +116,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				definition.position,
 				"Invalid function modifier");
 		ValidationUtils.validateIdentifier(
@@ -134,7 +134,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
 
@@ -148,7 +148,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				definition.position,
 				"Invalid alias modifier");
 		ValidationUtils.validateIdentifier(
@@ -177,7 +177,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				variant.modifiers,
-				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
+				FLAG_PUBLIC | FLAG_INTERNAL | FLAG_PROTECTED | FLAG_PRIVATE,
 				variant.position,
 				"Invalid variant modifier");
 		ValidationUtils.validateIdentifier(

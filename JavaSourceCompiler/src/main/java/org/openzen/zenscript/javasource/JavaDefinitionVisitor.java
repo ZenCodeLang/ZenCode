@@ -25,9 +25,8 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -72,15 +71,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	}
 
 	private JavaSourceFileScope createScope(HighLevelDefinition definition) {
-		GlobalTypeRegistry typeRegistry = semanticModule.registry;
-		DefinitionTypeID thisType = typeRegistry.getForMyDefinition(definition);
-
-		CompileScope scope = new CompileScope(
-				semanticModule.registry,
-				semanticModule.rootPackage,
-				semanticModule.expansions,
-				semanticModule.annotations);
-		return new JavaSourceFileScope(file.importer, context, cls, scope, definition instanceof InterfaceDefinition, thisType);
+		TypeID thisType = DefinitionTypeID.createThis(definition);
+		return new JavaSourceFileScope(file.importer, context, cls, definition instanceof InterfaceDefinition, thisType);
 	}
 
 	private List<ImplementationMember> getMergedImplementations(HighLevelDefinition definition) {
@@ -392,8 +384,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		if (context.getJavaNativeClass(definition) != null) {
 			TypeID[] typeParameters = new TypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
-			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
+				typeParameters[i] = new GenericTypeID(definition.typeParameters[i]);
+			TypeID targetType = DefinitionTypeID.create(definition, typeParameters);
 
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)

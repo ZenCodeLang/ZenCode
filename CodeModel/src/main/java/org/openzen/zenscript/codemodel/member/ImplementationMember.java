@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.*;
@@ -36,11 +35,6 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public String describe() {
 		return "implementation of " + type.toString();
-	}
-
-	@Override
-	public BuiltinID getBuiltin() {
-		return null;
 	}
 
 	@Override

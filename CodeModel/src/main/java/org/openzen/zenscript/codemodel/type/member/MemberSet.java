@@ -32,6 +32,9 @@ public class MemberSet implements ResolvedType {
 	private final List<InstanceCallableMethod> implicitCasts = new ArrayList<>();
 	private final List<InstanceCallableMethod> explicitCasts = new ArrayList<>();
 	private final List<InstanceCallableMethod> iterators = new ArrayList<>();
+	private final Map<String, CompilableExpression> contextMembers = new HashMap<>();
+	private final Map<String, SwitchMember> switchMembers = new HashMap<>();
+	private final Map<String, TypeSymbol> innerTypes = new HashMap<>();
 	private InstanceCallableMethod destructor;
 
 	@Override
@@ -145,27 +148,27 @@ public class MemberSet implements ResolvedType {
 
 	@Override
 	public Optional<TypeSymbol> findInnerType(String name) {
-
+		return Optional.ofNullable(innerTypes.get(name));
 	}
 
 	@Override
-	public Optional<CompilingExpression> getContextMember(String name) {
-
+	public Optional<CompilableExpression> getContextMember(String name) {
+		return Optional.ofNullable(contextMembers.get(name));
 	}
 
 	@Override
 	public Optional<SwitchMember> findSwitchMember(String name) {
-
+		return Optional.ofNullable(switchMembers.get(name));
 	}
 
 	@Override
 	public Optional<Comparator> compare() {
-
+		throw new UnsupportedOperationException("Not yet supported");
 	}
 
 	@Override
 	public Optional<IteratorMemberRef> findIterator(int variables) {
-
+		throw new UnsupportedOperationException("Not yet supported");
 	}
 
 	public static class Builder {
@@ -241,7 +244,15 @@ public class MemberSet implements ResolvedType {
 			return this;
 		}
 
-		public Builder contextMember(CompilingExpression )
+		public Builder contextMember(String name, CompilableExpression value) {
+			target.contextMembers.put(name, value);
+			return this;
+		}
+
+		public Builder switchValue(String name, SwitchMember member) {
+			target.switchMembers.put(name, member);
+			return this;
+		}
 
 		/* Operators */
 
@@ -302,6 +313,16 @@ public class MemberSet implements ResolvedType {
 		public Builder destructor(InstanceCallableMethod method) {
 			target.destructor = method;
 			return this;
+		}
+
+		public Builder inner(TypeSymbol type) {
+			target.innerTypes.put(type.getName(), type);
+			return this;
+		}
+
+		/* Methods used during final stage of member assembly */
+		public boolean hasNoConstructor() {
+			return target.constructors.isEmpty();
 		}
 
 		public MemberSet build() {

@@ -9,8 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 public class PackageDefinitions {
-	private final List<HighLevelDefinition> definitions = new ArrayList<>();
+	private final List<HighLevelDefinition> definitions;
 	private final Map<String, HighLevelDefinition> definitionsByName = new HashMap<>();
+
+	public PackageDefinitions() {
+		this.definitions = new ArrayList<>();
+	}
 
 	public List<HighLevelDefinition> getAll() {
 		return definitions;

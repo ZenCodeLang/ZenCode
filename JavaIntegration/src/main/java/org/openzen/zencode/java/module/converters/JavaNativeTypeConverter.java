@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.compilation.CompileContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -236,8 +237,8 @@ public class JavaNativeTypeConverter {
 		if (type instanceof DefinitionTypeID) {
 			DefinitionTypeID definitionType = ((DefinitionTypeID) type);
 
-			for (Map.Entry<Class<?>, HighLevelDefinition> ent : typeConversionContext.definitionByClass.entrySet()) {
-				if (ent.getValue().equals(definitionType.definition))
+			for (Map.Entry<Class<?>, TypeSymbol> ent : typeConversionContext.definitionByClass.entrySet()) {
+				if (ent.getValue() == definitionType.definition)
 					return ent.getKey();
 			}
 		}
@@ -272,8 +273,8 @@ public class JavaNativeTypeConverter {
 			final String[] split = className.split("\\.");
 			final String actualName = split[split.length - 1];
 
-			for (HighLevelDefinition value : typeConversionContext.definitionByClass.values()) {
-				if (actualName.equals(value.name) && value.pkg.equals(zsPackage))
+			for (TypeSymbol value : typeConversionContext.definitionByClass.values()) {
+				if (actualName.equals(value.getName()) && value.getPackage().equals(zsPackage))
 					return typeConversionContext.registry.getForMyDefinition(value);
 			}
 		} catch (IllegalArgumentException ignored) {

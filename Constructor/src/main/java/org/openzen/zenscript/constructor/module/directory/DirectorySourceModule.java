@@ -15,9 +15,8 @@ import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.TypeSymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.globals.TypeGlobal;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.ModuleLoader;
@@ -66,7 +65,7 @@ public class DirectorySourceModule implements SourceModule {
 	}
 
 	@Override
-	public SemanticModule[] loadDependencies(ModuleLoader loader, GlobalTypeRegistry registry, CompileExceptionLogger exceptionLogger) {
+	public SemanticModule[] loadDependencies(ModuleLoader loader, CompileExceptionLogger exceptionLogger) {
 		List<String> dependencyNames = new ArrayList<>();
 		if (!isStdLib)
 			dependencyNames.add("stdlib");
@@ -78,7 +77,7 @@ public class DirectorySourceModule implements SourceModule {
 			}
 		}
 		// TODO: annotation type registration
-		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
+		ModuleSpace space = new ModuleSpace(new ArrayList<>());
 		SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 		for (int i = 0; i < dependencies.length; i++) {
 			String dependencyName = dependencyNames.get(i);
@@ -96,19 +95,19 @@ public class DirectorySourceModule implements SourceModule {
 	}
 
 	@Override
-	public Map<String, ISymbol> getGlobals(SemanticModule module) {
+	public Map<String, IGlobal> getGlobals(SemanticModule module) {
 		JSONObject jsonGlobals = json.optJSONObject("globals");
 		if (jsonGlobals == null)
 			return Collections.emptyMap();
 
-		Map<String, ISymbol> result = new HashMap<>();
+		Map<String, IGlobal> result = new HashMap<>();
 		for (String key : jsonGlobals.keySet()) {
 			JSONObject global = jsonGlobals.getJSONObject(key);
 			if ("Definition".equals(global.getString("type"))) {
 				HighLevelDefinition definition = module.definitions.getDefinition(global.getString("definition"));
 				if (definition == null)
 					throw new ConstructorException("No such definition: " + global.getString("definition"));
-				result.put(key, new TypeSymbol(definition));
+				result.put(key, new TypeGlobal(definition));
 			} else {
 				throw new ConstructorException("Invalid global type: " + global.getString("type"));
 			}

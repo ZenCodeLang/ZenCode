@@ -1,5 +1,12 @@
 package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalParameterExpression;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
@@ -13,20 +20,46 @@ public class LocalSymbols {
 	}
 
 	private final LocalSymbols parent;
+	private final LambdaClosure closure;
 	private final String[] loopName;
 	private final LoopStatement loop;
+	private final FunctionHeader header;
 	private final Map<String, VarStatement> localVariables = new HashMap<>();
 
-	public LocalSymbols(LocalSymbols parent) {
-		this.parent = parent;
+	public LocalSymbols(FunctionHeader header) {
+		this.parent = null;
+		this.header = header;
+		this.closure = null;
 		this.loop = null;
 		this.loopName = null;
 	}
 
-	public LocalSymbols(LocalSymbols parent, LoopStatement loop, String... loopName) {
+	private LocalSymbols(LocalSymbols parent, FunctionHeader header, LambdaClosure closure) {
 		this.parent = parent;
+		this.loop = null;
+		this.loopName = null;
+		this.header = header;
+		this.closure = closure;
+	}
+
+	private LocalSymbols(LocalSymbols parent, LoopStatement loop, String... loopName) {
+		this.parent = parent;
+		this.closure = null;
 		this.loop = loop;
 		this.loopName = loopName;
+		this.header = null;
+	}
+
+	public LocalSymbols forBlock() {
+		return new LocalSymbols(this, (FunctionHeader) null, null);
+	}
+
+	public LocalSymbols forLambda(LambdaClosure closure, FunctionHeader header) {
+		return new LocalSymbols(this, header, closure);
+	}
+
+	public LocalSymbols forLoop(LoopStatement loop, String... loopName) {
+		return new LocalSymbols(this, loop, loopName);
 	}
 
 	public Optional<LoopStatement> findLoop(String name) {
@@ -35,7 +68,7 @@ public class LocalSymbols {
 				return Optional.of(loop);
 			if (loopName != null) {
 				for (String s : loopName) {
-					if (s.equals(name))
+					if (s != null && s.equals(name))
 						return Optional.of(loop);
 				}
 			}
@@ -52,13 +85,22 @@ public class LocalSymbols {
 		localVariables.put(localVariable.name, localVariable);
 	}
 
-	public Optional<VarStatement> findLocalVariable(String name) {
+	public Optional<LocalExpression> findLocalVariable(CodePosition position, String name) {
 		if (localVariables.containsKey(name))
-			return Optional.of(localVariables.get(name));
+			return Optional.of(new LocalVariableExpression(position, localVariables.get(name)));
+
+		if (header != null) {
+			for (FunctionParameter parameter : header.parameters) {
+				if (parameter.name.equals(name))
+					return Optional.of(new LocalParameterExpression(position, parameter));
+			}
+		}
 
 		if (parent == null)
 			return Optional.empty();
-
-		return parent.findLocalVariable(name);
+		else if (closure != null)
+			return parent.findLocalVariable(position, name).map(var -> var.capture(closure));
+		else
+			return parent.findLocalVariable(position, name);
 	}
 }

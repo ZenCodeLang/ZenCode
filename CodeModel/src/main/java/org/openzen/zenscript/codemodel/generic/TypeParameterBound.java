@@ -15,8 +15,6 @@ public interface TypeParameterBound {
 
 	<C, R> R accept(C context, GenericParameterBoundVisitorWithContext<C, R> visitor);
 
-	void registerMembers(LocalMemberCache cache, TypeMembers type);
-
 	Optional<ResolvedType> resolveMembers();
 
 	boolean matches(TypeID type);

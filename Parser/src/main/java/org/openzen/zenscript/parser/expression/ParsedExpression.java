@@ -5,8 +5,6 @@ import org.openzen.zenscript.codemodel.compilation.CompilableLambdaHeader;
 import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -565,10 +563,6 @@ public abstract class ParsedExpression implements CompilableExpression {
 
 	public CodePosition getPosition() {
 		return position;
-	}
-
-	public boolean isCompatibleWith(BaseScope scope, TypeID type) {
-		return true;
 	}
 
 	public static class ParsingOptions {

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.javasource.scope;
 
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javasource.JavaSourceImporter;
 import org.openzen.zenscript.javasource.JavaSourceObjectTypeVisitor;
@@ -23,7 +22,6 @@ public class JavaSourceFileScope {
 	public final JavaClass cls;
 	public final JavaSourceTypeVisitor typeVisitor;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
-	public final TypeScope semanticScope;
 	public final boolean isInterface;
 	public final TypeID thisType;
 	public final JavaSourceContext context;
@@ -32,13 +30,11 @@ public class JavaSourceFileScope {
 			JavaSourceImporter importer,
 			JavaSourceContext context,
 			JavaClass cls,
-			TypeScope semanticScope,
 			boolean isInterface,
 			TypeID thisType) {
 		this.importer = importer;
 		this.helperGenerator = context.helperGenerator;
 		this.cls = cls;
-		this.semanticScope = semanticScope;
 		this.isInterface = isInterface;
 		this.thisType = thisType;
 		this.context = context;

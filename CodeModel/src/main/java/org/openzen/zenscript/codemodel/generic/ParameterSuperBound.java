@@ -21,18 +21,13 @@ public final class ParameterSuperBound implements TypeParameterBound {
 	}
 
 	@Override
-	public void registerMembers(LocalMemberCache cache, TypeMembers type) {
-		// TODO: nothing?
-	}
-
-	@Override
 	public Optional<ResolvedType> resolveMembers() {
 		return Optional.empty();
 	}
 
 	@Override
-	public boolean matches(LocalMemberCache cache, TypeID type) {
-		return cache.get(this.type).extendsOrImplements(type);
+	public boolean matches(TypeID type) {
+		return type.extendsOrImplements(type);
 	}
 
 	@Override

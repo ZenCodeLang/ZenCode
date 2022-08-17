@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
@@ -62,7 +62,7 @@ public class ScriptingEngine {
 	}
     
     public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter) {
-        this.space = new ModuleSpace(registry, new ArrayList<>());
+        this.space = new ModuleSpace(new ArrayList<>());
         this.logger = logger;
         try {
             ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
@@ -83,12 +83,12 @@ public class ScriptingEngine {
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, space.rootPackage);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, dependencies, space.rootPackage);
 	}
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule[] dependencies, JavaNativeConverterBuilder nativeConverterBuilder) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, nativeConverterBuilder, space.rootPackage);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, dependencies, nativeConverterBuilder, space.rootPackage);
 	}
 
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
@@ -100,7 +100,7 @@ public class ScriptingEngine {
 		space.addModule(module.getModule().name, semantic);
 		nativeModules.add(module);
 
-		for (Map.Entry<String, ISymbol> globalEntry : module.getGlobals().entrySet())
+		for (Map.Entry<String, IGlobal> globalEntry : module.getGlobals().entrySet())
 			space.addGlobal(globalEntry.getKey(), globalEntry.getValue());
 	}
 
@@ -120,7 +120,7 @@ public class ScriptingEngine {
 		ParsedFile[] files = new ParsedFile[sources.length];
 		for (int i = 0; i < sources.length; i++) {
 			logger.logSourceFile(sources[i]);
-			files[i] = ParsedFile.parse(scriptPackage, bracketParser, sources[i]);
+			files[i] = ParsedFile.parse(bracketParser, sources[i]);
 		}
 
 		SemanticModule[] dependencyModules = new SemanticModule[dependencies.length + 1];
@@ -157,7 +157,7 @@ public class ScriptingEngine {
 	}
 
 	public JavaBytecodeRunUnit createRunUnit() {
-		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
+		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace();
 		JavaEnumMapper enumMapper = new JavaEnumMapper();
 		for (JavaNativeModule nativeModule : nativeModules) {
 			JavaCompiledModule compiled = nativeModule.getCompiled();

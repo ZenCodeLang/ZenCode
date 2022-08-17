@@ -3,9 +3,7 @@ package org.openzen.zenscript.codemodel.annotations;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 

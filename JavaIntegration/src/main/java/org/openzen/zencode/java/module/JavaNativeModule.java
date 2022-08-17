@@ -11,11 +11,15 @@ import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
 import java.lang.reflect.Method;
@@ -34,20 +38,18 @@ public class JavaNativeModule {
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final JavaNativeConverter nativeConverter;
-
+	
 	public JavaNativeModule(
 			IZSLogger logger,
 			ZSPackage pkg,
 			String name,
 			String basePackage,
-			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies,
 			ZSPackage root) {
 		this(logger,
 				pkg,
 				name,
 				basePackage,
-				registry,
 				dependencies,
 				new JavaNativeConverterBuilder(),
 				root
@@ -59,13 +61,12 @@ public class JavaNativeModule {
 			ZSPackage pkg,
 			String name,
 			String basePackage,
-			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies,
 			JavaNativeConverterBuilder nativeConverterBuilder,
 			ZSPackage rootPackage) {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.logger = logger;
-		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, registry, rootPackage);
+		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, rootPackage);
 
 		this.nativeConverter = nativeConverterBuilder.build(packageInfo, logger, typeConversionContext, this);
 	}
@@ -80,23 +81,22 @@ public class JavaNativeModule {
 				packageInfo.getPkg(),
 				typeConversionContext.packageDefinitions,
 				Collections.emptyList(),
-				space.registry,
 				space.collectExpansions(),
-				space.getAnnotations(),
+				space.getAnnotations().toArray(new AnnotationDefinition[0]),
 				logger);
 	}
 
-	public HighLevelDefinition addClass(Class<?> cls) {
+	public TypeSymbol addClass(Class<?> cls) {
 		return nativeConverter.addClass(cls);
 	}
 
 	public void addGlobals(Class<?> cls) {
-		final HighLevelDefinition definition = addClass(cls);
+		final TypeSymbol definition = addClass(cls);
 		nativeConverter.globalConverter.addGlobal(cls, definition);
 	}
 
-	public FunctionalMemberRef loadStaticMethod(Method method) {
-		final HighLevelDefinition definition = addClass(method.getDeclaringClass());
+	public MethodInstance loadStaticMethod(Method method) {
+		final TypeSymbol definition = addClass(method.getDeclaringClass());
 		return nativeConverter.memberConverter.loadStaticMethod(method, definition);
 	}
 
@@ -109,7 +109,7 @@ public class JavaNativeModule {
 		return typeConversionContext.compiled;
 	}
 
-	public Map<String, ISymbol> getGlobals() {
+	public Map<String, IGlobal> getGlobals() {
 		return typeConversionContext.globals;
 	}
 

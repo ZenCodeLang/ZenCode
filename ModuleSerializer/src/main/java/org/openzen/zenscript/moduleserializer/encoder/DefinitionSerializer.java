@@ -8,7 +8,6 @@ package org.openzen.zenscript.moduleserializer.encoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
@@ -26,6 +25,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
@@ -60,7 +60,7 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		if (definition.name != null)
 			output.writeString(definition.name);
 
-		TypeSerializationContext typeContext = new TypeSerializationContext(context, definition.typeParameters, null);
+		TypeSerializationContext typeContext = new TypeSerializationContext(context, null, definition.typeParameters);
 		if (definition.typeParameters.length > 0)
 			output.serialize(typeContext, definition.typeParameters);
 
@@ -85,13 +85,13 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		for (InnerDefinitionMember innerDefinition : innerDefinitions) {
 			System.out.println("Inner definition: " + innerDefinition.definition.name);
 			output.serialize(innerDefinition.position);
-			output.writeUInt(innerDefinition.getSpecifiedModifiers());
+			output.writeUInt(innerDefinition.getSpecifiedModifiers().value);
 			innerDefinition.innerDefinition.accept(moduleContext, this);
 		}
 
 		output.enqueueMembers(output -> {
 			DefinitionMemberSerializer memberEncoder = new DefinitionMemberSerializer(options, output);
-			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
+			TypeSerializationContext context = new TypeSerializationContext(moduleContext, DefinitionTypeID.createThis(definition), definition.typeParameters);
 			definition.accept(context, memberEncoder);
 		});
 	}

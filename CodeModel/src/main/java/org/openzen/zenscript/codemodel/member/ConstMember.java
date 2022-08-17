@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
@@ -20,8 +19,8 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	public final String name;
 	public Expression value;
 
-	public ConstMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, TypeID type, BuiltinID builtin) {
-		super(position, definition, modifiers, type, builtin);
+	public ConstMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, TypeID type) {
+		super(position, definition, modifiers, type);
 
 		this.name = name;
 	}
@@ -77,6 +76,11 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return modifiers;
 	}
 
 	@Override

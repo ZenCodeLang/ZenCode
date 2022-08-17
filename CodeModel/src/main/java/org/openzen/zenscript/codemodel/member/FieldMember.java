@@ -8,15 +8,12 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-
-import java.util.Optional;
 
 public class FieldMember extends PropertyMember implements FieldSymbol {
 	public final String name;
@@ -33,11 +30,9 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 			String name,
 			TypeID thisType,
 			TypeID type,
-			GlobalTypeRegistry registry,
 			Modifiers autoGetterAccess,
-			Modifiers autoSetterAccess,
-			BuiltinID builtin) {
-		super(position, definition, modifiers, type, builtin);
+			Modifiers autoSetterAccess) {
+		super(position, definition, modifiers, type);
 
 		this.name = name;
 		this.autoGetterAccess = autoGetterAccess;
@@ -47,51 +42,31 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 		if (definition.typeParameters != null) {
 			parameters = new TypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
+				parameters[i] = new GenericTypeID(definition.typeParameters[i]);
 		}
 
 		boolean isStatic = modifiers.isStatic();
 		if (autoGetterAccess != null) {
 			Modifiers autoGetterModifiers = isStatic ? autoGetterAccess.withStatic() : autoGetterAccess;
-			this.autoGetter = new GetterMember(position, definition, autoGetterModifiers, name, type, null);
+			this.autoGetter = new GetterMember(position, definition, autoGetterModifiers, name, type);
 			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(thisType, this, null))));
+					new FieldInstance(this, type))));
 		} else {
 			this.autoGetter = null;
 		}
 		if (autoSetterAccess != null) {
 			Modifiers autoSetterModifiers = isStatic ? autoSetterAccess.withStatic() : autoSetterAccess;
-			this.autoSetter = new SetterMember(position, definition, autoSetterModifiers, name, type, null);
+			this.autoSetter = new SetterMember(position, definition, autoSetterModifiers, name, type);
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(thisType, this, null),
+					new FieldInstance(this, type),
 					new GetFunctionParameterExpression(position, this.autoSetter.parameter))));
 		} else {
 			this.autoSetter = null;
 		}
-	}
-
-	private FieldMember(
-			CodePosition position,
-			HighLevelDefinition definition,
-			Modifiers modifiers,
-			String name,
-			TypeID type,
-			Modifiers autoGetterAccess,
-			Modifiers autoSetterAccess,
-			GetterMember autoGetter,
-			SetterMember autoSetter,
-			BuiltinID builtin) {
-		super(position, definition, modifiers, type, builtin);
-
-		this.name = name;
-		this.autoGetterAccess = autoGetterAccess;
-		this.autoSetterAccess = autoSetterAccess;
-		this.autoGetter = autoGetter;
-		this.autoSetter = autoSetter;
 	}
 
 	public boolean hasAutoGetter() {
@@ -104,11 +79,6 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 
 	public void setInitializer(Expression initializer) {
 		this.initializer = initializer;
-	}
-
-	@Override
-	public BuiltinID getBuiltin() {
-		return builtin;
 	}
 
 	@Override
@@ -166,5 +136,10 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public TypeID getType() {
 		return type;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return modifiers;
 	}
 }

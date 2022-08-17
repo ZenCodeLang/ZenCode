@@ -108,12 +108,12 @@ public class JavaNativeHeaderConverter {
 		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 
-	public int getMethodModifiers(Member method) {
-		int result = Modifiers.PUBLIC;
+	public Modifiers getMethodModifiers(Member method) {
+		Modifiers result = Modifiers.PUBLIC;
 		if (Modifier.isStatic(method.getModifiers()))
-			result |= Modifiers.STATIC;
+			result = result.withStatic();
 		if (Modifier.isFinal(method.getModifiers()))
-			result |= Modifiers.FINAL;
+			result = result.withFinal();
 
 		return result;
 	}

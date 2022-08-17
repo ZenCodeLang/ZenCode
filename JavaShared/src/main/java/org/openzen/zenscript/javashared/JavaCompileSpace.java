@@ -14,7 +14,5 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 public interface JavaCompileSpace {
 	void register(JavaCompiledModule module);
 
-	GlobalTypeRegistry getRegistry();
-
 	JavaCompiledModule getCompiled(Module module);
 }

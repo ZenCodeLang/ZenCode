@@ -78,7 +78,7 @@ public class ConstructorRegistry {
 
 		@Override
 		public ZenCodeCompiler createCompiler(SemanticModule module, IZSLogger logger) {
-			return new JavaSourceZenCompiler(output, module.registry, logger);
+			return new JavaSourceZenCompiler(output, logger);
 		}
 
 		@Override
@@ -103,18 +103,16 @@ public class ConstructorRegistry {
 	}
 
 	private static class JavaSourceZenCompiler implements ZenCodeCompiler {
-		public final GlobalTypeRegistry registry;
 		private final File output;
 		private final JavaSourceCompiler compiler;
 		private final List<JavaSourceModule> modules = new ArrayList<>();
 		private final SimpleJavaCompileSpace space;
 		private final IZSLogger logger;
 
-		public JavaSourceZenCompiler(File output, GlobalTypeRegistry registry, IZSLogger logger) {
+		public JavaSourceZenCompiler(File output, IZSLogger logger) {
 			this.output = output;
-			compiler = new JavaSourceCompiler(registry);
-			this.registry = registry;
-			space = new SimpleJavaCompileSpace(registry);
+			compiler = new JavaSourceCompiler();
+			space = new SimpleJavaCompileSpace();
 			this.logger = logger;
 		}
 
@@ -198,13 +196,9 @@ public class ConstructorRegistry {
 	}
 
 	private static class JavaBytecodeJarCompiler implements ZenCodeCompiler {
-		private final ZSPackage root = ZSPackage.createRoot();
-		private final ZSPackage stdlib = new ZSPackage(root, "stdlib");
-		public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
-
 		private final JavaCompiler compiler;
 		private final List<JavaBytecodeModule> modules = new ArrayList<>();
-		private final SimpleJavaCompileSpace space = new SimpleJavaCompileSpace(registry);
+		private final SimpleJavaCompileSpace space = new SimpleJavaCompileSpace();
 		private final IZSLogger logger;
 
 		public JavaBytecodeJarCompiler(IZSLogger logger) {

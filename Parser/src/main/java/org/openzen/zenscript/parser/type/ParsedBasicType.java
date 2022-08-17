@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public enum ParsedTypeBasic implements IParsedType {
+public enum ParsedBasicType implements IParsedType {
 	VOID(BasicTypeID.VOID),
 	BOOL(BasicTypeID.BOOL),
 	BYTE(BasicTypeID.BYTE),
@@ -25,7 +25,7 @@ public enum ParsedTypeBasic implements IParsedType {
 
 	private final BasicTypeID type;
 
-	ParsedTypeBasic(BasicTypeID type) {
+	ParsedBasicType(BasicTypeID type) {
 		this.type = type;
 	}
 

@@ -270,4 +270,12 @@ public class CompileErrors {
 	public static CompileError duplicateGlobal(String name) {
 		return new CompileError(CompileExceptionCode.DUPLICATE_GLOBAL, "Duplicate global: " + name);
 	}
+
+	public static CompileError variantValueWithoutArguments() {
+		return new CompileError(CompileExceptionCode.VARIANT_OPTION_NOT_AN_EXPRESSION, "Variant options need parameters");
+	}
+
+	public static CompileError noSuchModule(String name) {
+		return new CompileError(CompileExceptionCode.NO_SUCH_MODULE, "Module not found: " + name);
+	}
 }

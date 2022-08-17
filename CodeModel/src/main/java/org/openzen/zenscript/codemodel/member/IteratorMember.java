@@ -1,31 +1,28 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class IteratorMember extends FunctionalMember {
 	private final TypeID[] iteratorTypes;
 	public Statement body;
-	public IteratorMemberRef overrides;
+	public MethodInstance overrides;
 
-	public IteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
-		super(position, definition, modifiers, createIteratorHeader(registry, iteratorTypes), builtin);
+	public IteratorMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, TypeID[] iteratorTypes) {
+		super(position, definition, modifiers, createIteratorHeader(iteratorTypes));
 
 		this.iteratorTypes = iteratorTypes;
 	}
 
-	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
-		return new FunctionHeader(registry.getIterator(iteratorTypes));
+	private static FunctionHeader createIteratorHeader(TypeID[] iteratorTypes) {
+		return new FunctionHeader(new IteratorTypeID(iteratorTypes));
 	}
 
 	public void setContent(Statement body) {
@@ -46,13 +43,13 @@ public class IteratorMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addIterator(new IteratorMemberRef(this, type.type, mapper == null ? iteratorTypes : mapper.map(iteratorTypes)), priority);
+	public String describe() {
+		return "iterator with " + iteratorTypes.length + " variables";
 	}
 
 	@Override
-	public String describe() {
-		return "iterator with " + iteratorTypes.length + " variables";
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+
 	}
 
 	@Override
@@ -66,16 +63,26 @@ public class IteratorMember extends FunctionalMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
-		return overrides;
-	}
-
-	public void setOverrides(IteratorMemberRef overrides) {
-		this.overrides = overrides;
+	public FunctionalKind getKind() {
+		return FunctionalKind.ITERATOR;
 	}
 
 	@Override
-	public FunctionalKind getKind() {
-		return FunctionalKind.ITERATOR;
+	public String getName() {
+		return "iterator";
+	}
+
+	@Override
+	public Optional<OperatorType> getOperator() {
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
+	}
+
+	public void setOverrides(MethodInstance overrides) {
+		this.overrides = overrides;
 	}
 }

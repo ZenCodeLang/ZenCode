@@ -1,11 +1,10 @@
 package org.openzen.zenscript.codemodel;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
-import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Arrays;
@@ -240,12 +239,14 @@ public class FunctionHeader {
 		return false;
 	}
 
-	public boolean canOverride(FunctionHeader other) {
+	public boolean canOverride(ExpressionCompiler compiler, CodePosition position, FunctionHeader other) {
 		if (other == null)
 			throw new NullPointerException();
 		if (parameters.length != other.parameters.length)
 			return false;
-		if (returnType != BasicTypeID.UNDETERMINED && !returnType.equals(other.returnType) && !returnType.resolve().canCastImplicitlyTo(other.returnType))
+		if (returnType != BasicTypeID.UNDETERMINED
+				&& !returnType.equals(other.returnType)
+				&& !returnType.resolve().canCastImplicitlyTo(compiler, position, other.returnType))
 			return false;
 
 		for (int i = 0; i < parameters.length; i++) {
@@ -256,7 +257,7 @@ public class FunctionHeader {
 				return false;
 			if (other.parameters[i].type.equals(parameters[i].type))
 				continue;
-			if (!other.parameters[i].type.resolve().canCastImplicitlyTo(parameters[i].type))
+			if (!other.parameters[i].type.resolve().canCastImplicitlyTo(compiler, position, parameters[i].type))
 				return false;
 		}
 
@@ -339,7 +340,7 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 
-	public FunctionHeader fillGenericArguments(TypeScope scope, TypeID[] arguments) {
+	/*public FunctionHeader fillGenericArguments(TypeScope scope, TypeID[] arguments) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 
@@ -352,7 +353,7 @@ public class FunctionHeader {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
 		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
-	}
+	}*/
 
 	public FunctionHeader forTypeParameterInference() {
 		return new FunctionHeader(BasicTypeID.UNDETERMINED, parameters);
@@ -379,7 +380,7 @@ public class FunctionHeader {
 		return getVariadicParameter().map(p -> p.type);
 	}
 
-	public String explainWhyIncompatible(TypeResolver scope, CallArguments arguments) {
+	public String explainWhyIncompatible(ExpressionCompiler compiler, CodePosition position, CallArguments arguments) {
 		if (this.parameters.length != arguments.arguments.length)
 			return parameters.length + " parameters expected but " + arguments.arguments.length + " given.";
 
@@ -387,8 +388,8 @@ public class FunctionHeader {
 			return getNumberOfTypeParameters() + " type parameters expected but " + arguments.getNumberOfTypeArguments() + " given.";
 
 		for (int i = 0; i < parameters.length; i++) {
-			ResolvedType resolved = scope.resolve(arguments.arguments[i].type);
-			if (!resolved.canCastImplicitlyTo(parameters[i].type)) {
+			ResolvedType resolved = compiler.resolve(arguments.arguments[i].type);
+			if (!resolved.canCastImplicitlyTo(compiler, position, parameters[i].type)) {
 				return "Parameter " + i + ": cannot cast " + arguments.arguments[i].type + " to " + parameters[i].type;
 			}
 		}
