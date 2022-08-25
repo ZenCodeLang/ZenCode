@@ -5,24 +5,14 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.openzen.zenscript.codemodel.Modifiers.*;
 
@@ -124,7 +114,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 
-		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header, definition.getAccessScope()));
+		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
 		definition.caller.body.accept(statementValidator);
 		return null;
 	}
@@ -160,8 +150,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 	}
 
 	private void validateMembers(HighLevelDefinition definition, DefinitionMemberContext context) {
-		SimpleTypeScope scope = new SimpleTypeScope(validator.registry, validator.expansions, validator.annotations);
-		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, scope, context);
+		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, context);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberValidator);
 		}
@@ -199,61 +188,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 			typeValidator.validate(TypeContext.OPTION_MEMBER_TYPE, type);
 	}
 
-	private class SimpleTypeScope implements TypeScope {
-		private final LocalMemberCache memberCache;
-		private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
-
-		public SimpleTypeScope(GlobalTypeRegistry typeRegistry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations) {
-			memberCache = new LocalMemberCache(typeRegistry, expansions);
-
-			for (AnnotationDefinition annotation : annotations)
-				this.annotations.put(annotation.getAnnotationName(), annotation);
-		}
-
-		@Override
-		public ZSPackage getRootPackage() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public LocalMemberCache getMemberCache() {
-			return memberCache;
-		}
-
-		@Override
-		public AnnotationDefinition getAnnotation(String name) {
-			return annotations.get(name);
-		}
-
-		@Override
-		public TypeID getType(CodePosition position, List<GenericName> name) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public TypeID getThisType() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public TypeMemberPreparer getPreparer() {
-			return member -> {
-			};
-		}
-
-		@Override
-		public GenericMapper getLocalTypeParameters() {
-			throw new UnsupportedOperationException();
-		}
-	}
-
 	private class FunctionStatementScope implements StatementScope {
 		private final FunctionHeader header;
-		private final AccessScope access;
 
-		public FunctionStatementScope(FunctionHeader header, AccessScope access) {
+		public FunctionStatementScope(FunctionHeader header) {
 			this.header = header;
-			this.access = access;
 		}
 
 		@Override
@@ -279,11 +218,6 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
-		}
-
-		@Override
-		public AccessScope getAccessScope() {
-			return access;
 		}
 	}
 }

@@ -8,8 +8,6 @@ package org.openzen.zenscript.constructor;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.TargetType;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;

@@ -2,11 +2,9 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 import java.util.HashMap;
 import java.util.List;
@@ -153,4 +151,8 @@ public interface TypeID {
 	}
 
 	ResolvedType resolve();
+
+	default boolean extendsOrImplements(TypeID type) {
+		return false;
+	}
 }

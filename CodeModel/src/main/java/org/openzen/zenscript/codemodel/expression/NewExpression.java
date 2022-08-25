@@ -2,18 +2,18 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class NewExpression extends Expression {
-	public final FunctionalMemberRef constructor;
+	public final MethodInstance constructor;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 
 	public NewExpression(
 			CodePosition position,
 			TypeID type,
-			FunctionalMemberRef constructor,
+			MethodInstance constructor,
 			CallArguments arguments) {
 		this(position, type, constructor, arguments, constructor.getHeader());
 	}
@@ -21,7 +21,7 @@ public class NewExpression extends Expression {
 	public NewExpression(
 			CodePosition position,
 			TypeID type,
-			FunctionalMemberRef constructor,
+			MethodInstance constructor,
 			CallArguments arguments,
 			FunctionHeader instancedHeader) {
 		super(position, type, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));

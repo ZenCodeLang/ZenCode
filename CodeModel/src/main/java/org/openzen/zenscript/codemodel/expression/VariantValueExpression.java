@@ -1,12 +1,8 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
-
-import java.util.List;
 
 public class VariantValueExpression extends Expression {
 	public final VariantOptionInstance option;
@@ -25,14 +21,6 @@ public class VariantValueExpression extends Expression {
 
 	public int getNumberOfArguments() {
 		return arguments == null ? 0 : arguments.length;
-	}
-
-	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
-		if (arguments != null)
-			return super.call(position, scope, hints, arguments);
-
-		return new VariantValueExpression(position, type, option, arguments.arguments);
 	}
 
 	@Override

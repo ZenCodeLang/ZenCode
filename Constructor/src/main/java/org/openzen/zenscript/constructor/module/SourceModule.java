@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.constructor.ModuleLoader;
 

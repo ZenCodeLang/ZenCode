@@ -1,14 +1,13 @@
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,82 +31,80 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findImplicitConstructor() {
-		return Optional.empty();
+		List<StaticCallableMethod> constructors = template.getConstructors().stream()
+				.filter(c -> c.getModifiers().isImplicit())
+				.map(c -> mapper.map(type, c))
+				.collect(Collectors.toList());
+		return constructors.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(constructors));
 	}
 
 	@Override
 	public Optional<StaticCallable> findSuffixConstructor(String suffix) {
-		return Optional.empty();
+		List<StaticCallableMethod> constructors = template.getMethod(suffix).stream()
+				.filter(c -> c.getModifiers().isStatic() && c.getModifiers().isImplicit())
+				.map(c -> mapper.map(type, c))
+				.collect(Collectors.toList());
+		return constructors.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(constructors));
 	}
 
 	@Override
-	public Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
-		return Optional.empty();
-	}
+	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 
-	@Override
-	public Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
-		return Optional.empty();
-	}
-
-	@Override
-	public boolean canCastImplicitlyTo(ExpressionCompiler compiler, CodePosition position, TypeID target) {
-		return false;
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticMethod(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticGetter(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticSetter(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<InstanceCallable> findMethod(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<InstanceCallable> findGetter(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<InstanceCallable> findSetter(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<InstanceCallable> findOperator(OperatorType operator) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<Field> findField(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<TypeSymbol> findInnerType(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<CompilableExpression> getContextMember(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
 	public Optional<SwitchMember> findSwitchMember(String name) {
-		return Optional.empty();
+
 	}
 
 	@Override
@@ -116,7 +113,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
-	public Optional<IteratorMemberRef> findIterator(int variables) {
+	public Optional<IteratorInstance> findIterator(int variables) {
 		return Optional.empty();
 	}
 }

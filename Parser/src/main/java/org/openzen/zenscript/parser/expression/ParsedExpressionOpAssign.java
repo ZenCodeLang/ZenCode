@@ -5,6 +5,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionOpAssign extends ParsedExpression {
 	private final CompilableExpression left;
@@ -50,7 +51,7 @@ public class ParsedExpressionOpAssign extends ParsedExpression {
 			Expression left = this.left.eval();
 			ResolvedType resolvedType = compiler.resolve(left.type);
 			return resolvedType.findOperator(operator.assignOperatorFor)
-					.map(method -> method.call(compiler.at(position), left, right))
+					.map(method -> method.call(compiler, position, left, TypeID.NONE, right))
 					.orElseGet(() -> this.left.assign(new ParsedExpressionBinary.Compiling(compiler, position, this.left, right, operator)).eval());
 		}
 
@@ -59,7 +60,7 @@ public class ParsedExpressionOpAssign extends ParsedExpression {
 			CastedExpression left = this.left.cast(cast);
 			ResolvedType resolvedType = compiler.resolve(left.value.type);
 			return resolvedType.findOperator(operator.assignOperatorFor)
-					.map(method -> method.cast(compiler.at(position), cast, left.value, right))
+					.map(method -> method.cast(compiler, position, cast, left.value, TypeID.NONE, right))
 					.orElseGet(() -> this.left.assign(new ParsedExpressionBinary.Compiling(compiler, position, this.left, right, operator)).cast(cast));
 		}
 	}

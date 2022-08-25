@@ -121,34 +121,32 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		//javaWriter.label(min);
 		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, start, end);
-		if (statement.iterator.target.getBuiltin() == null) {
-			iteratorWriter.visitCustomIterator();
-		} else {
-			switch (statement.iterator.target.getBuiltin()) {
-				case ITERATOR_INT_RANGE:
-					iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.getOwnerType()));
-					break;
-				case ITERATOR_ARRAY_VALUES:
-					iteratorWriter.visitArrayValueIterator();
-					break;
-				case ITERATOR_ARRAY_KEY_VALUES:
-					iteratorWriter.visitArrayKeyValueIterator();
-					break;
-				case ITERATOR_ASSOC_KEYS:
-					iteratorWriter.visitAssocKeyIterator();
-					break;
-				case ITERATOR_ASSOC_KEY_VALUES:
-					iteratorWriter.visitAssocKeyValueIterator();
-					break;
-				case ITERATOR_STRING_CHARS:
-					iteratorWriter.visitStringCharacterIterator();
-					break;
-				case ITERATOR_ITERABLE:
-					iteratorWriter.visitIteratorIterator(context.getType(statement.loopVariables[0].type));
-					break;
-				default:
-					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator.target.getBuiltin());
-			}
+		switch (statement.iterator.iterator.getKind()) {
+			case INT_RANGE:
+				iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.targetType));
+				break;
+			case ARRAY_VALUES:
+				iteratorWriter.visitArrayValueIterator();
+				break;
+			case ARRAY_KEY_VALUES:
+				iteratorWriter.visitArrayKeyValueIterator();
+				break;
+			case ASSOC_KEYS:
+				iteratorWriter.visitAssocKeyIterator();
+				break;
+			case ASSOC_KEY_VALUES:
+				iteratorWriter.visitAssocKeyValueIterator();
+				break;
+			case STRING_CHARS:
+				iteratorWriter.visitStringCharacterIterator();
+				break;
+			case ITERATOR_VALUES:
+				iteratorWriter.visitIteratorIterator(context.getType(statement.loopVariables[0].type));
+				break;
+			case ITERABLE:
+				iteratorWriter.visitCustomIterator();
+			default:
+				throw new IllegalArgumentException("Invalid iterator: " + statement.iterator);
 		}
 
 		javaWriter.goTo(start);
@@ -187,7 +185,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitInvalid(InvalidStatement statement) {
-		throw new UnsupportedOperationException("Invalid Statement: " + statement.message);
+		throw new UnsupportedOperationException("Invalid Statement: " + statement.error.description);
 	}
 
 	@Override

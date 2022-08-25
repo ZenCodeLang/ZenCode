@@ -35,8 +35,4 @@ public interface IDefinitionMember {
 	boolean isAbstract();
 
 	FunctionHeader getHeader();
-
-	default AccessScope getAccessScope() {
-		return getDefinition().getAccessScope();
-	}
 }

@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.rustsource.definitions.*;
 import org.openzen.zenscript.rustsource.expressions.RustExpressionCompiler;
 import org.openzen.zenscript.rustsource.statements.RustStatementCompiler;
@@ -17,7 +16,7 @@ public class RustSourceCompiler {
 	public final RustSourceFormattingSettings settings;
 	public final RustSourceModule helpers;
 
-	public RustSourceCompiler(GlobalTypeRegistry registry) {
+	public RustSourceCompiler() {
 		helpers = new RustSourceModule(new Module("helpers"), FunctionParameter.NONE);
 		settings = new RustSourceFormattingSettings.Builder().build();
 	}
@@ -172,11 +171,6 @@ public class RustSourceCompiler {
 		}
 
 		@Override
-		public Void visitDestructor(DestructorMember member) {
-			throw new UnsupportedOperationException("not yet supported");
-		}
-
-		@Override
 		public Void visitMethod(MethodMember member) {
 			String name = addMethod(member.name);
 			StringBuilder content = new StringBuilder();
@@ -211,11 +205,6 @@ public class RustSourceCompiler {
 
 		@Override
 		public Void visitCustomIterator(IteratorMember member) {
-			throw new UnsupportedOperationException("not yet supported");
-		}
-
-		@Override
-		public Void visitCaller(CallerMember member) {
 			throw new UnsupportedOperationException("not yet supported");
 		}
 

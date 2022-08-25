@@ -64,15 +64,6 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitDestructor(DestructorMember member) {
-		if (nativeClass != null && nativeClass.nonDestructible)
-			return null;
-
-		visitFunctional(member, member.header, "");
-		return null;
-	}
-
-	@Override
 	public Void visitMethod(MethodMember member) {
 		visitFunctional(member, member.header, member.name);
 		return null;
@@ -80,13 +71,13 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, new FunctionHeader(member.getType()), "get" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(member.type), "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.getType()), "set" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.type), "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
@@ -105,12 +96,6 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		visitFunctional(member, member.header, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
-		return null;
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		visitFunctional(member, member.header, "call");
 		return null;
 	}
 
@@ -139,7 +124,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 
 	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaNativeMethod method = null;
+		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null) {

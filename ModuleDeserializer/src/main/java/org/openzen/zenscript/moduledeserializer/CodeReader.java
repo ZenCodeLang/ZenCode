@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.moduledeserializer;
 
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.*;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import compactio.CompactDataInput;
@@ -36,24 +40,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
-import org.openzen.zenscript.codemodel.statement.BreakStatement;
-import org.openzen.zenscript.codemodel.statement.ContinueStatement;
-import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
-import org.openzen.zenscript.codemodel.statement.EmptyStatement;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
-import org.openzen.zenscript.codemodel.statement.ForeachStatement;
-import org.openzen.zenscript.codemodel.statement.IfStatement;
-import org.openzen.zenscript.codemodel.statement.LockStatement;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.SwitchCase;
-import org.openzen.zenscript.codemodel.statement.SwitchStatement;
-import org.openzen.zenscript.codemodel.statement.ThrowStatement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.statement.VariableID;
-import org.openzen.zenscript.codemodel.statement.WhileStatement;
+import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
 import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
@@ -78,7 +65,6 @@ public class CodeReader implements CodeSerializationInput {
 	private final List<IDefinitionMember> memberList = new ArrayList<>();
 	private final List<EnumConstantMember> enumConstantMembers = new ArrayList<>();
 	private final List<VariantDefinition.Option> variantOptions = new ArrayList<>();
-	private final GlobalTypeRegistry registry;
 	private DecodingStage currentStage = null;
 	private CodePosition lastPosition = CodePosition.UNKNOWN;
 
@@ -86,14 +72,12 @@ public class CodeReader implements CodeSerializationInput {
 			CompactDataInput input,
 			String[] strings,
 			SourceFile[] sourceFiles,
-			AnnotationDefinition[] annotations,
-			GlobalTypeRegistry registry) {
+			AnnotationDefinition[] annotations) {
 		this.input = input;
 
 		this.strings = strings;
 		this.sourceFiles = sourceFiles;
 		this.annotations = annotations;
-		this.registry = registry;
 	}
 
 	public void add(HighLevelDefinition definition) {
@@ -459,7 +443,7 @@ public class CodeReader implements CodeSerializationInput {
 		CodePosition position = (flags & StatementEncoding.FLAG_POSITION) > 0 ? deserializePosition() : CodePosition.UNKNOWN;
 		switch (type) {
 			case StatementEncoding.TYPE_NULL:
-				return null;
+				return new EmptyStatement(position);
 			case StatementEncoding.TYPE_BLOCK: {
 				Statement[] statements = new Statement[readUInt()];
 				StatementSerializationContext inner = context.forBlock();
@@ -468,12 +452,14 @@ public class CodeReader implements CodeSerializationInput {
 				return new BlockStatement(position, statements);
 			}
 			case StatementEncoding.TYPE_BREAK: {
-				LoopStatement loop = context.getLoop(readUInt());
-				return new BreakStatement(position, loop);
+				return context.getLoop(readUInt())
+						.map(loop -> (Statement)new BreakStatement(position, loop))
+						.orElseGet(() -> new InvalidStatement(position, CompileErrors.deserializationError("invalid loop reference")));
 			}
 			case StatementEncoding.TYPE_CONTINUE: {
-				LoopStatement loop = context.getLoop(readUInt());
-				return new ContinueStatement(position, loop);
+				return context.getLoop(readUInt())
+						.map(loop -> (Statement)new ContinueStatement(position, loop))
+						.orElseGet(() -> new InvalidStatement(position, CompileErrors.deserializationError("invalid loop reference")));
 			}
 			case StatementEncoding.TYPE_DO_WHILE: {
 				Expression condition = deserializeExpression(context);
@@ -493,7 +479,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case StatementEncoding.TYPE_FOREACH: {
 				Expression list = deserializeExpression(context);
-				IteratorMemberRef iterator = (IteratorMemberRef) readMember(context.types(), list.type);
+				IteratorInstance iterator = (IteratorInstance) readMember(context.types(), list.type);
 				VarStatement[] loopVariables = new VarStatement[iterator.getLoopVariableCount()];
 				for (int i = 0; i < loopVariables.length; i++) {
 					String name = ((flags & StatementEncoding.FLAG_NAME) > 0) ? readString() : null;
@@ -591,22 +577,22 @@ public class CodeReader implements CodeSerializationInput {
 				CompareType comparison = readComparator();
 				Expression left = deserializeExpression(context);
 				Expression right = deserializeExpression(context);
-				FunctionalMemberRef operator = (FunctionalMemberRef) readMember(context.types(), left.type);
+				MethodInstance operator = (MethodInstance) readMember(context.types(), left.type);
 				return new CompareExpression(position, left, right, operator, comparison);
 			}
 			case ExpressionEncoding.TYPE_CALL: {
 				Expression target = deserializeExpression(context);
-				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context.types(), target.type);
+				MethodInstance member = (MethodInstance) readMember(context.types(), target.type);
 				CallArguments arguments = deserializeArguments(context);
 				FunctionHeader instancedHeader = member.getHeader().instanceForCall(arguments);
-				return new CallExpression(position, target, member, instancedHeader, arguments);
+				return new CallExpression(position, target, member, arguments);
 			}
 			case ExpressionEncoding.TYPE_CALL_STATIC: {
 				TypeID type = deserializeType(context.types());
-				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context.types(), type);
+				MethodInstance member = (MethodInstance) readMember(context.types(), type);
 				CallArguments arguments = deserializeArguments(context);
 				FunctionHeader instancedHeader = member.getHeader().instanceForCall(arguments);
-				return new CallStaticExpression(position, type, member, instancedHeader, arguments);
+				return new CallStaticExpression(position, type, member, arguments);
 			}
 			case ExpressionEncoding.TYPE_CAPTURED_CLOSURE: {
 				Expression value = deserializeExpression(context.getLambdaOuter());
@@ -623,12 +609,6 @@ public class CodeReader implements CodeSerializationInput {
 			case ExpressionEncoding.TYPE_CAPTURED_THIS: {
 				return new CapturedThisExpression(position, context.thisType, context.getLambdaClosure());
 			}
-			case ExpressionEncoding.TYPE_CAST: {
-				TypeID toType = deserializeType(context.types());
-				Expression value = deserializeExpression(context);
-				CasterMemberRef member = (CasterMemberRef) readMember(context.types(), toType);
-				return new CastExpression(position, value, member, (flags & ExpressionEncoding.FLAG_IMPLICIT) > 0);
-			}
 			case ExpressionEncoding.TYPE_CHECKNULL: {
 				Expression value = deserializeExpression(context);
 				return new CheckNullExpression(position, value);
@@ -644,11 +624,6 @@ public class CodeReader implements CodeSerializationInput {
 				Expression onThen = deserializeExpression(context);
 				Expression onElse = deserializeExpression(context);
 				return new ConditionalExpression(position, condition, onThen, onElse, type);
-			}
-			case ExpressionEncoding.TYPE_CONST: {
-				TypeID type = deserializeType(context.types());
-				ConstMemberRef member = (ConstMemberRef) readMember(context, type);
-				return new ConstExpression(position, member);
 			}
 			case ExpressionEncoding.TYPE_CONSTANT_BOOL_TRUE:
 				return new ConstantBoolExpression(position, true);
@@ -681,13 +656,13 @@ public class CodeReader implements CodeSerializationInput {
 			case ExpressionEncoding.TYPE_CONSTANT_USIZE:
 				return new ConstantUSizeExpression(position, readULong());
 			case ExpressionEncoding.TYPE_CONSTRUCTOR_THIS_CALL: {
-				FunctionalMemberRef constructor = (FunctionalMemberRef) readMember(context, context.thisType);
+				MethodInstance constructor = (MethodInstance) readMember(context, context.thisType);
 				CallArguments arguments = deserializeArguments(context);
 				return new ConstructorThisCallExpression(position, context.thisType, constructor, arguments);
 			}
 			case ExpressionEncoding.TYPE_CONSTRUCTOR_SUPER_CALL: {
 				TypeID superType = context.thisType.getSuperType();
-				FunctionalMemberRef constructor = (FunctionalMemberRef) readMember(context, superType);
+				MethodInstance constructor = (MethodInstance) readMember(context, superType);
 				CallArguments arguments = deserializeArguments(context);
 				return new ConstructorSuperCallExpression(position, superType, constructor, arguments);
 			}
@@ -704,7 +679,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_GET_FIELD: {
 				Expression target = deserializeExpression(context);
-				FieldMemberRef field = (FieldMemberRef) readMember(context, target.type);
+				FieldInstance field = (FieldInstance) readMember(context, target.type);
 				return new GetFieldExpression(position, target, field);
 			}
 			case ExpressionEncoding.TYPE_GET_FUNCTION_PARAMETER: {
@@ -720,13 +695,8 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_GET_STATIC_FIELD: {
 				TypeID type = deserializeType(context);
-				FieldMemberRef field = (FieldMemberRef) readMember(context, type);
+				FieldInstance field = (FieldInstance) readMember(context, type);
 				return new GetStaticFieldExpression(position, field);
-			}
-			case ExpressionEncoding.TYPE_GETTER: {
-				Expression target = deserializeExpression(context);
-				GetterMemberRef getter = (GetterMemberRef) readMember(context, target.type);
-				return new GetterExpression(position, target, getter);
 			}
 			case ExpressionEncoding.TYPE_GLOBAL: {
 				String name = readString();
@@ -782,7 +752,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_NEW: {
 				TypeID type = deserializeType(context);
-				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context, type);
+				MethodInstance member = (MethodInstance) readMember(context, type);
 				CallArguments arguments = deserializeArguments(context);
 				return new NewExpression(position, type, member, arguments);
 			}
@@ -802,7 +772,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_POST_CALL: {
 				Expression target = deserializeExpression(context);
-				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context, target.type);
+				MethodInstance member = (MethodInstance) readMember(context, target.type);
 				return new PostCallExpression(position, target, member, member.getHeader());
 			}
 			case ExpressionEncoding.TYPE_RANGE: {
@@ -818,7 +788,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_SET_FIELD: {
 				Expression target = deserializeExpression(context);
-				FieldMemberRef field = (FieldMemberRef) readMember(context, target.type);
+				FieldInstance field = (FieldInstance) readMember(context, target.type);
 				Expression value = deserializeExpression(context);
 				return new SetFieldExpression(position, target, field, value);
 			}
@@ -834,26 +804,9 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_SET_STATIC_FIELD: {
 				TypeID type = deserializeType(context);
-				FieldMemberRef member = (FieldMemberRef) readMember(context, type);
+				FieldInstance member = (FieldInstance) readMember(context, type);
 				Expression value = deserializeExpression(context);
 				return new SetStaticFieldExpression(position, member, value);
-			}
-			case ExpressionEncoding.TYPE_SETTER: {
-				Expression target = deserializeExpression(context);
-				SetterMemberRef setter = (SetterMemberRef) readMember(context, target.type);
-				Expression value = deserializeExpression(context);
-				return new SetterExpression(position, target, setter, value);
-			}
-			case ExpressionEncoding.TYPE_STATIC_GETTER: {
-				TypeID target = deserializeType(context);
-				GetterMemberRef getter = (GetterMemberRef) readMember(context, target);
-				return new StaticGetterExpression(position, getter);
-			}
-			case ExpressionEncoding.TYPE_STATIC_SETTER: {
-				TypeID target = deserializeType(context);
-				SetterMemberRef setter = (SetterMemberRef) readMember(context, target);
-				Expression value = deserializeExpression(context);
-				return new StaticSetterExpression(position, setter, value);
 			}
 			case ExpressionEncoding.TYPE_SUPERTYPE_CAST: {
 				TypeID type = deserializeType(context);

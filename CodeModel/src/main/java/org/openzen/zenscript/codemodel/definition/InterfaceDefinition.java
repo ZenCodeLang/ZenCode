@@ -8,7 +8,6 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
 import java.util.ArrayList;
 import java.util.List;

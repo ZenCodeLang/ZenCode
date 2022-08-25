@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javashared.*;
 
 /**
@@ -45,16 +44,6 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitConst(ConstMember member) {
-		if (DEBUG_EMPTY && cls.empty)
-			context.logger.trace("Class " + cls.fullName + " not empty because of const " + member.name);
-
-		cls.empty = false;
-		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType())));
-		return null;
-	}
-
-	@Override
 	public Void visitField(FieldMember member) {
 		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
@@ -73,15 +62,6 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
 		visitFunctional(member, member.header, "<init>");
-		return null;
-	}
-
-	@Override
-	public Void visitDestructor(DestructorMember member) {
-		if (DEBUG_EMPTY && cls.empty)
-			context.logger.trace("Class " + cls.fullName + " not empty because of destructor");
-
-		cls.empty = false;
 		return null;
 	}
 
@@ -118,12 +98,6 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		visitFunctional(member, member.header, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
-		return null;
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		visitFunctional(member, member.header, "call");
 		return null;
 	}
 
@@ -260,6 +234,8 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 				return "getMember";
 			case MEMBERSETTER:
 				return "setMember";
+			case DESTRUCTOR:
+				return "close";
 			default:
 				throw new IllegalArgumentException("Invalid operator: " + operator);
 		}

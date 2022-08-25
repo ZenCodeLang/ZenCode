@@ -22,6 +22,11 @@ import java.util.List;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
 public class ParsedFunctionHeader {
+	public static final ParsedFunctionHeader EMPTY = new ParsedFunctionHeader(
+			CodePosition.UNKNOWN,
+			Collections.emptyList(),
+			ParsedBasicType.VOID);
+
 	public final CodePosition position;
 	public final List<ParsedTypeParameter> genericParameters;
 	public final List<ParsedFunctionParameter> parameters;

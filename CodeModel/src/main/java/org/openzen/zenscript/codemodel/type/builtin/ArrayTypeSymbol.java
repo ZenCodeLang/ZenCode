@@ -111,21 +111,21 @@ public class ArrayTypeSymbol implements TypeSymbol {
 					type));
 
 			if (baseType == BYTE)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
 			if (baseType == SBYTE)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_ARRAY_AS_BYTE_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_ARRAY_AS_BYTE_ARRAY));
 			if (baseType == SHORT)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_ARRAY_AS_USHORT_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_ARRAY_AS_USHORT_ARRAY));
 			if (baseType == USHORT)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_ARRAY_AS_SHORT_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_ARRAY_AS_SHORT_ARRAY));
 			if (baseType == INT)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_ARRAY_AS_UINT_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.INT_ARRAY_AS_UINT_ARRAY));
 			if (baseType == UINT)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_ARRAY_AS_INT_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.UINT_ARRAY_AS_INT_ARRAY));
 			if (baseType == LONG)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_ARRAY_AS_ULONG_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.LONG_ARRAY_AS_ULONG_ARRAY));
 			if (baseType == ULONG)
-				members.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
+				members.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
 		}
 
 		members.contains(mapper.map(type, BuiltinMethodSymbol.ARRAY_CONTAINS));

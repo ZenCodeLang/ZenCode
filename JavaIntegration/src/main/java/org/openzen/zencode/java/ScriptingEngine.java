@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
@@ -47,7 +46,6 @@ public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
 	public final ZSPackage root = ZSPackage.createRoot();
 	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
-	public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 	private final ModuleSpace space;
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
 	private final List<SemanticModule> compiledModules = new ArrayList<>();
@@ -83,17 +81,16 @@ public class ScriptingEngine {
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, dependencies, space.rootPackage);
+		return new JavaNativeModule(space, logger, testPackage, name, basePackage, dependencies, space.rootPackage);
 	}
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule[] dependencies, JavaNativeConverterBuilder nativeConverterBuilder) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, dependencies, nativeConverterBuilder, space.rootPackage);
+		return new JavaNativeModule(space, logger, testPackage, name, basePackage, dependencies, nativeConverterBuilder, space.rootPackage);
 	}
 
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
-		SemanticModule semantic = Validator.validate(
-				module.toSemantic(space), logger);
+		SemanticModule semantic = Validator.validate(module.toSemantic(), logger);
 		if (!semantic.isValid())
 			return;
 

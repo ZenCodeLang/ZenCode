@@ -1,6 +1,8 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.compilation.CastedEval;
+import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -59,7 +61,7 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.XOR, new MethodInstance(BuiltinMethodSymbol.BOOL_XOR));
 		builder.operator(OperatorType.EQUALS, new MethodInstance(BuiltinMethodSymbol.BOOL_EQUALS));
 		builder.operator(OperatorType.NOTEQUALS, new MethodInstance(BuiltinMethodSymbol.BOOL_NOTEQUALS));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BOOL_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BOOL_TO_STRING));
 		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.BOOL_PARSE));
 		return builder.build();
 	}
@@ -81,24 +83,26 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.SHR, new MethodInstance(BuiltinMethodSymbol.BYTE_SHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.BYTE_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_TO_STRING));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.BYTE_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.BYTE_PARSE_WITH_BASE));
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.BYTE_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.BYTE_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.BYTE_COMPARE, BasicTypeID.BYTE);
 
 		return builder.build();
 	}
@@ -121,24 +125,27 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.USHR, new MethodInstance(BuiltinMethodSymbol.SBYTE_USHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.SBYTE_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_TO_STRING));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_PARSE_WITH_BASE));
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SBYTE_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SBYTE_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.SBYTE_COMPARE, BasicTypeID.SBYTE);
+
 		return builder.build();
 	}
 
@@ -160,24 +167,27 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.USHR, new MethodInstance(BuiltinMethodSymbol.SHORT_USHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.SHORT_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_TO_STRING));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SHORT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SHORT_PARSE_WITH_BASE));
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SHORT_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SHORT_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.SHORT_COMPARE, BasicTypeID.SHORT);
+
 		return builder.build();
 	}
 
@@ -198,24 +208,27 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.SHR, new MethodInstance(BuiltinMethodSymbol.USHORT_SHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.USHORT_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_TO_STRING));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.USHORT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.USHORT_PARSE_WITH_BASE));
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USHORT_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USHORT_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.USHORT_COMPARE, BasicTypeID.USHORT);
+
 		return builder.build();
 	}
 
@@ -239,18 +252,18 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.USHR, new MethodInstance(BuiltinMethodSymbol.INT_USHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.INT_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.INT_TO_STRING));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.INT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.INT_PARSE_WITH_BASE));
@@ -267,6 +280,9 @@ public class BasicTypeMembers {
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.INT_HIGHEST_ZERO_BIT));
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.INT_LOWEST_ZERO_BIT));
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.INT_BIT_COUNT));
+
+		comparator(builder, BuiltinMethodSymbol.INT_COMPARE, BasicTypeID.INT);
+
 		return builder.build();
 	}
 
@@ -287,18 +303,18 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.SHR, new MethodInstance(BuiltinMethodSymbol.UINT_SHR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.UINT_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_STRING));
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.UINT_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.UINT_PARSE_WITH_BASE));
@@ -315,6 +331,9 @@ public class BasicTypeMembers {
 		builder.getter("highestZeroBit", new MethodInstance(BuiltinMethodSymbol.UINT_HIGHEST_ZERO_BIT));
 		builder.getter("lowestZeroBit", new MethodInstance(BuiltinMethodSymbol.UINT_LOWEST_ZERO_BIT));
 		builder.getter("bitCount", new MethodInstance(BuiltinMethodSymbol.UINT_BIT_COUNT));
+
+		comparator(builder, BuiltinMethodSymbol.UINT_COMPARE, BasicTypeID.UINT);
+
 		return builder.build();
 	}
 
@@ -336,18 +355,18 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.LONG_COMPARE));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.LONG_COMPARE_INT));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_STRING));
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.LONG_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.LONG_PARSE_WITH_BASE));
@@ -364,6 +383,9 @@ public class BasicTypeMembers {
 		builder.getter("highestZeroBit", new MethodInstance(BuiltinMethodSymbol.LONG_HIGHEST_ZERO_BIT));
 		builder.getter("lowestZeroBit", new MethodInstance(BuiltinMethodSymbol.LONG_LOWEST_ZERO_BIT));
 		builder.getter("bitCount", new MethodInstance(BuiltinMethodSymbol.LONG_BIT_COUNT));
+
+		comparator(builder, BuiltinMethodSymbol.LONG_COMPARE, BasicTypeID.LONG);
+
 		return builder.build();
 	}
 
@@ -386,18 +408,18 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.ULONG_COMPARE_UINT));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.ULONG_COMPARE_USIZE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_STRING));
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.ULONG_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.ULONG_PARSE_WITH_BASE));
@@ -414,6 +436,9 @@ public class BasicTypeMembers {
 		builder.getter("highestZeroBit", new MethodInstance(BuiltinMethodSymbol.ULONG_HIGHEST_ZERO_BIT));
 		builder.getter("lowestZeroBit", new MethodInstance(BuiltinMethodSymbol.ULONG_LOWEST_ZERO_BIT));
 		builder.getter("bitCount", new MethodInstance(BuiltinMethodSymbol.ULONG_BIT_COUNT));
+
+		comparator(builder, BuiltinMethodSymbol.ULONG_COMPARE, BasicTypeID.ULONG);
+
 		return builder.build();
 	}
 
@@ -435,18 +460,18 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.USIZE_COMPARE));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.USIZE_COMPARE_UINT));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_CHAR));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_CHAR));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_STRING));
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.USIZE_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.USIZE_PARSE_WITH_BASE));
@@ -464,6 +489,9 @@ public class BasicTypeMembers {
 		builder.getter("lowestZeroBit", new MethodInstance(BuiltinMethodSymbol.USIZE_LOWEST_ZERO_BIT));
 		builder.getter("bitCount", new MethodInstance(BuiltinMethodSymbol.USIZE_BIT_COUNT));
 		builder.getter("bits", new MethodInstance(BuiltinMethodSymbol.USIZE_BITS));
+
+		comparator(builder, BuiltinMethodSymbol.USIZE_COMPARE, BasicTypeID.USIZE);
+
 		return builder.build();
 	}
 
@@ -479,17 +507,17 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.MOD, new MethodInstance(BuiltinMethodSymbol.FLOAT_MOD_FLOAT));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.FLOAT_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_DOUBLE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_DOUBLE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.FLOAT_TO_STRING));
 
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.FLOAT_BITS));
 		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.FLOAT_FROM_BITS));
@@ -497,6 +525,8 @@ public class BasicTypeMembers {
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.FLOAT_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.FLOAT_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.FLOAT_COMPARE, BasicTypeID.FLOAT);
 
 		return builder.build();
 	}
@@ -513,17 +543,17 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.MOD, new MethodInstance(BuiltinMethodSymbol.DOUBLE_MOD_DOUBLE));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.DOUBLE_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_FLOAT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_FLOAT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.DOUBLE_TO_STRING));
 
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.DOUBLE_BITS));
 		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.DOUBLE_FROM_BITS));
@@ -531,6 +561,8 @@ public class BasicTypeMembers {
 
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.DOUBLE_GET_MIN_VALUE));
 		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.DOUBLE_GET_MAX_VALUE));
+
+		comparator(builder, BuiltinMethodSymbol.DOUBLE_COMPARE, BasicTypeID.DOUBLE);
 
 		return builder.build();
 	}
@@ -542,16 +574,16 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.SUB, new MethodInstance(BuiltinMethodSymbol.CHAR_SUB_CHAR));
 		builder.operator(OperatorType.COMPARE, new MethodInstance(BuiltinMethodSymbol.CHAR_COMPARE));
 
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_BYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_SBYTE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_SHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_USHORT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_INT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_UINT));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_LONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_STRING));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_BYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_SBYTE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_SHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_USHORT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_INT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_UINT));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_LONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_ULONG));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_USIZE));
+		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_STRING));
 
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.CHAR_GET_MIN_VALUE));
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.CHAR_GET_MAX_VALUE));
@@ -559,6 +591,9 @@ public class BasicTypeMembers {
 		builder.method(new MethodInstance(BuiltinMethodSymbol.CHAR_REMOVE_DIACRITICS));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_LOWER_CASE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_UPPER_CASE));
+
+		comparator(builder, BuiltinMethodSymbol.CHAR_COMPARE, BasicTypeID.CHAR);
+
 		return builder.build();
 	}
 
@@ -582,10 +617,22 @@ public class BasicTypeMembers {
 
 		builder.operator(OperatorType.CONTAINS, new MethodInstance(BuiltinMethodSymbol.STRING_CONTAINS_CHAR));
 		builder.operator(OperatorType.CONTAINS, new MethodInstance(BuiltinMethodSymbol.STRING_CONTAINS_STRING));
+
+		comparator(builder, BuiltinMethodSymbol.STRING_COMPARE, BasicTypeID.STRING);
+
 		return builder.build();
+	}
+
+	private static void comparator(MemberSet.Builder builder, BuiltinMethodSymbol method, BasicTypeID ofType) {
+		MethodInstance comparator = new MethodInstance(method);
+		builder.comparator(((compiler, position, left, right, type) -> new CompareExpression(
+				position,
+				left,
+				right.cast(CastedEval.implicit(compiler, position, ofType)).value,
+				comparator,
+				type)));
 	}
 
 	private BasicTypeMembers() {
 	}
-
 }

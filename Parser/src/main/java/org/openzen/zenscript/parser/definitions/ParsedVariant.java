@@ -1,6 +1,8 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -21,7 +23,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 	private final List<ParsedVariantOption> variants = new ArrayList<>();
 	private final String name;
 
-	public ParsedVariant(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters) {
+	public ParsedVariant(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters) {
 		super(position, modifiers, annotations);
 
 		this.typeParameters = typeParameters;
@@ -30,7 +32,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 
 	public static ParsedVariant parseVariant(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
@@ -79,16 +81,20 @@ public class ParsedVariant extends BaseParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
-		VariantDefinition compiled = new VariantDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
-
-		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		Compiling compiling = compileAsDefinition(compiler, null);
 		definitions.add(compiling);
 		compiling.registerCompiling(definitions);
+	}
+
+	@Override
+	public Compiling compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		VariantDefinition compiled = new VariantDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
+
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling extends BaseCompilingDefinition {

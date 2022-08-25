@@ -119,20 +119,6 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public Void visitConst(ConstMember member) {
-			JavaField field = module.optFieldInfo(member);
-			if (field == null)
-				return null;
-
-			result.append(":const:");
-			result.append(member.name);
-			result.append("=");
-			result.append(field.getMapping(definition));
-			result.append('\n');
-			return null;
-		}
-
-		@Override
 		public Void visitField(FieldMember member) {
 			JavaField field = module.optFieldInfo(member);
 			if (field == null)
@@ -155,18 +141,6 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			result.append(":constructor:");
 			result.append(member.header.getCanonicalWithoutReturnType());
 			result.append("=");
-			result.append(method.getMapping(definition));
-			result.append('\n');
-			return null;
-		}
-
-		@Override
-		public Void visitDestructor(DestructorMember member) {
-			JavaNativeMethod method = module.optMethodInfo(member);
-			if (method == null)
-				return null;
-
-			result.append(":destructor=");
 			result.append(method.getMapping(definition));
 			result.append('\n');
 			return null;
@@ -246,20 +220,6 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 
 		@Override
 		public Void visitCustomIterator(IteratorMember member) {
-			return null;
-		}
-
-		@Override
-		public Void visitCaller(CallerMember member) {
-			JavaNativeMethod method = module.optMethodInfo(member);
-			if (method == null)
-				return null;
-
-			result.append(":caller:");
-			result.append(member.header.getCanonical());
-			result.append("=");
-			result.append(method.getMapping(definition));
-			result.append('\n');
 			return null;
 		}
 

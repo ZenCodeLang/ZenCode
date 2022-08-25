@@ -18,11 +18,11 @@ import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.MemberUnion;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
 import java.util.*;
 
-public class CompileContext extends AbstractTypeBuilder {
+public class CompileContext extends AbstractTypeBuilder implements TypeResolver {
 	private final ZSPackage rootPackage;
 	private final ZSPackage modulePackage;
 	private final List<ExpansionDefinition> expansions;
@@ -81,6 +81,7 @@ public class CompileContext extends AbstractTypeBuilder {
 		return Optional.ofNullable(globals.get(name));
 	}
 
+	@Override
 	public ResolvedType resolve(TypeID type) {
 		ResolvedType base = type.resolve();
 		List<ResolvedType> resolutions = new ArrayList<>();
@@ -99,12 +100,7 @@ public class CompileContext extends AbstractTypeBuilder {
 
 			resolutions.add(resolution.build());
 		}
-		if (resolutions.isEmpty()) {
-			return base;
-		} else {
-			resolutions.add(0, base);
-			return MemberUnion.of(resolutions);
-		}
+		return ExpandedResolvedType.of(base, resolutions);
 	}
 
 	@Override

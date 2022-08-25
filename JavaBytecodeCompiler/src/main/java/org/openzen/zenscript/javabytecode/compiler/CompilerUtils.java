@@ -36,19 +36,19 @@ public class CompilerUtils {
 		return type == BasicTypeID.DOUBLE || type == BasicTypeID.LONG || type == BasicTypeID.ULONG;
 	}
 
-	public static int calcAccess(int modifiers) {
+	public static int calcAccess(Modifiers modifiers) {
 		int out = 0;
-		if (Modifiers.isStatic(modifiers))
+		if (modifiers.isStatic())
 			out |= Opcodes.ACC_STATIC;
-		if (Modifiers.isFinal(modifiers))
+		if (modifiers.isFinal())
 			out |= Opcodes.ACC_FINAL;
-		if (Modifiers.isPublic(modifiers))
+		if (modifiers.isPublic())
 			out |= Opcodes.ACC_PUBLIC;
-		if (Modifiers.isPrivate(modifiers))
+		if (modifiers.isPrivate())
 			out |= Opcodes.ACC_PRIVATE;
-		if (Modifiers.isProtected(modifiers))
+		if (modifiers.isProtected())
 			out |= Opcodes.ACC_PROTECTED;
-		if (Modifiers.isAbstract(modifiers))
+		if (modifiers.isAbstract())
 			out |= Opcodes.ACC_ABSTRACT;
 		return out;
 	}

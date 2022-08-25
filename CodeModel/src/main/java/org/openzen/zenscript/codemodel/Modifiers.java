@@ -17,8 +17,10 @@ public class Modifiers {
 
 	public static final Modifiers NONE = new Modifiers(0);
 	public static final Modifiers PUBLIC = new Modifiers(FLAG_PUBLIC);
+	public static final Modifiers PROTECTED = new Modifiers(FLAG_PROTECTED);
 	public static final Modifiers PUBLIC_STATIC = new Modifiers(FLAG_PUBLIC | FLAG_STATIC);
 	public static final Modifiers PRIVATE = new Modifiers(FLAG_PRIVATE);
+	public static final Modifiers IMPLICIT = new Modifiers(FLAG_IMPLICIT);
 
 	public final int value;
 
@@ -107,6 +109,10 @@ public class Modifiers {
 		return new Modifiers(value | FLAG_CONST);
 	}
 
+	public Modifiers withoutConst() {
+		return new Modifiers(value & ~FLAG_CONST);
+	}
+
 	public static boolean isConst(int modifiers) {
 		return (modifiers & FLAG_CONST) > 0;
 	}
@@ -172,8 +178,12 @@ public class Modifiers {
 		return (modifiers & FLAG_EXTERN) > 0;
 	}
 
-	public static boolean isOverride(int modifiers) {
-		return (modifiers & FLAG_OVERRIDE) > 0;
+	public Modifiers withOverride() {
+		return new Modifiers(value | FLAG_OVERRIDE);
+	}
+
+	public boolean isOverride() {
+		return (value & FLAG_OVERRIDE) > 0;
 	}
 
 	public boolean hasAccessModifiers() {

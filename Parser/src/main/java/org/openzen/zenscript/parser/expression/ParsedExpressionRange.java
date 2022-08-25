@@ -60,7 +60,7 @@ public class ParsedExpressionRange extends ParsedExpression {
 			} else {
 				ResolvedType resolvedType = compiler.resolve(type);
 				return resolvedType.findImplicitConstructor()
-						.map(constructor -> cast.of(constructor.call(compiler.at(position), this)))
+						.map(constructor -> cast.of(constructor.call(compiler, position, TypeID.NONE, this)))
 						.orElseGet(() -> cast.invalid(CompileErrors.invalidRangeType(type)));
 			}
 		}

@@ -48,8 +48,8 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	}
 
 	@Override
-	public Optional<MethodSymbol> asMethod() {
-		return Optional.of(method);
+	public Optional<MethodInstance> asMethod() {
+		return Optional.of(this);
 	}
 
 	@Override

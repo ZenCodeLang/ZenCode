@@ -70,11 +70,11 @@ public class ParsedFile {
 			// listDefinitions will merely register all definitions (classes,
 			// interfaces, functions ...) so they can later be available to
 			// the other files as well. It doesn't yet compile anything.
-			ParsedFileCompiler fileCompiler = new ParsedFileCompiler(context);
+			ParsedFileCompiler fileCompiler = new ParsedFileCompiler(context, pkg);
 			definitionCompilers.put(file, fileCompiler);
 
 			for (ParsedDefinition definition : file.definitions) {
-				definition.registerCompiling(definitions, expansions, pkg, fileCompiler, null);
+				definition.registerCompiling(definitions, expansions, fileCompiler);
 			}
 		}
 
@@ -166,10 +166,10 @@ public class ParsedFile {
 				SemanticModule.State.ASSEMBLED,
 				rootPackage,
 				pkg.getPackage(),
-				definitions,
+				packageDefinitions,
 				scripts,
-				expansions,
-				registry.getAnnotations(),
+				expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
+				registry.getAnnotations().toArray(new AnnotationDefinition[0]),
 				logger);
 	}
 
@@ -230,36 +230,36 @@ public class ParsedFile {
 		while (true) {
 			CodePosition position = tokens.getPosition();
 			ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
-			int modifiers = 0;
+			Modifiers modifiers = Modifiers.NONE;
 			outer:
 			while (true) {
 				switch (tokens.peek().type) {
 					case K_PUBLIC:
-						modifiers |= Modifiers.FLAG_PUBLIC;
+						modifiers = modifiers.withPublic();
 						break;
 					case K_PRIVATE:
-						modifiers |= Modifiers.FLAG_PRIVATE;
+						modifiers = modifiers.withPrivate();
 						break;
 					case K_INTERNAL:
-						modifiers |= Modifiers.FLAG_INTERNAL;
+						modifiers = modifiers.withInternal();
 						break;
 					case K_EXTERN:
-						modifiers |= Modifiers.FLAG_EXTERN;
+						modifiers = modifiers.withExtern();
 						break;
 					case K_ABSTRACT:
-						modifiers |= Modifiers.FLAG_ABSTRACT;
+						modifiers = modifiers.withAbstract();
 						break;
 					case K_FINAL:
-						modifiers |= Modifiers.FLAG_FINAL;
+						modifiers = modifiers.withFinal();
 						break;
 					case K_PROTECTED:
-						modifiers |= Modifiers.FLAG_PROTECTED;
+						modifiers = modifiers.withProtected();
 						break;
 					case K_IMPLICIT:
-						modifiers |= Modifiers.FLAG_IMPLICIT;
+						modifiers = modifiers.withImplicit();
 						break;
 					case K_VIRTUAL:
-						modifiers |= Modifiers.FLAG_VIRTUAL;
+						modifiers = modifiers.withVirtual();
 						break;
 					default:
 						break outer;

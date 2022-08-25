@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class GetMatchingVariantField extends Expression {
 	public final VariantOptionSwitchValue value;
@@ -27,11 +26,6 @@ public class GetMatchingVariantField extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

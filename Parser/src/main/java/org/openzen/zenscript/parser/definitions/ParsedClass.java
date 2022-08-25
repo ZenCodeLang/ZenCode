@@ -1,6 +1,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -56,16 +57,20 @@ public class ParsedClass extends BaseParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
-		ClassDefinition compiled = new ClassDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
-
-		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		Compiling compiling = compileAsDefinition(compiler, null);
 		definitions.add(compiling);
 		compiling.registerCompiling(definitions);
+	}
+
+	@Override
+	public Compiling compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		ClassDefinition compiled = new ClassDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling extends BaseCompilingDefinition {

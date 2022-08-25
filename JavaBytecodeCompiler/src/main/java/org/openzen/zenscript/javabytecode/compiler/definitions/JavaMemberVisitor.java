@@ -7,17 +7,17 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
-import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
-import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.*;
 
 import java.util.ArrayList;
@@ -28,20 +28,25 @@ import java.util.List;
 public class JavaMemberVisitor implements MemberVisitor<Void> {
 	private final ClassWriter writer;
 	private final JavaBytecodeContext context;
-	private final JavaClass toClass;
+	private final JavaCompilingClass class_;
 	private final HighLevelDefinition definition;
 	private final JavaStatementVisitor clinitStatementVisitor;
 	private final JavaCompiledModule javaModule;
 	private EnumDefinition enumDefinition = null;
 
-	public JavaMemberVisitor(JavaBytecodeContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
+	public JavaMemberVisitor(
+			JavaBytecodeContext context,
+			ClassWriter writer,
+			JavaCompilingClass class_,
+			HighLevelDefinition definition
+	) {
 		this.writer = writer;
-		this.toClass = toClass;
+		this.class_ = class_;
 		this.definition = definition;
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(toClass, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -49,13 +54,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		if (definition instanceof EnumDefinition) {
 			this.enumDefinition = (EnumDefinition) definition;
 		}
-	}
-
-	@Override
-	public Void visitConst(ConstMember member) {
-		JavaField field = context.getJavaField(member);
-		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
-		return null;
 	}
 
 	@Override
@@ -68,7 +66,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
 		final boolean isEnum = definition instanceof EnumDefinition;
-		final JavaNativeMethod method = context.getJavaMethod(member);
+		final JavaCompilingMethod method = class_.getMethod(member);
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
@@ -115,7 +113,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
 			} else if (member.builtin == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) { //Inherited classes needs to call super()
-				final HighLevelDefinition superType = ((DefinitionTypeID) definition.getSuperType()).definition;
+				final TypeSymbol superType = ((DefinitionTypeID) definition.getSuperType()).definition;
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
 			}
@@ -157,40 +155,21 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitDestructor(DestructorMember member) {
-		int modifiers = Opcodes.ACC_PUBLIC;
-		if (member.body == null)
-			modifiers |= Opcodes.ACC_ABSTRACT;
-
-		final JavaNativeMethod method = JavaNativeMethod.getVirtual(toClass, "close", "()V", modifiers);
-		if (member.body == null)
-			return null;
-
-		final Label constructorStart = new Label();
-		final Label constructorEnd = new Label();
-		final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null, null);
-		destructorWriter.label(constructorStart);
-
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
-		statementVisitor.start();
-		// TODO: destruction of members (to be done when memory tags are implemented)
-		member.body.accept(statementVisitor);
-		destructorWriter.label(constructorEnd);
-		statementVisitor.end();
+	public Void visitMethod(MethodMember member) {
+		visitFunction(member);
 		return null;
 	}
 
-	@Override
-	public Void visitMethod(MethodMember member) {
+	private void visitFunction(FunctionalMember member) {
 		CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), Collections.emptyList());
 
-		final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
-		final JavaNativeMethod method = context.getJavaMethod(member);
+		final boolean isAbstract = member.body == null || member.getEffectiveModifiers().isAbstract();
+		final JavaCompilingMethod method = class_.getMethod(member);
 
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
 		if (!isAbstract) {
-			if (method.isAbstract() || method.cls.kind == JavaClass.Kind.INTERFACE)
+			if (method.compiled.isAbstract() || method.compiled.cls.kind == JavaClass.Kind.INTERFACE)
 				throw new IllegalArgumentException();
 
 			final Label methodStart = new Label();
@@ -203,7 +182,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			methodWriter.label(methodEnd);
 			statementVisitor.end();
 		}
-		return null;
 	}
 
 	@Override
@@ -218,7 +196,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaNativeMethod method = context.getJavaMethod(member);
+		final JavaCompilingMethod method = class_.getMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
@@ -239,17 +217,17 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
+		final JavaCompilingMethod javaMethod = class_.getMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
 		methodWriter.label(methodStart);
 
 		//in script you use $ but the parameter is named "value", which to choose?
 		//final String name = member.parameter.name;
 		final String name = "$";
-		methodWriter.nameVariable(1, name, methodStart, methodEnd, context.getType(member.getType()));
+		methodWriter.nameVariable(1, name, methodStart, methodEnd, context.getType(member.type));
 		methodWriter.nameParameter(0, name);
 
-		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(1, context.getDescriptor(member.getType())));
+		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(1, context.getDescriptor(member.type)));
 
 		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 		javaStatementVisitor.start();
@@ -262,19 +240,37 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
+		if (member.operator == OperatorType.DESTRUCTOR) {
+			int modifiers = Opcodes.ACC_PUBLIC;
+			if (member.body == null)
+				modifiers |= Opcodes.ACC_ABSTRACT;
 
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
-		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
-		methodMember.body = member.body;
-		methodMember.annotations = member.annotations;
-		javaModule.setMethodInfo(methodMember, javaMethod);
+			final JavaCompilingMethod method = new JavaCompilingMethod(class_, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers));
+			if (member.body == null)
+				return null;
 
-		return methodMember.accept(this);
+			final Label constructorStart = new Label();
+			final Label constructorEnd = new Label();
+			final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null, null);
+			destructorWriter.label(constructorStart);
+
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
+			statementVisitor.start();
+
+			// TODO: destruction of members (to be done when memory tags are implemented)
+			member.body.accept(statementVisitor);
+			destructorWriter.label(constructorEnd);
+			statementVisitor.end();
+			return null;
+		} else {
+			visitFunction(member);
+			return null;
+		}
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
+		final JavaCompilingMethod javaMethod = class_.getMethod(member);
 		if (javaMethod == null || !javaMethod.compile) {
 			return null;
 		}
@@ -313,18 +309,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		return null;
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		//It's gonna be a method anyways, so why not reuse the code ^^
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
-		final MethodMember call = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
-		call.body = member.body;
-		call.annotations = member.annotations;
-
-		javaModule.setMethodInfo(call, javaMethod);
-		return call.accept(this);
 	}
 
 	@Override

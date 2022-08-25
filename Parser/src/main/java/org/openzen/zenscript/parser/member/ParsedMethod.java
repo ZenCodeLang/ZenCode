@@ -1,19 +1,13 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.compilation.InstanceCallable;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -21,11 +15,10 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 public class ParsedMethod extends ParsedFunctionalMember {
 	private final String name;
 	private final ParsedFunctionHeader header;
-	private MethodMember compiled;
 
 	public ParsedMethod(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			ParsedFunctionHeader header,
@@ -37,33 +30,28 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new MethodMember(position, definition, modifiers, name, header.compile(context), null);
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(compiler, definition, implementation);
 	}
 
-	@Override
-	public FunctionalMember getCompiled() {
-		return compiled;
-	}
-
-	@Override
-	protected void fillOverride(MemberCompiler compiler, TypeID baseType) throws CompileException {
-		ResolvedType type = compiler.resolve(baseType);
-		InstanceCallable method = type.findMethod(name).orElseThrow(() -> new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine overridden method"));
-
-		TypeMembers typeMembers = scope.getTypeMembers(baseType);
-		FunctionalMemberRef override = typeMembers
-				.getOrCreateGroup(name, false)
-				.getOverride(position, scope, compiled);
-		if (override == null)
-			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine overridden method");
-		if (override.getHeader().hasUnknowns) {
-			scope.getPreparer().prepare(override.getTarget());
-			override = scope.getTypeMembers(baseType)
-					.getOrCreateGroup(name, false)
-					.getOverride(position, scope, compiled); // to refresh the header
+	private class Compiling extends BaseCompiling<MethodMember> {
+		public Compiling(MemberCompiler compiler, HighLevelDefinition definition, ImplementationMember implementation) {
+			super(compiler, definition, implementation);
 		}
 
-		compiled.setOverrides(override);
+		@Override
+		public void linkTypes() {
+			compiled = new MethodMember(position, definition, modifiers, name, header.compile(compiler.types()));
+		}
+
+		@Override
+		protected void fillOverride(TypeID baseType) {
+			if (!modifiers.isStatic()) {
+				compiler.resolve(baseType)
+						.findMethod(name)
+						.flatMap(operator -> operator.findOverriddenMethod(compiler, compiled.header))
+						.ifPresent(compiled::setOverrides);
+			}
+		}
 	}
 }

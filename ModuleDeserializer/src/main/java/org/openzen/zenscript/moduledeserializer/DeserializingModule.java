@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 
 /**
  * @author Hoofdgebruiker
@@ -33,7 +32,6 @@ public class DeserializingModule {
 
 	public DeserializingModule(
 			String name,
-			GlobalTypeRegistry registry,
 			DeserializingModule[] dependencies,
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
@@ -70,7 +68,7 @@ public class DeserializingModule {
 		return module == null;
 	}
 
-	public SemanticModule load(GlobalTypeRegistry globalTypeRegistry) {
+	public SemanticModule load() {
 		if (loaded != null)
 			return loaded;
 
@@ -89,7 +87,6 @@ public class DeserializingModule {
 				modulePackage,
 				definitions,
 				scripts,
-				globalTypeRegistry,
 				expansions,
 				annotations,
 				logger

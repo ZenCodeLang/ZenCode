@@ -34,6 +34,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
 	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
 	public static final JavaClass COLLECTIONS = new JavaClass("java.util", "Collections", Kind.CLASS);
+	public static final JavaClass STRINGBUILDER = new JavaClass("java.lang", "StringBuilder", Kind.CLASS);
 
 	public static final JavaClass SHARED = new JavaClass("zsynthetic", "Shared", Kind.CLASS);
 	public final JavaClass outer;
@@ -139,6 +140,7 @@ public class JavaClass implements Comparable<JavaClass> {
 		CLASS,
 		INTERFACE,
 		ENUM,
-		ARRAY
+		ARRAY,
+		EXPANSION
 	}
 }

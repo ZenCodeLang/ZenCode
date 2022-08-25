@@ -7,10 +7,8 @@ package org.openzen.zenscript.validator;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 import org.openzen.zenscript.validator.logger.ValidatorLogger;
 import org.openzen.zenscript.validator.visitors.DefinitionValidator;
@@ -24,24 +22,22 @@ import java.util.List;
  * @author Hoofdgebruiker
  */
 public class Validator {
-	public final GlobalTypeRegistry registry;
-	public final List<ExpansionDefinition> expansions;
-	public final AnnotationDefinition[] annotations;
+	public final Module module;
+	public final TypeResolver resolver;
 	private final List<ValidationLogEntry> log = new ArrayList<>();
 	private final DefinitionValidator definitionValidator = new DefinitionValidator(this);
 	private boolean hasErrors = false;
 
-	public Validator(GlobalTypeRegistry registry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations) {
-		this.registry = registry;
-		this.expansions = expansions;
-		this.annotations = annotations;
+	public Validator(Module module, TypeResolver resolver) {
+		this.module = module;
+		this.resolver = resolver;
 	}
 
 	public static SemanticModule validate(SemanticModule module, ValidatorLogger logger) {
 		if (module.state != SemanticModule.State.NORMALIZED)
 			throw new IllegalStateException("Module is not yet normalized");
 
-		Validator validator = new Validator(module.registry, module.expansions, module.annotations);
+		Validator validator = new Validator(module.module, module.createCompileContext());
 		for (ScriptBlock script : module.scripts) {
 			validator.validate(script);
 		}
@@ -63,7 +59,6 @@ public class Validator {
 				module.modulePackage,
 				module.definitions,
 				module.scripts,
-				module.registry,
 				module.expansions,
 				module.annotations,
 				logger);
@@ -74,7 +69,7 @@ public class Validator {
 	}
 
 	public void validate(ScriptBlock script) {
-		StatementValidator statementValidator = new StatementValidator(this, new ScriptScope(new AccessScope(script.module, null)));
+		StatementValidator statementValidator = new StatementValidator(this, new ScriptScope());
 		for (Statement statement : script.statements) {
 			statement.accept(statementValidator);
 		}
@@ -97,13 +92,7 @@ public class Validator {
 		log.add(new ValidationLogEntry(ValidationLogEntry.Kind.WARNING, code, position, message));
 	}
 
-	private class ScriptScope implements StatementScope {
-		private final AccessScope access;
-
-		public ScriptScope(AccessScope access) {
-			this.access = access;
-		}
-
+	private static class ScriptScope implements StatementScope {
 		@Override
 		public boolean isConstructor() {
 			return false;
@@ -127,11 +116,6 @@ public class Validator {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
-		}
-
-		@Override
-		public AccessScope getAccessScope() {
-			return access;
 		}
 	}
 }

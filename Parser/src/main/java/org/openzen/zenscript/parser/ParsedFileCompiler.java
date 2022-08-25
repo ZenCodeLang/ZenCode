@@ -1,12 +1,16 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.compilation.CompileContext;
-import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
-import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.impl.AbstractTypeBuilder;
+import org.openzen.zenscript.codemodel.compilation.impl.compiler.ExpressionCompilerImpl;
+import org.openzen.zenscript.codemodel.compilation.impl.compiler.LocalSymbols;
+import org.openzen.zenscript.codemodel.compilation.impl.compiler.MemberCompilerImpl;
+import org.openzen.zenscript.codemodel.compilation.impl.compiler.StatementCompilerImpl;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -18,16 +22,23 @@ import java.util.Optional;
 
 public class ParsedFileCompiler implements DefinitionCompiler {
 	private final CompileContext context;
+	private final CompilingPackage pkg;
 	private final TypeBuilder localTypeBuilder;
 	private final Map<String, TypeSymbol> imports = new HashMap<>();
 
-	public ParsedFileCompiler(CompileContext context) {
+	public ParsedFileCompiler(CompileContext context, CompilingPackage pkg) {
 		this.context = context;
+		this.pkg = pkg;
 		this.localTypeBuilder = new FileTypeBuilder();
 	}
 
 	public void addImport(String name, TypeSymbol type) {
 		imports.put(name, type);
+	}
+
+	@Override
+	public CompilingPackage getPackage() {
+		return pkg;
 	}
 
 	@Override
@@ -38,6 +49,16 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 	@Override
 	public ResolvedType resolve(TypeID type) {
 		return context.resolve(type);
+	}
+
+	@Override
+	public MemberCompiler forMembers(TypeSymbol compiled) {
+		return new MemberCompilerImpl(context, this, compiled, localTypeBuilder);
+	}
+
+	@Override
+	public StatementCompiler forScripts(FunctionHeader scriptHeader) {
+		return new StatementCompilerImpl(context, null, scriptHeader, new LocalSymbols(scriptHeader));
 	}
 
 	private class FileTypeBuilder extends AbstractTypeBuilder {
@@ -60,6 +81,16 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 				return Optional.of(type);
 			}
 			return context.resolve(position, name);
+		}
+
+		@Override
+		public Optional<AnnotationDefinition> resolveAnnotation(List<GenericName> name) {
+			return context.resolveAnnotation(name);
+		}
+
+		@Override
+		public ExpressionCompiler getDefaultValueCompiler() {
+			return new ExpressionCompilerImpl(context, null, null, LocalSymbols.empty(), FunctionHeader.EMPTY);
 		}
 	}
 }

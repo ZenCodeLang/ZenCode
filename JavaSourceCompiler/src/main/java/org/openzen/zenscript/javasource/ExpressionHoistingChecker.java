@@ -62,11 +62,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitCast(CastExpression expression) {
-		return true;
-	}
-
-	@Override
 	public Boolean visitCheckNull(CheckNullExpression expression) {
 		return expression.value.accept(this);
 	}
@@ -79,11 +74,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	@Override
 	public Boolean visitConditional(ConditionalExpression expression) {
 		return true;
-	}
-
-	@Override
-	public Boolean visitConst(ConstExpression expression) {
-		return false;
 	}
 
 	@Override

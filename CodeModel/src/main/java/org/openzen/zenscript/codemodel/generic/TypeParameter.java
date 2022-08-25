@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.generic;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 import java.util.ArrayList;
 import java.util.List;

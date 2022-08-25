@@ -10,6 +10,9 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class StaticCallable {
 	private final List<StaticCallableMethod> overloads;
@@ -20,6 +23,23 @@ public final class StaticCallable {
 
 	public StaticCallable(StaticCallableMethod method) {
 		this.overloads = Collections.singletonList(method);
+	}
+
+	public StaticCallable map(Function<StaticCallableMethod, StaticCallableMethod> projection) {
+		return new StaticCallable(overloads.stream().map(projection).collect(Collectors.toList()));
+	}
+
+	public StaticCallable union(StaticCallable other) {
+		List<StaticCallableMethod> concatenated = Stream.concat(overloads.stream(), other.overloads.stream()).collect(Collectors.toList());
+		return new StaticCallable(concatenated);
+	}
+
+	public boolean acceptsZeroArguments() {
+		for (StaticCallableMethod method : overloads) {
+			if (method.getHeader().accepts(0))
+				return true;
+		}
+		return false;
 	}
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, TypeID[] typeArguments, CompilingExpression... arguments) {

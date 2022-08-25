@@ -2,6 +2,8 @@ package org.openzen.zenscript.codemodel.identifiers;
 
 import org.openzen.zenscript.codemodel.Module;
 
+import java.util.Optional;
+
 public interface DefinitionSymbol {
 	Module getModule();
 
@@ -10,4 +12,6 @@ public interface DefinitionSymbol {
 	boolean isInterface();
 
 	boolean isExpansion();
+
+	Optional<TypeSymbol> asType();
 }

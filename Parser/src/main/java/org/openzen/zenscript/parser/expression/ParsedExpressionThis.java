@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.expression.StaticCompilingCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
 
 import java.util.Optional;
@@ -39,8 +40,8 @@ public class ParsedExpressionThis extends ParsedExpression {
 		}
 
 		@Override
-		public Optional<StaticCallable> call() {
-			return Optional.of(type.thisCall());
+		public Optional<CompilingCallable> call() {
+			return Optional.of(new StaticCompilingCallable(compiler, type.thisCall()));
 		}
 	}
 }

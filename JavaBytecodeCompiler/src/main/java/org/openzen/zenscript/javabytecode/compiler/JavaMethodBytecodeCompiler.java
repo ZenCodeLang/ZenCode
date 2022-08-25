@@ -2,15 +2,19 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.RangeExpression;
+import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.*;
 
+import java.util.Collections;
+
 public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
+	private static final JavaNativeMethod BOOLEAN_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/long/String;");
+
 	public static final JavaNativeMethod OBJECT_HASHCODE = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
 	public static final JavaNativeMethod OBJECT_EQUALS = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "equals", "(Ljava/lang/Object)Z");
 	public static final JavaNativeMethod OBJECT_CLONE = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
@@ -89,6 +93,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod STRING_CHARACTERS = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "toCharArray", "()[C");
 	private static final JavaNativeMethod STRING_ISEMPTY = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "isEmpty", "()Z");
 	private static final JavaNativeMethod STRING_GET_BYTES = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "getBytes", "(Ljava/nio/charset/Charset;)[B");
+	private static final JavaNativeMethod STRING_CONTAINS = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "contains", "(Ljava/lang/CharSequence;)Z");
 	private static final JavaNativeMethod ENUM_COMPARETO = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "compareTo", "(Ljava/lang/Enum;)I");
 	private static final JavaNativeMethod ENUM_NAME = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
 	private static final JavaNativeMethod ENUM_ORDINAL = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
@@ -131,22 +136,46 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod COLLECTION_SIZE = JavaNativeMethod.getNativeVirtual(JavaClass.COLLECTION, "size", "()I");
 	private static final JavaNativeMethod COLLECTION_TOARRAY = JavaNativeMethod.getNativeVirtual(JavaClass.COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
 
+	private static final JavaNativeMethod STRINGBUILDER_LENGTH = JavaNativeMethod.getNativeVirtual(JavaClass.STRINGBUILDER, "length", "()I");
+
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor expressionVisitor;
 	private final JavaBoxingTypeVisitor boxingTypeVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 	private final JavaBytecodeContext context;
+	private final JavaCompiledModule module;
 
-	public JavaMethodBytecodeCompiler(JavaWriter javaWriter, JavaExpressionVisitor expressionVisitor, JavaBytecodeContext context) {
+	public JavaMethodBytecodeCompiler(JavaWriter javaWriter, JavaExpressionVisitor expressionVisitor, JavaBytecodeContext context, JavaCompiledModule module) {
 		this.javaWriter = javaWriter;
 		this.expressionVisitor = expressionVisitor;
 		boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
 		unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
 		this.context = context;
+		this.module = module;
 	}
 
 	@Override
-	public Void nativeMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
+	public Void nativeConstructor(JavaNativeMethod method, TypeID type, CallArguments arguments) {
+		javaWriter.newObject(method.cls);
+		javaWriter.dup();
+		for (Expression argument : arguments.arguments) {
+			argument.accept(expressionVisitor);
+		}
+		if (method.compile) {
+			handleTypeArguments(method, arguments);
+		}
+		javaWriter.invokeSpecial(method);
+		return null;
+	}
+
+	@Override
+	public Void nativeVirtualMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
+		target.accept(expressionVisitor);
+		return nativeStaticMethod(method, returnType, arguments);
+	}
+
+	@Override
+	public Void nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
 		for (Expression argument : arguments.arguments) {
 			argument.accept(expressionVisitor);
 		}
@@ -200,7 +229,170 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	}
 
 	@Override
-	public Void builtinMethod(BuiltinMethodSymbol method, CallArguments args) {
+	public Void builtinConstructor(BuiltinMethodSymbol method, TypeID type, CallArguments args) {
+		Expression[] arguments = args.arguments;
+		switch (method) {
+			case STRING_CONSTRUCTOR_CHARACTERS:
+				javaWriter.newObject(JavaClass.STRING);
+				javaWriter.dup();
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeSpecial(STRING_INIT_CHARACTERS);
+				return null;
+			case ASSOC_CONSTRUCTOR:
+			case GENERICMAP_CONSTRUCTOR: {
+				javaWriter.newObject(JavaClass.HASHMAP);
+				javaWriter.dup();
+				javaWriter.invokeSpecial(HASHMAP_INIT);
+				return null;
+			}
+			case ARRAY_CONSTRUCTOR_SIZED:
+			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
+				ArrayTypeID arrayType = (ArrayTypeID) type;
+
+				final Type ASMType = context.getType(type);
+				final Type ASMElementType = context.getType(arrayType.elementType);
+
+				final Label begin = new Label();
+				final Label end = new Label();
+
+				javaWriter.label(begin);
+				final int defaultValueLocation = javaWriter.local(ASMElementType);
+				javaWriter.addVariableInfo(new JavaLocalVariableInfo(ASMElementType, defaultValueLocation, begin, "defaultValue", end));
+
+
+				if (method == BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_SIZED) {
+					arrayType.elementType.getDefaultValue().accept(expressionVisitor);
+				} else {
+					arguments[arguments.length - 1].accept(expressionVisitor);
+				}
+				javaWriter.store(ASMElementType, defaultValueLocation);
+
+
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(arrayType.dimension, arguments, expressionVisitor);
+				ArrayInitializerHelper.visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, arrayType.dimension, ASMType, defaultValueLocation);
+
+				javaWriter.label(end);
+				return null;
+			}
+			case ARRAY_CONSTRUCTOR_LAMBDA: {
+
+				//Labels
+				final Label begin = new Label();
+				final Label end = new Label();
+				javaWriter.label(begin);
+
+				final Type ASMElementType = context.getType(type);
+				final int dimension = ((ArrayTypeID) type).dimension;
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, arguments, expressionVisitor);
+				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
+					arguments[dimension].accept(expressionVisitor);
+					for (int counterLocation : counterLocations) {
+						javaWriter.loadInt(counterLocation);
+					}
+					javaWriter.invokeInterface(context.getFunctionalInterface(arguments[dimension].type));
+				});
+				javaWriter.label(end);
+				return null;
+			}
+			case ARRAY_CONSTRUCTOR_PROJECTED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
+				ArrayTypeID arrayType = (ArrayTypeID) type;
+
+				//Labels
+				final Label begin = new Label();
+				final Label end = new Label();
+				javaWriter.label(begin);
+
+				//Origin Array
+				arguments[0].accept(expressionVisitor);
+				final Type originArrayType = context.getType(arguments[0].type);
+				final int originArrayLocation = javaWriter.local(originArrayType);
+				javaWriter.storeObject(originArrayLocation);
+				Type destinationArrayType = context.getType(type);
+
+				final boolean indexed = method == BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
+				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(arguments[1]);
+				if (canBeInLined) {
+					//We can inline, so do it
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(arrayType.dimension, originArrayType, originArrayLocation, javaWriter);
+					final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(arrayType.dimension));
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, arrayType.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
+								Label inlineBegin = new Label();
+								Label inlineEnd = new Label();
+								javaWriter.label(inlineBegin);
+
+								final int projectedElementLocal = javaWriter.local(projectedElementType);
+								javaWriter.store(projectedElementType, projectedElementLocal);
+
+
+								JavaExpressionVisitor visitor = new JavaExpressionVisitor(context, module, javaWriter) {
+									@Override
+									public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+										if (indexed) {
+											final JavaParameterInfo parameterInfo = module.getParameterInfo(expression.parameter);
+											if (parameterInfo != null && parameterInfo.index <= arrayType.dimension) {
+												javaWriter.loadInt(counterLocations[parameterInfo.index - 1]);
+												return null;
+											}
+										}
+
+										javaWriter.load(projectedElementType, projectedElementLocal);
+										return null;
+									}
+								};
+
+								Expression funcExpression = arguments[1];
+								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
+									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false, Collections
+											.emptyList());
+									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
+									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
+
+								} else throw new IllegalStateException("Trying to inline a non-inlineable expression");
+
+
+								javaWriter.label(inlineEnd);
+							});
+				} else {
+					//We cannot inline, so get a hold of the function expression and apply it to every
+					arguments[1].accept(expressionVisitor); //Projection Function
+					final Type functionType = context.getType(arguments[1].type);
+					final int functionLocation = javaWriter.local(functionType);
+					javaWriter.storeObject(functionLocation);
+					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(arrayType.dimension, originArrayType, originArrayLocation, javaWriter);
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, arrayType.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
+								//Apply function here
+								javaWriter.loadObject(functionLocation);
+								javaWriter.swap();
+
+								if (indexed) {
+									for (int counterLocation : counterLocations) {
+										javaWriter.loadInt(counterLocation);
+										javaWriter.swap();
+									}
+								}
+
+								javaWriter.invokeInterface(context.getFunctionalInterface(arguments[1].type));
+							});
+				}
+
+				javaWriter.label(end);
+				return null;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Void builtinVirtualMethod(BuiltinMethodSymbol method, Expression target, CallArguments arguments) {
+		return builtinStaticMethod(method, arguments.bind(target));
+	}
+
+	@Override
+	public Void builtinStaticMethod(BuiltinMethodSymbol method, CallArguments args) {
 		Expression[] arguments = args.arguments;
 		switch (method) {
 			case STRING_RANGEGET: {
@@ -341,6 +533,418 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		}
 
 		switch (method) {
+			/* Casts */
+			case BOOL_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(BOOLEAN_TO_STRING);
+				}
+				break;
+			case BYTE_TO_SBYTE:
+				javaWriter.i2b();
+				break;
+			case BYTE_TO_SHORT:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				javaWriter.i2s();
+				break;
+			case BYTE_TO_USHORT:
+			case BYTE_TO_INT:
+			case BYTE_TO_UINT:
+			case BYTE_TO_USIZE:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				break;
+			case BYTE_TO_LONG:
+			case BYTE_TO_ULONG:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				javaWriter.i2l();
+				break;
+			case BYTE_TO_FLOAT:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				javaWriter.i2f();
+				break;
+			case BYTE_TO_DOUBLE:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				javaWriter.i2d();
+				break;
+			case BYTE_TO_CHAR:
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				break;
+			case BYTE_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.constant(0xFF);
+					javaWriter.iAnd();
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case SBYTE_TO_BYTE:
+			case SBYTE_TO_SHORT:
+			case SBYTE_TO_USHORT:
+			case SBYTE_TO_INT:
+			case SBYTE_TO_UINT:
+			case SBYTE_TO_USIZE:
+				break;
+			case SBYTE_TO_LONG:
+			case SBYTE_TO_ULONG:
+				javaWriter.i2l();
+				break;
+			case SBYTE_TO_FLOAT:
+				javaWriter.i2f();
+				break;
+			case SBYTE_TO_DOUBLE:
+				javaWriter.i2d();
+				break;
+			case SBYTE_TO_CHAR:
+				break;
+			case SBYTE_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case SHORT_TO_BYTE:
+				break;
+			case SHORT_TO_SBYTE:
+				javaWriter.i2b();
+				break;
+			case SHORT_TO_USHORT:
+			case SHORT_TO_INT:
+			case SHORT_TO_UINT:
+			case SHORT_TO_USIZE:
+				break;
+			case SHORT_TO_LONG:
+			case SHORT_TO_ULONG:
+				javaWriter.i2l();
+				break;
+			case SHORT_TO_FLOAT:
+				javaWriter.i2f();
+				break;
+			case SHORT_TO_DOUBLE:
+				javaWriter.i2d();
+				break;
+			case SHORT_TO_CHAR:
+				break;
+			case SHORT_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(SHORT_TO_STRING);
+				}
+				break;
+			case USHORT_TO_BYTE:
+				break;
+			case USHORT_TO_SBYTE:
+				javaWriter.i2b();
+				break;
+			case USHORT_TO_SHORT:
+				javaWriter.i2s();
+				break;
+			case USHORT_TO_INT:
+			case USHORT_TO_UINT:
+			case USHORT_TO_USIZE:
+				javaWriter.constant(0xFFFF);
+				javaWriter.iAnd();
+				break;
+			case USHORT_TO_LONG:
+			case USHORT_TO_ULONG:
+				javaWriter.constant(0xFFFFL);
+				javaWriter.iAnd();
+				break;
+			case USHORT_TO_FLOAT:
+				javaWriter.constant(0xFFFFL);
+				javaWriter.iAnd();
+				javaWriter.i2f();
+				break;
+			case USHORT_TO_DOUBLE:
+				javaWriter.constant(0xFFFFL);
+				javaWriter.iAnd();
+				javaWriter.i2d();
+				break;
+			case USHORT_TO_CHAR:
+				javaWriter.constant(0xFFFFL);
+				javaWriter.iAnd();
+				break;
+			case USHORT_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.constant(0xFFFFL);
+					javaWriter.iAnd();
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case INT_TO_BYTE:
+			case USIZE_TO_BYTE:
+				break;
+			case INT_TO_SBYTE:
+			case USIZE_TO_SBYTE:
+				javaWriter.i2b();
+				break;
+			case INT_TO_SHORT:
+			case USIZE_TO_SHORT:
+				javaWriter.i2s();
+				break;
+			case INT_TO_USHORT:
+			case USIZE_TO_USHORT:
+				break;
+			case INT_TO_UINT:
+			case USIZE_TO_INT:
+			case USIZE_TO_UINT:
+			case INT_TO_USIZE:
+				break;
+			case INT_TO_LONG:
+			case INT_TO_ULONG:
+			case USIZE_TO_LONG:
+			case USIZE_TO_ULONG:
+				javaWriter.i2l();
+				break;
+			case INT_TO_FLOAT:
+			case USIZE_TO_FLOAT:
+				javaWriter.i2f();
+				break;
+			case INT_TO_DOUBLE:
+			case USIZE_TO_DOUBLE:
+				javaWriter.i2d();
+				break;
+			case INT_TO_CHAR:
+			case USIZE_TO_CHAR:
+				javaWriter.i2s();
+				break;
+			case INT_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case USIZE_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					Label ifNull = new Label();
+					Label exit = new Label();
+					javaWriter.dup();
+					javaWriter.constant(-1);
+					javaWriter.ifICmpEQ(ifNull);
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+					javaWriter.goTo(exit);
+					javaWriter.label(ifNull);
+					javaWriter.pop();
+					javaWriter.constant("null");
+					javaWriter.label(exit);
+				} else {
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case UINT_TO_BYTE:
+				break;
+			case UINT_TO_SBYTE:
+				javaWriter.i2b();
+				break;
+			case UINT_TO_SHORT:
+				javaWriter.i2s();
+				break;
+			case UINT_TO_USHORT:
+			case UINT_TO_INT:
+			case UINT_TO_USIZE:
+				break;
+			case UINT_TO_LONG:
+				javaWriter.i2l();
+				break;
+			case UINT_TO_ULONG:
+				javaWriter.i2l();
+				javaWriter.constant(0xFFFFFFFFL);
+				javaWriter.lAnd();
+				break;
+			case UINT_TO_FLOAT:
+				javaWriter.i2l();
+				javaWriter.constant(0xFFFFFFFFL);
+				javaWriter.lAnd();
+				javaWriter.l2f();
+				break;
+			case UINT_TO_DOUBLE:
+				javaWriter.i2l();
+				javaWriter.constant(0xFFFFFFFFL);
+				javaWriter.lAnd();
+				javaWriter.l2d();
+				break;
+			case UINT_TO_CHAR:
+				javaWriter.i2s();
+				break;
+			case UINT_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
+				}
+				break;
+			case LONG_TO_BYTE:
+				javaWriter.l2i();
+				break;
+			case LONG_TO_SBYTE:
+				javaWriter.l2i();
+				javaWriter.i2b();
+				break;
+			case LONG_TO_SHORT:
+				javaWriter.l2i();
+				javaWriter.i2s();
+				break;
+			case LONG_TO_USHORT:
+			case LONG_TO_INT:
+			case LONG_TO_UINT:
+			case LONG_TO_USIZE:
+				javaWriter.l2i();
+				break;
+			case LONG_TO_ULONG:
+				break;
+			case LONG_TO_FLOAT:
+				javaWriter.l2f();
+				break;
+			case LONG_TO_DOUBLE:
+				javaWriter.l2d();
+				break;
+			case LONG_TO_CHAR:
+				javaWriter.l2i();
+				javaWriter.i2s();
+				break;
+			case LONG_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(LONG_TO_STRING);
+				}
+				break;
+			case ULONG_TO_BYTE:
+				javaWriter.l2i();
+				break;
+			case ULONG_TO_SBYTE:
+				javaWriter.l2i();
+				javaWriter.i2b();
+				break;
+			case ULONG_TO_SHORT:
+				javaWriter.l2i();
+				javaWriter.i2s();
+				break;
+			case ULONG_TO_USHORT:
+			case ULONG_TO_INT:
+			case ULONG_TO_UINT:
+			case ULONG_TO_USIZE:
+				javaWriter.l2i();
+				break;
+			case ULONG_TO_LONG:
+				break;
+			case ULONG_TO_FLOAT:
+				javaWriter.l2f(); // TODO: this is incorrect
+				break;
+			case ULONG_TO_DOUBLE:
+				javaWriter.l2d(); // TODO: this is incorrect
+			case ULONG_TO_CHAR:
+				javaWriter.l2i();
+				javaWriter.i2s();
+				break;
+			case ULONG_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(LONG_TO_UNSIGNED_STRING);
+				}
+				break;
+			case FLOAT_TO_BYTE:
+				javaWriter.f2i();
+				break;
+			case FLOAT_TO_SBYTE:
+				javaWriter.f2i();
+				javaWriter.i2b();
+				break;
+			case FLOAT_TO_SHORT:
+				javaWriter.f2i();
+				javaWriter.i2s();
+				break;
+			case FLOAT_TO_USHORT:
+			case FLOAT_TO_UINT:
+			case FLOAT_TO_INT:
+			case FLOAT_TO_USIZE:
+				javaWriter.f2i();
+				break;
+			case FLOAT_TO_LONG:
+			case FLOAT_TO_ULONG:
+				javaWriter.f2l();
+				break;
+			case FLOAT_TO_DOUBLE:
+				javaWriter.f2d();
+				break;
+			case FLOAT_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(FLOAT_TO_STRING);
+				}
+				break;
+			case DOUBLE_TO_BYTE:
+				javaWriter.d2i();
+				break;
+			case DOUBLE_TO_SBYTE:
+				javaWriter.d2i();
+				javaWriter.i2b();
+				break;
+			case DOUBLE_TO_SHORT:
+				javaWriter.d2i();
+				javaWriter.i2s();
+				break;
+			case DOUBLE_TO_USHORT:
+			case DOUBLE_TO_INT:
+			case DOUBLE_TO_UINT:
+			case DOUBLE_TO_USIZE:
+				javaWriter.d2i();
+				break;
+			case DOUBLE_TO_LONG:
+			case DOUBLE_TO_ULONG:
+				javaWriter.d2l();
+				break;
+			case DOUBLE_TO_FLOAT:
+				javaWriter.d2f();
+				break;
+			case DOUBLE_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(DOUBLE_TO_STRING);
+				}
+				break;
+			case CHAR_TO_BYTE:
+				break;
+			case CHAR_TO_SBYTE:
+				javaWriter.i2s();
+				break;
+			case CHAR_TO_SHORT:
+			case CHAR_TO_USHORT:
+			case CHAR_TO_INT:
+			case CHAR_TO_UINT:
+			case CHAR_TO_USIZE:
+				break;
+			case CHAR_TO_LONG:
+			case CHAR_TO_ULONG:
+				javaWriter.i2l();
+				break;
+			case CHAR_TO_STRING:
+				if (arguments[0].type.isOptional()) {
+					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(CHARACTER_TO_STRING);
+				}
+				break;
+			case ENUM_TO_STRING:
+				javaWriter.invokeVirtual(ENUM_NAME);
+				break;
+
+			/* Methods and operators */
 			case BOOL_AND:
 				javaWriter.iAnd();
 				break;
@@ -563,6 +1167,170 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + method);
 		}
+		return null;
+	}
+
+	@Override
+	public Void specialConstructor(JavaSpecialMethod method, TypeID type, CallArguments arguments) {
+		return null;
+	}
+
+	@Override
+	public Void specialVirtualMethod(JavaSpecialMethod method, Expression target, CallArguments arguments) {
+		return specialStaticMethod(method, arguments.bind(target));
+	}
+
+	@Override
+	public Void specialStaticMethod(JavaSpecialMethod method, CallArguments args) {
+		Expression[] arguments = args.arguments;
+		switch (method) {
+			case STRINGBUILDER_ISEMPTY:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRINGBUILDER_LENGTH);
+				break;
+			case LIST_TO_ARRAY: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				javaWriter.iConst0();
+				final Type type = context.getType(((ArrayTypeID) value.type).elementType);
+				javaWriter.newArray(type);
+				final JavaNativeMethod toArray = new JavaNativeMethod(JavaClass.COLLECTION, JavaNativeMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
+				javaWriter.invokeInterface(toArray);
+				javaWriter.checkCast(context.getType(value.type));
+				break;
+			}
+			case CONTAINS_AS_INDEXOF: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeStatic(CHARACTER_TO_STRING);
+				javaWriter.invokeInterface(STRING_CONTAINS);
+				break;
+			}
+			case SORTED: {
+				// Stack when starting [UnsortedArray, ...]
+				// Stack after -> [SortedArray, ...]
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+				javaWriter.invokeVirtual(OBJECT_CLONE);
+				javaWriter.checkCast(context.getDescriptor(value.type));
+				javaWriter.dup();
+
+				// Todo: Primitive method overloads if primitive Array!
+				final JavaNativeMethod sort = JavaNativeMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+				javaWriter.invokeStatic(sort);
+				break;
+			}
+			case SORTED_WITH_COMPARATOR: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+				javaWriter.invokeVirtual(OBJECT_CLONE);
+				javaWriter.checkCast(context.getDescriptor(value.type));
+				javaWriter.dupX1();
+
+				arguments[1].accept(expressionVisitor);
+				// ToDo: Primitive Arrays?
+				final JavaNativeMethod sortWithComparator = JavaNativeMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V");
+				javaWriter.invokeStatic(sortWithComparator);
+				break;
+			}
+			case ARRAY_COPY: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final JavaNativeMethod clone = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
+				javaWriter.invokeVirtual(clone);
+				javaWriter.checkCast(context.getDescriptor(value.type));
+				break;
+			}
+			case ARRAY_COPY_RESIZE: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final TypeID elementType = ((ArrayTypeID) value.type).elementType;
+				final boolean primitive = CompilerUtils.isPrimitive(elementType);
+				final String elementDescriptor = primitive
+						? context.getDescriptor(elementType)
+						: "Ljava/lang/Object;";
+
+
+				final String methodDescriptor = String.format("([%1$sI)[%1$s", elementDescriptor);
+
+				final JavaNativeMethod copyOf = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOf", methodDescriptor);
+				javaWriter.invokeStatic(copyOf);
+				if (!primitive) {
+					javaWriter.checkCast(context.getDescriptor(value.type));
+				}
+				break;
+			}
+			case ARRAY_COPY_TO: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				//Copy this (source) to dest
+				//              source.copyTo(dest, sourceOffset, destOffset, length)
+				//=> System.arraycopy(source, sourceOffset, dest, destOffset, length);
+				javaWriter.dup2X2();
+				javaWriter.pop2();
+				javaWriter.swap();
+				javaWriter.dup2X2();
+				javaWriter.pop2();
+				final JavaClass system = JavaClass.fromInternalName("java/lang/System", JavaClass.Kind.CLASS);
+				final JavaNativeMethod javaMethod = JavaNativeMethod.getStatic(system, "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", JavaModifiers.PUBLIC);
+				javaWriter.invokeStatic(javaMethod);
+				break;
+			}
+			case STRING_TO_ASCII: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+				final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+				javaWriter.getStaticField(charset);
+				javaWriter.invokeVirtual(STRING_GET_BYTES);
+				break;
+			}
+			case STRING_TO_UTF8: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+				final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+				javaWriter.getStaticField(charset);
+				javaWriter.invokeVirtual(STRING_GET_BYTES);
+				break;
+			}
+			case BYTES_ASCII_TO_STRING: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+				final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+
+				javaWriter.newObject(JavaClass.STRING);
+				javaWriter.dupX1();
+				javaWriter.swap();
+				javaWriter.getStaticField(charset);
+				javaWriter.invokeSpecial(STRING_INIT_BYTES_CHARSET);
+				break;
+			}
+			case BYTES_UTF8_TO_STRING: {
+				Expression value = arguments[0];
+				value.accept(expressionVisitor);
+
+				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+				final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+
+				javaWriter.newObject(JavaClass.STRING);
+				javaWriter.dupX1();
+				javaWriter.swap();
+				javaWriter.getStaticField(charset);
+				javaWriter.invokeSpecial(STRING_INIT_BYTES_CHARSET);
+				break;
+			}
+		}
+
 		return null;
 	}
 }

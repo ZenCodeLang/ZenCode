@@ -2,6 +2,8 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -25,14 +27,14 @@ public class ParsedEnum extends BaseParsedDefinition {
 	private final IParsedType asType;
 	private final String name;
 
-	public ParsedEnum(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, IParsedType asType) {
+	public ParsedEnum(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, IParsedType asType) {
 		super(position, modifiers, annotations);
 
 		this.asType = asType;
 		this.name = name;
 	}
 
-	public static ParsedEnum parseEnum(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
+	public static ParsedEnum parseEnum(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		IParsedType asType = null;
 		if (tokens.optional(ZSTokenType.K_AS) != null)
@@ -71,12 +73,16 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
-		EnumDefinition compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		definitions.add(new Compiling(compiler, compiled, outer != null));
+		definitions.add(compileAsDefinition(compiler, null));
+	}
+
+	@Override
+	public CompilingDefinition compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		EnumDefinition compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling extends BaseCompilingDefinition {

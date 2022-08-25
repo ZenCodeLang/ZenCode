@@ -2,10 +2,12 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.AnyMethod;
+import org.openzen.zenscript.codemodel.compilation.CompilingMember;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -13,11 +15,10 @@ import org.openzen.zenscript.parser.type.IParsedType;
 
 public class ParsedCaster extends ParsedFunctionalMember {
 	private final IParsedType type;
-	private CasterMember compiled;
 
 	public ParsedCaster(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			IParsedType type,
 			ParsedFunctionBody body) {
@@ -27,17 +28,28 @@ public class ParsedCaster extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new CasterMember(position, definition, modifiers, type.compile(context), null);
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(compiler, definition, implementation);
 	}
 
-	@Override
-	public FunctionalMember getCompiled() {
-		return compiled;
-	}
+	private class Compiling extends BaseCompiling<CasterMember> {
+		public Compiling(MemberCompiler compiler, HighLevelDefinition definition, ImplementationMember implementation) {
+			super(compiler, definition, implementation);
+		}
 
-	@Override
-	protected void fillOverride(TypeScope scope, TypeID baseType) {
-		compiled.overrides = scope.getTypeMembers(baseType).getCaster(compiled.toType);
+		@Override
+		public void linkTypes() {
+			compiled = new CasterMember(position, definition, modifiers, type.compile(compiler.types()));
+		}
+
+		@Override
+		protected void fillOverride(TypeID baseType) {
+			if (!modifiers.isStatic()) {
+				compiler.resolve(baseType)
+						.findCaster(compiled.toType)
+						.flatMap(AnyMethod::asMethod)
+						.ifPresent(compiled::setOverrides);
+			}
+		}
 	}
 }

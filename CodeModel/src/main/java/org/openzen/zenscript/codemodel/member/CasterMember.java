@@ -39,11 +39,7 @@ public class CasterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		if (modifiers.isImplicit()) {
-			members.implicitCast(mapper.map(targetType, this));
-		} else {
-			members.explicitCast(mapper.map(targetType, this));
-		}
+		members.cast(mapper.map(targetType, this));
 	}
 
 	public boolean isImplicit() {
@@ -84,7 +80,7 @@ public class CasterMember extends FunctionalMember {
 		return Optional.ofNullable(overrides);
 	}
 
-	void setOverrides(MethodInstance overrides) {
+	public void setOverrides(MethodInstance overrides) {
 		this.overrides = overrides;
 	}
 }

@@ -9,11 +9,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
-import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -79,23 +76,6 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeSerializat
 	}
 
 	@Override
-	public Void visitConst(TypeSerializationContext context, ConstMember member) {
-		output.writeUInt(MemberEncoding.TYPE_CONST);
-
-		int flags = getFlags(member);
-		if (member.name != null)
-			flags |= MemberEncoding.FLAG_NAME;
-
-		serialize(flags, context, member);
-		if ((flags & MemberEncoding.FLAG_NAME) > 0)
-			output.writeString(member.name);
-
-		output.serialize(context, member.getType());
-		output.enqueueCode(encoder -> encoder.serialize(new StatementSerializationContext(context, FunctionHeader.PLACEHOLDER), member.value));
-		return null;
-	}
-
-	@Override
 	public Void visitField(TypeSerializationContext context, FieldMember member) {
 		output.writeUInt(MemberEncoding.TYPE_FIELD);
 
@@ -131,19 +111,6 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeSerializat
 
 		output.enqueueCode(encoder -> {
 			encoder.serialize(inner, member.body);
-		});
-		return null;
-	}
-
-	@Override
-	public Void visitDestructor(TypeSerializationContext context, DestructorMember member) {
-		output.writeUInt(MemberEncoding.TYPE_DESTRUCTOR);
-		int flags = getFlags(member);
-		serialize(flags, context, member);
-
-		output.enqueueCode(encoder -> {
-			encoder.write(context, member.overrides);
-			encoder.serialize(new StatementSerializationContext(context, member.header), member.body);
 		});
 		return null;
 	}
@@ -249,22 +216,6 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeSerializat
 			encoder.serialize(
 					new StatementSerializationContext(context, member.header),
 					member.body);
-		});
-		return null;
-	}
-
-	@Override
-	public Void visitCaller(TypeSerializationContext context, CallerMember member) {
-		output.writeUInt(MemberEncoding.TYPE_CALLER);
-		int flags = getFlags(member);
-		serialize(flags, context, member);
-
-		StatementSerializationContext inner = new StatementSerializationContext(context, member.header);
-		output.serialize(inner, member.header);
-
-		output.enqueueCode(encoder -> {
-			encoder.write(inner, member.getOverrides());
-			encoder.serialize(inner, member.body);
 		});
 		return null;
 	}

@@ -1,6 +1,8 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -25,7 +27,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 	private final List<IParsedType> superInterfaces;
 	private final String name;
 
-	public ParsedInterface(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces) {
+	public ParsedInterface(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces) {
 		super(position, modifiers, annotations);
 
 		this.name = name;
@@ -35,7 +37,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 
 	public static ParsedInterface parseInterface(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
@@ -69,16 +71,19 @@ public class ParsedInterface extends BaseParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
-		InterfaceDefinition compiled = new InterfaceDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
-
-		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		Compiling compiling = compileAsDefinition(compiler, null);
 		definitions.add(compiling);
 		compiling.registerCompiling(definitions);
+	}
+
+	@Override
+	public Compiling compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		InterfaceDefinition compiled = new InterfaceDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling extends BaseCompilingDefinition {

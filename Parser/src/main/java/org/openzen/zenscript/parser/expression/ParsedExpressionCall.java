@@ -39,14 +39,14 @@ public class ParsedExpressionCall extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			return receiver.call()
-					.map(call -> call.call(compiler, position, arguments))
+					.map(call -> call.call(position, arguments))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.cannotCall()));
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return receiver.call()
-					.map(call -> call.casted(compiler, position, cast, arguments))
+					.map(call -> call.casted(position, cast, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.cannotCall()));
 		}
 	}

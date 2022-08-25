@@ -6,7 +6,6 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -73,13 +72,13 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 
 	@Override
 	public Void visitFunction(TypeContext context, FunctionTypeID function) {
-		ValidationUtils.validateHeader(validator, position, function.header, new AccessScope(null, null));
+		ValidationUtils.validateHeader(validator, position, function.header);
 		return null;
 	}
 
 	@Override
 	public Void visitDefinition(TypeContext context, DefinitionTypeID definition) {
-		ValidationUtils.validateTypeArguments(validator, position, definition.definition.typeParameters, definition.typeArguments);
+		ValidationUtils.validateTypeArguments(validator, position, definition.definition.getTypeParameters(), definition.typeArguments);
 		return null;
 	}
 

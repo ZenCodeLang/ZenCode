@@ -22,6 +22,6 @@ public interface TypeVisitorWithContext<C, R, E extends Exception> {
 	R visitOptional(C context, OptionalTypeID type) throws E;
 
 	default R visitInvalid(C context, InvalidTypeID type) throws E {
-		throw new RuntimeException("Invalid type: " + type.message);
+		throw new RuntimeException("Invalid type: " + type.error.description);
 	}
 }

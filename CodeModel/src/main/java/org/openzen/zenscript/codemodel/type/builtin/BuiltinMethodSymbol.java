@@ -546,7 +546,9 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	FUNCTION_NOTSAME(FunctionTypeSymbol.PLACEHOLDER, "!==", FunctionHeader.PLACEHOLDER),
 
 	CLASS_DEFAULT_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", FunctionHeader.PLACEHOLDER),
+	CLASS_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", FunctionHeader.EMPTY),
 	STRUCT_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", VOID),
+	STRUCT_DEFAULT_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", VOID),
 	ENUM_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", VOID),
 	ENUM_NAME(FunctionTypeSymbol.PLACEHOLDER, "name", STRING),
 	ENUM_ORDINAL(FunctionTypeSymbol.PLACEHOLDER, "ordinal", USIZE),

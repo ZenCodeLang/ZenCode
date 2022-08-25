@@ -5,10 +5,9 @@
  */
 package org.openzen.zenscript.validator.analysis;
 
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 /**
@@ -21,7 +20,7 @@ public interface ExpressionScope {
 
 	boolean hasThis();
 
-	boolean isFieldInitialized(FieldMember field);
+	boolean isFieldInitialized(FieldSymbol field);
 
 	boolean isEnumConstantInitialized(EnumConstantMember member);
 
@@ -32,6 +31,4 @@ public interface ExpressionScope {
 	boolean isStaticInitializer();
 
 	HighLevelDefinition getDefinition();
-
-	AccessScope getAccessScope();
 }

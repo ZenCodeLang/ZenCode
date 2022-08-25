@@ -15,7 +15,7 @@ public class InvalidStatement extends Statement {
 
 	public InvalidStatement(CompileException ex) {
 		super(ex.position, null);
-		this.error = new CompileError(ex.code, ex.message);
+		this.error = ex.error;
 	}
 
 	@Override

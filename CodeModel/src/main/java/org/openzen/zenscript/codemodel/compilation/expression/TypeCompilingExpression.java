@@ -30,7 +30,7 @@ public class TypeCompilingExpression implements CompilingExpression {
 	}
 
 	@Override
-	public Optional<StaticCallable> call() {
+	public Optional<CompilingCallable> call() {
 		return Optional.empty();
 	}
 

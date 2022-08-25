@@ -2,9 +2,6 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -13,8 +10,9 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Optional;
 
-public class GetterMember extends PropertyMember implements MethodSymbol {
+public class GetterMember extends FunctionalMember {
 	public final String name;
+	public TypeID type;
 	public Statement body = null;
 	private MethodInstance overrides;
 
@@ -24,19 +22,31 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 			Modifiers modifiers,
 			String name,
 			TypeID type) {
-		super(position, definition, modifiers, type);
-
+		super(position, definition, modifiers, new FunctionHeader(type));
+		this.type = type;
 		this.name = name;
 	}
 
 	public void setBody(Statement body) {
 		this.body = body;
 
-		if (getType() == BasicTypeID.UNDETERMINED) {
+		if (type == BasicTypeID.UNDETERMINED) {
 			TypeID returnType = body.getReturnType();
-			if (returnType != null)
-				setType(returnType);
+			if (returnType != null) {
+				this.type = returnType;
+				this.header = new FunctionHeader(type);
+			}
 		}
+	}
+
+	@Override
+	public String getCanonicalName() {
+		return definition.getFullName() + ":get:" + name;
+	}
+
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.GETTER;
 	}
 
 	@Override
@@ -72,8 +82,8 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	public void setOverrides(MethodInstance override) {
 		this.overrides = override;
 
-		if (getType() == BasicTypeID.UNDETERMINED)
-			setType(override.getHeader().getReturnType());
+		if (type == BasicTypeID.UNDETERMINED)
+			type = override.getHeader().getReturnType();
 	}
 
 	@Override
@@ -88,21 +98,6 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public DefinitionSymbol getDefiningType() {
-		return definition;
-	}
-
-	@Override
-	public TypeSymbol getTargetType() {
-		return target;
-	}
-
-	@Override
-	public Modifiers getModifiers() {
-		return modifiers;
-	}
-
-	@Override
 	public String getName() {
 		return name;
 	}
@@ -110,10 +105,5 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	@Override
 	public Optional<OperatorType> getOperator() {
 		return Optional.empty();
-	}
-
-	@Override
-	public FunctionHeader getHeader() {
-		return new FunctionHeader(getType());
 	}
 }

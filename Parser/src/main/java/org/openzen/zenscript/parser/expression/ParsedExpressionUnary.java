@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionUnary extends ParsedExpression {
 	private final CompilableExpression value;
@@ -38,7 +39,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 			Expression value = this.value.eval();
 			ResolvedType resolvedType = compiler.resolve(value.type);
 			return resolvedType.findOperator(operator)
-					.map(operator -> operator.call(compiler.at(position), value))
+					.map(operator -> operator.call(compiler, position, value, TypeID.NONE))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(value.type, operator)));
 		}
 
@@ -47,7 +48,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 			CastedExpression value = this.value.cast(cast);
 			ResolvedType resolvedType = compiler.resolve(value.value.type);
 			return resolvedType.findOperator(operator)
-					.map(operator -> cast.of(value.level, operator.call(compiler.at(position), value.value)))
+					.map(operator -> cast.of(value.level, operator.call(compiler, position, value.value, TypeID.NONE)))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.value.type, operator)));
 		}
 	}

@@ -29,15 +29,6 @@ public class ParsedExpressionBracket extends ParsedExpression {
 				expressions.stream().map(e -> e.compile(compiler)).toArray(CompilingExpression[]::new));
 	}
 
-	@Override
-	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
-		List<ParsedFunctionParameter> parameters = new ArrayList<>();
-		for (CompilableExpression expression : expressions)
-			parameters.add(expression.toLambdaParameter());
-
-		return new ParsedFunctionHeader(position, parameters, ParsedBasicType.UNDETERMINED);
-	}
-
 	private static class Compiling extends AbstractCompilingExpression {
 		private final CompilingExpression[] compiling;
 

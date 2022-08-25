@@ -4,9 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 import java.util.Optional;
 
@@ -31,7 +28,7 @@ public final class ParameterTypeBound implements TypeParameterBound {
 
 	@Override
 	public boolean matches(TypeID type) {
-		return cache.get(type).extendsOrImplements(this.type);
+		return type.extendsOrImplements(this.type);
 	}
 
 	@Override

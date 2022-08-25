@@ -31,4 +31,9 @@ public interface TypeSymbol extends DefinitionSymbol {
 	default TypeID normalize(TypeID[] typeArguments) {
 		return new DefinitionTypeID(this, typeArguments, null);
 	}
+
+	@Override
+	default Optional<TypeSymbol> asType() {
+		return Optional.of(this);
+	}
 }

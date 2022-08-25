@@ -1,6 +1,8 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -18,7 +20,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 	private final List<ParsedTypeParameter> parameters;
 	private final String name;
 
-	public ParsedStruct(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters) {
+	public ParsedStruct(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters) {
 		super(position, modifiers, annotations);
 
 		this.parameters = genericParameters;
@@ -27,7 +29,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 
 	public static ParsedStruct parseStruct(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser tokens
 	) throws ParseException {
@@ -49,19 +51,18 @@ public class ParsedStruct extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void registerCompiling(
-			List<CompilingDefinition> definitions,
-			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
-	) {
-		StructDefinition compiled = new StructDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
-
-		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+	public void registerCompiling(List<CompilingDefinition> definitions, List<CompilingExpansion> expansions, DefinitionCompiler compiler) {
+		Compiling compiling = compileAsDefinition(compiler, null);
 		definitions.add(compiling);
 		compiling.registerCompiling(definitions);
+	}
+
+	@Override
+	public Compiling compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		StructDefinition compiled = new StructDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling extends BaseCompilingDefinition {

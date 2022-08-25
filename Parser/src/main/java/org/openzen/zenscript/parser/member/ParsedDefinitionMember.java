@@ -18,6 +18,11 @@ import org.openzen.zenscript.parser.statements.ParsedStatementBlock;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedBasicType;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.openzen.zenscript.lexer.ZSTokenType.*;
+
 public abstract class ParsedDefinitionMember implements CompilableMember {
 	public final ParsedAnnotation[] annotations;
 
@@ -28,57 +33,57 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 	public static ParsedDefinitionMember parse(ZSTokenParser tokens) throws ParseException {
 		CodePosition start = tokens.getPosition();
 		ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
-		int modifiers = 0;
+		Modifiers modifiers = Modifiers.NONE;
 		outer:
 		while (true) {
 			switch (tokens.peek().type) {
 				case K_INTERNAL:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_INTERNAL;
+					modifiers = modifiers.withInternal();
 					break;
 				case K_PUBLIC:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_PUBLIC;
+					modifiers = modifiers.withPublic();
 					break;
 				case K_PRIVATE:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_PRIVATE;
+					modifiers = modifiers.withPrivate();
 					break;
 				case K_CONST:
 					tokens.next();
 					if (tokens.optional(ZSTokenType.T_QUEST) != null) {
-						modifiers |= Modifiers.FLAG_CONST_OPTIONAL;
+						modifiers = modifiers.withConstOptional();
 					} else {
-						modifiers |= Modifiers.FLAG_CONST;
+						modifiers = modifiers.withConst();
 					}
 					break;
 				case K_ABSTRACT:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_ABSTRACT;
+					modifiers = modifiers.withAbstract();
 					break;
 				case K_FINAL:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_FINAL;
+					modifiers = modifiers.withFinal();
 					break;
 				case K_STATIC:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_STATIC;
+					modifiers = modifiers.withStatic();
 					break;
 				case K_PROTECTED:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_PROTECTED;
+					modifiers = modifiers.withProtected();
 					break;
 				case K_IMPLICIT:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_IMPLICIT;
+					modifiers = modifiers.withImplicit();
 					break;
 				case K_EXTERN:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_EXTERN;
+					modifiers = modifiers.withExtern();
 					break;
 				case K_OVERRIDE:
 					tokens.next();
-					modifiers |= Modifiers.FLAG_OVERRIDE;
+					modifiers = modifiers.withOverride();
 					break;
 				default:
 					break outer;
@@ -95,15 +100,15 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 					type = IParsedType.parse(tokens);
 				}
 				CompilableExpression initializer = null;
-				int autoGetter = 0;
-				int autoSetter = 0;
+				Modifiers autoGetter = Modifiers.NONE;
+				Modifiers autoSetter = Modifiers.NONE;
 				if (tokens.optional(ZSTokenType.T_COLON) != null) {
 					do {
-						int accessor = Modifiers.FLAG_PUBLIC;
+						Modifiers accessor = Modifiers.PUBLIC;
 						if (tokens.optional(ZSTokenType.K_PUBLIC) != null) {
-							accessor = Modifiers.FLAG_PUBLIC;
+							accessor = Modifiers.PUBLIC;
 						} else if (tokens.optional(ZSTokenType.K_PROTECTED) != null) {
-							accessor = Modifiers.FLAG_PROTECTED;
+							accessor = Modifiers.PROTECTED;
 						}
 
 						if (tokens.optional(ZSTokenType.K_GET) != null) {
@@ -124,14 +129,11 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
-				if (body == null)
-					throw new ParseException(start, "Function body is required for constructors");
-
 				return new ParsedConstructor(start, modifiers, annotations, header, body);
 			}
 			case T_IDENTIFIER: {
 				String name = tokens.next().content;
-				if ((modifiers & Modifiers.FLAG_CONST) == Modifiers.FLAG_CONST && (tokens.isNext(ZSTokenType.K_AS) || tokens.isNext(ZSTokenType.T_ASSIGN))) {
+				if (modifiers.isConst() && (tokens.isNext(ZSTokenType.K_AS) || tokens.isNext(ZSTokenType.T_ASSIGN))) {
 					IParsedType type = ParsedBasicType.UNDETERMINED;
 					if (tokens.optional(ZSTokenType.K_AS) != null) {
 						type = IParsedType.parse(tokens);
@@ -139,7 +141,7 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 					tokens.required(ZSTokenType.T_ASSIGN, "= expected");
 					CompilableExpression value = ParsedExpression.parse(tokens);
 					tokens.required(ZSTokenType.T_SEMICOLON, "; expected");
-					return new ParsedConst(start, modifiers & ~Modifiers.FLAG_CONST, annotations, name, type, value);
+					return new ParsedField(start, modifiers, annotations, name, type, value, true, modifiers, null);
 				}
 
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
@@ -181,7 +183,7 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 			case T_BROPEN: {
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
-				return new ParsedCaller(start, modifiers, annotations, header, body);
+				return new ParsedOperator(start, modifiers, annotations, OperatorType.CALL, header, body);
 			}
 			case T_SQOPEN: {
 				tokens.next();
@@ -202,7 +204,7 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 
 					// destructor
 					ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
-					return new ParsedDestructor(start, modifiers, annotations, body);
+					return new ParsedOperator(start, modifiers, annotations, OperatorType.DESTRUCTOR, ParsedFunctionHeader.EMPTY, body);
 				}
 				tokens.reset();
 				// else it is a ~ operator, continue...
@@ -264,12 +266,22 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 				return new ParsedInnerDefinition(ParsedDefinition.parse(start, modifiers, annotations, tokens));
 			case K_FOR: {
 				tokens.next();
-				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
+
+				tokens.required(T_BROPEN, "( expected");
+
+				List<IParsedType> loopVariableTypes = new ArrayList<>();
+				if (tokens.optional(T_BRCLOSE) == null) {
+					do {
+						loopVariableTypes.add(IParsedType.parse(tokens));
+					} while (tokens.optional(T_COMMA) != null);
+					tokens.required(T_BRCLOSE, ") expected");
+				}
+
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
-				return new ParsedIterator(start, modifiers, annotations, header, body);
+				return new ParsedIterator(start, modifiers, annotations, loopVariableTypes, body);
 			}
 			default:
-				if (modifiers == Modifiers.FLAG_STATIC && tokens.peek().type == ZSTokenType.T_AOPEN) {
+				if (modifiers.value == Modifiers.FLAG_STATIC && tokens.peek().type == ZSTokenType.T_AOPEN) {
 					ParsedStatementBlock body = ParsedStatementBlock.parseBlock(tokens, annotations, true);
 					return new ParsedStaticInitializer(tokens.getPosition(), annotations, body);
 				}

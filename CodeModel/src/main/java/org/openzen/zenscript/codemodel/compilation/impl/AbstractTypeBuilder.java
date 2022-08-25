@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.builtin.ResultTypeSymbol;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,11 @@ public abstract class AbstractTypeBuilder implements TypeBuilder {
 	@Override
 	public FunctionTypeID functionOf(FunctionHeader header) {
 		return new FunctionTypeID(header);
+	}
+
+	@Override
+	public TypeID resultOf(TypeID type, TypeID thrownType) {
+		return DefinitionTypeID.create(ResultTypeSymbol.INSTANCE, type, thrownType);
 	}
 
 	@Override

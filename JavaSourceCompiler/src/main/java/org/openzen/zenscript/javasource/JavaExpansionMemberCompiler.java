@@ -13,24 +13,11 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.CallerMember;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.IteratorMember;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 
@@ -54,15 +41,15 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		this.expansionTypeParameters = expansionTypeParameters;
 	}
 
-	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaNativeMethod method = scope.context.getJavaMethod(member);
+	private void compileMethod(FunctionalMember member, FunctionHeader header, Statement body) {
+		JavaMethod method = scope.context.getJavaMethod(member);
 		if (!method.compile)
 			return;
 
 		begin(ElementType.METHOD);
 		output.append(indent);
 
-		modifiers(member.getEffectiveModifiers() | Modifiers.FLAG_STATIC);
+		modifiers(member.getEffectiveModifiers().withStatic());
 		if (member.isStatic())
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		else
@@ -78,7 +65,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
-		modifiers(member.getEffectiveModifiers() | Modifiers.FLAG_STATIC | Modifiers.FLAG_FINAL);
+		modifiers(member.getEffectiveModifiers().withStatic().withFinal());
 		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
@@ -93,12 +80,13 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.FIELD);
 
 		output.append(indent);
+		Modifiers fieldModifiers = member.getEffectiveModifiers();
 		int modifiers = 0;
-		if (member.isStatic())
+		if (fieldModifiers.isStatic() || fieldModifiers.isConst())
 			modifiers |= Modifiers.FLAG_STATIC;
-		if (member.isFinal())
+		if (fieldModifiers.isFinal() || fieldModifiers.isConst())
 			modifiers |= Modifiers.FLAG_FINAL;
-		if (member.autoGetterAccess != 0 && (member.isFinal() ? member.autoSetterAccess == 0 : member.autoGetterAccess == member.autoSetterAccess))
+		if (member.autoGetterAccess.hasAccessModifiers() && (member.isFinal() ? member.autoSetterAccess == 0 : member.autoGetterAccess == member.autoSetterAccess))
 			modifiers |= member.autoGetterAccess;
 		else
 			modifiers |= Modifiers.FLAG_PRIVATE;
@@ -122,11 +110,6 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	public Void visitConstructor(ConstructorMember member) {
 		compileMethod(member, member.header, member.body);
 		return null;
-	}
-
-	@Override
-	public Void visitDestructor(DestructorMember member) {
-		return null; // ignore
 	}
 
 	@Override
@@ -162,12 +145,6 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes())), member.body);
-		return null;
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		compileMethod(member, member.header, member.body);
 		return null;
 	}
 

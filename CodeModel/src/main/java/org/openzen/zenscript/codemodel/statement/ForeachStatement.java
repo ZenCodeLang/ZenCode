@@ -4,7 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -12,10 +12,10 @@ import java.util.function.Consumer;
 public class ForeachStatement extends LoopStatement {
 	public final VarStatement[] loopVariables;
 	public final Expression list;
-	public final IteratorMemberRef iterator;
+	public final IteratorInstance iterator;
 	public Statement content;
 
-	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorMemberRef iterator, Expression list) {
+	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorInstance iterator, Expression list) {
 		super(position, loopVariables[0].name, null); // TODO: thrown type
 
 		this.loopVariables = loopVariables;

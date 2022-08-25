@@ -31,24 +31,10 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitConst(ConstMember member) {
-		visit(true);
-		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
-		output.append("const")
-				.append(member.name)
-				.append(" as ")
-				.append(typeFormatter.format(member.getType()))
-				.append(" = ")
-				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)))
-				.append(";\n");
-		return null;
-	}
-
-	@Override
 	public Void visitField(FieldMember member) {
 		visit(true);
 		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
-		output.append(member.isFinal() ? "val " : "var ")
+		output.append(member.getModifiers().isConst() ? "const " : (member.isFinal() ? "val " : "var "))
 				.append(member.name)
 				.append(" as ")
 				.append(typeFormatter.format(member.getType()));
@@ -72,15 +58,6 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitDestructor(DestructorMember member) {
-		visit(false);
-		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
-		output.append("this");
-		formatBody(member.body);
-		return null;
-	}
-
-	@Override
 	public Void visitMethod(MethodMember member) {
 		visit(false);
 		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
@@ -97,7 +74,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("get ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(typeFormatter.format(member.getType()));
+		output.append(typeFormatter.format(member.type));
 		formatBody(member.body);
 		return null;
 	}
@@ -109,7 +86,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("set ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(typeFormatter.format(member.getType()));
+		output.append(typeFormatter.format(member.parameter.type));
 		formatBody(member.body);
 		return null;
 	}
@@ -204,6 +181,12 @@ public class MemberFormatter implements MemberVisitor<Void> {
 			case DECREMENT:
 				output.append("--");
 				break;
+
+			case CALL:
+				break;
+			case DESTRUCTOR:
+				output.append("~this");
+				break;
 			default:
 				throw new UnsupportedOperationException("Unknown operator: " + member.operator);
 		}
@@ -226,15 +209,6 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	public Void visitCustomIterator(IteratorMember member) {
 		visit(false);
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		visit(false);
-		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
-		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
-		formatBody(member.body);
-		return null;
 	}
 
 	@Override

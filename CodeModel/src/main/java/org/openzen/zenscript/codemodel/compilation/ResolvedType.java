@@ -3,10 +3,11 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -18,12 +19,25 @@ public interface ResolvedType {
 
 	Optional<StaticCallable> findSuffixConstructor(String suffix);
 
-	Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional);
+	Optional<InstanceCallableMethod> findCaster(TypeID toType);
 
-	Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional);
+	default Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
+		return findCaster(target)
+				.filter(caster -> !caster.getModifiers().isImplicit())
+				.map(caster -> caster.call(compiler.at(position), value, CallArguments.EMPTY));
+	}
 
-	boolean canCastImplicitlyTo(ExpressionCompiler compiler, CodePosition position, TypeID target);
+	default Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
+		return findCaster(target)
+				.filter(caster -> caster.getModifiers().isImplicit())
+				.map(caster -> caster.call(compiler.at(position), value, CallArguments.EMPTY));
+	}
 
+	default boolean canCastImplicitlyTo(TypeID target) {
+		return findCaster(target)
+				.filter(caster -> caster.getModifiers().isImplicit())
+				.isPresent();
+	}
 	Optional<StaticCallable> findStaticMethod(String name);
 
 	Optional<StaticCallable> findStaticGetter(String name);
@@ -54,7 +68,7 @@ public interface ResolvedType {
 
 	Optional<Comparator> compare();
 
-    Optional<IteratorMemberRef> findIterator(int variables);
+    Optional<IteratorInstance> findIterator(int variables);
 
 	interface SwitchMember {
 		SwitchValue toSwitchValue(String[] bindingNames);
@@ -63,9 +77,15 @@ public interface ResolvedType {
 	interface Field {
 		TypeID getType();
 
+		boolean isStatic();
+
 		Expression get(ExpressionBuilder builder, Expression target);
 
 		Expression set(ExpressionBuilder builder, Expression target, Expression value);
+
+		Expression getStatic(ExpressionBuilder builder);
+
+		Expression setStatic(ExpressionBuilder builder, Expression value);
 	}
 
 	interface StaticField {
@@ -76,9 +96,13 @@ public interface ResolvedType {
 		Expression set(ExpressionBuilder builder, Expression value);
 	}
 
+	@FunctionalInterface
 	interface Comparator {
-		Expression compare(CodePosition position, Expression left, CompilingExpression right);
-
-		Expression compare(CodePosition position, Expression left, CompilingExpression right, CompareType type);
+		Expression compare(
+				ExpressionCompiler compiler,
+				CodePosition position,
+				Expression left,
+				CompilingExpression right,
+				CompareType type);
 	}
 }

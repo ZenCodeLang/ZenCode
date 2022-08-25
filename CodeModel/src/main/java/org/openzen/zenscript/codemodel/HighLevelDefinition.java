@@ -89,10 +89,6 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		this.typeParameters = typeParameters;
 	}
 
-	public AccessScope getAccessScope() {
-		return new AccessScope(module, this);
-	}
-
 	public List<FieldMember> getFields() {
 		List<FieldMember> fields = new ArrayList<>();
 		for (IDefinitionMember member : members)

@@ -35,6 +35,10 @@ public interface ExpressionBuilder {
 
 	Expression constantNull(TypeID type);
 
+	Expression constructorSuper(TypeID type, MethodInstance constructor, CallArguments arguments);
+
+	Expression constructorThis(TypeID type, MethodInstance constructor, CallArguments arguments);
+
 	Expression getThis(TypeID thisType);
 
 	Expression getInstanceField(Expression target, FieldInstance field);

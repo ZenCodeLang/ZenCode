@@ -237,11 +237,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
-	public Void visitCast(CastExpression expression) {
-		return expression.target.accept(this);
-	}
-
-	@Override
 	public Void visitCheckNull(CheckNullExpression expression) {
 		return expression.value.accept(this);
 	}

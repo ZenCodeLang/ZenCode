@@ -1,11 +1,11 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class PrefixedBracketParser implements BracketExpressionParser {
 	}
 
 	@Override
-	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
+	public CompilableExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		if (defaultParser == null) {
 			ZSToken start = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 			tokens.required(ZSTokenType.T_COLON, ": expected");

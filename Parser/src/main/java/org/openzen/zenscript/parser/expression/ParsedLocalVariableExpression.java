@@ -24,24 +24,30 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 			return compiler.invalid(position, CompileErrors.noThisInScope());
 
 		ResolvedType resolved = compiler.resolve(localType.get().getThisType());
-		Optional<ResolvedType.Field> field = resolved.findField(name);
-		if (!field.isPresent())
+		Optional<ResolvedType.Field> maybeField = resolved.findField(name);
+		if (!maybeField.isPresent())
 			return compiler.invalid(position, CompileErrors.noFieldInType(localType.get().getThisType(), name));
 
-		return new Compiling(compiler, position, field.get());
+		ResolvedType.Field field = maybeField.get();
+		if (field.isStatic()) {
+			return new CompilingStatic(compiler, position, field);
+		} else {
+			Expression this_ = compiler.at(position).getThis(localType.get().getThisType());
+			return new CompilingInstance(compiler, position, field, this_);
+		}
 	}
 
-	private static class Compiling extends AbstractCompilingExpression {
+	private static class CompilingStatic extends AbstractCompilingExpression {
 		private final ResolvedType.Field field;
 
-		public Compiling(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field) {
+		public CompilingStatic(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field) {
 			super(compiler, position);
 			this.field = field;
 		}
 
 		@Override
 		public Expression eval() {
-			return field.get(compiler.at(position));
+			return field.getStatic(compiler.at(position));
 		}
 
 		@Override
@@ -51,15 +57,15 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 
 		@Override
 		public CompilingExpression assign(CompilingExpression value) {
-			return new CompilingAssign(compiler, position, field, value);
+			return new CompilingStaticAssign(compiler, position, field, value);
 		}
 	}
 
-	private static class CompilingAssign extends AbstractCompilingExpression {
+	private static class CompilingStaticAssign extends AbstractCompilingExpression {
 		private final ResolvedType.Field field;
 		private final CompilingExpression value;
 
-		public CompilingAssign(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field, CompilingExpression value) {
+		public CompilingStaticAssign(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field, CompilingExpression value) {
 			super(compiler, position);
 
 			this.field = field;
@@ -68,7 +74,57 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			return field.set(compiler.at(position), value.cast(cast(field.getType())).value);
+			return field.setStatic(compiler.at(position), value.cast(cast(field.getType())).value);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+	}
+
+	private static class CompilingInstance extends AbstractCompilingExpression {
+		private final ResolvedType.Field field;
+		private final Expression this_;
+
+		public CompilingInstance(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field, Expression this_) {
+			super(compiler, position);
+			this.field = field;
+			this.this_ = this_;
+		}
+
+		@Override
+		public Expression eval() {
+			return field.get(compiler.at(position), this_);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+
+		@Override
+		public CompilingExpression assign(CompilingExpression value) {
+			return new CompilingStaticAssign(compiler, position, field, value);
+		}
+	}
+
+	private static class CompilingInstanceAssign extends AbstractCompilingExpression {
+		private final ResolvedType.Field field;
+		private final Expression this_;
+		private final CompilingExpression value;
+
+		public CompilingInstanceAssign(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field, Expression this_, CompilingExpression value) {
+			super(compiler, position);
+
+			this.field = field;
+			this.this_ = this_;
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return field.set(compiler.at(position), this_, value.cast(cast(field.getType())).value);
 		}
 
 		@Override

@@ -2,6 +2,8 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
@@ -21,7 +23,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	private final List<ParsedTypeParameter> parameters;
 	private final IParsedType target;
 
-	public ParsedExpansion(CodePosition position, int modifiers, ParsedAnnotation[] annotations, List<ParsedTypeParameter> genericParameters, IParsedType target) {
+	public ParsedExpansion(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, List<ParsedTypeParameter> genericParameters, IParsedType target) {
 		super(position, modifiers, annotations);
 
 		this.parameters = genericParameters;
@@ -30,7 +32,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 	public static ParsedExpansion parseExpansion(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser tokens) throws ParseException {
 		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
@@ -53,16 +55,20 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
+		CompilingPackage pkg = compiler.getPackage();
 		ExpansionDefinition compiled = new ExpansionDefinition(position, pkg.module, pkg.getPackage(), modifiers);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 
 		Compiling compiling = new Compiling(compiler, compiled);
 		expansions.add(compiling);
 		compiling.registerCompiling(definitions);
+	}
+
+	@Override
+	public CompilingDefinition compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		throw new UnsupportedOperationException();
 	}
 
 	private class Compiling implements CompilingExpansion {

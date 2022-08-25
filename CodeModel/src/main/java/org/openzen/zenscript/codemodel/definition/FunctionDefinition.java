@@ -6,7 +6,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.CallerMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
-	public CallerMember caller;
+	public OperatorMember caller;
 
 	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
@@ -28,7 +28,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 
 	public void setHeader(TypeBuilder types, FunctionHeader header) {
 		this.header = header;
-		addMember(caller = new CallerMember(position, this, Modifiers.PUBLIC.withStatic(), header, null));
+		addMember(caller = new OperatorMember(position, this, Modifiers.PUBLIC.withStatic(), OperatorType.CALL, header));
 	}
 
 	public void setCode(Statement statement) {

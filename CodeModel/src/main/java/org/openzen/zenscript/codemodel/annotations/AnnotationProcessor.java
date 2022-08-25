@@ -54,14 +54,6 @@ public class AnnotationProcessor implements ModuleProcessor {
 	private class MemberAnnotationVisitor implements MemberVisitor<Void> {
 
 		@Override
-		public Void visitConst(ConstMember member) {
-			for (MemberAnnotation annotation : member.annotations)
-				annotation.apply(member);
-
-			return null;
-		}
-
-		@Override
 		public Void visitField(FieldMember member) {
 			for (MemberAnnotation annotation : member.annotations)
 				annotation.apply(member);
@@ -71,11 +63,6 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitConstructor(ConstructorMember member) {
-			return functional(member);
-		}
-
-		@Override
-		public Void visitDestructor(DestructorMember member) {
 			return functional(member);
 		}
 
@@ -106,11 +93,6 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitCustomIterator(IteratorMember member) {
-			return functional(member);
-		}
-
-		@Override
-		public Void visitCaller(CallerMember member) {
 			return functional(member);
 		}
 

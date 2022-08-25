@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -35,6 +36,16 @@ public class RangeTypeSymbol implements TypeSymbol {
 	@Override
 	public boolean isInterface() {
 		return false;
+	}
+
+	@Override
+	public boolean isExpansion() {
+		return false;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return Modifiers.PUBLIC;
 	}
 
 	@Override

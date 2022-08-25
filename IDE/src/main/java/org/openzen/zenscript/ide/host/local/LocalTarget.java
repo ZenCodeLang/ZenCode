@@ -13,10 +13,8 @@ import java.util.function.Consumer;
 
 import live.LiveObject;
 import live.SimpleLiveObject;
-import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.constructor.Library;
@@ -25,15 +23,10 @@ import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.constructor.module.SourceModuleReference;
-import org.openzen.zenscript.constructor.module.logging.*;
-import org.openzen.zenscript.ide.host.IDECodeError;
 import org.openzen.zenscript.ide.host.IDECompileState;
-import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.host.local.logging.*;
 import org.openzen.zenscript.ide.ui.view.output.*;
-import org.openzen.zenscript.parser.logger.*;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.logger.*;
 import stdlib.Strings;
@@ -95,10 +88,8 @@ public class LocalTarget implements IDETarget {
 
 	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output, LocalCompileState state, boolean compile) {
 		ZSPackage root = ZSPackage.createRoot();
-		ZSPackage stdlibPackage = new ZSPackage(root, "stdlib");
-		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlibPackage);
 		final LocalModuleLogger localModuleLogger = new LocalModuleLogger(state, output);
-		ModuleLoader moduleLoader = new ModuleLoader(registry, localModuleLogger);
+		ModuleLoader moduleLoader = new ModuleLoader(localModuleLogger);
 
 		//moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
 		moduleLoader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));

@@ -38,7 +38,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 
@@ -47,19 +46,16 @@ import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
  */
 public class ModuleDeserializer {
 	private final ModuleRegistry modules;
-	private final GlobalTypeRegistry globalTypeRegistry;
 	private final AnnotationDefinition[] annotations;
 	private final ZSPackage rootPackage;
 	private final IZSLogger logger;
 
 	public ModuleDeserializer(
 			ModuleRegistry modules,
-			GlobalTypeRegistry globalTypeRegistry,
 			AnnotationDefinition[] annotations,
 			ZSPackage rootPackage,
 			IZSLogger logger) {
 		this.modules = modules;
-		this.globalTypeRegistry = globalTypeRegistry;
 		this.annotations = annotations;
 		this.rootPackage = rootPackage;
 		this.logger = logger;
@@ -94,8 +90,7 @@ public class ModuleDeserializer {
 				input,
 				stringTable,
 				sourceFiles,
-				annotations,
-				globalTypeRegistry);
+				annotations);
 
 		DeserializingModule[] packagedModules = new DeserializingModule[decoder.readUInt()];
 		String[][] dependencyNames = new String[packagedModules.length][];
@@ -116,7 +111,6 @@ public class ModuleDeserializer {
 
 			packagedModules[i] = new DeserializingModule(
 					name,
-					globalTypeRegistry,
 					dependencies,
 					rootPackage,
 					modulePackage,
@@ -151,7 +145,7 @@ public class ModuleDeserializer {
 		SemanticModule[] results = new SemanticModule[packagedModules.length];
 		for (int i = 0; i < results.length; i++) {
 			DeserializingModule module = packagedModules[i];
-			results[i] = module.load(globalTypeRegistry);
+			results[i] = module.load();
 		}
 		return results;
 	}

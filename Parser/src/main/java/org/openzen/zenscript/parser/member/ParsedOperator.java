@@ -1,16 +1,14 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.compilation.CompilingMember;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -18,11 +16,10 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 public class ParsedOperator extends ParsedFunctionalMember {
 	private final OperatorType operator;
 	private final ParsedFunctionHeader header;
-	private OperatorMember compiled;
 
 	public ParsedOperator(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			OperatorType operator,
 			ParsedFunctionHeader header,
@@ -34,29 +31,26 @@ public class ParsedOperator extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new OperatorMember(position, definition, modifiers, operator, header.compile(context), null);
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(compiler, definition, implementation);
 	}
 
-	@Override
-	public FunctionalMember getCompiled() {
-		return compiled;
-	}
-
-	@Override
-	protected void fillOverride(TypeScope scope, TypeID baseType) throws CompileException {
-		TypeMemberGroup group = scope.getTypeMembers(baseType).getOrCreateGroup(operator);
-		FunctionalMemberRef override = group.getOverride(position, scope, compiled);
-		if (override == null)
-			return;
-
-		if (override.getHeader().hasUnknowns) {
-			scope.getPreparer().prepare(override.getTarget());
-			override = scope.getTypeMembers(baseType)
-					.getOrCreateGroup(operator)
-					.getOverride(position, scope, compiled); // to refresh the header
+	private class Compiling extends BaseCompiling<OperatorMember> {
+		public Compiling(MemberCompiler compiler, HighLevelDefinition definition, ImplementationMember implementation) {
+			super(compiler, definition, implementation);
 		}
 
-		compiled.setOverrides(override);
+		@Override
+		public void linkTypes() {
+			compiled = new OperatorMember(position, definition, modifiers, operator, header.compile(compiler.types()));
+		}
+
+		@Override
+		protected void fillOverride(TypeID baseType) {
+			compiler.resolve(baseType)
+					.findOperator(operator)
+					.flatMap(operator -> operator.findOverriddenMethod(compiler, compiled.header))
+					.ifPresent(compiled::setOverrides);
+		}
 	}
 }

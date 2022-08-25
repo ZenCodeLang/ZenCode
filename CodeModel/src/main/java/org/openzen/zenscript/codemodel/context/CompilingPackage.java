@@ -76,14 +76,14 @@ public class CompilingPackage {
 
 		if (types.containsKey(name.get(index).name)) {
 			CompilingType type = types.get(name.get(index).name);
-			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), name.get(index).arguments);
+			TypeID result = DefinitionTypeID.create(type.load(), name.get(index).arguments);
 			return getInner(context, name, index + 1, type, result);
 		}
 
 		return null;
 	}
 
-	private TypeID getInner(TypeResolutionContext context, List<GenericName> name, int index, CompilingType type, DefinitionTypeID result) {
+	private TypeID getInner(TypeResolutionContext context, List<GenericName> name, int index, CompilingType type, TypeID result) {
 		if (index == name.size())
 			return result;
 
@@ -91,7 +91,7 @@ public class CompilingPackage {
 		if (innerType == null)
 			return null;
 
-		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result);
+		TypeID innerResult = DefinitionTypeID.create(innerType.load(), name.get(index).arguments);
 		return getInner(context, name, index + 1, innerType, innerResult);
 	}
 }

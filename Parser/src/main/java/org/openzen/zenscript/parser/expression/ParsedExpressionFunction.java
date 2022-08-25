@@ -55,7 +55,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			if (maybeFunction.isPresent()) {
 				FunctionHeader inferredHeader = maybeFunction.get().header;
 				FunctionHeader header = this.header;
-				if (header.canOverride(compiler, position, inferredHeader)) {
+				if (header.canOverride(compiler, inferredHeader)) {
 					header = inferredHeader.forLambda(this.header);
 				}
 

@@ -48,7 +48,7 @@ public class ParsedExpressionCompare extends ParsedExpression {
 		public Expression eval() {
 			Expression left = this.left.eval();
 			return compiler.resolve(left.type).compare()
-					.map(comparator -> comparator.compare(position, left, right, this.type))
+					.map(comparator -> comparator.compare(compiler, position, left, right, this.type))
 					.orElseGet(() -> compiler.at(position).invalid(
 							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE),
 							BasicTypeID.BOOL));

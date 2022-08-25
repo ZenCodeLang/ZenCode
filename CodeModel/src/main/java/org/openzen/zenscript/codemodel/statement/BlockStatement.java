@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
@@ -70,15 +69,6 @@ public class BlockStatement extends Statement {
 			tStatements[i] = tStatement;
 		}
 		return unchanged ? this : new BlockStatement(position, tStatements);
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		Statement[] normalized = new Statement[statements.length];
-		int i = 0;
-		for (Statement statement : statements)
-			normalized[i++] = statement.normalize(scope, modified);
-		return new BlockStatement(position, normalized);
 	}
 
 	@Override

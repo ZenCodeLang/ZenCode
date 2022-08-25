@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
@@ -40,6 +41,16 @@ public class FunctionTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
+	public boolean isExpansion() {
+		return false;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return null;
+	}
+
+	@Override
 	public boolean isStatic() {
 		return false;
 	}
@@ -51,14 +62,14 @@ public class FunctionTypeSymbol implements TypeSymbol {
 
 	@Override
 	public String getName() {
-		return null;
+		return "function";
 	}
 
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
-		MemberSet members = new MemberSet();
-		members.addOperator(OperatorType.CALL, new MethodInstance(caller));
-		return members;
+		return MemberSet.create()
+				.operator(OperatorType.CALL, new MethodInstance(caller))
+				.build();
 	}
 
 	@Override

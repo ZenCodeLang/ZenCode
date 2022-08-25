@@ -14,12 +14,11 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -95,22 +94,16 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.target.accept(this);
 
 		checkMemberAccess(expression.position, expression.method);
-		checkCallArguments(expression.position, expression.getHeader(), expression.instancedHeader, expression.arguments);
-		checkNotStatic(expression.position, expression.member);
+		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
+		checkNotStatic(expression.position, expression.method);
 		return null;
 	}
 
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
 		checkMemberAccess(expression.position, expression.member);
-		checkCallArguments(expression.position, expression.member.getHeader(), expression.instancedHeader, expression.arguments);
+		checkCallArguments(expression.position, expression.member.method.getHeader(), expression.member.getHeader(), expression.arguments);
 		checkStatic(expression.position, expression.member);
-		return null;
-	}
-
-	@Override
-	public Void visitConst(ConstExpression expression) {
-		checkMemberAccess(expression.position, expression.constant);
 		return null;
 	}
 
@@ -132,12 +125,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCapturedThis(CapturedThisExpression expression) {
 		return null;
-	}
-
-	@Override
-	public Void visitCast(CastExpression expression) {
-		checkMemberAccess(expression.position, expression.member);
-		return expression.target.accept(this);
 	}
 
 	@Override
@@ -288,11 +275,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetField(GetFieldExpression expression) {
-		checkFieldAccess(expression.position, expression.field);
+		checkFieldAccess(expression.position, expression.field.field);
 		checkNotStatic(expression.position, expression.field);
 
 		expression.target.accept(this);
-		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field.member)) {
+		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field.field)) {
 			validator.logError(
 					ValidationLogEntry.Code.FIELD_NOT_YET_INITIALIZED,
 					expression.position,
@@ -324,7 +311,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		checkFieldAccess(expression.position, expression.field);
+		checkFieldAccess(expression.position, expression.field.field);
 		checkStatic(expression.position, expression.field);
 		return null;
 	}
@@ -355,7 +342,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitInvalid(InvalidExpression expression) {
-		validator.logError(ValidationLogEntry.Code.INVALID_EXPRESSION, expression.position, expression.message);
+		validator.logError(ValidationLogEntry.Code.INVALID_EXPRESSION, expression.position, expression.error.description);
 		return null;
 	}
 
@@ -475,7 +462,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitNew(NewExpression expression) {
-		new TypeValidator(validator, expression.position).validate(TypeContext.CONSTRUCTOR_TYPE, expression.constructor.getOwnerType());
+		new TypeValidator(validator, expression.position).validate(TypeContext.CONSTRUCTOR_TYPE, expression.constructor.getTarget());
 		checkMemberAccess(expression.position, expression.constructor);
 		checkCallArguments(
 				expression.position,
@@ -552,7 +539,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitSetField(SetFieldExpression expression) {
-		checkFieldAccess(expression.position, expression.field);
+		checkFieldAccess(expression.position, expression.field.field);
 		checkNotStatic(expression.position, expression.field);
 
 		expression.target.accept(this);
@@ -563,7 +550,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 					expression.position,
 					"Trying to set a field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
 		}
-		if (expression.field.isFinal()) {
+		if (expression.field.getModifiers().isFinal()) {
 			if (!(expression.target instanceof ThisExpression && scope.isConstructor())) {
 				validator.logError(ValidationLogEntry.Code.SETTING_FINAL_FIELD, expression.position, "Cannot set a final field");
 			}
@@ -600,7 +587,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
-		checkFieldAccess(expression.position, expression.field);
+		checkFieldAccess(expression.position, expression.field.field);
 		checkStatic(expression.position, expression.field);
 
 		expression.value.accept(this);
@@ -610,12 +597,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 					expression.position,
 					"Trying to set a static field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
 		}
-		if (expression.field.isFinal()) {
-			if (!scope.isStaticInitializer() || expression.field.member.definition != scope.getDefinition()) {
+		if (expression.field.getModifiers().isFinal()) {
+			if (!scope.isStaticInitializer() || expression.field.field.getDefiningType() != scope.getDefinition()) {
 				validator.logError(
 						ValidationLogEntry.Code.SETTING_FINAL_FIELD,
 						expression.position,
-						"Trying to set final field " + expression.field.member.name);
+						"Trying to set final field " + expression.field.field.getName());
 			}
 		}
 		return null;
@@ -628,11 +615,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.setter.getType())) {
+
+		TypeID setterType = expression.setter.getHeader().parameters[0].type;
+		if (!expression.value.type.equals(setterType)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
-					"Trying to set a property of type " + expression.setter.getType() + " to a value of type " + expression.value.type);
+					"Trying to set a property of type " + setterType + " to a value of type " + expression.value.type);
 		}
 		return null;
 	}
@@ -650,11 +639,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkStatic(expression.position, expression.setter);
 
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.setter.getType())) {
+
+		TypeID setterType = expression.setter.getHeader().parameters[0].type;
+		if (!expression.value.type.equals(setterType)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
-					"Trying to set a static property of type " + expression.setter.getType() + " to a value of type " + expression.value.type);
+					"Trying to set a static property of type " + setterType + " to a value of type " + expression.value.type);
 		}
 		return null;
 	}
@@ -729,23 +720,46 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private void checkMemberAccess(CodePosition position, MethodInstance member) {
-		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getModifiers())) {
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.describe());
+		if (!hasAccess(member.getModifiers(), member.method.getDefiningType())) {
+			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.getName());
 		}
 	}
 
 	private void checkFieldAccess(CodePosition position, FieldSymbol field) {
-		if (!scope.getAccessScope().hasAccessTo(field.getDefiningType().getAccessScope(), field.getModifiers()))
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.describe());
+		if (!hasAccess(field.getModifiers(), field.getDefiningType()))
+			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.getName());
 	}
 
-	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
-		if (!member.getTarget().getSpecifiedModifiers().isStatic())
+	private boolean hasAccess(Modifiers modifiers, DefinitionSymbol definition) {
+		if (modifiers.isPrivate())
+			return definition == scope.getDefinition();
+		if (modifiers.isProtected())
+			return definition.asType()
+					.map(type -> DefinitionTypeID.createThis(scope.getDefinition()).extendsOrImplements(DefinitionTypeID.createThis(type)))
+					.orElse(false);
+		if (modifiers.isInternal())
+			return definition.getModule() == validator.module;
+
+		return true;
+	}
+
+	private void checkStatic(CodePosition position, MethodInstance member) {
+		if (!member.getModifiers().isStatic())
 			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
 	}
 
-	private void checkNotStatic(CodePosition position, DefinitionMemberRef member) {
-		if (member.getTarget().getSpecifiedModifiers().isStatic())
+	private void checkStatic(CodePosition position, FieldInstance member) {
+		if (!member.getModifiers().isStatic())
+			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
+	}
+
+	private void checkNotStatic(CodePosition position, FieldInstance member) {
+		if (member.getModifiers().isStatic())
+			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
+	}
+
+	private void checkNotStatic(CodePosition position, MethodInstance member) {
+		if (member.getModifiers().isStatic())
 			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
 	}
 

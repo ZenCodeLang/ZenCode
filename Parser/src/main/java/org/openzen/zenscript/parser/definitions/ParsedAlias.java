@@ -30,7 +30,7 @@ public class ParsedAlias extends ParsedDefinition {
 
 	public ParsedAlias(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			List<ParsedTypeParameter> parameters,
@@ -44,7 +44,7 @@ public class ParsedAlias extends ParsedDefinition {
 
 	public static ParsedAlias parseAlias(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ZSTokenParser tokens) throws ParseException {
 		try {
@@ -64,11 +64,15 @@ public class ParsedAlias extends ParsedDefinition {
 	public void registerCompiling(
 			List<CompilingDefinition> definitions,
 			List<CompilingExpansion> expansions,
-			CompilingPackage pkg,
-			DefinitionCompiler compiler,
-			CompilingDefinition outer
+			DefinitionCompiler compiler
 	) {
-		AliasDefinition compiled = new AliasDefinition(position, pkg.module, pkg.getPackage(), name, new Modifiers(modifiers), outer == null ? null : outer.getDefinition());
+		definitions.add(compileAsDefinition(compiler, null));
+	}
+
+	@Override
+	public CompilingDefinition compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		AliasDefinition compiled = new AliasDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
 		if (parameters != null && parameters.size() > 0) {
 			TypeParameter[] typeParameters = new TypeParameter[parameters.size()];
 			for (int i = 0; i < parameters.size(); i++) {
@@ -77,7 +81,7 @@ public class ParsedAlias extends ParsedDefinition {
 			compiled.setTypeParameters(typeParameters);
 		}
 
-		definitions.add(new Compiling(compiler, compiled, outer != null));
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling implements CompilingDefinition {

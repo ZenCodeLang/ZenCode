@@ -1,13 +1,17 @@
 package org.openzen.zenscript.parser.member;
 
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ParsedInnerDefinition extends ParsedDefinitionMember {
@@ -20,20 +24,17 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public CompilingMember compile(HighLevelDefinition definition, MemberCompiler compiler) {
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
 		return new Compiling(compiler, definition);
 	}
 
 	private class Compiling implements CompilingMember {
-		private final MemberCompiler compiler;
-		private final HighLevelDefinition definition;
 		private final CompilingDefinition innerDefinition;
 		private final InnerDefinitionMember member;
 
 		public Compiling(MemberCompiler compiler, HighLevelDefinition definition) {
-			this.compiler = compiler;
-			this.definition = definition;
-			innerDefinition = ParsedInnerDefinition.this.innerDefinition;
+			innerDefinition = ParsedInnerDefinition.this.innerDefinition.compileAsDefinition(compiler.forInner(), definition);
+			member = new InnerDefinitionMember(definition.position, definition, definition.modifiers, innerDefinition.getDefinition());
 		}
 
 		@Override
@@ -42,18 +43,23 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 		}
 
 		@Override
-		public void prepare() {
-
+		public IDefinitionMember getCompiled() {
+			return member;
 		}
 
 		@Override
-		public void compile() {
+		public void prepare(List<CompileException> errors) {
+			innerDefinition.prepareMembers(errors);
+		}
 
+		@Override
+		public void compile(List<CompileException> errors) {
+			innerDefinition.compileMembers(errors);
 		}
 
 		@Override
 		public Optional<CompilingDefinition> asInner() {
-			return Optional.of(definition);
+			return Optional.of(innerDefinition);
 		}
 	}
 }

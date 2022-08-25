@@ -46,7 +46,7 @@ public abstract class ParsedDefinition implements CompilableType {
 		return position;
 	}
 
-	public final int getModifiers() {
+	public final Modifiers getModifiers() {
 		return modifiers;
 	}
 }

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.validator.analysis;
 
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 
@@ -13,15 +12,13 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
  * @author Hoofdgebruiker
  */
 public interface StatementScope {
-	public boolean isConstructor();
+	boolean isConstructor();
 
-	public boolean isStatic();
+	boolean isStatic();
 
-	public FunctionHeader getFunctionHeader();
+	FunctionHeader getFunctionHeader();
 
-	public boolean isStaticInitializer();
+	boolean isStaticInitializer();
 
-	public HighLevelDefinition getDefinition();
-
-	public AccessScope getAccessScope();
+	HighLevelDefinition getDefinition();
 }

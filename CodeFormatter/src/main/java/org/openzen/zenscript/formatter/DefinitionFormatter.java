@@ -1,9 +1,9 @@
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
 
 import java.util.List;
 
@@ -124,18 +124,13 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
-		for (IDefinitionMember member : definition.members) {
-			if (member instanceof CallerMember) {
-				CallerMember caller = (CallerMember) member;
-				FormattingUtils.formatModifiers(output, definition.modifiers);
-				output.append("function ");
-				output.append(definition.name);
+		OperatorMember caller = definition.caller;
+		FormattingUtils.formatModifiers(output, definition.modifiers);
+		output.append("function ");
+		output.append(definition.name);
 
-				FormattingUtils.formatHeader(output, settings, caller.header, typeFormatter);
-				FormattingUtils.formatBody(output, settings, indent, typeFormatter, caller.body);
-			}
-		}
-
+		FormattingUtils.formatHeader(output, settings, caller.header, typeFormatter);
+		FormattingUtils.formatBody(output, settings, indent, typeFormatter, caller.body);
 		return null;
 	}
 

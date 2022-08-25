@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -277,5 +278,21 @@ public class CompileErrors {
 
 	public static CompileError noSuchModule(String name) {
 		return new CompileError(CompileExceptionCode.NO_SUCH_MODULE, "Module not found: " + name);
+	}
+
+	public static CompileError overrideWithoutBase() {
+		return new CompileError(CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
+	}
+
+	public static CompileError fieldWithoutType() {
+		return new CompileError(CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
+	}
+
+	public static CompileError ambiguousExpansionCall(List<MethodInstance> methods) {
+		return new CompileError(CompileExceptionCode.AMBIGUOUS_EXPANSION_CALL, "Ambigious expansion call (" + methods.size() + " candidates)");
+	}
+
+	public static CompileError deserializationError(String message) {
+		return new CompileError(CompileExceptionCode.DESERIALIZATION_ERROR, message);
 	}
 }

@@ -4,7 +4,8 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
-import org.openzen.zenscript.codemodel.type.member.MemberUnion;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public class GenericTypeID implements TypeID {
 			// TODO: local expansions will not be applied here
 			bound.resolveMembers().ifPresent(fromBounds::add);
 		}
-		return MemberUnion.of(fromBounds);
+		return ExpandedResolvedType.of(new MemberSet(), fromBounds);
 	}
 
 	@Override

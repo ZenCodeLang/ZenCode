@@ -7,13 +7,9 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.builtin.OptionalTypeSymbol;
-import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.MemberUnion;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class OptionalTypeID implements TypeID {
 	public final TypeID baseType;
@@ -42,11 +38,7 @@ public class OptionalTypeID implements TypeID {
 	public ResolvedType resolve() {
 		ResolvedType optionalMembers = OptionalTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
 		ResolvedType baseTypeMembers = baseType.resolve();
-
-		List<ResolvedType> members = new ArrayList<>();
-		members.add(optionalMembers);
-		members.add(baseTypeMembers);
-		return MemberUnion.of(members);
+		return ExpandedResolvedType.of(baseTypeMembers, Collections.singletonList(optionalMembers));
 	}
 
 	@Override

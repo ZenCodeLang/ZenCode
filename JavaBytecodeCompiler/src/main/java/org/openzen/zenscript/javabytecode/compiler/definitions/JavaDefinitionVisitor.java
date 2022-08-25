@@ -170,7 +170,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				.emptyList());
 
 		final String signature = context.getMethodSignature(definition.header);
-		final JavaNativeMethod method = context.getJavaMethod(definition.caller);
+		final JavaMethod method = context.getJavaMethod(definition.caller);
 
 		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, signature, null);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);

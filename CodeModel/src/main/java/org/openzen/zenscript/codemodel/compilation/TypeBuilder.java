@@ -26,6 +26,8 @@ public interface TypeBuilder {
 
 	FunctionTypeID functionOf(FunctionHeader header);
 
+	TypeID resultOf(TypeID type, TypeID thrownType);
+
 	GenericMapTypeBuilder withGeneric(TypeParameter... parameters);
 
 	Optional<TypeID> resolve(CodePosition position, List<GenericName> name);
@@ -34,7 +36,7 @@ public interface TypeBuilder {
 
 	ExpressionCompiler getDefaultValueCompiler();
 
-	interface GenericMapTypeBuilder extends TypeBuilder {
+    interface GenericMapTypeBuilder extends TypeBuilder {
 		TypeID ofValue(TypeID valueType);
 	}
 }

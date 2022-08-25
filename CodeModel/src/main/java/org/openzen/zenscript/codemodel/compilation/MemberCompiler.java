@@ -1,16 +1,15 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
-public interface MemberCompiler {
+public interface MemberCompiler extends TypeResolver {
 	LocalType getThisType();
-
-	ResolvedType resolve(TypeID type);
 
 	TypeBuilder types();
 
 	ExpressionCompiler forFieldInitializers();
 
 	StatementCompiler forMethod(FunctionHeader header);
+
+	DefinitionCompiler forInner();
 }

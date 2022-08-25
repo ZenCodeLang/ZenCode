@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.identifiers.instances;
 
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -29,6 +30,15 @@ public final class FieldInstance implements ResolvedType.Field, ResolvedType.Sta
 	}
 
 	@Override
+	public boolean isStatic() {
+		return field.getModifiers().isStatic() || field.getModifiers().isConst();
+	}
+
+	public Modifiers getModifiers() {
+		return field.getModifiers();
+	}
+
+	@Override
 	public Expression get(ExpressionBuilder builder, Expression target) {
 		return builder.getInstanceField(target, this);
 	}
@@ -36,6 +46,16 @@ public final class FieldInstance implements ResolvedType.Field, ResolvedType.Sta
 	@Override
 	public Expression set(ExpressionBuilder builder, Expression target, Expression value) {
 		return builder.setInstanceField(target, this, value);
+	}
+
+	@Override
+	public Expression getStatic(ExpressionBuilder builder) {
+		return builder.getStaticField(this);
+	}
+
+	@Override
+	public Expression setStatic(ExpressionBuilder builder, Expression value) {
+		return builder.setStaticField(this, value);
 	}
 
 	@Override

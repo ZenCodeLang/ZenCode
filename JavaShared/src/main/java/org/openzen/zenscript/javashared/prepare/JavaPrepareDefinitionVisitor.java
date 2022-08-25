@@ -8,10 +8,6 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -38,7 +34,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addConstructor("constructor", "()V");
 			cls.addConstructor("constructorWithCapacity", "(I)V");
 			cls.addConstructor("constructorWithValue", "(Ljava/lang/String;)V");
-			cls.addMethod("isEmpty", new JavaNativeMethod((expression, translator) -> translator.isEmptyAsLengthZero(((CallExpression) expression).target)));
+			cls.addMethod("isEmpty", JavaSpecialMethod.STRINGBUILDER_ISEMPTY);
 			cls.addInstanceMethod("length", "length", "()I");
 			cls.addInstanceMethod("appendBool", "append", "(Z)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendByte", "append", "(I)Ljava/lang/StringBuilder;");
@@ -71,7 +67,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;", true);
 			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;", true);
 			list.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
-			list.addMethod("toArray", new JavaNativeMethod((expression, translator) -> translator.listToArray((CastExpression) expression)));
+			list.addMethod("toArray", JavaSpecialMethod.LIST_TO_ARRAY);
 			list.addInstanceMethod("length", "size", "()I");
 			list.addInstanceMethod("isEmpty", "isEmpty", "()Z");
 			list.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
@@ -113,12 +109,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass string = new JavaClass("java.lang", "String", JavaClass.Kind.CLASS);
 			JavaNativeClass cls = new JavaNativeClass(string);
-			cls.addMethod("contains", new JavaNativeMethod((expression, translator) -> {
-				CallExpression call = (CallExpression) expression;
-				Expression str = call.target;
-				Expression character = call.arguments.arguments[0];
-				return translator.containsAsIndexOf(str, character);
-			}));
+			cls.addMethod("contains", JavaSpecialMethod.CONTAINS_AS_INDEXOF);
 			cls.addInstanceMethod("compareToIgnoreCase","compareToIgnoreCase", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("endsWith","endsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("equalsIgnoreCase","equalsIgnoreCase", "(Ljava/lang/String;)Z");
@@ -136,22 +127,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
-			cls.addMethod("fromAsciiBytes", new JavaNativeMethod((expression, translator) -> {
-				CallStaticExpression call = (CallStaticExpression) expression;
-				return translator.bytesAsciiToString(call.arguments.arguments[0]);
-			}));
-			cls.addMethod("fromUTF8Bytes", new JavaNativeMethod((expression, translator) -> {
-				CallStaticExpression call = (CallStaticExpression) expression;
-				return translator.bytesUTF8ToString(call.arguments.arguments[0]);
-			}));
-			cls.addMethod("toAsciiBytes", new JavaNativeMethod((expression, translator) -> {
-				CallExpression call = (CallExpression) expression;
-				return translator.stringToAscii(call.target);
-			}));
-			cls.addMethod("toUTF8Bytes", new JavaNativeMethod((expression, translator) -> {
-				CallExpression call = (CallExpression) expression;
-				return translator.stringToUTF8(call.target);
-			}));
+			cls.addMethod("fromAsciiBytes", JavaSpecialMethod.BYTES_ASCII_TO_STRING);
+			cls.addMethod("fromUTF8Bytes", JavaSpecialMethod.BYTES_UTF8_TO_STRING);
+			cls.addMethod("toAsciiBytes", JavaSpecialMethod.STRING_TO_ASCII);
+			cls.addMethod("toUTF8Bytes", JavaSpecialMethod.STRING_TO_UTF8);
 			nativeClasses.put("stdlib::String", cls);
 		}
 
@@ -159,18 +138,12 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaClass arrays = JavaClass.ARRAYS;
 			JavaNativeClass cls = new JavaNativeClass(arrays);
 			cls.addMethod("sort", JavaNativeMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)V"));
-			cls.addMethod("sorted", new JavaNativeMethod((expression, translator) -> {
-				return translator.sorted(((CallExpression) expression).target);
-			}));
+			cls.addMethod("sorted", JavaSpecialMethod.SORTED);
 			cls.addMethod("sortWithComparator", JavaNativeMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V"));
-			cls.addMethod("sortedWithComparator", new JavaNativeMethod((expression, translator) -> {
-				return translator.sortedWithComparator(
-						((CallExpression) expression).target,
-						((CallExpression) expression).arguments.arguments[0]);
-			}));
-			cls.addMethod("copy", new JavaNativeMethod((expression, translator) -> translator.arrayCopy(((CallExpression) expression).target)));
-			cls.addMethod("copyResize", new JavaNativeMethod((expression, translator) -> translator.arrayCopyResize((CallExpression)expression)));
-			cls.addMethod("copyTo", new JavaNativeMethod((expression, translator) -> translator.arrayCopyTo((CallExpression) expression)));
+			cls.addMethod("sortedWithComparator", JavaSpecialMethod.SORTED_WITH_COMPARATOR);
+			cls.addMethod("copy", JavaSpecialMethod.ARRAY_COPY);
+			cls.addMethod("copyResize", JavaSpecialMethod.ARRAY_COPY_RESIZE);
+			cls.addMethod("copyTo", JavaSpecialMethod.ARRAY_COPY_TO);
 			nativeClasses.put("stdlib::Arrays", cls);
 		}
 

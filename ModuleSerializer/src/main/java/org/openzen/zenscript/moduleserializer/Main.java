@@ -12,7 +12,6 @@ import java.util.Collections;
 
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.SourceModuleReference;
 import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
@@ -26,9 +25,8 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		ZSPackage root = ZSPackage.createRoot();
 		ZSPackage stdlib = new ZSPackage(root, "stdlib");
-		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 		ModuleLogger exceptionLogger = new EmptyModuleLogger();
-		ModuleLoader loader = new ModuleLoader(registry, exceptionLogger);
+		ModuleLoader loader = new ModuleLoader(exceptionLogger);
 		loader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 
 		SemanticModule module = loader.getModule("stdlib");

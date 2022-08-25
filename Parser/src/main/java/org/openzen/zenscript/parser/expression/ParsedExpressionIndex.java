@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		public Expression eval() {
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
-					.map(method -> method.call(compiler.at(position), value, indexes))
+					.map(method -> method.call(compiler, position, value, TypeID.NONE, indexes))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(value.type, OperatorType.INDEXGET)));
 		}
 
@@ -56,7 +57,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
-					.map(method -> method.cast(compiler.at(position), cast, value, indexes))
+					.map(method -> method.cast(compiler, position, cast, value, TypeID.NONE, indexes))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.type, OperatorType.INDEXGET)));
 		}
 	}
@@ -82,14 +83,14 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
-					.map(operator -> operator.call(compiler.at(position), instance, arguments))
+					.map(operator -> operator.call(compiler, position, instance, TypeID.NONE, arguments))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
-					.map(operator -> operator.cast(compiler.at(position), cast, instance, arguments))
+					.map(operator -> operator.cast(compiler, position, cast, instance, TypeID.NONE, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
 		}
 	}

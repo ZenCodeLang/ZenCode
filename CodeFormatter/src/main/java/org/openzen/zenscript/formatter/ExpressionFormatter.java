@@ -166,8 +166,10 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				}
 				case CAST: {
 					StringBuilder result = new StringBuilder();
-					result.append(" as ");
-					result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
+					if (!expression.method.isImplicit()) {
+						result.append(" as ");
+						result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
+					}
 					return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
 				}
 				default:
@@ -224,17 +226,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 
 	@Override
-	public ExpressionString visitCast(CastExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(expression.target.accept(this).value);
-		if (!expression.isImplicit) {
-			result.append(" as ");
-			result.append(typeFormatter.format(expression.type));
-		}
-		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
-	}
-
-	@Override
 	public ExpressionString visitCheckNull(CheckNullExpression expression) {
 		return expression.value.accept(this);
 	}
@@ -253,15 +244,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(" : ");
 		result.append(expression.ifElse.accept(this));
 		return new ExpressionString(result.toString(), ZenScriptOperator.TERNARY);
-	}
-
-	@Override
-	public ExpressionString visitConst(ConstExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(typeFormatter.format(expression.type));
-		result.append('.');
-		result.append(expression.constant.getName());
-		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
 	@Override
@@ -392,7 +374,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.field.member.name);
+		result.append(expression.field.getName());
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -579,7 +561,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitStaticSetter(StaticSetterExpression expression) {
 		return new ExpressionString(
-				typeFormatter.format(expression.type) + "." + expression.setter.member.name + " = " + expression.setter.member.name,
+				typeFormatter.format(expression.type) + "." + expression.setter.getName() + " = " + expression.setter.getName(),
 				ZenScriptOperator.ASSIGN);
 	}
 
@@ -590,11 +572,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitSubtypeCast(SubtypeCastExpression expression) {
-
-		StringBuilder result = new StringBuilder(expression.value.accept(this).value);
-		result.append(" as ");
-		result.append(typeFormatter.format(expression.type));
-		return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
+		String result = expression.value.accept(this).value + " as " + typeFormatter.format(expression.type);
+		return new ExpressionString(result, ZenScriptOperator.CAST);
 	}
 
 	@Override
@@ -623,139 +602,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
 		ExpressionString value = expression.value.accept(this);
 		return new ExpressionString("try!" + value.value, value.priority);
-	}
-
-	@Override
-	public ExpressionString visitUnary(UnaryExpression expression) {
-		switch (expression.operator.group) {
-			case BOOLEAN_NOT:
-				return unaryPrefix(expression.target, ZenScriptOperator.NOT, "!");
-			case BITWISE_NOT:
-				return unaryPrefix(expression.target, ZenScriptOperator.NOT, "~");
-			case NEG:
-				return unaryPrefix(expression.target, ZenScriptOperator.NEG, "-");
-			case CAST_IMPLICIT:
-			case CAST_EXPLICIT:
-				// TODO: skip implicit casts where possible
-				return unaryPostfix(expression.target, ZenScriptOperator.CAST, " as " + typeFormatter.format(expression.type));
-			case COUNT_LOW_ZEROES:
-				return callUnary(expression.target, "countLowZeroes");
-			case COUNT_HIGH_ZEROES:
-				return callUnary(expression.target, "countHighZeroes");
-			case COUNT_LOW_ONES:
-				return callUnary(expression.target, "countLowOnes");
-			case COUNT_HIGH_ONES:
-				return callUnary(expression.target, "countHighOnes");
-			case HIGHEST_ONE_BIT:
-				return callUnary(expression.target, "highestOneBit");
-			case LOWEST_ONE_BIT:
-				return callUnary(expression.target, "lowestOneBit");
-			case HIGHEST_ZERO_BIT:
-				return callUnary(expression.target, "highestZeroBit");
-			case LOWEST_ZERO_BIT:
-				return callUnary(expression.target, "lowestZeroBit");
-			case BIT_COUNT:
-				return callUnary(expression.target, "bitCount");
-			case PARSE:
-			case OTHER:
-				switch (expression.operator) {
-					case BOOL_PARSE:
-						return callStaticUnary("bool.parse", expression.target);
-					case BYTE_PARSE:
-						return callStaticUnary("byte.parse", expression.target);
-					case SBYTE_PARSE:
-						return callStaticUnary("sbyte.parse", expression.target);
-					case SHORT_PARSE:
-						return callStaticUnary("short.parse", expression.target);
-					case USHORT_PARSE:
-						return callStaticUnary("ushort.parse", expression.target);
-					case INT_PARSE:
-						return callStaticUnary("int.parse", expression.target);
-					case UINT_PARSE:
-						return callStaticUnary("uint.parse", expression.target);
-					case LONG_PARSE:
-						return callStaticUnary("long.parse", expression.target);
-					case ULONG_PARSE:
-						return callStaticUnary("ulong.parse", expression.target);
-					case USIZE_PARSE:
-						return callStaticUnary("usize.parse", expression.target);
-					case FLOAT_PARSE:
-						return callStaticUnary("float.parse", expression.target);
-					case DOUBLE_PARSE:
-						return callStaticUnary("double.parse", expression.target);
-					case FLOAT_BITS:
-					case DOUBLE_BITS:
-						return unaryPostfix(expression, ZenScriptOperator.MEMBER, ".bits");
-					case FLOAT_FROM_BITS:
-						return callStaticUnary("float.fromBits", expression.target);
-					case DOUBLE_FROM_BITS:
-						return callStaticUnary("double.fromBits", expression.target);
-					case CHAR_TO_UNICODE:
-						return callUnary(expression.target, "toUnicode");
-					case CHAR_FROM_UNICODE:
-						return callStaticUnary("char.fromUnicode", expression.target);
-					case CHAR_REMOVE_DIACRITICS:
-						return unaryPostfix(expression.target, ZenScriptOperator.CALL, "removeDiacritics");
-					case CHAR_TO_LOWER_CASE:
-						return unaryPostfix(expression.target, ZenScriptOperator.CALL, "toLowerCase");
-					case CHAR_TO_UPPER_CASE:
-						return unaryPostfix(expression.target, ZenScriptOperator.CAST, "toUpperCase");
-					case STRING_CONSTRUCTOR_CHARACTERS:
-						return callStaticUnary("new string", expression.target);
-					case STRING_LENGTH:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".length");
-					case STRING_CHARACTERS:
-						return unaryPostfix(expression.target, ZenScriptOperator.CALL, ".characters()");
-					case STRING_ISEMPTY:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".empty");
-					case STRING_REMOVE_DIACRITICS:
-						return callUnary(expression.target, "removeDiacritics");
-					case STRING_TRIM:
-						return callUnary(expression.target, "trim");
-					case STRING_TO_LOWER_CASE:
-						return callUnary(expression.target, "toLowerCase");
-					case STRING_TO_UPPER_CASE:
-						return callUnary(expression.target, "toUpperCase");
-					case ASSOC_SIZE:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".size");
-					case ASSOC_ISEMPTY:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".empty");
-					case ASSOC_KEYS:
-						return callUnary(expression.target, "keys");
-					case ASSOC_VALUES:
-						return callUnary(expression.target, "values");
-					case GENERICMAP_SIZE:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".size");
-					case GENERICMAP_ISEMPTY:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".empty");
-					case ARRAY_LENGTH:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".length");
-					case ARRAY_ISEMPTY:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".empty");
-					case ENUM_NAME:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".name");
-					case ENUM_ORDINAL:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".ordinal");
-					case OPTIONAL_WRAP:
-						return expression.target.accept(this);
-					case OPTIONAL_UNWRAP:
-						return unaryPostfix(expression.target, ZenScriptOperator.NOT, "!");
-					case RANGE_FROM:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".from");
-					case RANGE_TO:
-						return unaryPostfix(expression.target, ZenScriptOperator.MEMBER, ".to");
-				}
-			default:
-				throw new UnsupportedOperationException("Unknown operator: " + expression.operator);
-		}
-	}
-
-	private ExpressionString callUnary(Expression target, String method) {
-		return unaryPostfix(target, ZenScriptOperator.CAST, "." + method + "()");
-	}
-
-	private ExpressionString callStaticUnary(String method, Expression target) {
-		return new ExpressionString(method + "(" + target.accept(this) + ")", ZenScriptOperator.CALL);
 	}
 
 	@Override

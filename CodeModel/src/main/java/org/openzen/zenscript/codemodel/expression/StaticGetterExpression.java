@@ -1,13 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 
 public class StaticGetterExpression extends Expression {
-	public final GetterMemberRef getter;
+	public final MethodInstance getter;
 
-	public StaticGetterExpression(CodePosition position, GetterMemberRef getter) {
-		super(position, getter.getType(), null);
+	public StaticGetterExpression(CodePosition position, MethodInstance getter) {
+		super(position, getter.getHeader().getReturnType(), null);
 
 		this.getter = getter;
 	}

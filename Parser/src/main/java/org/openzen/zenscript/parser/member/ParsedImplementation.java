@@ -3,28 +3,28 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.CompilingMember;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ImplementationScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ParsedImplementation extends ParsedDefinitionMember {
 	private final CodePosition position;
-	private final int modifiers;
+	private final Modifiers modifiers;
 	private final IParsedType type;
 	private final List<ParsedDefinitionMember> members = new ArrayList<>();
 
-	private ImplementationMember compiled;
 
 	public ParsedImplementation(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			IParsedType type) {
 		super(annotations);
@@ -39,34 +39,51 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new ImplementationMember(position, definition, modifiers, type.compile(context));
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(definition, compiler);
+	}
 
-		for (ParsedDefinitionMember member : members) {
-			member.linkTypes(context);
-			compiled.addMember(member.getCompiled());
+	private class Compiling implements CompilingMember {
+		private final HighLevelDefinition definition;
+		private final MemberCompiler compiler;
+		private ImplementationMember compiled;
+		private List<CompilingMember> members;
+
+		public Compiling(HighLevelDefinition definition, MemberCompiler compiler) {
+			this.definition = definition;
+			this.compiler = compiler;
 		}
-	}
 
-	@Override
-	public ImplementationMember getCompiled() {
-		return compiled;
-	}
+		@Override
+		public void linkTypes() {
+			compiled = new ImplementationMember(position, definition, modifiers, type.compile(compiler.types()));
+			members = ParsedImplementation.this.members.stream()
+					.map(member -> member.compile(definition, compiled, compiler))
+					.collect(Collectors.toList());
 
-	@Override
-	public void compile(BaseScope scope) throws CompileException {
-		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
-
-		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
-		for (ParsedDefinitionMember member : members) {
-			member.compile(innerScope);
+			for (CompilingMember member : members) {
+				member.linkTypes();
+				compiled.addMember(member.getCompiled());
+			}
 		}
-	}
 
-	@Override
-	public void registerMembers(BaseScope scope, PrecompilationState state) {
-		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
-		for (ParsedDefinitionMember member : members)
-			state.register(innerScope, member);
+		@Override
+		public IDefinitionMember getCompiled() {
+			return compiled;
+		}
+
+		@Override
+		public void prepare(List<CompileException> errors) {
+			for (CompilingMember member : members) {
+				member.prepare(errors);
+			}
+		}
+
+		@Override
+		public void compile(List<CompileException> errors) {
+			for (CompilingMember member : members) {
+				member.compile(errors);
+			}
+		}
 	}
 }

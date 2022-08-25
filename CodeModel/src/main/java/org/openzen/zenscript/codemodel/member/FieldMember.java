@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -14,6 +15,8 @@ import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class FieldMember extends PropertyMember implements FieldSymbol {
 	public final String name;
@@ -141,5 +144,14 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public Modifiers getModifiers() {
 		return modifiers;
+	}
+
+	@Override
+	public Optional<CompileTimeConstant> evaluate() {
+		if (modifiers.isConst()) {
+			return initializer.evaluate();
+		} else {
+			return Optional.empty();
+		}
 	}
 }

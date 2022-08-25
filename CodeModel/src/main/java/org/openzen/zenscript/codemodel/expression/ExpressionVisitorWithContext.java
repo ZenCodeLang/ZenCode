@@ -19,15 +19,11 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitCapturedThis(C context, CapturedThisExpression expression);
 
-	R visitCast(C context, CastExpression expression);
-
 	R visitCheckNull(C context, CheckNullExpression expression);
 
 	R visitCoalesce(C context, CoalesceExpression expression);
 
 	R visitConditional(C context, ConditionalExpression expression);
-
-	R visitConst(C context, ConstExpression expression);
 
 	R visitConstantBool(C context, ConstantBoolExpression expression);
 

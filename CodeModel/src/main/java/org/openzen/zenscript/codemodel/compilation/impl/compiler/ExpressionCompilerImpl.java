@@ -103,10 +103,10 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		ResolvedType leftResolved = resolve(left);
 		ResolvedType rightResolved = resolve(right);
 
-		if (leftResolved.canCastImplicitlyTo(this, CodePosition.UNKNOWN, right))
+		if (leftResolved.canCastImplicitlyTo(right))
 			return Optional.of(right);
 
-		if (rightResolved.canCastImplicitlyTo(this, CodePosition.UNKNOWN, left))
+		if (rightResolved.canCastImplicitlyTo(left))
 			return Optional.of(left);
 
 		Optional<ArrayTypeID> maybeLeftArray = left.asArray();
@@ -194,6 +194,16 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression constantNull(TypeID type) {
 			return new NullExpression(position, type);
+		}
+
+		@Override
+		public Expression constructorSuper(TypeID type, MethodInstance constructor, CallArguments arguments) {
+			return new ConstructorSuperCallExpression(position, type, constructor, arguments);
+		}
+
+		@Override
+		public Expression constructorThis(TypeID type, MethodInstance constructor, CallArguments arguments) {
+			return new ConstructorThisCallExpression(position, type, constructor, arguments);
 		}
 
 		@Override

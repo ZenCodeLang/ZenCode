@@ -3,8 +3,6 @@ package org.openzen.zenscript.codemodel.generic;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 import java.util.Optional;
 

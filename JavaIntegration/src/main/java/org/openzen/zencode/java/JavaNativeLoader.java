@@ -121,7 +121,6 @@ public class JavaNativeLoader {
 				module.pkg,
 				module.name,
 				module.basePackage,
-				engine.registry,
 				dependencies,
 				engine.root);
 		for (Class<?> cls : module.classes)

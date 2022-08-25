@@ -81,7 +81,7 @@ public class JavaCompiledModule {
 		return cls;
 	}
 
-	public JavaClass getExpansionClassInfo(HighLevelDefinition definition) {
+	public JavaClass getExpansionClassInfo(DefinitionSymbol definition) {
 		JavaClass cls = expansionClasses.get(definition);
 		if (cls == null)
 			return getClassInfo(definition);

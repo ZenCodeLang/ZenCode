@@ -6,6 +6,7 @@
 package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -16,9 +17,8 @@ public class JavaNativeMethod implements JavaMethod {
 	public final Kind kind;
 	public final String name;
 	public final boolean compile;
-	public final JavaNativeTranslation translation;
 	public final String descriptor;
-	public final int modifiers;
+	public final int modifiers; // these are Java modifiers!
 	public final boolean genericResult;
 	public final boolean[] typeParameterArguments;
 
@@ -36,24 +36,11 @@ public class JavaNativeMethod implements JavaMethod {
 		this.kind = kind;
 		this.name = name;
 		this.compile = compile;
-		translation = null;
 
 		this.descriptor = descriptor;
 		this.modifiers = modifiers;
 		this.genericResult = genericResult;
 		this.typeParameterArguments = typeParameterArguments;
-	}
-
-	public JavaNativeMethod(JavaNativeTranslation<?> translation) {
-		this.cls = null;
-		this.kind = Kind.COMPILED;
-		this.name = null;
-		this.compile = false;
-		this.translation = translation;
-		this.descriptor = "";
-		this.modifiers = 0;
-		this.genericResult = false;
-		this.typeParameterArguments = new boolean[0];
 	}
 
 	public static JavaNativeMethod getConstructor(JavaClass cls, String descriptor, int modifiers) {
@@ -111,8 +98,18 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	@Override
-	public <T> T compile(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
-		return compiler.nativeMethod(this, returnType, arguments);
+	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		return compiler.nativeConstructor(this, type, arguments);
+	}
+
+	@Override
+	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
+		return compiler.nativeVirtualMethod(this, returnType, target, arguments);
+	}
+
+	@Override
+	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
+		return compiler.nativeStaticMethod(this, returnType, arguments);
 	}
 
 	public enum Kind {

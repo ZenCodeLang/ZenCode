@@ -19,15 +19,11 @@ public interface ExpressionVisitor<T> {
 
 	T visitCapturedThis(CapturedThisExpression expression);
 
-	T visitCast(CastExpression expression);
-
 	T visitCheckNull(CheckNullExpression expression);
 
 	T visitCoalesce(CoalesceExpression expression);
 
 	T visitConditional(ConditionalExpression expression);
-
-	T visitConst(ConstExpression expression);
 
 	T visitConstantBool(ConstantBoolExpression expression);
 

@@ -14,10 +14,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaNativeMethod;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.*;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -50,13 +47,6 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitConst(ConstMember member) {
-		JavaField field = context.getJavaField(member);
-		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
-		return null;
-	}
-
-	@Override
 	public Void visitField(FieldMember member) {
 		if (!member.isStatic())
 			throw new IllegalStateException("Cannot add fields via expansions");
@@ -75,14 +65,9 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitDestructor(DestructorMember member) {
-		throw new IllegalStateException("Cannot add constructors via expansions");
-	}
-
-	@Override
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
-		final JavaNativeMethod method = context.getJavaMethod(member);
+		final JavaMethod method = context.getJavaMethod(member);
 		if (!method.compile) {
 			return null;
 		}
@@ -300,8 +285,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
-		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
+		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;
 		javaModule.setMethodInfo(methodMember, javaMethod);
@@ -324,7 +309,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
+		final JavaMethod javaMethod = context.getJavaMethod(member);
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
@@ -349,18 +334,6 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		return null;
-	}
-
-	@Override
-	public Void visitCaller(CallerMember member) {
-		//It's gonna be a method anyways, so why not reuse the code ^^
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
-		final MethodMember call = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
-		call.body = member.body;
-		call.annotations = member.annotations;
-
-		javaModule.setMethodInfo(call, javaMethod);
-		return call.accept(this);
 	}
 
 	@Override

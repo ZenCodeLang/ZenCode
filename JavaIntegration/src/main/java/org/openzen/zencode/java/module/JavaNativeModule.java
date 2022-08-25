@@ -15,11 +15,8 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
 import java.lang.reflect.Method;
@@ -31,22 +28,24 @@ import java.util.Map;
  * @author Stan Hebben
  */
 public class JavaNativeModule {
+	private final ModuleSpace space;
 
 
 	private final IZSLogger logger;
 
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
-	private final JavaNativeConverter nativeConverter;
-	
+	public final JavaNativeConverter nativeConverter;
+
 	public JavaNativeModule(
+			ModuleSpace space,
 			IZSLogger logger,
 			ZSPackage pkg,
 			String name,
 			String basePackage,
 			JavaNativeModule[] dependencies,
 			ZSPackage root) {
-		this(logger,
+		this(space, logger,
 				pkg,
 				name,
 				basePackage,
@@ -57,6 +56,7 @@ public class JavaNativeModule {
 	}
 
 	public JavaNativeModule(
+			ModuleSpace space,
 			IZSLogger logger,
 			ZSPackage pkg,
 			String name,
@@ -64,6 +64,7 @@ public class JavaNativeModule {
 			JavaNativeModule[] dependencies,
 			JavaNativeConverterBuilder nativeConverterBuilder,
 			ZSPackage rootPackage) {
+		this.space = space;
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.logger = logger;
 		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, rootPackage);
@@ -71,7 +72,7 @@ public class JavaNativeModule {
 		this.nativeConverter = nativeConverterBuilder.build(packageInfo, logger, typeConversionContext, this);
 	}
 
-	public SemanticModule toSemantic(ModuleSpace space) {
+	public SemanticModule toSemantic() {
 		return new SemanticModule(
 				packageInfo.getModule(),
 				SemanticModule.NONE,
@@ -100,6 +101,9 @@ public class JavaNativeModule {
 		return nativeConverter.memberConverter.loadStaticMethod(method, definition);
 	}
 
+	public FunctionHeader loadHeader(TypeVariableContext typeVariableContext, Method method) {
+		return nativeConverter.headerConverter.getHeader(context, method);
+	}
 
 	public void registerBEP(BracketExpressionParser bep) {
 		nativeConverter.registerBEP(bep);

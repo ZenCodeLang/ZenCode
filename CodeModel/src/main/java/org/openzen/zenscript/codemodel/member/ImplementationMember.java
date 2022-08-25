@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -42,15 +42,20 @@ public class ImplementationMember extends DefinitionMember {
 		TypeID implementsType = mapper.map(type);
 		FunctionHeader header = new FunctionHeader(implementsType);
 		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(this, targetType, implementsType);
-		members.implicitCast(new InstanceCallableMethod() {
+		members.cast(new InstanceCallableMethod() {
 			@Override
 			public FunctionHeader getHeader() {
 				return header;
 			}
 
 			@Override
-			public Optional<MethodSymbol> asMethod() {
+			public Optional<MethodInstance> asMethod() {
 				return Optional.empty();
+			}
+
+			@Override
+			public Modifiers getModifiers() {
+				return Modifiers.IMPLICIT;
 			}
 
 			@Override

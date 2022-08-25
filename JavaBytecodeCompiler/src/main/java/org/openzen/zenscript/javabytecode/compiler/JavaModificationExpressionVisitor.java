@@ -99,11 +99,6 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	@Override
-	public Void visitCast(CastExpression expression) {
-		throw new UnsupportedOperationException("Invalid lvalue: cast");
-	}
-
-	@Override
 	public Void visitCheckNull(CheckNullExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: null check");
 	}
@@ -116,11 +111,6 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	@Override
 	public Void visitConditional(ConditionalExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: conditional expression");
-	}
-
-	@Override
-	public Void visitConst(ConstExpression expression) {
-		throw new UnsupportedOperationException("Invalid lvalue: constant cannot be modified");
 	}
 
 	@Override

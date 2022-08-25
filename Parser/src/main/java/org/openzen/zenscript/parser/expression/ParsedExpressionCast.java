@@ -5,14 +5,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedBasicType;
-
-import java.util.Optional;
 
 public class ParsedExpressionCast extends ParsedExpression {
 	private final CompilableExpression value;
@@ -32,7 +25,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 		return new Compiling(compiler, position, value.compile(compiler), type.compile(compiler.types()), optional);
 	}
 
-	@Override
+/*	@Override
 	public Optional<CompilableLambdaHeader> toLambdaHeader() {
 		if (optional)
 			return Optional.empty();
@@ -54,7 +47,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 			throw new ParseException(position, "Lambda parameter already has a type");
 
 		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);
-	}
+	}*/
 
 	private static class Compiling extends AbstractCompilingExpression {
 		private final CompilingExpression value;

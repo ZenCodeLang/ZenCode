@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
@@ -278,12 +279,12 @@ public abstract class JavaContext {
 		return javaModule;
 	}
 
-	public JavaClass getJavaClass(HighLevelDefinition definition) {
-		return getJavaModule(definition.module).getClassInfo(definition);
+	public JavaClass getJavaClass(DefinitionSymbol definition) {
+		return getJavaModule(definition.getModule()).getClassInfo(definition);
 	}
 
-	public JavaClass getJavaExpansionClass(HighLevelDefinition definition) {
-		return getJavaModule(definition.module).getExpansionClassInfo(definition);
+	public JavaClass getJavaExpansionClass(DefinitionSymbol definition) {
+		return getJavaModule(definition.getModule()).getExpansionClassInfo(definition);
 	}
 
 	public JavaClass optJavaClass(HighLevelDefinition definition) {

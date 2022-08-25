@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class FolderPackage {
 
-	private Map<String, List<SourceFile>> files = new HashMap<>();
+	private final Map<String, List<SourceFile>> files = new HashMap<>();
 
 	public FolderPackage(File file) {
 		ArrayList<File> foundFiles = new ArrayList<>();

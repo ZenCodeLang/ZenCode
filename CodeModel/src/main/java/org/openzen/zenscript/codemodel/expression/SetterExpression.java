@@ -1,15 +1,15 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 
 public class SetterExpression extends Expression {
 	public final Expression target;
-	public final SetterMemberRef setter;
+	public final MethodInstance setter;
 	public final Expression value;
 
-	public SetterExpression(CodePosition position, Expression target, SetterMemberRef setter, Expression value) {
-		super(position, setter.getType(), value.thrownType);
+	public SetterExpression(CodePosition position, Expression target, MethodInstance setter, Expression value) {
+		super(position, setter.getHeader().parameters[0].type, value.thrownType);
 
 		this.target = target;
 		this.setter = setter;

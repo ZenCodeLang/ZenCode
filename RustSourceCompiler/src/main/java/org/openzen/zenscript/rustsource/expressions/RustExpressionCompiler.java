@@ -110,11 +110,6 @@ public class RustExpressionCompiler {
 		}
 
 		@Override
-		public ExpressionString visitCast(CastExpression expression) {
-			return null;
-		}
-
-		@Override
 		public ExpressionString visitCheckNull(CheckNullExpression expression) {
 			return null;
 		}
@@ -126,11 +121,6 @@ public class RustExpressionCompiler {
 
 		@Override
 		public ExpressionString visitConditional(ConditionalExpression expression) {
-			return null;
-		}
-
-		@Override
-		public ExpressionString visitConst(ConstExpression expression) {
 			return null;
 		}
 

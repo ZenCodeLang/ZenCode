@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -32,12 +32,12 @@ public class ParsedStatementForeach extends ParsedStatement {
 		Expression list = compiler.compile(this.list);
 
 		ResolvedType listType = compiler.resolve(list.type);
-		Optional<IteratorMemberRef> maybeIterator = listType.findIterator(varnames.length);
+		Optional<IteratorInstance> maybeIterator = listType.findIterator(varnames.length);
 		if (!maybeIterator.isPresent())
 			return new InvalidStatement(position, CompileErrors.noSuchIterator(list.type, varnames.length));
 
-		IteratorMemberRef iterator = maybeIterator.get();
-		TypeID[] loopTypes = iterator.types;
+		IteratorInstance iterator = maybeIterator.get();
+		TypeID[] loopTypes = iterator.getLoopVariableTypes();
 		VarStatement[] variables = new VarStatement[varnames.length];
 		for (int i = 0; i < variables.length; i++)
 			variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);

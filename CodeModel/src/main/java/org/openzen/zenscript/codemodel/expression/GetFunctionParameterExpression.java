@@ -13,13 +13,6 @@ public class GetFunctionParameterExpression extends Expression {
 	}
 
 	@Override
-	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
-		CapturedExpression result = new CapturedParameterExpression(position, parameter, closure);
-		closure.add(result);
-		return result;
-	}
-
-	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGetFunctionParameter(this);
 	}

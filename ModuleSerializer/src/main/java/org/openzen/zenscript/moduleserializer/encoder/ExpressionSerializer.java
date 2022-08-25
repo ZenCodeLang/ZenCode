@@ -155,19 +155,6 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitCast(StatementSerializationContext context, CastExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_CAST);
-		int flags = getFlags(expression);
-		if (expression.isImplicit)
-			flags |= ExpressionEncoding.FLAG_IMPLICIT;
-		serialize(flags, expression);
-
-		output.serialize(context, expression.target);
-		output.write(context, expression.member);
-		return null;
-	}
-
-	@Override
 	public Void visitCheckNull(StatementSerializationContext context, CheckNullExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_CHECKNULL);
 		int flags = getFlags(expression);

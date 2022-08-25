@@ -1,6 +1,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -13,7 +14,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 	protected final DefinitionCompiler compiler;
 	private final String name;
 	private final CompilingMember[] members;
-	private final TypeSymbol compiled;
+	private final HighLevelDefinition compiled;
 	private final boolean inner;
 	private final Map<String, CompilingDefinition> innerDefinitions = new HashMap<>();
 
@@ -21,7 +22,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 			BaseParsedDefinition parsedDefinition,
 			DefinitionCompiler compiler,
 			String name,
-			TypeSymbol compiled,
+			HighLevelDefinition compiled,
 			boolean isInner
 	) {
 		this.compiler = compiler;
@@ -31,7 +32,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 
 		MemberCompiler memberCompiler = compiler.forMembers(compiled);
 		members = parsedDefinition.members.stream()
-				.map(member -> member.compile(memberCompiler))
+				.map(member -> member.compile(compiled, null, memberCompiler))
 				.toArray(CompilingMember[]::new);
 
 		for (CompilingMember member : members) {
@@ -49,7 +50,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 	}
 
 	@Override
-	public TypeSymbol getDefinition() {
+	public HighLevelDefinition getDefinition() {
 		return compiled;
 	}
 

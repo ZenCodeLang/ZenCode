@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 public class GetLocalVariableExpression extends Expression {
@@ -11,13 +10,6 @@ public class GetLocalVariableExpression extends Expression {
 		super(position, variable.type, null);
 
 		this.variable = variable;
-	}
-
-	@Override
-	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
-		CapturedExpression result = new CapturedLocalVariableExpression(position, variable, closure);
-		closure.add(result);
-		return result;
 	}
 
 	@Override

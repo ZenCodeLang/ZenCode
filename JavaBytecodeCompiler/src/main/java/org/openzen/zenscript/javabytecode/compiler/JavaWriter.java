@@ -25,18 +25,17 @@ public class JavaWriter {
 			"concat",
 			"(Ljava/lang/String;)Ljava/lang/String;");
 
-	public final JavaNativeMethod method;
+	public final JavaCompilingMethod method;
 	public final HighLevelDefinition forDefinition;
 	public final ClassVisitor clazzVisitor;
 	private final IZSLogger logger;
 
-	private final CodePosition position;
 	private final LocalVariablesSorter visitor;
 	private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
 	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
 	private final List<Integer> lineNumberLabels = new ArrayList<>();
 	private boolean debug = false;
-	private boolean nameVariables;
+	private final boolean nameVariables;
 	private int labelIndex = 1;
 	private Map<Label, String> labelNames = new HashMap<>();
 
@@ -45,12 +44,12 @@ public class JavaWriter {
 			CodePosition position,
 			ClassVisitor visitor,
 			boolean nameVariables,
-			JavaNativeMethod method,
+			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
 			String signature,
 			String[] exceptions,
 			String... annotations) {
-		this(logger, position, visitor, nameVariables, method, forDefinition, false, signature, method.descriptor, exceptions, annotations);
+		this(logger, position, visitor, nameVariables, method, forDefinition, false, signature, method.compiled.descriptor, exceptions, annotations);
 		this.position(position.fromLine);
 	}
 
@@ -60,7 +59,7 @@ public class JavaWriter {
 			CodePosition position,
 			ClassVisitor visitor,
 			boolean nameVariables,
-			JavaNativeMethod method,
+			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
 			boolean isExtension,
 			String signature,
@@ -71,10 +70,9 @@ public class JavaWriter {
 		this.clazzVisitor = visitor;
 		this.method = method;
 		this.forDefinition = forDefinition;
-		this.position = position;
 
-		final int access = isExtension ? method.modifiers | ACC_STATIC : method.modifiers;
-		final MethodVisitor methodVisitor = visitor.visitMethod(access, method.name, descriptor, signature, exceptions);
+		final int access = isExtension ? method.compiled.modifiers | ACC_STATIC : method.compiled.modifiers;
+		final MethodVisitor methodVisitor = visitor.visitMethod(access, method.compiled.name, descriptor, signature, exceptions);
 
 		for (String annotation : annotations) {
 			methodVisitor.visitAnnotation(annotation, true).visitEnd();
@@ -85,7 +83,7 @@ public class JavaWriter {
 	}
 
 
-	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaNativeMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
 		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
 	}
 

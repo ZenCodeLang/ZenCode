@@ -2,31 +2,26 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
-import org.openzen.zenscript.codemodel.compilation.CompilingMember;
-import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
-import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.FunctionScope;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
+import java.util.List;
+
 public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	protected final CodePosition position;
-	protected final int modifiers;
+	protected final Modifiers modifiers;
 	protected final ParsedFunctionBody body;
 
 	public ParsedFunctionalMember(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			ParsedFunctionBody body) {
 		super(annotations);
@@ -36,40 +31,47 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		this.body = body;
 	}
 
-	protected void inferHeaders(MemberCompiler compiler) throws CompileException {
-		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(compiler, implementation.getCompiled().type);
-		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
-			if (definition.getSuperType() == null)
-				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
+	protected abstract class BaseCompiling<T extends FunctionalMember> implements CompilingMember {
+		protected final MemberCompiler compiler;
+		protected final HighLevelDefinition definition;
+		protected final ImplementationMember implementation;
+		protected T compiled;
 
-			fillOverride(compiler, definition.getSuperType());
+		public BaseCompiling(MemberCompiler compiler, HighLevelDefinition definition, ImplementationMember implementation) {
+			this.compiler = compiler;
+			this.definition = definition;
+			this.implementation = implementation;
 		}
 
-		if (getCompiled() == null || getCompiled().header == null)
-			throw new IllegalStateException("Types not yet linked");
-	}
+		@Override
+		public IDefinitionMember getCompiled() {
+			return compiled;
+		}
 
-	@Override
-	public final CompilingMember compile(CompilingDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
-		inferHeaders(compiler);
+		@Override
+		public void prepare(List<CompileException> errors) {
+			inferHeaders(errors);
+		}
 
-		StatementCompiler statementCompiler = compiler.forMethod(getCompiled().header);
-		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), compiler);
-		getCompiled().setBody(body.compile(statementCompiler, getCompiled().header));
+		@Override
+		public void compile(List<CompileException> errors) {
+			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
+			compiled.setBody(body.compile(compiler.forMethod(compiled.header)));
+		}
 
-		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
-			if (getCompiled().body == null)
-				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
+		private void inferHeaders(List<CompileException> errors) {
+			if ((implementation != null && !modifiers.isPrivate())) {
+				fillOverride(implementation.type);
+			} else if (implementation == null && modifiers.isOverride()) {
+				if (definition.getSuperType() == null) {
+					errors.add(new CompileException(position, CompileErrors.overrideWithoutBase()));
+					return;
+				}
 
-			TypeID returnType = getCompiled().body.getReturnType();
-			if (returnType == null) {
-				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
-			} else {
-				getCompiled().header.setReturnType(returnType);
+				fillOverride(definition.getSuperType());
 			}
 		}
-	}
 
-	protected abstract void fillOverride(MemberCompiler compiler, TypeID baseType) throws CompileException;
+		protected abstract void fillOverride(TypeID baseType);
+	}
 }

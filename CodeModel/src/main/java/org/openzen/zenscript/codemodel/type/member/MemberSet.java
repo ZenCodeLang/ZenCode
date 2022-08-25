@@ -1,14 +1,11 @@
 package org.openzen.zenscript.codemodel.type.member;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.*;
@@ -29,13 +26,13 @@ public class MemberSet implements ResolvedType {
 	private final Map<String, List<InstanceCallableMethod>> methods = new HashMap<>();
 	private final Map<OperatorType, List<InstanceCallableMethod>> operators = new HashMap<>();
 	private final Map<String, List<StaticCallableMethod>> staticMethods = new HashMap<>();
-	private final List<InstanceCallableMethod> implicitCasts = new ArrayList<>();
-	private final List<InstanceCallableMethod> explicitCasts = new ArrayList<>();
+	private final List<InstanceCallableMethod> casters = new ArrayList<>();
 	private final List<InstanceCallableMethod> iterators = new ArrayList<>();
 	private final Map<String, CompilableExpression> contextMembers = new HashMap<>();
 	private final Map<String, SwitchMember> switchMembers = new HashMap<>();
 	private final Map<String, TypeSymbol> innerTypes = new HashMap<>();
 	private InstanceCallableMethod destructor;
+	private Comparator comparator;
 
 	@Override
 	public StaticCallable getConstructor() {
@@ -64,36 +61,13 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
-		for (InstanceCallableMethod method : explicitCasts) {
-			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
-			if (arguments.level != CastedExpression.Level.INVALID)
-				return Optional.of(method.call(compiler.at(position), value, arguments));
+	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
+		for (InstanceCallableMethod method : casters) {
+			if (method.getHeader().getReturnType().equals(toType))
+				return Optional.of(method);
 		}
 
 		return Optional.empty();
-	}
-
-	@Override
-	public Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
-		for (InstanceCallableMethod method : implicitCasts) {
-			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
-			if (arguments.level != CastedExpression.Level.INVALID)
-				return Optional.of(method.call(compiler.at(position), value, arguments));
-		}
-
-		return Optional.empty();
-	}
-
-	@Override
-	public boolean canCastImplicitlyTo(ExpressionCompiler compiler, CodePosition position, TypeID target) {
-		for (InstanceCallableMethod method : implicitCasts) {
-			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
-			if (arguments.level != CastedExpression.Level.INVALID)
-				return true;
-		}
-
-		return false;
 	}
 
 	@Override
@@ -163,11 +137,11 @@ public class MemberSet implements ResolvedType {
 
 	@Override
 	public Optional<Comparator> compare() {
-		throw new UnsupportedOperationException("Not yet supported");
+		return Optional.ofNullable(comparator);
 	}
 
 	@Override
-	public Optional<IteratorMemberRef> findIterator(int variables) {
+	public Optional<IteratorInstance> findIterator(int variables) {
 		throw new UnsupportedOperationException("Not yet supported");
 	}
 
@@ -300,13 +274,8 @@ public class MemberSet implements ResolvedType {
 			return this;
 		}
 
-		public Builder implicitCast(InstanceCallableMethod method) {
-			target.implicitCasts.add(method);
-			return this;
-		}
-
-		public Builder explicitCast(InstanceCallableMethod method) {
-			target.explicitCasts.add(method);
+		public Builder cast(InstanceCallableMethod method) {
+			target.casters.add(method);
 			return this;
 		}
 
@@ -317,6 +286,11 @@ public class MemberSet implements ResolvedType {
 
 		public Builder inner(TypeSymbol type) {
 			target.innerTypes.put(type.getName(), type);
+			return this;
+		}
+
+		public Builder comparator(Comparator comparator) {
+			target.comparator = comparator;
 			return this;
 		}
 

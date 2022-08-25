@@ -9,13 +9,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.*;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -36,8 +35,8 @@ public class ValidationUtils {
 	private ValidationUtils() {
 	}
 
-	public static void validateValidOverride(Validator target, CodePosition position, TypeScope scope, FunctionHeader header, FunctionHeader overridden) {
-		if (!header.canOverride(scope, overridden))
+	public static void validateValidOverride(Validator target, CodePosition position, FunctionHeader header, FunctionHeader overridden) {
+		if (!header.canOverride(target.resolver, overridden))
 			target.logError(INVALID_OVERRIDE, position, "Invalid override: incompatible parameters or return type");
 	}
 
@@ -47,11 +46,7 @@ public class ValidationUtils {
 		}
 	}
 
-	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
-		validateHeader(target, position, header, access, new LocalMemberCache(target.registry, target.expansions));
-	}
-
-	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access, LocalMemberCache localMemberCache) {
+	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
 		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
 
@@ -67,9 +62,9 @@ public class ValidationUtils {
 
 			final Expression defaultValue = parameter.defaultValue;
 			if (defaultValue != null) {
-				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
+				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
 				typeValidator.validate(TypeContext.PARAMETER_TYPE, defaultValue.type);
-				if (!defaultValue.type.equals(parameter.type) && !localMemberCache.get(defaultValue.type).canCastImplicit(parameter.type)) {
+				if (!defaultValue.type.equals(parameter.type) && !target.resolver.resolve(defaultValue.type).canCastImplicitlyTo(parameter.type)) {
 					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
 				}
 			}
@@ -88,53 +83,53 @@ public class ValidationUtils {
 
 	public static void validateModifiers(
 			Validator target,
-			int modifiers,
+			Modifiers modifiers,
 			int allowedModifiers,
 			CodePosition position,
 			String error) {
-		if (Modifiers.isPublic(modifiers) && Modifiers.isInternal(modifiers))
+		if (modifiers.isPublic() && modifiers.isInternal())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and internal");
-		if (Modifiers.isPublic(modifiers) && Modifiers.isPrivate(modifiers))
+		if (modifiers.isPublic() && modifiers.isPrivate())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and private");
-		if (Modifiers.isPublic(modifiers) && Modifiers.isProtected(modifiers))
+		if (modifiers.isPublic() && modifiers.isProtected())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and protected");
-		if (Modifiers.isInternal(modifiers) && Modifiers.isPrivate(modifiers))
+		if (modifiers.isInternal() && modifiers.isPrivate())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and private");
-		if (Modifiers.isInternal(modifiers) && Modifiers.isProtected(modifiers))
+		if (modifiers.isInternal() && modifiers.isProtected())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and protected");
-		if (Modifiers.isPrivate(modifiers) && Modifiers.isProtected(modifiers))
+		if (modifiers.isPrivate() && modifiers.isProtected())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine private and protected");
 
-		if (Modifiers.isConst(modifiers) && Modifiers.isConstOptional(modifiers))
+		if (modifiers.isConst() && modifiers.isConstOptional())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine const and const?");
-		if (Modifiers.isFinal(modifiers) && Modifiers.isAbstract(modifiers))
+		if (modifiers.isFinal() && modifiers.isAbstract())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine abstract and final");
-		if (Modifiers.isFinal(modifiers) && Modifiers.isVirtual(modifiers))
+		if (modifiers.isFinal() && modifiers.isVirtual())
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine final and virtual");
 
-		int invalid = modifiers & ~allowedModifiers;
-		if (invalid == 0)
+		Modifiers invalid = new Modifiers(modifiers.value & ~allowedModifiers);
+		if (invalid.value == 0)
 			return;
 
-		if (Modifiers.isPublic(invalid))
+		if (invalid.isPublic())
 			target.logError(INVALID_MODIFIER, position, error + ": public");
-		if (Modifiers.isInternal(invalid))
+		if (invalid.isInternal())
 			target.logError(INVALID_MODIFIER, position, error + ": internal");
-		if (Modifiers.isProtected(invalid))
+		if (invalid.isProtected())
 			target.logError(INVALID_MODIFIER, position, error + ": protected");
-		if (Modifiers.isPrivate(invalid))
+		if (invalid.isPrivate())
 			target.logError(INVALID_MODIFIER, position, error + ": private");
-		if (Modifiers.isFinal(invalid))
+		if (modifiers.isFinal())
 			target.logError(INVALID_MODIFIER, position, error + ": final");
-		if (Modifiers.isConst(invalid))
+		if (modifiers.isConst())
 			target.logError(INVALID_MODIFIER, position, error + ": const");
-		if (Modifiers.isConstOptional(invalid))
+		if (modifiers.isConstOptional())
 			target.logError(INVALID_MODIFIER, position, error + ": const?");
-		if (Modifiers.isStatic(invalid))
+		if (modifiers.isStatic())
 			target.logError(INVALID_MODIFIER, position, error + ": static");
-		if (Modifiers.isImplicit(invalid))
+		if (modifiers.isImplicit())
 			target.logError(INVALID_MODIFIER, position, error + ": implicit");
-		if (Modifiers.isVirtual(invalid))
+		if (modifiers.isVirtual())
 			target.logError(INVALID_MODIFIER, position, error + ": virtual");
 	}
 
@@ -214,12 +209,6 @@ public class ValidationUtils {
 	}
 
 	private static class DefaultParameterValueExpressionScope implements ExpressionScope {
-		private final AccessScope access;
-
-		public DefaultParameterValueExpressionScope(AccessScope access) {
-			this.access = access;
-		}
-
 		@Override
 		public boolean isConstructor() {
 			return false;
@@ -236,7 +225,7 @@ public class ValidationUtils {
 		}
 
 		@Override
-		public boolean isFieldInitialized(FieldMember field) {
+		public boolean isFieldInitialized(FieldSymbol field) {
 			return false;
 		}
 
@@ -263,11 +252,6 @@ public class ValidationUtils {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
-		}
-
-		@Override
-		public AccessScope getAccessScope() {
-			return access;
 		}
 	}
 }

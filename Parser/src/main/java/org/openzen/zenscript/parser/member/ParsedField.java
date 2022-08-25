@@ -2,40 +2,40 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.type.IParsedType;
 
+import java.util.List;
+
 public class ParsedField extends ParsedDefinitionMember {
 	private final CodePosition position;
-	private final int modifiers;
+	private final Modifiers modifiers;
 	private final String name;
 	private final IParsedType type;
 	private final CompilableExpression expression;
 	private final boolean isFinal;
 
-	private final int autoGetter;
-	private final int autoSetter;
-
-	private FieldMember compiled;
-	private boolean isCompiled = false;
+	private final Modifiers autoGetter;
+	private final Modifiers autoSetter;
 
 	public ParsedField(
 			CodePosition position,
-			int modifiers,
+			Modifiers modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
 			CompilableExpression expression,
 			boolean isFinal,
-			int autoGetter,
-			int autoSetter) {
+			Modifiers autoGetter,
+			Modifiers autoSetter) {
 		super(annotations);
 
 		this.position = position;
@@ -49,52 +49,65 @@ public class ParsedField extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new FieldMember(
-				position,
-				definition,
-				modifiers | (isFinal ? Modifiers.FLAG_FINAL : 0),
-				name,
-				context.getThisType(),
-				type.compile(context),
-				context.getTypeRegistry(),
-				autoGetter,
-				autoSetter,
-				null);
-	}
-
-	@Override
-	public FieldMember getCompiled() {
-		return compiled;
-	}
-
-	@Override
-	public CompilingMember compile(MemberCompiler compiler) throws CompileException {
-		if (isCompiled)
-			return;
-		isCompiled = true;
-
-		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
-
-		if (expression != null) {
-			ExpressionCompiler initializerCompiler = compiler.forFieldInitializers();
-			if (compiled.getType() == BasicTypeID.UNDETERMINED) {
-				Expression initializer = expression.compile(initializerCompiler).eval();
-				compiled.setInitializer(initializer);
-				compiled.setType(initializer.type);
-			} else {
-				Expression initializer = expression
-						.compile(initializerCompiler)
-						.cast(CastedEval.implicit(initializerCompiler, position, compiled.getType()))
-						.value;
-				compiled.setInitializer(initializer);
-			}
-		} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {
-			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
-		}
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(compiler, definition, implementation);
 	}
 
 	private class Compiling implements CompilingMember {
+		protected final MemberCompiler compiler;
+		protected final HighLevelDefinition definition;
+		protected final ImplementationMember implementation;
+		private FieldMember compiled;
 
+		public Compiling(MemberCompiler compiler, HighLevelDefinition definition, ImplementationMember implementation) {
+			this.compiler = compiler;
+			this.definition = definition;
+			this.implementation = implementation;
+		}
+
+		@Override
+		public void linkTypes() {
+			compiled = new FieldMember(
+					position,
+					definition,
+					isFinal ? modifiers.withFinal() : modifiers,
+					name,
+					compiler.getThisType().getThisType(),
+					type.compile(compiler.types()),
+					autoGetter,
+					autoSetter);
+		}
+
+		@Override
+		public IDefinitionMember getCompiled() {
+			return compiled;
+		}
+
+		@Override
+		public void prepare(List<CompileException> errors) {
+
+		}
+
+		@Override
+		public void compile(List<CompileException> errors) {
+			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
+
+			if (expression != null) {
+				ExpressionCompiler initializerCompiler = compiler.forFieldInitializers();
+				if (compiled.getType() == BasicTypeID.UNDETERMINED) {
+					Expression initializer = expression.compile(initializerCompiler).eval();
+					compiled.setInitializer(initializer);
+					compiled.setType(initializer.type);
+				} else {
+					Expression initializer = expression
+							.compile(initializerCompiler)
+							.cast(CastedEval.implicit(initializerCompiler, position, compiled.getType()))
+							.value;
+					compiled.setInitializer(initializer);
+				}
+			} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {
+				errors.add(new CompileException(position, CompileErrors.fieldWithoutType()));
+			}
+		}
 	}
 }

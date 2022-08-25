@@ -18,19 +18,13 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
+import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaNativeTranslator;
-import org.openzen.zenscript.javashared.JavaNativeMethod;
-import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
-import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
  * @author Hoofdgebruiker
  */
-public class JavaSourceExpressionFormatter implements ExpressionVisitor<ExpressionString>, JavaNativeTranslator<ExpressionString> {
+public class JavaSourceExpressionFormatter implements ExpressionVisitor<ExpressionString> {
 	private static final JavaClass RESULT = new JavaClass("stdlib", "Result", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_OK = new JavaClass("stdlib", "Result.Ok", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_ERROR = new JavaClass("stdlib", "Result.Error", JavaClass.Kind.CLASS);
@@ -91,16 +85,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitCall(CallExpression expression) {
-		if (expression.member.getBuiltin() != null) {
-			return visitBuiltinCall(expression, expression.member.getBuiltin());
-		} else {
-			JavaNativeMethod method = context.getJavaMethod(expression.member);
-			if (method.kind == JavaNativeMethod.Kind.COMPILED) {
-				return (ExpressionString) method.translation.translate(expression, this);
-			} else {
-				return compileCall(method, expression.target, expression.arguments);
-			}
-		}
+		JavaMethod method = context.getJavaMethod(expression.method.method);
+		return method.compile(methodCompiler, expression.target, expression.arguments);
 	}
 
 	private ExpressionString compileCall(JavaNativeMethod method, Expression target, CallArguments arguments) {
@@ -163,27 +149,6 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitCapturedThis(CapturedThisExpression expression) {
 		return new ExpressionString(scope.isExpansion ? "self" : "this", JavaOperator.PRIMARY);
-	}
-
-	@Override
-	public ExpressionString visitCast(CastExpression expression) {
-		if (expression.member.member.builtin != null) {
-			try {
-				return visitBuiltinCast(expression);
-			} catch (CompileException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
-
-		JavaNativeMethod method = context.getJavaMethod(expression.member);
-		if (method == null)
-			throw new RuntimeException(expression.position + ": No tag for caster");
-
-		if (method.kind == JavaNativeMethod.Kind.COMPILED) {
-			return (ExpressionString) method.translation.translate(expression, this);
-		} else {
-			return compileCall(method, expression.target, CallArguments.EMPTY);
-		}
 	}
 
 	@Override
@@ -873,21 +838,21 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return expression.accept(this);
 	}
 
-	private ExpressionString cast(CastExpression cast, String type) {
+/*	private ExpressionString cast(CastExpression cast, String type) {
 		return cast.target.accept(this).unaryPrefix(JavaOperator.CAST, "(" + type + ")");
-	}
+	}*/
 
 	private ExpressionString cast(ExpressionString value, String type) {
 		return value.unaryPrefix(JavaOperator.CALL, "(" + type + ")");
 	}
 
-	private ExpressionString castPostfix(CastExpression cast, JavaOperator operator) {
+/*	private ExpressionString castPostfix(CastExpression cast, JavaOperator operator) {
 		return eval(cast.target).unaryPostfix(operator);
 	}
 
 	private ExpressionString castImplicit(CastExpression cast, String type) {
 		return cast.isImplicit ? cast.target.accept(this) : cast(cast, type);
-	}
+	}*/
 
 	public Expression duplicable(Expression expression) {
 		boolean shouldHoist = expression.accept(ExpressionHoistingChecker.INSTANCE);
@@ -1611,7 +1576,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		throw new UnsupportedOperationException("Unknown builtin static getter: " + builtin);
 	}
 
-	private ExpressionString visitBuiltinCast(CastExpression cast) throws CompileException {
+	private ExpressionString visitBuiltinCast(CallExpression cast) throws CompileException {
 		switch (cast.member.member.builtin) {
 			case BOOL_TO_STRING:
 				return callStatic("Boolean.toString", cast.target);
@@ -2222,7 +2187,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	@Override
-	public ExpressionString listToArray(CastExpression expression) {
+	public ExpressionString listToArray(CallExpression expression) {
 		Expression target = duplicable(expression.target);
 		ExpressionString targetString = target.accept(this);
 		ArrayTypeID resultType = (ArrayTypeID) expression.type;

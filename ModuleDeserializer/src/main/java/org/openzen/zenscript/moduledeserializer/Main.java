@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.constructor.module.logging.EmptyModuleLogger;
 
@@ -33,11 +32,10 @@ public class Main {
 				NativeAnnotationDefinition.INSTANCE,
 				PreconditionAnnotationDefinition.INSTANCE
 		};
-		final GlobalTypeRegistry globalTypeRegistry = new GlobalTypeRegistry(rootPackage);
 		final ModuleRegistry modules = new ModuleRegistry();
 		final IZSLogger logger = new EmptyModuleLogger();
 
-		ModuleDeserializer deserializer = new ModuleDeserializer(modules, globalTypeRegistry, annotations, rootPackage, logger);
+		ModuleDeserializer deserializer = new ModuleDeserializer(modules, annotations, rootPackage, logger);
 		SemanticModule[] libs = deserializer.deserialize(data);
 
 	}

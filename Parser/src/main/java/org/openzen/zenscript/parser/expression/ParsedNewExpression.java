@@ -37,7 +37,7 @@ public class ParsedNewExpression extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			return compiler.resolve(type).getConstructor().call(compiler.at(position), arguments);
+			return compiler.resolve(type).getConstructor().call(compiler, position, TypeID.NONE, arguments);
 		}
 
 		@Override

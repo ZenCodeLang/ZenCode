@@ -6,11 +6,10 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -119,7 +118,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitInvalid(InvalidStatement statement) {
-		validator.logError(ValidationLogEntry.Code.INVALID_STATEMENT, statement.position, statement.message);
+		validator.logError(ValidationLogEntry.Code.INVALID_STATEMENT, statement.position, statement.error.description);
 		return null;
 	}
 
@@ -272,7 +271,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 		}
 
 		@Override
-		public boolean isFieldInitialized(FieldMember field) {
+		public boolean isFieldInitialized(FieldSymbol field) {
 			return true; // TODO: improve field initialization analysis
 		}
 
@@ -299,11 +298,6 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return scope.getDefinition();
-		}
-
-		@Override
-		public AccessScope getAccessScope() {
-			return scope.getAccessScope();
 		}
 	}
 

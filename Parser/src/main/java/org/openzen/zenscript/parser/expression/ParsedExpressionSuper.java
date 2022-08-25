@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.expression.StaticCompilingCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -55,8 +56,8 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		}
 
 		@Override
-		public Optional<StaticCallable> call() {
-			return localType.superCall();
+		public Optional<CompilingCallable> call() {
+			return localType.superCall().map(call -> new StaticCompilingCallable(compiler, call));
 		}
 	}
 
@@ -80,7 +81,7 @@ public class ParsedExpressionSuper extends ParsedExpression {
 
 			return compiler.resolve(superType)
 					.findGetter(name.name)
-					.map(getter -> getter.apply(compiler.at(position), compiler.at(position).getThis(thisType)))
+					.map(getter -> getter.call(compiler, position, compiler.at(position).getThis(thisType), TypeID.NONE))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noGetterInType(superType, name.name)));
 		}
 
@@ -91,7 +92,7 @@ public class ParsedExpressionSuper extends ParsedExpression {
 
 			return compiler.resolve(superType)
 					.findGetter(name.name)
-					.map(getter -> getter.cast(compiler.at(position), cast, compiler.at(position).getThis(thisType)))
+					.map(getter -> getter.cast(compiler, position, cast, compiler.at(position).getThis(thisType), TypeID.NONE))
 					.orElseGet(() -> cast.invalid(CompileErrors.noGetterInType(superType, name.name)));
 		}
 
@@ -130,7 +131,7 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		public Expression eval() {
 			return compiler.resolve(superType)
 					.findSetter(name.name)
-					.map(setter -> setter.apply(compiler.at(position), compiler.at(position).getThis(thisType), value.eval()))
+					.map(setter -> setter.call(compiler, position, compiler.at(position).getThis(thisType), TypeID.NONE, value))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noSetterInType(superType, name.name)));
 		}
 

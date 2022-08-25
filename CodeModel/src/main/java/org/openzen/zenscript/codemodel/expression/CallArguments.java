@@ -46,6 +46,12 @@ public class CallArguments {
 			arguments[i] = new DummyExpression(dummy[i]);
 	}
 
+	public CallArguments bind(Expression target) {
+		Expression[] newArguments = new Expression[arguments.length + 1];
+		System.arraycopy(arguments, 0, newArguments, 1, arguments.length);
+		return new CallArguments(typeArguments, newArguments);
+	}
+
 	public int getNumberOfTypeArguments() {
 		return typeArguments.length;
 	}

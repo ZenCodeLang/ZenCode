@@ -2,8 +2,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
@@ -13,10 +12,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 public class CompareExpression extends Expression {
 	public final Expression left;
 	public final Expression right;
-	public final FunctionalMemberRef operator;
+	public final MethodInstance operator;
 	public final CompareType comparison;
 
-	public CompareExpression(CodePosition position, Expression left, Expression right, FunctionalMemberRef operator, CompareType comparison) {
+	public CompareExpression(CodePosition position, Expression left, Expression right, MethodInstance operator, CompareType comparison) {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 
 		this.left = left;

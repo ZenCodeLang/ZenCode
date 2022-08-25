@@ -1,16 +1,16 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ConstructorThisCallExpression extends Expression {
 	public final TypeID objectType;
-	public final FunctionalMemberRef constructor;
+	public final MethodInstance constructor;
 	public final CallArguments arguments;
 
-	public ConstructorThisCallExpression(CodePosition position, TypeID type, FunctionalMemberRef constructor, CallArguments arguments) {
+	public ConstructorThisCallExpression(CodePosition position, TypeID type, MethodInstance constructor, CallArguments arguments) {
 		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
 
 		if (type instanceof BasicTypeID)

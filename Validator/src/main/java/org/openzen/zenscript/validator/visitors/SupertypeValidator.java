@@ -7,7 +7,6 @@ package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -61,7 +60,7 @@ public class SupertypeValidator implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitDefinition(DefinitionTypeID definition) {
-		if (!Modifiers.isVirtual(definition.definition.modifiers))
+		if (!definition.definition.getModifiers().isVirtual())
 			validator.logError(ValidationLogEntry.Code.INVALID_SUPERTYPE, position, "Supertype must be virtual");
 		return null;
 	}

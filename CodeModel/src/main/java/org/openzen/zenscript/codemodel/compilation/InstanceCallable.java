@@ -5,11 +5,14 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class InstanceCallable {
 	private final List<InstanceCallableMethod> overloads;
@@ -20,6 +23,11 @@ public final class InstanceCallable {
 
 	public InstanceCallable(InstanceCallableMethod method) {
 		this.overloads = Collections.singletonList(method);
+	}
+
+	public InstanceCallable union(InstanceCallable other) {
+		List<InstanceCallableMethod> concatenated = Stream.concat(overloads.stream(), other.overloads.stream()).collect(Collectors.toList());
+		return new InstanceCallable(concatenated);
 	}
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
@@ -49,12 +57,12 @@ public final class InstanceCallable {
 	 * @param header header as defined in the overriding method
 	 * @return
 	 */
-    public Optional<MethodSymbol> findOverriddenMethod(FunctionHeader header) {
+    public Optional<MethodInstance> findOverriddenMethod(TypeResolver resolver, FunctionHeader header) {
 		for (InstanceCallableMethod overload : overloads) {
-			if (!header.canOverride(overload.getHeader()))
+			if (!header.canOverride(resolver, overload.getHeader()))
 				continue;
 
-			Optional<MethodSymbol> method = overload.asMethod();
+			Optional<MethodInstance> method = overload.asMethod();
 			if (!method.isPresent())
 				continue;
 

@@ -51,13 +51,16 @@ public class ParsedFunction extends ParsedDefinition {
 	public void registerCompiling(
 		List<CompilingDefinition> definitions,
 		List<CompilingExpansion> expansions,
-		CompilingPackage pkg,
-		DefinitionCompiler compiler,
-		CompilingDefinition outer
+		DefinitionCompiler compiler
 	) {
-		FunctionDefinition compiled = new FunctionDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
-		Compiling compiling = new Compiling(compiler, compiled, outer != null);
-		definitions.add(compiling);
+		definitions.add(compileAsDefinition(compiler, null));
+	}
+
+	@Override
+	public CompilingDefinition compileAsDefinition(DefinitionCompiler compiler, HighLevelDefinition outer) {
+		CompilingPackage pkg = compiler.getPackage();
+		FunctionDefinition compiled = new FunctionDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer);
+		return new Compiling(compiler, compiled, outer != null);
 	}
 
 	private class Compiling implements CompilingDefinition {

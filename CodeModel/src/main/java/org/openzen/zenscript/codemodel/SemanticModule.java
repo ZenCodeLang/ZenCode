@@ -3,15 +3,13 @@ package org.openzen.zenscript.codemodel;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
+import org.openzen.zenscript.codemodel.compilation.CompileContext;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SemanticModule {
 
@@ -94,6 +92,10 @@ public class SemanticModule {
 
 	public ModuleContext getContext() {
 		return new ModuleContext(module, expansions, rootPackage);
+	}
+
+	public CompileContext createCompileContext() {
+		return new CompileContext(rootPackage, modulePackage, expansions, globals, Arrays.asList(annotations));
 	}
 
 	public enum State {
