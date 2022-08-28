@@ -9,11 +9,14 @@ import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 /**
  * @author Hoofdgebruiker
@@ -22,38 +25,33 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 
 	private final JavaContext context;
-	private final JavaCompiledModule module;
-	private final JavaClass cls;
-	private final JavaNativeClass nativeClass;
+	private final JavaCompilingModule module;
+	private final JavaCompilingClass class_;
 	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
 
 	public JavaPrepareClassMethodVisitor(
-			JavaContext context,
-			JavaCompiledModule module,
-			JavaClass cls,
-			JavaNativeClass nativeClass,
+			JavaCompilingClass class_,
 			JavaPrepareDefinitionMemberVisitor memberPreparer,
 			boolean startsEmpty) {
-		this.context = context;
-		this.module = module;
-		this.cls = cls;
-		this.nativeClass = nativeClass;
+		this.context = class_.getContext();
+		this.module = class_.module;
+		this.class_ = class_;
 		this.memberPreparer = memberPreparer;
 
-		cls.empty = startsEmpty;
+		class_.empty = startsEmpty;
 	}
 
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
-		module.setFieldInfo(member, field);
+		JavaNativeField field = new JavaNativeField(class_.compiled, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
+		class_.addField(member, field);
 		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
-			module.setFieldInfo(member.autoGetter, field);
+			class_.module.module.setFieldInfo(member.autoGetter, field);
 		}
 		if (member.hasAutoSetter()) {
 			visitSetter(member.autoSetter);
-			module.setFieldInfo(member.autoSetter, field);
+			class_.module.module.setFieldInfo(member.autoSetter, field);
 		}
 
 		return null;
@@ -73,13 +71,13 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, new FunctionHeader(member.getType()), "get" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(member.type), "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.getType()), "set" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.type), "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
@@ -103,22 +101,21 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		memberPreparer.prepare(member.type);
-
 		if (canMergeImplementation(member)) {
-			module.setImplementationInfo(member, new JavaImplementation(true, cls));
+			module.module.setImplementationInfo(member, new JavaImplementation(true, class_.compiled));
 			for (IDefinitionMember m : member.members)
 				m.accept(this);
 		} else {
-			if (DEBUG_EMPTY && cls.empty)
-				context.logger.trace("Class " + cls.fullName + " not empty because of unmergeable implementation");
+			if (DEBUG_EMPTY && class_.empty)
+				context.logger.trace("Class " + class_.compiled.fullName + " not empty because of unmergeable implementation");
 
-			cls.empty = false;
+			class_.empty = false;
 
-			JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
-			module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
+			JavaClass implementationClass = new JavaClass(class_.compiled, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
+			JavaCompilingClass implementationCompilingClass = new JavaCompilingClass(module, class_.symbol, implementationClass, null);
+			module.module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
 
-			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, module, implementationClass, null, memberPreparer, true);
+			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(implementationCompilingClass, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -131,21 +128,21 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, module);
+		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(class_);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 
-		if (DEBUG_EMPTY && cls.empty)
-			context.logger.trace("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
-		cls.empty = false;
+		if (DEBUG_EMPTY && class_.empty)
+			context.logger.trace("Class " + class_.compiled.fullName + " not empty because of inner definition " + member.innerDefinition.name);
+		class_.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
-		if (DEBUG_EMPTY && cls.empty)
-			context.logger.trace("Class " + cls.fullName + " not empty because of static initializer");
+		if (DEBUG_EMPTY && class_.empty)
+			context.logger.trace("Class " + class_.compiled.fullName + " not empty because of static initializer");
 
-		cls.empty = false;
+		class_.empty = false;
 		return null;
 	}
 
@@ -241,59 +238,56 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		}
 	}
 
-	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
+	private void visitFunctional(FunctionalMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaNativeMethod method = null;
-		if (nativeTag != null && nativeClass != null)
-			method = nativeClass.getMethod(nativeTag.value);
+		JavaCompilingMethod method = null;
+		if (nativeTag != null && class_.nativeClass != null)
+			method = new JavaCompilingMethod(class_.compiled, (JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value));
 
-		int modifiers = cls.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
-		if (member.getOverrides() != null) {
-			MethodSymbol base = member.getOverrides();
+		int modifiers = class_.compiled.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
+		if (member.getOverrides().isPresent()) {
+			MethodInstance base = member.getOverrides().get();
 
-			JavaNativeMethod baseMethod = context.getJavaMethod(base);
+			JavaNativeMethod baseMethod = (JavaNativeMethod) context.getJavaMethod(base);
 
-			method = new JavaNativeMethod(
-					cls,
+			method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+					class_.compiled,
 					baseMethod.kind,
 					baseMethod.name,
 					true,
 					context.getMethodDescriptor(header),
 					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType() instanceof GenericTypeID,
-					header.useTypeParameters());
+					header.useTypeParameters()));
 		} else if (method == null) {
 			if (member instanceof ConstructorMember) {
-				method = new JavaNativeMethod(
-						cls,
+				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+						class_.compiled,
 						getKind(member),
 						name,
 						true,
-						context.getMethodDescriptorConstructor(header, member),
+						context.getMethodDescriptorConstructor(member),
 						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 						false,
-						header.useTypeParameters()
-				);
+						header.useTypeParameters()));
 			} else {
-				method = new JavaNativeMethod(
-						cls,
+				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+						class_.compiled,
 						getKind(member),
 						name,
 						true,
 						context.getMethodDescriptor(header),
 						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 						header.getReturnType() instanceof GenericTypeID,
-						header.useTypeParameters());
+						header.useTypeParameters()));
 			}
 		}
 
-		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {
-			if (DEBUG_EMPTY && cls.empty)
-				context.logger.trace("Class " + cls.fullName + " not empty because of " + member.describe());
+		if (DEBUG_EMPTY && class_.empty)
+			context.logger.trace("Class " + class_.compiled.fullName + " not empty because of " + member.describe());
 
-			cls.empty = false;
-		}
+		class_.empty = false;
 
-		module.setMethodInfo(member, method);
+		class_.addMethod(member, method);
 	}
 }

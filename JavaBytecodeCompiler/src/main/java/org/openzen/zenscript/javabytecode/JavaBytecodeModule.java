@@ -7,7 +7,7 @@ package org.openzen.zenscript.javabytecode;
 
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 	private final List<JavaScriptMethod> scripts = new ArrayList<>();
 	private final IZSLogger logger;
 
-	public JavaBytecodeModule(Module module, FunctionParameter[] parameters, IZSLogger logger) {
+	public JavaBytecodeModule(ModuleSymbol module, FunctionParameter[] parameters, IZSLogger logger) {
 		super(module, parameters);
 		this.logger = logger;
 	}

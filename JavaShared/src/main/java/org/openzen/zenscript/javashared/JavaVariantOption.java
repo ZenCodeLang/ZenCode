@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.javashared;
 
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+
 /**
  * @author Hoofdgebruiker
  */

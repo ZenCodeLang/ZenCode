@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openzen.zencode.shared.Tag;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 
 /**
@@ -19,9 +19,9 @@ public class EncodingModule implements Tag {
 	public final ModuleContext context;
 	public final List<EncodingDefinition> definitions = new ArrayList<>();
 	public final boolean withCode;
-	private final Module module;
+	private final ModuleSymbol module;
 
-	public EncodingModule(Module module, ModuleContext context, boolean withCode) {
+	public EncodingModule(ModuleSymbol module, ModuleContext context, boolean withCode) {
 		this.module = module;
 		this.context = context;
 		this.withCode = withCode;

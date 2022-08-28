@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.constant.StringConstant;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -56,8 +57,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	BYTE_TO_STRING(BYTE, "as string", STRING, BYTE),
 	BYTE_PARSE(BYTE, "parse", BYTE, STRING),
 	BYTE_PARSE_WITH_BASE(BYTE, "parse", BYTE, STRING, INT),
-	BYTE_GET_MIN_VALUE(BYTE, "MIN_VALUE", BYTE),
-	BYTE_GET_MAX_VALUE(BYTE, "MAX_VALUE", BYTE),
 
 	SBYTE_INVERT(SBYTE, INVERT, SBYTE, SBYTE),
 	SBYTE_NEG(SBYTE, NEG, SBYTE, SBYTE),
@@ -89,8 +88,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SBYTE_TO_STRING(SBYTE, "as string", STRING, SBYTE),
 	SBYTE_PARSE(SBYTE, "parse", SBYTE, STRING, INT),
 	SBYTE_PARSE_WITH_BASE(SBYTE, "parse", SBYTE, STRING, INT),
-	SBYTE_GET_MIN_VALUE(SBYTE, "MIN_VALUE", SBYTE),
-	SBYTE_GET_MAX_VALUE(SBYTE, "MAX_VALUE", SBYTE),
 
 	SHORT_INVERT(SHORT, INVERT, SHORT, SHORT),
 	SHORT_NEG(SHORT, NEG, SHORT, SHORT),
@@ -122,8 +119,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SHORT_TO_STRING(SHORT, "as string", STRING, SHORT),
 	SHORT_PARSE(SHORT, "parse", SHORT, STRING, INT),
 	SHORT_PARSE_WITH_BASE(SHORT, "parse", SHORT, STRING, INT),
-	SHORT_GET_MIN_VALUE(SHORT, "MIN_VALUE", SHORT),
-	SHORT_GET_MAX_VALUE(SHORT, "MAX_VALUE", SHORT),
 
 	USHORT_INVERT(USHORT, INVERT, USHORT, USHORT),
 	USHORT_INC(USHORT, INCREMENT, USHORT, USHORT),
@@ -153,8 +148,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USHORT_TO_STRING(USHORT, "as string", STRING, USHORT),
 	USHORT_PARSE(USHORT, "parse", USHORT, STRING, INT),
 	USHORT_PARSE_WITH_BASE(USHORT, "parse", USHORT, STRING, INT),
-	USHORT_GET_MIN_VALUE(USHORT, "MIN_VALUE", USHORT),
-	USHORT_GET_MAX_VALUE(USHORT, "MAX_VALUE", USHORT),
 
 	INT_INVERT(INT, INVERT, INT, INT),
 	INT_NEG(INT, NEG, INT, INT),
@@ -189,8 +182,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	INT_PARSE(INT, "parse", INT, STRING),
 	INT_PARSE_WITH_BASE(INT, "parse", INT, STRING, INT),
-	INT_GET_MIN_VALUE(INT, "MIN_VALUE", INT),
-	INT_GET_MAX_VALUE(INT, "MAX_VALUE", INT),
 	INT_COUNT_LOW_ZEROES(INT, "countLowZeroes", USIZE),
 	INT_COUNT_HIGH_ZEROES(INT, "countHighZeroes", USIZE),
 	INT_COUNT_LOW_ONES(INT, "countLowOnes", USIZE),
@@ -229,8 +220,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	UINT_TO_STRING(UINT, "as string", STRING, UINT),
 	UINT_PARSE(UINT, "parse", UINT, STRING),
 	UINT_PARSE_WITH_BASE(UINT, "parse", UINT, STRING, INT),
-	UINT_GET_MIN_VALUE(UINT, "MIN_VALUE", UINT),
-	UINT_GET_MAX_VALUE(UINT, "MIN_VALUE", UINT),
 	UINT_COUNT_LOW_ZEROES(UINT, "countLowZeroes", USIZE),
 	UINT_COUNT_HIGH_ZEROES(UINT, "countHighZeroes", USIZE),
 	UINT_COUNT_LOW_ONES(UINT, "countLowOnes", USIZE),
@@ -272,8 +261,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	LONG_TO_STRING(LONG, "as string", STRING, LONG),
 	LONG_PARSE(LONG, "parse", LONG, STRING),
 	LONG_PARSE_WITH_BASE(LONG, "parse", LONG, STRING, INT),
-	LONG_GET_MIN_VALUE(LONG, "MIN_VALUE", LONG),
-	LONG_GET_MAX_VALUE(LONG, "MAX_VALUE", LONG),
 	LONG_COUNT_LOW_ZEROES(LONG, "countLowZeroes", USIZE),
 	LONG_COUNT_HIGH_ZEROES(LONG, "countHighZeroes", USIZE),
 	LONG_COUNT_LOW_ONES(LONG, "countLowOnes", USIZE),
@@ -314,8 +301,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ULONG_TO_STRING(ULONG, "as string", STRING, ULONG),
 	ULONG_PARSE(ULONG, "parse", ULONG, STRING),
 	ULONG_PARSE_WITH_BASE(ULONG, "parse", ULONG, STRING, INT),
-	ULONG_GET_MIN_VALUE(ULONG, "MIN_VALUE", ULONG),
-	ULONG_GET_MAX_VALUE(ULONG, "MAX_VALUE", ULONG),
 	ULONG_COUNT_LOW_ZEROES(ULONG, "countLowZeroes", USIZE),
 	ULONG_COUNT_HIGH_ZEROES(ULONG, "countHighZeroes", USIZE),
 	ULONG_COUNT_LOW_ONES(ULONG, "countLowOnes", USIZE),
@@ -355,8 +340,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USIZE_TO_STRING(USIZE, "as string", STRING, USIZE),
 	USIZE_PARSE(USIZE, "parse", USIZE, STRING),
 	USIZE_PARSE_WITH_BASE(USIZE, "parse", USIZE, STRING, INT),
-	USIZE_GET_MIN_VALUE(USIZE, "MIN_VALUE", USIZE),
-	USIZE_GET_MAX_VALUE(USIZE, "MAX_VALUE", USIZE),
 	USIZE_COUNT_LOW_ZEROES(USIZE, "countLowZeroes", USIZE),
 	USIZE_COUNT_HIGH_ZEROES(USIZE, "countHighZeroes", USIZE),
 	USIZE_COUNT_LOW_ONES(USIZE, "countLowOnes", USIZE),
@@ -366,7 +349,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USIZE_HIGHEST_ZERO_BIT(USIZE, "highestZeroBit", new OptionalTypeID(USIZE)),
 	USIZE_LOWEST_ZERO_BIT(USIZE, "lowestZeroBit", new OptionalTypeID(USIZE)),
 	USIZE_BIT_COUNT(USIZE, "bitCount", USIZE),
-	USIZE_BITS(USIZE, "bits", USIZE),
 
 	FLOAT_INVERT(FLOAT, INVERT, FLOAT, FLOAT),
 	FLOAT_INC(FLOAT, INCREMENT, FLOAT, FLOAT),
@@ -391,8 +373,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	FLOAT_BITS(FLOAT, "bits", FLOAT, UINT),
 	FLOAT_FROM_BITS(FLOAT, "fromBits", FLOAT, UINT),
 	FLOAT_PARSE(FLOAT, "parse", FLOAT, STRING),
-	FLOAT_GET_MIN_VALUE(FLOAT, "MIN_VALUE", FLOAT),
-	FLOAT_GET_MAX_VALUE(FLOAT, "MAX_VALUE", FLOAT),
 
 	DOUBLE_INVERT(DOUBLE, INVERT, DOUBLE, DOUBLE),
 	DOUBLE_INC(DOUBLE, INCREMENT, DOUBLE, DOUBLE),
@@ -417,8 +397,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	DOUBLE_BITS(DOUBLE, "bits", ULONG),
 	DOUBLE_FROM_BITS(DOUBLE, "fromBits", DOUBLE, ULONG),
 	DOUBLE_PARSE(DOUBLE, "parse", DOUBLE, STRING),
-	DOUBLE_GET_MIN_VALUE(DOUBLE, "MIN_VALUE", DOUBLE),
-	DOUBLE_GET_MAX_VALUE(DOUBLE, "MAX_VALUE", DOUBLE),
 
 	CHAR_ADD_INT(CHAR, ADD, CHAR, CHAR),
 	CHAR_SUB_INT(CHAR, SUB, CHAR, CHAR),
@@ -434,8 +412,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	CHAR_TO_ULONG(CHAR, "as ulong", ULONG, CHAR),
 	CHAR_TO_USIZE(CHAR, "as usize", USIZE, CHAR),
 	CHAR_TO_STRING(CHAR, "as string", STRING, CHAR),
-	CHAR_GET_MIN_VALUE(CHAR, "MIN_VALUE", CHAR),
-	CHAR_GET_MAX_VALUE(CHAR, "MAX_VALUE", CHAR),
 	CHAR_REMOVE_DIACRITICS(CHAR, "removeDiacritics", CHAR),
 	CHAR_TO_LOWER_CASE(CHAR, "toLowerCase", CHAR),
 	CHAR_TO_UPPER_CASE(CHAR, "toUpperCase", CHAR),
@@ -578,12 +554,16 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	/*ITERATOR_ITERABLE()*/;
 
 	private final TypeSymbol definingType;
+	private final TypeID type;
+	private final MethodID id;
 	private final String name;
 	private final OperatorType operator;
 	private final FunctionHeader header;
 
 	BuiltinMethodSymbol(TypeSymbol definingType, String name, FunctionHeader header) {
 		this.definingType = definingType;
+		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
+		this.id = MethodID.method(name);
 		this.name = name;
 		this.operator = null;
 		this.header = header;
@@ -591,6 +571,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	BuiltinMethodSymbol(TypeSymbol definingType, String name, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
+		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
+		this.id = MethodID.method(name);
 		this.name = name;
 		this.operator = null;
 		header = new FunctionHeader(result, parameters);
@@ -598,6 +580,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
 		this.definingType = definingType;
+		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
+		this.id = MethodID.operator(operator);
 		this.name = operator.operator;
 		this.operator = operator;
 		this.header = header;
@@ -605,6 +589,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
+		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
+		this.id = MethodID.operator(operator);
 		this.name = operator.operator;
 		this.operator = operator;
 		header = new FunctionHeader(result, parameters);
@@ -616,13 +602,18 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	}
 
 	@Override
-	public TypeSymbol getTargetType() {
-		return definingType;
+	public TypeID getTargetType() {
+		return type;
 	}
 
 	@Override
 	public Modifiers getModifiers() {
 		return Modifiers.PUBLIC.withFinal();
+	}
+
+	@Override
+	public MethodID getID() {
+		return id;
 	}
 
 	@Override

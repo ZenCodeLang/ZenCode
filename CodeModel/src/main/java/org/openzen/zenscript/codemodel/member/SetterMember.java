@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -23,7 +24,7 @@ public class SetterMember extends FunctionalMember {
 			Modifiers modifiers,
 			String name,
 			TypeID type) {
-		super(position, definition, modifiers, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
+		super(position, definition, modifiers, MethodID.getter(name), new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
 
 		this.type = type;
 		this.name = name;

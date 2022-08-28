@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Hoofdgebruiker
  */
 public class SimpleJavaCompileSpace implements JavaCompileSpace {
-	private final Map<Module, JavaCompiledModule> modules = new HashMap<>();
+	private final Map<ModuleSymbol, JavaCompiledModule> modules = new HashMap<>();
 
 	@Override
 	public void register(JavaCompiledModule module) {
@@ -22,7 +22,7 @@ public class SimpleJavaCompileSpace implements JavaCompileSpace {
 	}
 
 	@Override
-	public JavaCompiledModule getCompiled(Module module) {
+	public JavaCompiledModule getCompiled(ModuleSymbol module) {
 		return modules.get(module);
 	}
 }

@@ -1,12 +1,12 @@
 package org.openzen.zenscript.rustsource;
 
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class SimpleRustCompileSpace implements RustCompileSpace {
-	private final Map<Module, RustSourceModule> modules = new HashMap<>();
+	private final Map<ModuleSymbol, RustSourceModule> modules = new HashMap<>();
 
 	@Override
 	public void register(RustSourceModule module) {
@@ -14,7 +14,7 @@ public class SimpleRustCompileSpace implements RustCompileSpace {
 	}
 
 	@Override
-	public RustSourceModule getCompiled(Module module) {
+	public RustSourceModule getCompiled(ModuleSymbol module) {
 		return modules.get(module);
 	}
 }

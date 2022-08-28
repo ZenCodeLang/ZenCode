@@ -40,4 +40,9 @@ public class JavaSwitchKeyVisitor implements SwitchValueVisitor<Integer> {
 	public Integer acceptVariantOption(VariantOptionSwitchValue value) {
 		return value.option.getOrdinal();
 	}
+
+	@Override
+	public Integer acceptError(ErrorSwitchValue value) {
+		return 0;
+	}
 }

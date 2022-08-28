@@ -241,11 +241,6 @@ public class RustExpressionCompiler {
 		}
 
 		@Override
-		public ExpressionString visitGetter(GetterExpression expression) {
-			return null;
-		}
-
-		@Override
 		public ExpressionString visitGlobal(GlobalExpression expression) {
 			return null;
 		}
@@ -339,21 +334,6 @@ public class RustExpressionCompiler {
 
 		@Override
 		public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
-			return null;
-		}
-
-		@Override
-		public ExpressionString visitSetter(SetterExpression expression) {
-			return null;
-		}
-
-		@Override
-		public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
-			return null;
-		}
-
-		@Override
-		public ExpressionString visitStaticSetter(StaticSetterExpression expression) {
 			return null;
 		}
 

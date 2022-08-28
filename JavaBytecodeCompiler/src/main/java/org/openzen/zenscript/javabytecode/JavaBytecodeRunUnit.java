@@ -18,6 +18,9 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -156,6 +159,7 @@ public class JavaBytecodeRunUnit {
 			return;
 
 		JavaClassWriter scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+		JavaClass scriptsClass = JavaClass.fromInternalName("Scripts", JavaClass.Kind.CLASS);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 
 		FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, scriptParameters.toArray(new FunctionParameter[scriptParameters.size()]));
@@ -167,7 +171,8 @@ public class JavaBytecodeRunUnit {
 		headerBuilder.append(")V");
 
 		JavaNativeMethod runMethod = JavaNativeMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
+		JavaCompilingMethod runMethodCompiling = new JavaCompilingMethod(scriptsClass, runMethod);
+		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethodCompiling, null, null, null);
 		runWriter.start();
 		for (JavaScriptMethod method : scripts) {
 			for (int i = 0; i < method.parameters.length; i++) {

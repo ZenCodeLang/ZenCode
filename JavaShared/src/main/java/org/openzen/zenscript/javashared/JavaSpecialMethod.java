@@ -19,6 +19,11 @@ public enum JavaSpecialMethod implements JavaMethod {
 	BYTES_UTF8_TO_STRING;
 
 	@Override
+	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		return compiler.specialConstructor(this, type, arguments);
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.specialVirtualMethod(this, target, arguments);
 	}
@@ -26,5 +31,10 @@ public enum JavaSpecialMethod implements JavaMethod {
 	@Override
 	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
 		return compiler.specialStaticMethod(this, arguments);
+	}
+
+	@Override
+	public String getMapping(JavaClass class_) {
+		return class_.internalName + "::special::" + name();
 	}
 }

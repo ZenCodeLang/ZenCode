@@ -71,8 +71,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitGetStaticField(C context, GetStaticFieldExpression expression);
 
-	R visitGetter(C context, GetterExpression expression);
-
 	R visitGlobal(C context, GlobalExpression expression);
 
 	R visitGlobalCall(C context, GlobalCallExpression expression);
@@ -114,12 +112,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitSetLocalVariable(C context, SetLocalVariableExpression expression);
 
 	R visitSetStaticField(C context, SetStaticFieldExpression expression);
-
-	R visitSetter(C context, SetterExpression expression);
-
-	R visitStaticGetter(C context, StaticGetterExpression expression);
-
-	R visitStaticSetter(C context, StaticSetterExpression expression);
 
 	R visitSupertypeCast(C context, SupertypeCastExpression expression);
 

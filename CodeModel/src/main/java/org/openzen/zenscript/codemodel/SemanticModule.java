@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 import java.util.*;
 
@@ -20,7 +21,7 @@ public class SemanticModule {
 	public final FunctionParameter[] parameters;
 
 	public final State state;
-	public final Module module;
+	public final ModuleSymbol module;
 	public final ZSPackage rootPackage;
 	public final ZSPackage modulePackage;
 	public final PackageDefinitions definitions;
@@ -31,7 +32,7 @@ public class SemanticModule {
 	public final IZSLogger logger;
 
 	public SemanticModule(
-			Module module,
+			ModuleSymbol module,
 			SemanticModule[] dependencies,
 			FunctionParameter[] parameters,
 			State state,

@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -93,7 +93,7 @@ public class DirectoryModuleReference implements ModuleReference {
 
 			ParsedModule parsedModule = new ParsedModule(moduleName, directory, jsonFile, exceptionLogger);
 			ZSPackage pkg = isStdlib ? stdlib : new ZSPackage(null, parsedModule.packageName);
-			Module module = new Module(moduleName);
+			ModuleSymbol module = new ModuleSymbol(moduleName);
 			CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 
 			ParsedFile[] parsedFiles = parsedModule.parse(compilingPackage);

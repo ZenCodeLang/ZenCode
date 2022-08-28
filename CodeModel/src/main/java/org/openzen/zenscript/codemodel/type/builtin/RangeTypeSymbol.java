@@ -3,7 +3,7 @@ package org.openzen.zenscript.codemodel.type.builtin;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -24,8 +24,8 @@ public class RangeTypeSymbol implements TypeSymbol {
 	private RangeTypeSymbol() {}
 
 	@Override
-	public Module getModule() {
-		return Module.BUILTIN;
+	public ModuleSymbol getModule() {
+		return ModuleSymbol.BUILTIN;
 	}
 
 	@Override

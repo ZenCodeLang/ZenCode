@@ -1,7 +1,7 @@
 package org.openzen.zenscript.rustsource;
 
 import org.openzen.zencode.shared.logging.IZSLogger;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 
 public class RustSourceContext {
@@ -18,11 +18,11 @@ public class RustSourceContext {
 		this.basePackage = basePackage;
 	}
 
-	public void addModule(Module module, RustSourceModule compiled) {
+	public void addModule(ModuleSymbol module, RustSourceModule compiled) {
 		space.register(compiled);
 	}
 
-	public RustSourceModule getRustModule(Module module) {
+	public RustSourceModule getRustModule(ModuleSymbol module) {
 		return space.getCompiled(module);
 	}
 }

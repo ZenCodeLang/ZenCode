@@ -12,7 +12,7 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
@@ -27,7 +27,7 @@ public class JavaSourceCompiler {
 	public final JavaSourceModule helpers;
 
 	public JavaSourceCompiler() {
-		helpers = new JavaSourceModule(new Module("helpers"), FunctionParameter.NONE);
+		helpers = new JavaSourceModule(new ModuleSymbol("helpers"), FunctionParameter.NONE);
 		settings = new JavaSourceFormattingSettings.Builder().build();
 	}
 

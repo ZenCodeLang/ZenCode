@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
@@ -23,6 +24,7 @@ public class ConstructorMember extends FunctionalMember {
 				position,
 				definition,
 				modifiers,
+				MethodID.operator(OperatorType.CONSTRUCTOR),
 				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters));
 	}
 

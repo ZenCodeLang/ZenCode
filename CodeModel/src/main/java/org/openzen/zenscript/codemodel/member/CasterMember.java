@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -17,7 +18,7 @@ public class CasterMember extends FunctionalMember {
 			HighLevelDefinition definition,
 			Modifiers modifiers,
 			TypeID toType) {
-		super(position, definition, modifiers, new FunctionHeader(toType));
+		super(position, definition, modifiers, MethodID.caster(toType), new FunctionHeader(toType));
 
 		this.toType = toType;
 	}

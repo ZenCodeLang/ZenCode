@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -14,7 +15,7 @@ import java.util.List;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.VOID;
 
 public class StructDefinition extends HighLevelDefinition {
-	public StructDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
+	public StructDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 

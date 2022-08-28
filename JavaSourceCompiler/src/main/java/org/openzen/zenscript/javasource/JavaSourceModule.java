@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 /**
@@ -18,7 +18,7 @@ import org.openzen.zenscript.javashared.JavaCompiledModule;
 public class JavaSourceModule extends JavaCompiledModule {
 	public final List<SourceFile> sourceFiles = new ArrayList<>();
 
-	public JavaSourceModule(Module module, FunctionParameter[] parameters) {
+	public JavaSourceModule(ModuleSymbol module, FunctionParameter[] parameters) {
 		super(module, parameters);
 	}
 

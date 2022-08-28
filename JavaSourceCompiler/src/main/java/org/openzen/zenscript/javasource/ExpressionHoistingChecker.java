@@ -192,11 +192,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitGetter(GetterExpression expression) {
-		return false;
-	}
-
-	@Override
 	public Boolean visitGlobal(GlobalExpression expression) {
 		return false;
 	}
@@ -288,21 +283,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitSetStaticField(SetStaticFieldExpression expression) {
-		return true;
-	}
-
-	@Override
-	public Boolean visitSetter(SetterExpression expression) {
-		return true;
-	}
-
-	@Override
-	public Boolean visitStaticGetter(StaticGetterExpression expression) {
-		return false;
-	}
-
-	@Override
-	public Boolean visitStaticSetter(StaticSetterExpression expression) {
 		return true;
 	}
 

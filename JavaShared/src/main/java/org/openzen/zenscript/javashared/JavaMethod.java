@@ -8,4 +8,6 @@ public interface JavaMethod {
 	<T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments);
 	<T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments);
 	<T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments);
+
+	String getMapping(JavaClass class_);
 }

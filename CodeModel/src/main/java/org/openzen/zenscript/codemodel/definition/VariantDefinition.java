@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.definition;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -14,7 +15,7 @@ import java.util.List;
 public class VariantDefinition extends HighLevelDefinition {
 	public final List<Option> options = new ArrayList<>();
 
-	public VariantDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
+	public VariantDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 

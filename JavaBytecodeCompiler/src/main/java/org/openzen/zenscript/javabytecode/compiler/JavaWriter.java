@@ -8,7 +8,8 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
+import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
@@ -49,14 +50,13 @@ public class JavaWriter {
 			String signature,
 			String[] exceptions,
 			String... annotations) {
-		this(logger, position, visitor, nameVariables, method, forDefinition, false, signature, method.compiled.descriptor, exceptions, annotations);
+		this(logger, visitor, nameVariables, method, forDefinition, false, signature, method.compiled.descriptor, exceptions, annotations);
 		this.position(position.fromLine);
 	}
 
 
 	public JavaWriter(
 			IZSLogger logger,
-			CodePosition position,
 			ClassVisitor visitor,
 			boolean nameVariables,
 			JavaCompilingMethod method,
@@ -1083,7 +1083,7 @@ public class JavaWriter {
 		visitor.visitFieldInsn(GETFIELD, owner, name, descriptor);
 	}
 
-	public void getField(JavaField field) {
+	public void getField(JavaNativeField field) {
 		if (debug)
 			logger.debug("getField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 
@@ -1097,7 +1097,7 @@ public class JavaWriter {
 		visitor.visitFieldInsn(PUTFIELD, owner, name, descriptor);
 	}
 
-	public void putField(JavaField field) {
+	public void putField(JavaNativeField field) {
 		if (debug)
 			logger.debug("putField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 
@@ -1111,7 +1111,7 @@ public class JavaWriter {
 		visitor.visitFieldInsn(GETSTATIC, owner, name, descriptor);
 	}
 
-	public void getStaticField(JavaField field) {
+	public void getStaticField(JavaNativeField field) {
 		if (debug)
 			logger.debug("getStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 
@@ -1125,7 +1125,7 @@ public class JavaWriter {
 		visitor.visitFieldInsn(PUTSTATIC, owner, name, descriptor);
 	}
 
-	public void putStaticField(JavaField field) {
+	public void putStaticField(JavaNativeField field) {
 		if (debug)
 			logger.debug("putStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 

@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitch
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -92,11 +93,22 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCall(CallExpression expression) {
 		expression.target.accept(this);
-
 		checkMemberAccess(expression.position, expression.method);
 		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
 		checkNotStatic(expression.position, expression.method);
-		return null;
+
+		MethodID id = expression.method.getID();
+		switch (id.getKind()) {
+			case METHOD:
+			case OPERATOR:
+			case GETTER:
+			case SETTER:
+			case CASTER:
+				return null;
+			default:
+				validator.logError(ValidationLogEntry.Code.INVALID_METHOD_TYPE, expression.position, "Invalid method type: " + id.getKind());
+				return null;
+		}
 	}
 
 	@Override
@@ -104,7 +116,18 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkMemberAccess(expression.position, expression.member);
 		checkCallArguments(expression.position, expression.member.method.getHeader(), expression.member.getHeader(), expression.arguments);
 		checkStatic(expression.position, expression.member);
-		return null;
+
+		MethodID id = expression.member.getID();
+		switch (id.getKind()) {
+			case METHOD:
+			case OPERATOR:
+			case GETTER:
+			case SETTER:
+				return null;
+			default:
+				validator.logError(ValidationLogEntry.Code.INVALID_METHOD_TYPE, expression.position, "Invalid method type: " + id.getKind());
+				return null;
+		}
 	}
 
 	@Override
@@ -314,13 +337,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkFieldAccess(expression.position, expression.field.field);
 		checkStatic(expression.position, expression.field);
 		return null;
-	}
-
-	@Override
-	public Void visitGetter(GetterExpression expression) {
-		checkMemberAccess(expression.position, expression.getter);
-		checkNotStatic(expression.position, expression.getter);
-		return expression.target.accept(this);
 	}
 
 	@Override
@@ -604,48 +620,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 						expression.position,
 						"Trying to set final field " + expression.field.field.getName());
 			}
-		}
-		return null;
-	}
-
-	@Override
-	public Void visitSetter(SetterExpression expression) {
-		checkMemberAccess(expression.position, expression.setter);
-		checkNotStatic(expression.position, expression.setter);
-
-		expression.target.accept(this);
-		expression.value.accept(this);
-
-		TypeID setterType = expression.setter.getHeader().parameters[0].type;
-		if (!expression.value.type.equals(setterType)) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a property of type " + setterType + " to a value of type " + expression.value.type);
-		}
-		return null;
-	}
-
-	@Override
-	public Void visitStaticGetter(StaticGetterExpression expression) {
-		checkMemberAccess(expression.position, expression.getter);
-		checkStatic(expression.position, expression.getter);
-		return null;
-	}
-
-	@Override
-	public Void visitStaticSetter(StaticSetterExpression expression) {
-		checkMemberAccess(expression.position, expression.setter);
-		checkStatic(expression.position, expression.setter);
-
-		expression.value.accept(this);
-
-		TypeID setterType = expression.setter.getHeader().parameters[0].type;
-		if (!expression.value.type.equals(setterType)) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a static property of type " + setterType + " to a value of type " + expression.value.type);
 		}
 		return null;
 	}

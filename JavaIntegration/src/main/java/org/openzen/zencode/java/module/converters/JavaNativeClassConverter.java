@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaImplementation;
 
 import java.lang.annotation.Annotation;
@@ -354,7 +354,7 @@ public class JavaNativeClassConverter {
 		TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
 		final FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, Modifiers.NONE, Modifiers.NONE);
 		definition.addMember(fieldMember);
-		typeConversionContext.compiled.setFieldInfo(fieldMember, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
+		typeConversionContext.compiled.setFieldInfo(fieldMember, new JavaNativeField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		return true;
 	}
 

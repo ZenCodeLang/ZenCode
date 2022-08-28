@@ -4,7 +4,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -37,7 +37,7 @@ public class JavaRuntimeClass implements TypeSymbol {
 	}
 
 	@Override
-	public Module getModule() {
+	public ModuleSymbol getModule() {
 		return module.getModule();
 	}
 

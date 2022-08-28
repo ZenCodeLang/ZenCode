@@ -3,6 +3,7 @@ package org.openzen.zenscript.rustsource;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.rustsource.definitions.*;
@@ -17,7 +18,7 @@ public class RustSourceCompiler {
 	public final RustSourceModule helpers;
 
 	public RustSourceCompiler() {
-		helpers = new RustSourceModule(new Module("helpers"), FunctionParameter.NONE);
+		helpers = new RustSourceModule(new ModuleSymbol("helpers"), FunctionParameter.NONE);
 		settings = new RustSourceFormattingSettings.Builder().build();
 	}
 

@@ -71,8 +71,6 @@ public interface ExpressionVisitor<T> {
 
 	T visitGetStaticField(GetStaticFieldExpression expression);
 
-	T visitGetter(GetterExpression expression);
-
 	T visitGlobal(GlobalExpression expression);
 
 	T visitGlobalCall(GlobalCallExpression expression);
@@ -118,12 +116,6 @@ public interface ExpressionVisitor<T> {
 	T visitSetLocalVariable(SetLocalVariableExpression expression);
 
 	T visitSetStaticField(SetStaticFieldExpression expression);
-
-	T visitSetter(SetterExpression expression);
-
-	T visitStaticGetter(StaticGetterExpression expression);
-
-	T visitStaticSetter(StaticSetterExpression expression);
 
 	T visitSupertypeCast(SupertypeCastExpression expression);
 

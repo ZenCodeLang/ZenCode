@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -17,11 +17,11 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public OperatorMember caller;
 
-	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
+	public FunctionDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
-	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, FunctionHeader header, TypeBuilder types) {
+	public FunctionDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, FunctionHeader header, TypeBuilder types) {
 		this(position, module, pkg, name, modifiers, null);
 		setHeader(types, header);
 	}

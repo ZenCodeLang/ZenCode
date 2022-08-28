@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -13,7 +14,7 @@ public class MethodMember extends FunctionalMember {
 	private MethodInstance overrides;
 
 	public MethodMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, FunctionHeader header) {
-		super(position, definition, modifiers, header);
+		super(position, definition, modifiers, MethodID.method(name), header);
 
 		this.name = name;
 	}

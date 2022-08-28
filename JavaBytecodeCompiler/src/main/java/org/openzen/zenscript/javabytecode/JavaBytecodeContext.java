@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 /**
  * @author Hoofdgebruiker
@@ -81,7 +82,9 @@ public class JavaBytecodeContext extends JavaContext {
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(range.baseType), null, null).visitEnd();
 
 		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V", Opcodes.ACC_PUBLIC);
-		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, method, null, method.descriptor, null);
+		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(range.compiling.compiled, method);
+
+		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, compilingMethod, null, method.descriptor, null);
 		constructorWriter.loadObject(0);
 		constructorWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
 		constructorWriter.loadObject(0);

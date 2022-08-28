@@ -12,7 +12,7 @@ import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -111,7 +111,7 @@ public class ScriptingEngine {
 			BracketExpressionParser bracketParser,
 			FunctionParameter[] scriptParameters,
 			String... dependencies) throws ParseException {
-		Module scriptModule = new Module(name);
+		ModuleSymbol scriptModule = new ModuleSymbol(name);
 		CompilingPackage scriptPackage = new CompilingPackage(new ZSPackage(space.rootPackage, name), scriptModule);
 
 		ParsedFile[] files = new ParsedFile[sources.length];

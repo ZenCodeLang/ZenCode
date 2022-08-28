@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
@@ -16,7 +17,7 @@ public class IteratorMember extends FunctionalMember {
 	public MethodInstance overrides;
 
 	public IteratorMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, TypeID[] iteratorTypes) {
-		super(position, definition, modifiers, createIteratorHeader(iteratorTypes));
+		super(position, definition, modifiers, MethodID.iterator(iteratorTypes.length), createIteratorHeader(iteratorTypes));
 
 		this.iteratorTypes = iteratorTypes;
 	}

@@ -10,8 +10,7 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -21,10 +20,12 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.builtin.RangeTypeSymbol;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 import java.lang.reflect.Method;
@@ -43,7 +44,8 @@ public abstract class JavaContext {
 	private final Map<String, JavaSynthesizedFunction> functions = new HashMap<>();
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
 	private final JavaCompileSpace space;
-	private final Map<Module, JavaCompiledModule> modules = new HashMap<>();
+	private final Map<ModuleSymbol, JavaCompiledModule> modules = new HashMap<>();
+	private final JavaCompilingModule generatedClassesModule;
 
 	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
 		this.logger = logger;
@@ -52,10 +54,13 @@ public abstract class JavaContext {
 		this.modulePackage = modulePackage;
 		this.basePackage = basePackage;
 
+		ModuleSymbol generatedClassesModule = new ModuleSymbol("generated");
+		JavaCompiledModule compiledGeneratedClassesModule = new JavaCompiledModule(generatedClassesModule, FunctionParameter.NONE);
+		this.generatedClassesModule = new JavaCompilingModule(this, compiledGeneratedClassesModule);
 
 		addDefaultFunctions();
 
-		modules.put(Module.BUILTIN, JavaBuiltinModule.generate());
+		modules.put(ModuleSymbol.BUILTIN, JavaBuiltinModule.generate());
 	}
 
 	private void addDefaultFunctions() {
@@ -261,14 +266,14 @@ public abstract class JavaContext {
 		return new JavaTypeGenericVisitor(this).getGenericSignature(type);
 	}
 
-	public void addModule(Module module, JavaCompiledModule target) {
+	public void addModule(ModuleSymbol module, JavaCompiledModule target) {
 		modules.put(module, target);
 
 		//TODO: can we do this here?
 		space.register(target);
 	}
 
-	public JavaCompiledModule getJavaModule(Module module) {
+	public JavaCompiledModule getJavaModule(ModuleSymbol module) {
 		if (modules.containsKey(module))
 			return modules.get(module);
 
@@ -498,11 +503,12 @@ public abstract class JavaContext {
 		JavaSynthesizedRange range;
 		if (!ranges.containsKey(id)) {
 			JavaClass cls = new JavaClass("zsynthetic", id, JavaClass.Kind.CLASS);
+			JavaCompilingClass class_ = new JavaCompilingClass(generatedClassesModule, RangeTypeSymbol.INSTANCE, cls, null);
 			if (typeInfo.primitive) {
-				range = new JavaSynthesizedRange(cls, TypeParameter.NONE, type.baseType);
+				range = new JavaSynthesizedRange(class_, TypeParameter.NONE, type.baseType);
 			} else {
 				TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, "T");
-				range = new JavaSynthesizedRange(cls, new TypeParameter[]{typeParameter}, new GenericTypeID(typeParameter));
+				range = new JavaSynthesizedRange(class_, new TypeParameter[]{typeParameter}, new GenericTypeID(typeParameter));
 			}
 			ranges.put(id, range);
 			getTypeGenerator().synthesizeRange(range);
@@ -544,11 +550,12 @@ public abstract class JavaContext {
 		return descBuilder.toString();
 	}
 
-	public String getMethodDescriptorConstructor(FunctionHeader header, DefinitionMember member) {
+	public String getMethodDescriptorConstructor(MethodSymbol method) {
 		StringBuilder startBuilder = new StringBuilder();
-		for (TypeParameter typeParameter : member.definition.typeParameters) {
+		DefinitionSymbol type = method.getDefiningType();
+		for (TypeParameter typeParameter : type.getTypeParameters()) {
 			startBuilder.append("Ljava/lang/Class;");
 		}
-		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
+		return getMethodDescriptor(method.getHeader(), type.asType().map(TypeSymbol::isEnum).orElse(false), startBuilder.toString());
 	}
 }

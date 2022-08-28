@@ -94,7 +94,7 @@ public class JavaTypeNameVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
-		return definition.definition.name;
+		return definition.definition.getName();
 	}
 
 	@Override

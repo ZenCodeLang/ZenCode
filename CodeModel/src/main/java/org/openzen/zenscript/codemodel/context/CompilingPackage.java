@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.context;
 
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 public class CompilingPackage {
-	public final Module module;
+	public final ModuleSymbol module;
 	private final ZSPackage pkg;
 	private final Map<String, CompilingPackage> packages = new HashMap<>();
 	private final Map<String, CompilingType> types = new HashMap<>();
 
-	public CompilingPackage(ZSPackage pkg, Module module) {
+	public CompilingPackage(ZSPackage pkg, ModuleSymbol module) {
 		this.pkg = pkg;
 		this.module = module;
 	}

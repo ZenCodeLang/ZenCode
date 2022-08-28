@@ -3,7 +3,6 @@ package org.openzen.zencode.java.module.converters;
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.globals.ExpressionGlobal;
@@ -15,7 +14,7 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaNativeField;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -57,7 +56,7 @@ public class JavaNativeGlobalConverter {
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, new Modifiers(Modifiers.FLAG_PUBLIC | Modifiers.FLAG_STATIC), name, thisType, type, typeConversionContext.registry, new Modifiers(Modifiers.FLAG_PUBLIC), new Modifiers(0), null);
 			definition.addMember(fieldMember);
-			JavaField javaField = new JavaField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
+			JavaNativeField javaField = new JavaNativeField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
 			typeConversionContext.compiled.setFieldInfo(fieldMember, javaField);
 			typeConversionContext.compiled.setFieldInfo(fieldMember.autoGetter, javaField);
 

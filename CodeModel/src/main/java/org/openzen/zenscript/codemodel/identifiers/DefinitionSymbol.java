@@ -1,11 +1,11 @@
 package org.openzen.zenscript.codemodel.identifiers;
 
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.Optional;
 
 public interface DefinitionSymbol {
-	Module getModule();
+	ModuleSymbol getModule();
 
 	String describe();
 
@@ -13,5 +13,8 @@ public interface DefinitionSymbol {
 
 	boolean isExpansion();
 
+	TypeParameter[] getTypeParameters();
+
 	Optional<TypeSymbol> asType();
+
 }

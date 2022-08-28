@@ -2,7 +2,7 @@ package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zencode.java.module.JavaNativeTypeMembers;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -11,12 +11,12 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Optional;
 
 public class JavaTypeSymbol implements TypeSymbol {
-	private final Module module;
+	private final ModuleSymbol module;
 	private final Class<?> cls;
 	private final TypeParameter[] typeParameters;
 	private final TypeID superclass;
 
-	public JavaTypeSymbol(Module module, Class<?> cls, TypeParameter[] typeParameters, TypeID superclass) {
+	public JavaTypeSymbol(ModuleSymbol module, Class<?> cls, TypeParameter[] typeParameters, TypeID superclass) {
 		this.module = module;
 		this.cls = cls;
 		this.typeParameters = typeParameters;
@@ -24,7 +24,7 @@ public class JavaTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public Module getModule() {
+	public ModuleSymbol getModule() {
 		return module;
 	}
 

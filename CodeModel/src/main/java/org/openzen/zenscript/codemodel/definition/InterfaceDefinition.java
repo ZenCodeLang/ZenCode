@@ -4,7 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -15,7 +15,7 @@ import java.util.List;
 public class InterfaceDefinition extends HighLevelDefinition {
 	public final List<TypeID> baseInterfaces = new ArrayList<>();
 
-	public InterfaceDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
+	public InterfaceDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 

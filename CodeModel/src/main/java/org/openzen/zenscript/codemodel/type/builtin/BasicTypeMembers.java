@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type.builtin;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CastedEval;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -99,8 +100,8 @@ public class BasicTypeMembers {
 		builder.method(new MethodInstance(BuiltinMethodSymbol.BYTE_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.BYTE_PARSE_WITH_BASE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.BYTE_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.BYTE_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.BYTE_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.BYTE_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.BYTE_COMPARE, BasicTypeID.BYTE);
 
@@ -141,8 +142,8 @@ public class BasicTypeMembers {
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_PARSE_WITH_BASE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SBYTE_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SBYTE_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.SBYTE_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.SBYTE_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.SBYTE_COMPARE, BasicTypeID.SBYTE);
 
@@ -183,8 +184,8 @@ public class BasicTypeMembers {
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SHORT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.SHORT_PARSE_WITH_BASE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SHORT_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.SHORT_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.SHORT_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.SHORT_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.SHORT_COMPARE, BasicTypeID.SHORT);
 
@@ -224,8 +225,8 @@ public class BasicTypeMembers {
 		builder.method(new MethodInstance(BuiltinMethodSymbol.USHORT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.USHORT_PARSE_WITH_BASE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USHORT_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USHORT_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.USHORT_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.USHORT_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.USHORT_COMPARE, BasicTypeID.USHORT);
 
@@ -267,8 +268,9 @@ public class BasicTypeMembers {
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.INT_PARSE));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.INT_PARSE_WITH_BASE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.INT_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.INT_GET_MAX_VALUE));
+
+		builder.field(new FieldInstance(BuiltinFieldSymbol.INT_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.INT_MAX_VALUE));
 
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.INT_COUNT_LOW_ZEROES));
 		builder.getter(new MethodInstance(BuiltinMethodSymbol.INT_COUNT_HIGH_ZEROES));
@@ -318,8 +320,9 @@ public class BasicTypeMembers {
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.UINT_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.UINT_PARSE_WITH_BASE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.UINT_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.UINT_GET_MAX_VALUE));
+
+		builder.field(new FieldInstance(BuiltinFieldSymbol.UINT_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.UINT_MAX_VALUE));
 
 		builder.getter("countLowZeroes", new MethodInstance(BuiltinMethodSymbol.UINT_COUNT_LOW_ZEROES));
 		builder.getter("countHighZeroes", new MethodInstance(BuiltinMethodSymbol.UINT_COUNT_HIGH_ZEROES));
@@ -370,8 +373,9 @@ public class BasicTypeMembers {
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.LONG_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.LONG_PARSE_WITH_BASE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.LONG_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.LONG_GET_MAX_VALUE));
+
+		builder.field(new FieldInstance(BuiltinFieldSymbol.LONG_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.LONG_MAX_VALUE));
 
 		builder.getter("countLowZeroes", new MethodInstance(BuiltinMethodSymbol.LONG_COUNT_LOW_ZEROES));
 		builder.getter("countHighZeroes", new MethodInstance(BuiltinMethodSymbol.LONG_COUNT_HIGH_ZEROES));
@@ -423,8 +427,9 @@ public class BasicTypeMembers {
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.ULONG_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.ULONG_PARSE_WITH_BASE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.ULONG_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.ULONG_GET_MAX_VALUE));
+
+		builder.field(new FieldInstance(BuiltinFieldSymbol.ULONG_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.ULONG_MAX_VALUE));
 
 		builder.getter("countLowZeroes", new MethodInstance(BuiltinMethodSymbol.ULONG_COUNT_LOW_ZEROES));
 		builder.getter("countHighZeroes", new MethodInstance(BuiltinMethodSymbol.ULONG_COUNT_HIGH_ZEROES));
@@ -475,8 +480,6 @@ public class BasicTypeMembers {
 
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.USIZE_PARSE));
 		builder.method("parse", new MethodInstance(BuiltinMethodSymbol.USIZE_PARSE_WITH_BASE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USIZE_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.USIZE_GET_MAX_VALUE));
 
 		builder.getter("countLowZeroes", new MethodInstance(BuiltinMethodSymbol.USIZE_COUNT_LOW_ZEROES));
 		builder.getter("countHighZeroes", new MethodInstance(BuiltinMethodSymbol.USIZE_COUNT_HIGH_ZEROES));
@@ -488,7 +491,10 @@ public class BasicTypeMembers {
 		builder.getter("highestZeroBit", new MethodInstance(BuiltinMethodSymbol.USIZE_HIGHEST_ZERO_BIT));
 		builder.getter("lowestZeroBit", new MethodInstance(BuiltinMethodSymbol.USIZE_LOWEST_ZERO_BIT));
 		builder.getter("bitCount", new MethodInstance(BuiltinMethodSymbol.USIZE_BIT_COUNT));
-		builder.getter("bits", new MethodInstance(BuiltinMethodSymbol.USIZE_BITS));
+
+		builder.field(new FieldInstance(BuiltinFieldSymbol.USIZE_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.USIZE_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.USIZE_BITS));
 
 		comparator(builder, BuiltinMethodSymbol.USIZE_COMPARE, BasicTypeID.USIZE);
 
@@ -523,8 +529,8 @@ public class BasicTypeMembers {
 		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.FLOAT_FROM_BITS));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.FLOAT_PARSE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.FLOAT_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.FLOAT_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.FLOAT_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.FLOAT_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.FLOAT_COMPARE, BasicTypeID.FLOAT);
 
@@ -559,8 +565,8 @@ public class BasicTypeMembers {
 		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.DOUBLE_FROM_BITS));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.DOUBLE_PARSE));
 
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.DOUBLE_GET_MIN_VALUE));
-		builder.staticGetter(new MethodInstance(BuiltinMethodSymbol.DOUBLE_GET_MAX_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.DOUBLE_MIN_VALUE));
+		builder.field(new FieldInstance(BuiltinFieldSymbol.DOUBLE_MAX_VALUE));
 
 		comparator(builder, BuiltinMethodSymbol.DOUBLE_COMPARE, BasicTypeID.DOUBLE);
 
@@ -585,8 +591,8 @@ public class BasicTypeMembers {
 		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_USIZE));
 		builder.cast(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_STRING));
 
-		builder.getter(new MethodInstance(BuiltinMethodSymbol.CHAR_GET_MIN_VALUE));
-		builder.getter(new MethodInstance(BuiltinMethodSymbol.CHAR_GET_MAX_VALUE));
+		//builder.field(new MethodInstance(BuiltinFieldSymbol.CHAR_MIN_VALUE));
+		//builder.field(new MethodInstance(BuiltinFieldSymbol.CHAR_MAX_VALUE));
 
 		builder.method(new MethodInstance(BuiltinMethodSymbol.CHAR_REMOVE_DIACRITICS));
 		builder.method(new MethodInstance(BuiltinMethodSymbol.CHAR_TO_LOWER_CASE));

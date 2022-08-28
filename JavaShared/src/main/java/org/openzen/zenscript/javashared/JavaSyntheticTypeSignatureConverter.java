@@ -110,7 +110,7 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
 		StringBuilder result = new StringBuilder();
-		result.append(definition.definition.name);
+		result.append(definition.definition.getName());
 		if (definition.typeArguments.length > 0) {
 			result.append("With");
 			for (int i = 0; i < definition.typeArguments.length; i++) {

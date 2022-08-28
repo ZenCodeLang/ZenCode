@@ -10,19 +10,19 @@ package org.openzen.zenscript.javashared;
  */
 public class JavaTypeParameterInfo {
 	public final int parameterIndex;
-	public final JavaField field;
+	public final JavaNativeField field;
 
 	public JavaTypeParameterInfo(int parameterIndex) {
 		this.parameterIndex = parameterIndex;
 		this.field = null;
 	}
 
-	public JavaTypeParameterInfo(JavaField field) {
+	public JavaTypeParameterInfo(JavaNativeField field) {
 		this.parameterIndex = -1;
 		this.field = field;
 	}
 
-	public JavaTypeParameterInfo(int parameterIndex, JavaField field) {
+	public JavaTypeParameterInfo(int parameterIndex, JavaNativeField field) {
 		this.parameterIndex = parameterIndex;
 		this.field = field;
 	}

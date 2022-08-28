@@ -7,8 +7,8 @@ import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.compilation.StaticCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	public MethodInstance(MethodSymbol method) {
 		this.method = method;
 		this.header = method.getHeader();
-		this.target = DefinitionTypeID.create(method.getTargetType(), TypeID.NONE);
+		this.target = method.getTargetType();
 	}
 
 	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target) {
@@ -32,6 +32,10 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 
 	public TypeID getTarget() {
 		return target;
+	}
+
+	public MethodID getID() {
+		return method.getID();
 	}
 
 	public String getName() {

@@ -21,6 +21,9 @@ import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
@@ -56,6 +59,7 @@ public class JavaCompiler {
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
 		target.getEnumMapper().merge(enumMapper);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName, logger);
+		JavaCompilingModule compiling = new JavaCompilingModule(context, target);
 		context.addModule(module.module, target);
 
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
@@ -66,12 +70,14 @@ public class JavaCompiler {
 			} else {
 				filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
 			}
-			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
+			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(compiling, filename, null, filename);
 			definition.accept(definitionPreparer);
 		}
 
+		// TODO: topological sort!
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, target);
+			JavaCompilingClass class_ = compiling.getClass(definition);
+			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(class_);
 			definition.accept(memberPreparer);
 		}
 
@@ -89,7 +95,7 @@ public class JavaCompiler {
 				internalName = cls.internalName;
 			}
 			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, compiling, scriptFile.classWriter)));
 		}
 
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
@@ -116,10 +122,12 @@ public class JavaCompiler {
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 			final JavaClassWriter visitor = scriptFile.classWriter;
-			JavaNativeMethod method = JavaNativeMethod.getStatic(new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS), methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			JavaClass scriptsClass = new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS);
+			JavaNativeMethod method = JavaNativeMethod.getStatic(scriptsClass, methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, method, null, null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null, null, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);

@@ -13,6 +13,11 @@ public class JavaBuiltinMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		return compiler.builtinConstructor(method, type, arguments);
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.builtinVirtualMethod(method, target, arguments);
 	}
@@ -20,5 +25,10 @@ public class JavaBuiltinMethod implements JavaMethod {
 	@Override
 	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
 		return compiler.builtinStaticMethod(method, arguments);
+	}
+
+	@Override
+	public String getMapping(JavaClass class_) {
+		return class_.internalName + "::builtin::" + method.getName();
 	}
 }

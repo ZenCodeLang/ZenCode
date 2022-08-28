@@ -14,7 +14,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -76,7 +76,7 @@ public class SourceModuleReference implements ModuleReference {
 		}
 
 		ZSPackage pkg = isStdlib ? modules.stdlib : new ZSPackage(null, getName());
-		Module module = new Module(getName());
+		ModuleSymbol module = new ModuleSymbol(getName());
 		CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 
 		ParsedFile[] parsedFiles = parse(compilingPackage, logger);

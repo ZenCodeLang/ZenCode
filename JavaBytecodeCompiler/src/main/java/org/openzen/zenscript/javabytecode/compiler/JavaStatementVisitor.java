@@ -218,7 +218,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
 		if (statement.value.type == BasicTypeID.STRING)
-			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
+			javaWriter.invokeVirtual(JavaMethodBytecodeCompiler.OBJECT_HASHCODE);
 		boolean out = false;
 
 		final boolean hasNoDefault = hasNoDefault(statement);

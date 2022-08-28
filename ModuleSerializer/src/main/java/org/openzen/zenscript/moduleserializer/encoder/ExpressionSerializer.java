@@ -434,17 +434,6 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitGetter(StatementSerializationContext context, GetterExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_GETTER);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.serialize(context, expression.target);
-		output.write(context, expression.getter);
-		return null;
-	}
-
-	@Override
 	public Void visitGlobal(StatementSerializationContext context, GlobalExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_GLOBAL);
 		int flags = getFlags(expression);
@@ -666,39 +655,6 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		serialize(flags, expression);
 
 		output.write(context, expression.field);
-		output.serialize(context, expression.value);
-		return null;
-	}
-
-	@Override
-	public Void visitSetter(StatementSerializationContext context, SetterExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_SETTER);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.serialize(context, expression.target);
-		output.write(context, expression.setter);
-		output.serialize(context, expression.value);
-		return null;
-	}
-
-	@Override
-	public Void visitStaticGetter(StatementSerializationContext context, StaticGetterExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_STATIC_GETTER);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.write(context, expression.getter);
-		return null;
-	}
-
-	@Override
-	public Void visitStaticSetter(StatementSerializationContext context, StaticSetterExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_STATIC_SETTER);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.write(context, expression.setter);
 		output.serialize(context, expression.value);
 		return null;
 	}

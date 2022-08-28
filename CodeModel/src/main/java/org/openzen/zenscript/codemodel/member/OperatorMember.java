@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -18,7 +19,7 @@ public class OperatorMember extends FunctionalMember {
 			Modifiers modifiers,
 			OperatorType operator,
 			FunctionHeader header) {
-		super(position, definition, modifiers, header);
+		super(position, definition, modifiers, MethodID.operator(operator), header);
 
 		this.operator = operator;
 	}

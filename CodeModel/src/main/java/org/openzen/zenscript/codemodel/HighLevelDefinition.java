@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
@@ -21,7 +22,7 @@ import java.util.Optional;
 
 public abstract class HighLevelDefinition extends Taggable implements TypeSymbol {
 	public final CodePosition position;
-	public final Module module;
+	public final ModuleSymbol module;
 	public final ZSPackage pkg;
 	public final String name;
 	public final Modifiers modifiers;
@@ -32,7 +33,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	public TypeSymbol outerDefinition;
 	private TypeID superType;
 
-	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
+	public HighLevelDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		if (module == null)
 			throw new NullPointerException();
 
@@ -105,7 +106,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	/* TypeSymbol implementation */
 
 	@Override
-	public Module getModule() {
+	public ModuleSymbol getModule() {
 		return module;
 	}
 

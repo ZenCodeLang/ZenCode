@@ -8,155 +8,109 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 /**
  * @author Hoofdgebruiker
  */
-public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<JavaClass> {
-	private final JavaContext context;
-	private final JavaCompiledModule module;
+public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Void> {
+	private final JavaCompilingClass class_;
 
-	public JavaPrepareDefinitionMemberVisitor(JavaContext context, JavaCompiledModule module) {
-		this.context = context;
-		this.module = module;
-	}
-
-	private boolean isPrepared(HighLevelDefinition definition) {
-		return context.getJavaClass(definition).membersPrepared;
-	}
-
-	public void prepare(TypeID type) {
-		if (!(type instanceof DefinitionTypeID))
-			return;
-
-		TypeSymbol typeSymbol = ((DefinitionTypeID) type).definition;
-		if (typeSymbol instanceof HighLevelDefinition) {
-			prepare((HighLevelDefinition) typeSymbol);
-		}
-	}
-
-	public void prepare(HighLevelDefinition definition) {
-		if (isPrepared(definition))
-			return;
-		if (definition.module != module.module)
-			throw new IllegalArgumentException("Definition is not in the same module as the current module!");
-
-		context.logger.trace("~~ Preparing " + definition.name);
-		definition.accept(this);
+	public JavaPrepareDefinitionMemberVisitor(JavaCompilingClass class_) {
+		this.class_ = class_;
 	}
 
 	@Override
-	public JavaClass visitClass(ClassDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+	public Void visitClass(ClassDefinition definition) {
+		if (!class_.membersPrepared)
+			visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 
-		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
+		return null;
 	}
 
 	@Override
-	public JavaClass visitInterface(InterfaceDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+	public Void visitInterface(InterfaceDefinition definition) {
+		if (class_.membersPrepared)
+			return null;
 
-		for (TypeID baseType : definition.baseInterfaces)
-			prepare(baseType);
-
-		return visitClassCompiled(definition, true, JavaClass.Kind.INTERFACE);
+		visitClassCompiled(definition, true, JavaClass.Kind.INTERFACE);
+		return null;
 	}
 
 	@Override
-	public JavaClass visitEnum(EnumDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+	public Void visitEnum(EnumDefinition definition) {
+		if (class_.membersPrepared)
+			return null;
 
-		return visitClassCompiled(definition, false, JavaClass.Kind.ENUM);
+		visitClassCompiled(definition, false, JavaClass.Kind.ENUM);
+		return null;
 	}
 
 	@Override
-	public JavaClass visitStruct(StructDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
-
-		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
+	public Void visitStruct(StructDefinition definition) {
+		visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
+		return null;
 	}
 
 	@Override
-	public JavaClass visitFunction(FunctionDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
-
-		JavaClass cls = context.getJavaClass(definition);
-		JavaNativeMethod method = JavaNativeMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
-		module.setMethodInfo(definition.caller, method);
-		return cls;
+	public Void visitFunction(FunctionDefinition definition) {
+		JavaNativeMethod method = JavaNativeMethod.getStatic(class_.compiled, definition.name, class_.getContext().getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		class_.addMethod(definition.caller, new JavaCompilingMethod(class_.compiled, method));
+		return null;
 	}
 
 	@Override
-	public JavaClass visitExpansion(ExpansionDefinition definition) {
-		if (isPrepared(definition))
-			return context.getJavaClass(definition);
-
-		JavaNativeClass nativeClass = context.getJavaNativeClass(definition);
-		JavaClass cls = context.getJavaExpansionClass(definition);
+	public Void visitExpansion(ExpansionDefinition definition) {
+		JavaNativeClass nativeClass = class_.getContext().getJavaNativeClass(definition);
+		JavaClass cls = class_.getContext().getJavaExpansionClass(definition);
 		visitExpansionMembers(definition, cls, nativeClass);
-		return cls;
+		return null;
 	}
 
 	@Override
-	public JavaClass visitAlias(AliasDefinition definition) {
+	public Void visitAlias(AliasDefinition definition) {
 		// nothing to do
 		return null;
 	}
 
 	@Override
-	public JavaClass visitVariant(VariantDefinition variant) {
-		JavaClass cls = context.getJavaClass(variant);
-		if (cls.membersPrepared)
-			return cls;
-
-		visitClassMembers(variant, cls, null, false);
-		return cls;
+	public Void visitVariant(VariantDefinition variant) {
+		visitClassMembers(variant, false);
+		return null;
 	}
 
-	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
-
+	private void visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
 		for (TypeParameter typeParameter : definition.typeParameters) {
-			module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(-1));
+			class_.module.module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(-1));
 		}
 
-		if (definition.getSuperType() != null)
-			prepare(definition.getSuperType());
-
-		JavaNativeClass nativeClass = context.getJavaNativeClass(definition);
-		JavaClass cls = context.getJavaClass(definition);
+		JavaNativeClass nativeClass = class_.getContext().getJavaNativeClass(definition);
+		JavaClass cls = class_.getContext().getJavaClass(definition);
 		if (nativeClass == null) {
-			visitClassMembers(definition, cls, null, startsEmpty);
+			visitClassMembers(definition, startsEmpty);
 		} else {
 			cls.membersPrepared = true;
-			JavaClass expansionCls = context.getJavaExpansionClass(definition);
+			JavaClass expansionCls = class_.getContext().getJavaExpansionClass(definition);
 			visitExpansionMembers(definition, expansionCls, nativeClass);
 			cls.empty = expansionCls.empty;
 		}
-		return cls;
 	}
 
-	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		context.logger.trace("Preparing " + cls.internalName);
-		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, module, cls, nativeClass, this, startsEmpty);
+	private void visitClassMembers(HighLevelDefinition definition, boolean startsEmpty) {
+		class_.getContext().logger.trace("Preparing " + class_.compiled.internalName);
+		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(class_, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}
-		cls.membersPrepared = true;
+		class_.membersPrepared = true;
 	}
 
 	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
-		context.logger.trace("Preparing " + cls.internalName);
-		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, module, cls, nativeClass);
+		class_.getContext().logger.trace("Preparing " + cls.internalName);
+		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(class_);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

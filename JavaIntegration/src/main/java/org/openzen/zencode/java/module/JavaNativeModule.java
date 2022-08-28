@@ -10,7 +10,7 @@ import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
 import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -65,7 +65,7 @@ public class JavaNativeModule {
 			JavaNativeConverterBuilder nativeConverterBuilder,
 			ZSPackage rootPackage) {
 		this.space = space;
-		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
+		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new ModuleSymbol(name));
 		this.logger = logger;
 		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, rootPackage);
 
@@ -117,7 +117,7 @@ public class JavaNativeModule {
 		return typeConversionContext.globals;
 	}
 
-	public Module getModule() {
+	public ModuleSymbol getModule() {
 		return packageInfo.getModule();
 	}
 

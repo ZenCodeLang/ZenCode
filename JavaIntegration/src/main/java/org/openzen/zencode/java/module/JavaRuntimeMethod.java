@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 
@@ -24,6 +25,7 @@ import java.util.Optional;
 public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	private final JavaRuntimeClass class_;
 	private final TypeSymbol target;
+	private final TypeID targetType;
 	private final JavaNativeMethod method;
 	private final Modifiers modifiers;
 	private final OperatorType operator;
@@ -40,6 +42,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 				false);
 		this.class_ = class_;
 		this.target = target;
+		targetType = DefinitionTypeID.createThis(target);
 		modifiers = getMethodModifiers(constructor);
 		operator = OperatorType.CONSTRUCTOR;
 	}
@@ -64,6 +67,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 
 		this.class_ = class_;
 		this.target = target;
+		targetType = DefinitionTypeID.createThis(target);
 		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
 				.getModifiers(), result.isGeneric());
 		modifiers = getMethodModifiers(method);
@@ -80,7 +84,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
-	public TypeSymbol getTargetType() {
+	public TypeID getTargetType() {
 		return target;
 	}
 

@@ -13,13 +13,14 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 /**
  * @author Hoofdgebruiker
  */
 public class DeserializingModule {
 	public final String name;
-	public final Module module;
+	public final ModuleSymbol module;
 	private final IZSLogger logger;
 	private final SemanticModule loaded;
 	private final DeserializingModule[] dependencies;
@@ -39,7 +40,7 @@ public class DeserializingModule {
 			IZSLogger logger
 	) {
 		this.name = name;
-		this.module = new Module(name);
+		this.module = new ModuleSymbol(name);
 		this.logger = logger;
 		this.loaded = null;
 		this.dependencies = dependencies;

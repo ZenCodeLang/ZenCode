@@ -2,9 +2,8 @@ package org.openzen.zenscript.rustsource;
 
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.rustsource.definitions.*;
@@ -12,7 +11,7 @@ import org.openzen.zenscript.rustsource.definitions.*;
 import java.util.*;
 
 public class RustSourceModule {
-	public final Module module;
+	public final ModuleSymbol module;
 	public final FunctionParameter[] scriptParameters;
 
 	private final Map<HighLevelDefinition, RustStruct> structs = new HashMap<>();
@@ -25,7 +24,7 @@ public class RustSourceModule {
 
 	public final List<SourceFile> sourceFiles = new ArrayList<>();
 
-	public RustSourceModule(Module module, FunctionParameter[] parameters) {
+	public RustSourceModule(ModuleSymbol module, FunctionParameter[] parameters) {
 		this.module = module;
 		this.scriptParameters = parameters;
 	}

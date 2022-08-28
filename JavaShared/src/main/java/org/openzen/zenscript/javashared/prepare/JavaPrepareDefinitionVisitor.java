@@ -8,11 +8,15 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,12 +25,11 @@ import java.util.Map;
  * @author Hoofdgebruiker
  */
 public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass> {
+	private final JavaCompilingModule module;
 	private final Map<String, JavaNativeClass> nativeClasses = new HashMap<>();
-	private final JavaContext context;
 	private final String filename;
 	private final String className;
 	private final JavaClass outerClass;
-	private final JavaCompiledModule module;
 
 	{
 		{
@@ -229,34 +232,36 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		 }
 	}
 
-	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass) {
-		this(context, module, filename, outerClass, JavaClass.getNameFromFile(filename));
+	public JavaPrepareDefinitionVisitor(JavaCompilingModule module, String filename, JavaClass outerClass) {
+		this(module, filename, outerClass, JavaClass.getNameFromFile(filename));
 	}
 
-	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass, String className) {
-		this.context = context;
+	public JavaPrepareDefinitionVisitor(JavaCompilingModule module, String filename, JavaClass outerClass, String className) {
+		this.module = module;
 		this.filename = filename;
 		this.outerClass = outerClass;
-		this.module = module;
 		this.className = className;
 	}
 
 	private boolean isPrepared(HighLevelDefinition definition) {
-		return context.hasJavaClass(definition);
+		return module.getClass(definition) != null;
 	}
 
 	public void prepare(TypeID type) {
 		if (!(type instanceof DefinitionTypeID))
 			return;
 
-		HighLevelDefinition definition = ((DefinitionTypeID) type).definition;
-		definition.accept(this);
+		TypeSymbol definition = ((DefinitionTypeID) type).definition;
+		if (!(definition instanceof HighLevelDefinition))
+			return;
+
+		((HighLevelDefinition)definition).accept(this);
 	}
 
 	@Override
 	public JavaClass visitClass(ClassDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
@@ -264,7 +269,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	@Override
 	public JavaClass visitInterface(InterfaceDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
 		for (TypeID baseType : definition.baseInterfaces)
 			prepare(baseType);
@@ -275,7 +280,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	@Override
 	public JavaClass visitEnum(EnumDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
 		return visitClassCompiled(definition, false, JavaClass.Kind.ENUM);
 	}
@@ -283,7 +288,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	@Override
 	public JavaClass visitStruct(StructDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
@@ -291,25 +296,27 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	@Override
 	public JavaClass visitFunction(FunctionDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
-		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
-		context.setJavaClass(definition, cls);
+		JavaClass cls = new JavaClass(module.context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
+		module.addClass(definition, new JavaCompilingClass(module, definition, cls, null));
 		return cls;
 	}
 
 	@Override
 	public JavaClass visitExpansion(ExpansionDefinition definition) {
 		if (isPrepared(definition))
-			return context.getJavaClass(definition);
+			return module.getClass(definition).compiled;
 
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
+		JavaNativeClass nativeClass = null;
 		if (nativeTag != null) {
-			context.setJavaNativeClass(definition, nativeClasses.get(nativeTag.value));
+			nativeClass = nativeClasses.get(nativeTag.value);
+			module.context.setJavaNativeClass(definition, nativeClass);
 		}
 
-		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
-		context.setJavaClass(definition, cls);
+		JavaClass cls = new JavaClass(module.context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
+		module.addClass(definition, new JavaCompilingClass(module, definition, cls, nativeClass));
 		return cls;
 	}
 
@@ -322,14 +329,14 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	@Override
 	public JavaClass visitVariant(VariantDefinition variant) {
 		if (isPrepared(variant))
-			return context.getJavaClass(variant);
+			return module.getClass(variant).compiled;
 
-		JavaClass cls = new JavaClass(context.getPackageName(variant.pkg), variant.name, JavaClass.Kind.CLASS);
-		context.setJavaClass(variant, cls);
+		JavaClass cls = new JavaClass(module.context.getPackageName(variant.pkg), variant.name, JavaClass.Kind.CLASS);
+		module.addClass(variant, new JavaCompilingClass(module, variant, cls, null));
 
 		for (VariantDefinition.Option option : variant.options) {
 			JavaClass variantCls = new JavaClass(cls, option.name, JavaClass.Kind.CLASS);
-			module.setVariantOption(option, new JavaVariantOption(cls, variantCls));
+			module.module.setVariantOption(option, new JavaVariantOption(cls, variantCls));
 		}
 
 		return cls;
@@ -342,20 +349,36 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
 		JavaClass cls;
+		JavaCompilingClass compiling;
 		if (nativeClass == null) {
-			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
-			context.setJavaClass(definition, cls);
+			cls = outerClass == null ? new JavaClass(module.context.getPackageName(definition.pkg), definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
+			compiling = new JavaCompilingClass(module, definition, cls, null);
+			module.addClass(definition, compiling);
 		} else {
-			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
+			cls = outerClass == null ? new JavaClass(module.context.getPackageName(definition.pkg), definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
 
-			context.setJavaClass(definition, nativeClass.cls);
-			context.setJavaExpansionClass(definition, cls);
-			context.setJavaNativeClass(definition, nativeClass);
+			compiling = new JavaCompilingClass(module, definition, nativeClass.cls, nativeClass);
+			module.addClass(definition, compiling);
+			module.context.setJavaExpansionClass(definition, cls);
+			module.context.setJavaNativeClass(definition, nativeClass);
+		}
+
+		if (definition.getSuperType() != null) {
+			definition.getSuperType().asDefinition().ifPresent(definitionTypeID -> compiling.addDependency(definitionTypeID.definition));
+		}
+		if (definition instanceof InterfaceDefinition) {
+			InterfaceDefinition interfaceDefinition = (InterfaceDefinition) definition;
+			for (TypeID baseInterface : interfaceDefinition.baseInterfaces) {
+				baseInterface.asDefinition().ifPresent(definitionTypeID -> compiling.addDependency(definitionTypeID.definition));
+			}
 		}
 
 		for (IDefinitionMember member : definition.members) {
 			if (member instanceof InnerDefinitionMember) {
-				((InnerDefinitionMember) member).innerDefinition.accept(new JavaPrepareDefinitionVisitor(context, module, filename, cls));
+				((InnerDefinitionMember) member).innerDefinition.accept(new JavaPrepareDefinitionVisitor(module, filename, cls));
+			}
+			if (member instanceof ImplementationMember) {
+				((ImplementationMember) member).type.asDefinition().ifPresent(definitionTypeID -> compiling.addDependency(definitionTypeID.definition));
 			}
 		}
 

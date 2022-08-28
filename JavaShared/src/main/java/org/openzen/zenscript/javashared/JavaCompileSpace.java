@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 /**
  * @author Hoofdgebruiker
@@ -13,5 +13,5 @@ import org.openzen.zenscript.codemodel.Module;
 public interface JavaCompileSpace {
 	void register(JavaCompiledModule module);
 
-	JavaCompiledModule getCompiled(Module module);
+	JavaCompiledModule getCompiled(ModuleSymbol module);
 }

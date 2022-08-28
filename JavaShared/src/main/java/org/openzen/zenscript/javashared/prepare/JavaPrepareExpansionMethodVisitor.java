@@ -5,104 +5,77 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zencode.shared.StringExpansion;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 
 /**
  * @author Hoofdgebruiker
  */
 public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
-	private static final boolean DEBUG_EMPTY = true;
+	private final JavaCompilingClass class_;
 
-	private final JavaContext context;
-	private final JavaCompiledModule module;
-	private final JavaClass cls;
-	private final JavaNativeClass nativeClass;
-
-	public JavaPrepareExpansionMethodVisitor(JavaContext context, JavaCompiledModule module, JavaClass cls, JavaNativeClass nativeClass) {
-		this.module = module;
-		this.cls = cls;
-		this.nativeClass = nativeClass;
-		this.context = context;
-		cls.empty = true;
-	}
-
-	@Override
-	public Void visitConst(ConstMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
-		module.setFieldInfo(member, field);
-
-		if (DEBUG_EMPTY && cls.empty)
-			context.logger.trace("Class " + cls.fullName + " not empty because of const");
-
-		cls.empty = false;
-		return null;
+	public JavaPrepareExpansionMethodVisitor(JavaCompilingClass class_) {
+		this.class_ = class_;
+		class_.empty = true;
 	}
 
 	@Override
 	public Void visitField(FieldMember member) {
-		// TODO: expansion fields
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
-		module.setFieldInfo(member, field);
-
-		if (member.hasAutoGetter() || member.hasAutoSetter())
-			cls.empty = false;
+		class_.addField(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
-		visitFunctional(member, member.header, "");
+		class_.addConstructor(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitMethod(MethodMember member) {
-		visitFunctional(member, member.header, member.name);
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, new FunctionHeader(member.type), "get" + StringExpansion.capitalize(member.name));
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.type), "set" + StringExpansion.capitalize(member.name));
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		visitFunctional(member, member.header, getOperatorName(member.operator));
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		visitFunctional(member, member.header, "to" + JavaTypeNameVisitor.INSTANCE.process(member.toType));
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		visitFunctional(member, member.header, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
+		class_.addMethod(member, member.getTag(NativeTag.class));
 		return null;
 	}
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
-		module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
+		JavaClass implementationClass = new JavaClass(
+				class_.compiled,
+				JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation",
+				JavaClass.Kind.CLASS);
+		class_.module.module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);
 
@@ -112,148 +85,13 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
 		// TODO
-		cls.empty = false;
+		class_.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
-		cls.empty = false;
+		class_.empty = false;
 		return null;
-	}
-
-	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
-		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaMethod method = null;
-		if (nativeTag != null && nativeClass != null)
-			method = nativeClass.getMethod(nativeTag.value);
-		if (method == null) {
-
-			if (member instanceof ConstructorMember) {
-				method = new JavaNativeMethod(
-						cls,
-						getKind(member),
-						name,
-						true,
-						context.getMethodDescriptorConstructor(header, member),
-						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-						false,
-						header.useTypeParameters()
-				);
-			} else {
-				final JavaNativeMethod.Kind kind = getKind(member);
-				final String descriptor;
-				if (kind == JavaNativeMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
-					descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
-				} else {
-					descriptor = context.getMethodDescriptor(header);
-				}
-				method = new JavaNativeMethod(
-						cls,
-						kind,
-						name,
-						true,
-						descriptor,
-						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-						header.getReturnType() instanceof GenericTypeID,
-						header.useTypeParameters());
-			}
-		}
-
-		if (method.compile) {
-			if (DEBUG_EMPTY && cls.empty)
-				context.logger.trace("Class " + cls.fullName + " not empty because of " + member.describe());
-
-			cls.empty = false;
-		}
-
-		module.setMethodInfo(member, method);
-	}
-
-	private JavaNativeMethod.Kind getKind(DefinitionMember member) {
-		return member.isStatic() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.EXPANSION;
-	}
-
-	private String getOperatorName(OperatorType operator) {
-		switch (operator) {
-			case NEG:
-				return "negate";
-			case NOT:
-				return "invert";
-			case ADD:
-				return "add";
-			case ADDASSIGN:
-				return "addAssign";
-			case SUB:
-				return "subtract";
-			case SUBASSIGN:
-				return "subAssign";
-			case CAT:
-				return "concat";
-			case CATASSIGN:
-				return "append";
-			case MUL:
-				return "mul";
-			case MULASSIGN:
-				return "mulAssign";
-			case DIV:
-				return "div";
-			case DIVASSIGN:
-				return "divAssign";
-			case MOD:
-				return "mod";
-			case MODASSIGN:
-				return "modAssign";
-			case AND:
-				return "and";
-			case ANDASSIGN:
-				return "andAssign";
-			case OR:
-				return "or";
-			case ORASSIGN:
-				return "orAssign";
-			case XOR:
-				return "xor";
-			case XORASSIGN:
-				return "xorAssign";
-			case SHL:
-				return "shl";
-			case SHLASSIGN:
-				return "shlAssign";
-			case SHR:
-				return "shr";
-			case SHRASSIGN:
-				return "shrAssign";
-			case USHR:
-				return "ushr";
-			case USHRASSIGN:
-				return "ushrAssign";
-			case INDEXGET:
-				return "getAt";
-			case INDEXSET:
-				return "setAt";
-			case INCREMENT:
-				return "increment";
-			case DECREMENT:
-				return "decrement";
-			case CONTAINS:
-				return "contains";
-			case EQUALS:
-				return "equals_";
-			case COMPARE:
-				return "compareTo";
-			case RANGE:
-				return "until";
-			case CAST:
-				return "cast";
-			case CALL:
-				return "call";
-			case MEMBERGETTER:
-				return "getMember";
-			case MEMBERSETTER:
-				return "setMember";
-			default:
-				throw new IllegalArgumentException("Invalid operator: " + operator);
-		}
 	}
 }

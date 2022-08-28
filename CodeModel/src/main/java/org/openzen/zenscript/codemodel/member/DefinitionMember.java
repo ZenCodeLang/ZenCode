@@ -7,11 +7,14 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
 	public final TypeSymbol target;
+	public final TypeID targetType;
 	protected final Modifiers modifiers;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 
@@ -19,6 +22,7 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		this.position = position;
 		this.definition = definition;
 		this.target = (definition instanceof ExpansionDefinition) ? ((ExpansionDefinition)definition).target.asDefinition().get().definition : definition;
+		this.targetType = definition.isExpansion() ? ((ExpansionDefinition)definition).target : DefinitionTypeID.createThis(definition);
 		this.modifiers = modifiers;
 	}
 

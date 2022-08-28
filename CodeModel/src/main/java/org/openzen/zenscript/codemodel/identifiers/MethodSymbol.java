@@ -16,9 +16,11 @@ import java.util.Optional;
 public interface MethodSymbol {
 	DefinitionSymbol getDefiningType();
 
-	TypeSymbol getTargetType();
+	TypeID getTargetType();
 
 	Modifiers getModifiers();
+
+	MethodID getID();
 
 	String getName();
 

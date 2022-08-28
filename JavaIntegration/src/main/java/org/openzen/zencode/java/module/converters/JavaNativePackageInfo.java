@@ -1,6 +1,6 @@
 package org.openzen.zencode.java.module.converters;
 
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import stdlib.Strings;
 
@@ -11,9 +11,9 @@ public class JavaNativePackageInfo {
 
 	private final ZSPackage pkg;
 	private final String basePackage;
-	private final Module module;
+	private final ModuleSymbol module;
 
-	public JavaNativePackageInfo(ZSPackage pkg, String basePackage, Module module) {
+	public JavaNativePackageInfo(ZSPackage pkg, String basePackage, ModuleSymbol module) {
 
 		this.pkg = pkg;
 		this.basePackage = basePackage;
@@ -61,7 +61,7 @@ public class JavaNativePackageInfo {
 		return zsPackage.getOptionalRecursive(className.substring(0, index));
 	}
 
-	public Module getModule() {
+	public ModuleSymbol getModule() {
 		return module;
 	}
 

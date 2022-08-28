@@ -3,7 +3,7 @@ package org.openzen.zenscript.parser;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -55,7 +55,7 @@ public class ZippedPackage {
 		if (sourceFiles == null)
 			return null; // no such module
 
-		Module scriptModule = new Module(name);
+		ModuleSymbol scriptModule = new ModuleSymbol(name);
 		CompilingPackage scriptPackage = new CompilingPackage(pkg, scriptModule);
 		ParsedFile[] files = new ParsedFile[sourceFiles.size()];
 		for (int i = 0; i < files.length; i++)

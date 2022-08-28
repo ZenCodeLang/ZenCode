@@ -18,7 +18,7 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -53,10 +53,10 @@ import org.openzen.zenscript.moduleserializer.encoder.TypeSerializer;
  */
 public class TableBuilder implements CodeSerializationOutput {
 	//public final List<EncodingModule> modules = new ArrayList<>();
-	public final Map<Module, EncodingModule> modules = new HashMap<>();
+	public final Map<ModuleSymbol, EncodingModule> modules = new HashMap<>();
 	private final Map<String, Integer> strings = new HashMap<>();
 	private final Set<TypeSymbol> definitions = new HashSet<>();
-	private final Set<Module> moduleSet = new HashSet<>();
+	private final Set<ModuleSymbol> moduleSet = new HashSet<>();
 	private final Set<SourceFile> sourceFiles = new HashSet<>();
 	private final List<IDefinitionMember> members = new ArrayList<>();
 	private final Set<AnnotationDefinition> annotations = new HashSet<>();
@@ -85,7 +85,7 @@ public class TableBuilder implements CodeSerializationOutput {
 		typeParameterBoundSerializer = new TypeParameterBoundSerializer(this);
 	}
 
-	public EncodingModule register(Module module, ModuleContext context) {
+	public EncodingModule register(ModuleSymbol module, ModuleContext context) {
 		if (moduleSet.add(module)) {
 			EncodingModule encodedModule = new EncodingModule(module, context, true);
 			//module.setTag(EncodingModule.class, encodedModule);

@@ -97,6 +97,10 @@ public class JavaNativeMethod implements JavaMethod {
 		return (modifiers & JavaModifiers.ABSTRACT) > 0;
 	}
 
+	public JavaNativeMethod createBridge(String descriptor) {
+		return new JavaNativeMethod(cls, kind, name, compile, descriptor, modifiers, genericResult, typeParameterArguments);
+	}
+
 	@Override
 	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
 		return compiler.nativeConstructor(this, type, arguments);

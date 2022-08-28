@@ -11,7 +11,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 /**
@@ -205,7 +205,7 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 
 	@Override
 	public Void visitGetField(GetFieldExpression expression) {
-		JavaField field = context.getJavaField(expression.field);
+		JavaNativeField field = (JavaNativeField) context.getJavaField(expression.field);
 		expression.target.accept(expressionVisitor);
 		javaWriter.getField(field);
 		modify(expression.field.getType());
@@ -238,17 +238,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaField field = context.getJavaField(expression.field.field);
+		JavaNativeField field = (JavaNativeField) context.getJavaField(expression.field.field);
 		javaWriter.getStaticField(field);
 		modify(expression.type);
 		javaWriter.putStaticField(field);
 		return null;
-	}
-
-	@Override
-	public Void visitGetter(GetterExpression expression) {
-		// TODO: find corresponding setter
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
@@ -344,22 +338,6 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: set static field");
-	}
-
-	@Override
-	public Void visitSetter(SetterExpression expression) {
-		throw new UnsupportedOperationException("Invalid lvalue: setter");
-	}
-
-	@Override
-	public Void visitStaticGetter(StaticGetterExpression expression) {
-		// TODO: find corresponding setter
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public Void visitStaticSetter(StaticSetterExpression expression) {
-		throw new UnsupportedOperationException("Invalid lvalue: static setter");
 	}
 
 	@Override

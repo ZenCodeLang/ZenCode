@@ -5,20 +5,24 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 public abstract class FunctionalMember extends DefinitionMember implements MethodSymbol {
 	public FunctionHeader header;
 	public Statement body = null;
+	private final MethodID id;
 
 	public FunctionalMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			Modifiers modifiers,
+			MethodID id,
 			FunctionHeader header) {
 		super(position, definition, modifiers);
+		this.id = id;
 		this.header = header;
 	}
 
@@ -59,8 +63,13 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	}
 
 	@Override
-	public TypeSymbol getTargetType() {
-		return target;
+	public TypeID getTargetType() {
+		return targetType;
+	}
+
+	@Override
+	public MethodID getID() {
+		return id;
 	}
 
 	@Override

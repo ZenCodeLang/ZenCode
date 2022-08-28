@@ -87,6 +87,6 @@ public class ValidationLogEntry {
 		INVALID_STATEMENT,
 		NO_ACCESS,
 		MUST_BE_STATIC,
-		MUST_NOT_BE_STATIC
+        INVALID_METHOD_TYPE, MUST_NOT_BE_STATIC
 	}
 }

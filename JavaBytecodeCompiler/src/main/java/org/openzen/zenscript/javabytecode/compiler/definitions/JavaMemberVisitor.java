@@ -6,7 +6,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
@@ -15,10 +14,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +46,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaCompilingMethod(class_.compiled, clinitMethod), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -58,7 +59,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = context.getJavaField(member);
+		JavaNativeField field = class_.getField(member);
 		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
 		return null;
 	}
@@ -112,7 +113,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				context.logger.trace("Writing regular constructor");
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
-			} else if (member.builtin == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) { //Inherited classes needs to call super()
+			} else {
 				final TypeSymbol superType = ((DefinitionTypeID) definition.getSuperType()).definition;
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
@@ -129,14 +130,14 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				if (initializer != null) {
 					constructorWriter.loadObject(0);
 					initializer.accept(statementVisitor.expressionVisitor);
-					constructorWriter.putField(context.getJavaField(fieldMember));
+					constructorWriter.putField(class_.getField(fieldMember));
 				}
 			}
 		}
 
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
-			final JavaField field = typeParameterInfo.field;
+			final JavaNativeField field = typeParameterInfo.field;
 
 			//Init from Constructor
 			final int parameterIndex = typeParameterInfo.parameterIndex;
@@ -197,7 +198,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod method = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
@@ -218,7 +219,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
 		methodWriter.label(methodStart);
 
 		//in script you use $ but the parameter is named "value", which to choose?
@@ -245,7 +246,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			if (member.body == null)
 				modifiers |= Opcodes.ACC_ABSTRACT;
 
-			final JavaCompilingMethod method = new JavaCompilingMethod(class_, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers));
+			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers));
 			if (member.body == null)
 				return null;
 
@@ -287,7 +288,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, methodSignature, methodDescriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, false, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 

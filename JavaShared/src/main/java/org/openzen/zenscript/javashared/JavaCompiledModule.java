@@ -8,7 +8,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @author Hoofdgebruiker
  */
 public class JavaCompiledModule {
-	public final Module module;
+	public final ModuleSymbol module;
 	public final FunctionParameter[] scriptParameters;
 
 	private final Map<DefinitionSymbol, JavaClass> classes = new HashMap<>();
@@ -44,7 +44,7 @@ public class JavaCompiledModule {
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
 	private final JavaEnumMapper enumMapper = new JavaEnumMapper();
 
-	public JavaCompiledModule(Module module, FunctionParameter[] scriptParameters) {
+	public JavaCompiledModule(ModuleSymbol module, FunctionParameter[] scriptParameters) {
 		this.module = module;
 		this.scriptParameters = scriptParameters;
 	}
@@ -65,11 +65,11 @@ public class JavaCompiledModule {
 		return writer.getOutput();
 	}
 
-	public void setClassInfo(TypeSymbol definition, JavaClass cls) {
+	public void setClassInfo(DefinitionSymbol definition, JavaClass cls) {
 		classes.put(definition, cls);
 	}
 
-	public void setExpansionClassInfo(TypeSymbol definition, JavaClass cls) {
+	public void setExpansionClassInfo(DefinitionSymbol definition, JavaClass cls) {
 		expansionClasses.put(definition, cls);
 	}
 

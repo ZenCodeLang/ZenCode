@@ -3,7 +3,7 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -135,8 +135,8 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	// #################################
 
 	@Override
-	public Module getModule() {
-		return Module.BUILTIN;
+	public ModuleSymbol getModule() {
+		return ModuleSymbol.BUILTIN;
 	}
 
 	@Override

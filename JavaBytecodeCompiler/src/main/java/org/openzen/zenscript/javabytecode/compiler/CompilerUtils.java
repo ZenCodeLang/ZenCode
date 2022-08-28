@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
 
@@ -77,7 +77,7 @@ public class CompilerUtils {
 	public static void tagConstructorParameters(JavaBytecodeContext context, JavaCompiledModule module, HighLevelDefinition definition, FunctionHeader header, boolean isEnum) {
 		int index = isEnum ? 3 : 1;
 		for (TypeParameter typeParameter : definition.typeParameters) {
-			final JavaField field = new JavaField(context.getJavaClass(definition),
+			final JavaNativeField field = new JavaNativeField(context.getJavaClass(definition),
 					"typeOf" + typeParameter.name,
 					"Ljava/lang/Class;",
 					//"Ljava/lang/Class;"
@@ -90,7 +90,7 @@ public class CompilerUtils {
 
 		for (int i = 0; i < header.typeParameters.length; i++) {
 			TypeParameter typeParameter = header.typeParameters[i];
-			final JavaField field = new JavaField(context.getJavaClass(definition),
+			final JavaNativeField field = new JavaNativeField(context.getJavaClass(definition),
 					"typeOf" + typeParameter.name,
 					"Ljava/lang/Class;",
 					//"Ljava/lang/Class;"

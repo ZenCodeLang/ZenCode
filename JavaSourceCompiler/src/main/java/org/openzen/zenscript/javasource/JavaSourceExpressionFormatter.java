@@ -331,7 +331,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaField field = context.getJavaField(expression.field);
+		JavaNativeField field = context.getJavaField(expression.field);
 		if (field == null)
 			throw new RuntimeException(expression.position + ": Missing field tag");
 
@@ -345,7 +345,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 		ExpressionString target = getValue(expression.target);
 		if (context.hasJavaField(expression.getter)) {
-			JavaField field = context.getJavaField(expression.getter);
+			JavaNativeField field = context.getJavaField(expression.getter);
 			if (target.value.equals("this") && !scope.hasLocalVariable(field.name))
 				return new ExpressionString(field.name, JavaOperator.PRIMARY);
 
@@ -520,7 +520,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
-		JavaField field = context.getJavaField(expression.field);
+		JavaNativeField field = context.getJavaField(expression.field);
 		if (field == null)
 			throw new RuntimeException(expression.position + ": Missing field tag");
 
@@ -533,31 +533,6 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					scope.type(field.cls) + "." + field.name + " = " + expression.value.accept(this).value,
 					JavaOperator.ASSIGN);
 		}
-	}
-
-	@Override
-	public ExpressionString visitSetter(SetterExpression expression) {
-		JavaNativeMethod setter = context.getJavaMethod(expression.setter);
-		return new ExpressionString(
-				getValue(expression.target) + "." + setter.name + "(" + expression.value.accept(this) + ")",
-				JavaOperator.CALL);
-	}
-
-	@Override
-	public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
-		//if (expression.getter.builtin != null)
-		//	return visitBuiltinStaticGetter(expression, expression.getter.builtin);
-
-		return new ExpressionString(
-				scope.type(expression.type) + ".get" + StringExpansion.capitalize(expression.getter.member.name) + "()",
-				JavaOperator.MEMBER);
-	}
-
-	@Override
-	public ExpressionString visitStaticSetter(StaticSetterExpression expression) {
-		return new ExpressionString(
-				scope.type(expression.type) + "." + expression.setter.member.name + " = " + expression.value.accept(this).value,
-				JavaOperator.ASSIGN);
 	}
 
 	@Override

@@ -8,6 +8,7 @@ package org.openzen.zenscript.validator;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.TypeResolver;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 import org.openzen.zenscript.validator.logger.ValidatorLogger;
@@ -22,13 +23,13 @@ import java.util.List;
  * @author Hoofdgebruiker
  */
 public class Validator {
-	public final Module module;
+	public final ModuleSymbol module;
 	public final TypeResolver resolver;
 	private final List<ValidationLogEntry> log = new ArrayList<>();
 	private final DefinitionValidator definitionValidator = new DefinitionValidator(this);
 	private boolean hasErrors = false;
 
-	public Validator(Module module, TypeResolver resolver) {
+	public Validator(ModuleSymbol module, TypeResolver resolver) {
 		this.module = module;
 		this.resolver = resolver;
 	}

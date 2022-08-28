@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -32,8 +33,8 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 	private GenericMapTypeSymbol() {}
 
 	@Override
-	public Module getModule() {
-		return Module.BUILTIN;
+	public ModuleSymbol getModule() {
+		return ModuleSymbol.BUILTIN;
 	}
 
 	@Override

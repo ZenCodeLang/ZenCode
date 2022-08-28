@@ -15,6 +15,8 @@ import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -26,17 +28,21 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	private final TypeID expandedClass;
 	private final HighLevelDefinition definition;
 	private final JavaCompiledModule javaModule;
+	private final JavaCompilingClass class_;
 
 	private final JavaStatementVisitor clinitStatementVisitor;
 
-	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition) {
+	public JavaExpansionMemberVisitor(JavaBytecodeContext context, JavaCompilingClass class_, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition) {
 		this.writer = writer;
+		this.class_ = class_;
 		this.expandedClass = expandedClass;
 		this.definition = definition;
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		JavaNativeMethod clinit = new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
+		JavaCompilingMethod clinitCompiling = new JavaCompilingMethod(class_.compiled, clinit);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -51,12 +57,9 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		if (!member.isStatic())
 			throw new IllegalStateException("Cannot add fields via expansions");
 
-		JavaField field = context.getJavaField(member);
+		JavaNativeField field = class_.getField(member);
 		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
-
 		return null;
-
-
 	}
 
 	@Override
@@ -67,7 +70,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
-		final JavaMethod method = context.getJavaMethod(member);
+		final JavaCompilingMethod method = class_.getMethod(member);
 		if (!method.compile) {
 			return null;
 		}
@@ -123,7 +126,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		}
 
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, method, definition, true, methodSignature, methodDescriptor, null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, method, definition, true, methodSignature, methodDescriptor, null);
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {
@@ -162,7 +165,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		final boolean isStatic = member.isStatic();
-		final TypeID returnType = member.getType();
+		final TypeID returnType = member.type;
 		final String descriptor;
 		final String signature;
 
@@ -203,8 +206,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaNativeMethod method = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
+		final JavaCompilingMethod method = class_.getMethod(member);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 
@@ -248,8 +251,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaNativeMethod javaMethod = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
+		final JavaCompilingMethod javaMethod = class_.getMethod(member);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
 
 
 		methodWriter.label(methodStart);
@@ -285,18 +288,15 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		final JavaMethod javaMethod = context.getJavaMethod(member);
-		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header);
+		final JavaCompilingMethod javaMethod = class_.getMethod(member);
+		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.compiled.name, member.header);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;
-		javaModule.setMethodInfo(methodMember, javaMethod);
-
 		return methodMember.accept(this);
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
 
@@ -309,8 +309,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
-		final JavaMethod javaMethod = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
+		final JavaCompilingMethod javaMethod = class_.getMethod(member);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));

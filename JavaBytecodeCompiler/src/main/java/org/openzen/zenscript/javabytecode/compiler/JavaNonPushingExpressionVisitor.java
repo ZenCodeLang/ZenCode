@@ -7,9 +7,8 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
@@ -25,12 +24,14 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	private final JavaCompiledModule module;
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor original;
+	private final JavaFieldBytecodeCompiler fieldCompiler;
 
 	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaExpressionVisitor original) {
 		this.context = context;
 		this.module = module;
 		this.javaWriter = javaWriter;
 		this.original = original;
+		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, original, false);
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, original, modification, PushOption.NONE));
 	}
 
-	private boolean compileIncrementOrDecrement(Expression target, BuiltinID builtin) {
+	private boolean compileIncrementOrDecrement(Expression target, BuiltinMethodSymbol builtin) {
 		if (builtin == null)
 			return false;
 
@@ -204,7 +205,8 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitCall(CallExpression expression) {
-		if (!compileIncrementOrDecrement(expression.target, expression.member.getBuiltin()))
+		BuiltinMethodSymbol builtin = expression.method.method instanceof BuiltinMethodSymbol ? (BuiltinMethodSymbol) expression.method.method : null;
+		if (!compileIncrementOrDecrement(expression.target, builtin))
 			fallback(expression);
 
 		return null;
@@ -262,11 +264,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		javaWriter.label(onElse);
 		expression.ifElse.accept(this);
 		javaWriter.label(end);
-		return null;
-	}
-
-	@Override
-	public Void visitConst(ConstExpression expression) {
 		return null;
 	}
 
@@ -343,7 +340,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		javaWriter.loadObject(0);
-		if (javaWriter.method.cls.isEnum()) {
+		if (javaWriter.forDefinition.isEnum()) {
 			javaWriter.loadObject(1);
 			javaWriter.loadInt(2);
 		}
@@ -352,7 +349,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			argument.accept(original);
 		}
 		String internalName = context.getInternalName(expression.objectType);
-		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.method.cls.isEnum()
+		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.forDefinition.isEnum()
 				? context.getEnumConstructorDescriptor(expression.constructor.getHeader())
 				: context.getMethodDescriptor(expression.constructor.getHeader()));
 		return null;
@@ -366,7 +363,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		}
 		//No super calls in enums possible, and that's already handled in the enum constructor itself.
 		javaWriter.invokeSpecial(
-				context.getInternalName(expression.constructor.getOwnerType()),
+				context.getInternalName(expression.constructor.getTarget()),
 				"<init>",
 				context.getMethodDescriptor(expression.constructor.getHeader()));
 
@@ -408,11 +405,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
 		return null;
-	}
-
-	@Override
-	public Void visitGetter(GetterExpression expression) {
-		return expression.target.accept(this);
 	}
 
 	@Override
@@ -496,7 +488,8 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitPostCall(PostCallExpression expression) {
-		if (!compileIncrementOrDecrement(expression.target, expression.member.getBuiltin()))
+		BuiltinMethodSymbol builtin = expression.member.method instanceof BuiltinMethodSymbol ? (BuiltinMethodSymbol) expression.member.method : null;
+		if (!compileIncrementOrDecrement(expression.target, builtin))
 			fallback(expression);
 
 		return null;
@@ -518,9 +511,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitSetField(SetFieldExpression expression) {
-		expression.target.accept(original);
-		expression.value.accept(original);
-		original.putField(expression.field);
+		context.getJavaField(expression.field).compileInstanceSet(fieldCompiler, expression.target, expression.value);
 		return null;
 	}
 
@@ -546,35 +537,8 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
-		expression.value.accept(original);
-		javaWriter.putStaticField(context.getJavaField(expression.field));
+		context.getJavaField(expression.field).compileStaticSet(fieldCompiler, expression.value);
 		return null;
-	}
-
-	@Override
-	public Void visitSetter(SetterExpression expression) {
-		expression.target.accept(original);
-
-		if (expression.setter.member.definition.isExpansion()) {
-			for (TypeParameter typeParameter : expression.setter.member.definition.typeParameters) {
-				javaWriter.aConstNull(); //TODO replace with actual type
-				javaWriter.checkCast("java/lang/Class");
-			}
-		}
-
-		expression.value.accept(original);
-		original.checkAndExecuteMethodInfo(expression.setter, BasicTypeID.VOID, expression);
-		return null;
-	}
-
-	@Override
-	public Void visitStaticGetter(StaticGetterExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitStaticSetter(StaticSetterExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

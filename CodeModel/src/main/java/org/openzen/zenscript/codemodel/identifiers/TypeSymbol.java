@@ -22,8 +22,6 @@ public interface TypeSymbol extends DefinitionSymbol {
 
 	ResolvedType resolve(TypeID[] typeArguments);
 
-	TypeParameter[] getTypeParameters();
-
 	Optional<TypeSymbol> getOuter();
 
 	Optional<TypeID> getSupertype(TypeID[] typeArguments);

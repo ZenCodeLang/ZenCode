@@ -21,6 +21,7 @@ public class Modifiers {
 	public static final Modifiers PUBLIC_STATIC = new Modifiers(FLAG_PUBLIC | FLAG_STATIC);
 	public static final Modifiers PRIVATE = new Modifiers(FLAG_PRIVATE);
 	public static final Modifiers IMPLICIT = new Modifiers(FLAG_IMPLICIT);
+	public static final Modifiers CONST = new Modifiers(FLAG_CONST);
 
 	public final int value;
 

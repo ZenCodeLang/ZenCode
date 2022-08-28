@@ -3,11 +3,10 @@ package org.openzen.zenscript.formatter;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.formattershared.ExpressionString;
-
-import java.util.Optional;
 
 public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> {
 	public final TypeFormatter typeFormatter;
@@ -51,158 +50,204 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitCall(CallExpression expression) {
-		return expression.method.method.getOperator().map(operator -> {
-			switch (operator) {
-				case NOT:
-					return unaryPrefix(expression.target, ZenScriptOperator.NOT, "!");
-				case NEG:
-					return unaryPrefix(expression.target, ZenScriptOperator.NEG, "-");
-				case CAT:
-					if (expression.arguments.arguments.length == 0) {
-						return unaryPrefix(expression.target, ZenScriptOperator.INVERT, "~");
-					} else {
-						return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.CAT);
-					}
-				case ADD:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ADD);
-				case SUB:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.SUB);
-				case MUL:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MUL);
-				case DIV:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.DIV);
-				case MOD:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MOD);
-				case AND:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.AND);
-				case OR:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.OR);
-				case XOR:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.XOR);
-				case CONTAINS:
-					return binary(expression.getFirstArgument(), expression.target, ZenScriptOperator.CONTAINS);
-				case EQUALS:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.EQUALS);
-				case NOTEQUALS:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.NOTEQUALS);
-				case INDEXSET: {
-					StringBuilder result = new StringBuilder();
-					result.append(expression.target);
-					result.append("[");
-					for (int i = 0; i < expression.arguments.arguments.length - 1; i++) {
-						if (i > 0)
-							result.append(", ");
-
-						result.append(expression.arguments.arguments[i].accept(this).value);
-					}
-					result.append("] = ");
-					result.append(expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this).value);
-					return new ExpressionString(result.toString(), ZenScriptOperator.ASSIGN);
-				}
-				case INDEXGET: {
-					StringBuilder result = new StringBuilder();
-					if (expression.target instanceof GetLocalVariableExpression) {
-						result.append(((GetLocalVariableExpression) expression.target).variable.name);
-					} else if (expression.target instanceof GetFunctionParameterExpression) {
-						result.append(((GetFunctionParameterExpression) expression.target).parameter.name);
-					} else {
-						result.append(expression.target);
-					}
-					result.append("[");
-					//why -1?
-					for (int i = 0; i < expression.arguments.arguments.length; i++) {
-						if (i > 0)
-							result.append(", ");
-
-						result.append(expression.arguments.arguments[i].accept(this));
-					}
-					result.append("]");
-					return new ExpressionString(result.toString(), ZenScriptOperator.INDEX);
-				}
-				case MEMBERGETTER: {
-					StringBuilder result = new StringBuilder();
-					result.append(expression.target);
-					result.append(".get(");
-					result.append(expression.getFirstArgument().accept(this));
-					result.append(")");
-					return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
-				}
-				case MEMBERSETTER: {
-					StringBuilder result = new StringBuilder();
-					result.append(expression.target);
-					result.append(".set(");
-					result.append(expression.getFirstArgument().accept(this));
-					result.append(", ");
-					result.append(expression.arguments.arguments[1].accept(this));
-					result.append(")");
-					return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
-				}
-				case ADDASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ADDASSIGN);
-				case SUBASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.SUBASSIGN);
-				case MULASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MULASSIGN);
-				case DIVASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.DIVASSIGN);
-				case MODASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MODASSIGN);
-				case CATASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.CATASSIGN);
-				case ORASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ORASSIGN);
-				case ANDASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ANDASSIGN);
-				case XORASSIGN:
-					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.XORASSIGN);
-				case INCREMENT:
-					return unaryPrefix(expression.target, ZenScriptOperator.DECREMENT, "++");
-				case DECREMENT:
-					return unaryPrefix(expression.target, ZenScriptOperator.DECREMENT, "--");
-				case CALL: {
-					StringBuilder result = new StringBuilder();
-					FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
-					return new ExpressionString(result.toString(), ZenScriptOperator.CALL);
-				}
-				case CAST: {
-					StringBuilder result = new StringBuilder();
-					if (!expression.method.isImplicit()) {
-						result.append(" as ");
-						result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
-					}
-					return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
-				}
-				default:
-					throw new UnsupportedOperationException("Unknown operator: " + operator);
+		MethodID id = expression.method.method.getID();
+		switch (id.getKind()) {
+			case METHOD: {
+				MethodID.Method method = (MethodID.Method) id;
+				StringBuilder result = new StringBuilder();
+				result.append(expression.target.accept(this).value);
+				result.append(".");
+				result.append(method.name);
+				FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+				return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 			}
-		}).orElseGet(() -> {
-			StringBuilder result = new StringBuilder();
-			result.append(expression.target.accept(this).value);
-			result.append(".");
-			result.append(expression.method.getName());
-			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
-			return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
-		});
+			case OPERATOR:
+				return visitOperatorCall(expression, (MethodID.Operator) id);
+			case CASTER: {
+				StringBuilder result = new StringBuilder();
+				if (!expression.method.isImplicit()) {
+					result.append(" as ");
+					result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
+				}
+				return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
+			}
+			case GETTER: {
+				MethodID.Getter getter = (MethodID.Getter) id;
+				String result = String.valueOf(expression.target.accept(this)) + '.' + getter.name;
+				return new ExpressionString(result, ZenScriptOperator.MEMBER);
+			}
+			case SETTER: {
+				MethodID.Setter setter = (MethodID.Setter) id;
+				return new ExpressionString(
+						expression.target.accept(this) + "." + setter.name + " = " + expression.arguments.arguments[0].accept(this),
+						ZenScriptOperator.ASSIGN);
+			}
+			default: throw new UnsupportedOperationException("Invalid method type: " + id.getKind());
+		}
+	}
+
+	private ExpressionString visitOperatorCall(CallExpression expression, MethodID.Operator operator) {
+		switch (operator.operator) {
+			case NOT:
+				return unaryPrefix(expression.target, ZenScriptOperator.NOT, "!");
+			case NEG:
+				return unaryPrefix(expression.target, ZenScriptOperator.NEG, "-");
+			case CAT:
+				if (expression.arguments.arguments.length == 0) {
+					return unaryPrefix(expression.target, ZenScriptOperator.INVERT, "~");
+				} else {
+					return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.CAT);
+				}
+			case ADD:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ADD);
+			case SUB:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.SUB);
+			case MUL:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MUL);
+			case DIV:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.DIV);
+			case MOD:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MOD);
+			case AND:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.AND);
+			case OR:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.OR);
+			case XOR:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.XOR);
+			case CONTAINS:
+				return binary(expression.getFirstArgument(), expression.target, ZenScriptOperator.CONTAINS);
+			case EQUALS:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.EQUALS);
+			case NOTEQUALS:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.NOTEQUALS);
+			case INDEXSET: {
+				StringBuilder result = new StringBuilder();
+				result.append(expression.target);
+				result.append("[");
+				for (int i = 0; i < expression.arguments.arguments.length - 1; i++) {
+					if (i > 0)
+						result.append(", ");
+
+					result.append(expression.arguments.arguments[i].accept(this).value);
+				}
+				result.append("] = ");
+				result.append(expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this).value);
+				return new ExpressionString(result.toString(), ZenScriptOperator.ASSIGN);
+			}
+			case INDEXGET: {
+				StringBuilder result = new StringBuilder();
+				if (expression.target instanceof GetLocalVariableExpression) {
+					result.append(((GetLocalVariableExpression) expression.target).variable.name);
+				} else if (expression.target instanceof GetFunctionParameterExpression) {
+					result.append(((GetFunctionParameterExpression) expression.target).parameter.name);
+				} else {
+					result.append(expression.target);
+				}
+				result.append("[");
+				//why -1?
+				for (int i = 0; i < expression.arguments.arguments.length; i++) {
+					if (i > 0)
+						result.append(", ");
+
+					result.append(expression.arguments.arguments[i].accept(this));
+				}
+				result.append("]");
+				return new ExpressionString(result.toString(), ZenScriptOperator.INDEX);
+			}
+			case MEMBERGETTER: {
+				StringBuilder result = new StringBuilder();
+				result.append(expression.target);
+				result.append(".get(");
+				result.append(expression.getFirstArgument().accept(this));
+				result.append(")");
+				return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
+			}
+			case MEMBERSETTER: {
+				StringBuilder result = new StringBuilder();
+				result.append(expression.target);
+				result.append(".set(");
+				result.append(expression.getFirstArgument().accept(this));
+				result.append(", ");
+				result.append(expression.arguments.arguments[1].accept(this));
+				result.append(")");
+				return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
+			}
+			case ADDASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ADDASSIGN);
+			case SUBASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.SUBASSIGN);
+			case MULASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MULASSIGN);
+			case DIVASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.DIVASSIGN);
+			case MODASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.MODASSIGN);
+			case CATASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.CATASSIGN);
+			case ORASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ORASSIGN);
+			case ANDASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.ANDASSIGN);
+			case XORASSIGN:
+				return binary(expression.target, expression.getFirstArgument(), ZenScriptOperator.XORASSIGN);
+			case INCREMENT:
+				return unaryPrefix(expression.target, ZenScriptOperator.DECREMENT, "++");
+			case DECREMENT:
+				return unaryPrefix(expression.target, ZenScriptOperator.DECREMENT, "--");
+			case CALL: {
+				StringBuilder result = new StringBuilder();
+				FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+				return new ExpressionString(result.toString(), ZenScriptOperator.CALL);
+			}
+			case CAST: {
+				StringBuilder result = new StringBuilder();
+				if (!expression.method.isImplicit()) {
+					result.append(" as ");
+					result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
+				}
+				return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
+			}
+			default:
+				throw new UnsupportedOperationException("Unknown operator: " + operator);
+		}
 	}
 
 	@Override
 	public ExpressionString visitCallStatic(CallStaticExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(typeFormatter));
-		Optional<OperatorType> operator = expression.member.method.getOperator();
-		if (operator.isPresent()) {
-			if (operator.get() == OperatorType.CALL) {
-				// nothing
-			} else {
+
+		MethodID id = expression.member.getID();
+		switch (id.getKind()) {
+			case METHOD: {
+				MethodID.Method method = (MethodID.Method) id;
 				result.append(".");
-				result.append(operator.get().operator);
+				result.append(method.name);
+				FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+				return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 			}
-		} else {
-			result.append(".");
-			result.append(expression.member.getName());
+			case OPERATOR:
+				MethodID.Operator operator = (MethodID.Operator) id;
+				if (operator.operator == OperatorType.CALL) {
+					// nothing
+				} else {
+					result.append(".");
+					result.append(operator.operator);
+				}
+				FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+				return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
+			case GETTER: {
+				MethodID.Getter getter = (MethodID.Getter) id;
+				result.append(".").append(getter.name);
+				return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
+			}
+			case SETTER: {
+				MethodID.Setter setter = (MethodID.Setter) id;
+				result.append(".").append(setter.name).append(" = ").append(expression.arguments.arguments[0].accept(this));
+				return new ExpressionString(result.toString(), ZenScriptOperator.ASSIGN);
+			}
+			default: throw new UnsupportedOperationException("Invalid method type: " + id.getKind());
 		}
-		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
-		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override
@@ -371,11 +416,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitGetField(GetFieldExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(expression.target.accept(this));
-		result.append('.');
-		result.append(expression.field.getName());
-		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
+		String result = String.valueOf(expression.target.accept(this)) + '.' + expression.field.getName();
+		return new ExpressionString(result, ZenScriptOperator.MEMBER);
 	}
 
 	@Override
@@ -391,24 +433,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		return new ExpressionString(expression.value.parameters[expression.index], ZenScriptOperator.PRIMARY);
-	}
-
-	@Override
-	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(typeFormatter.format(expression.type));
-		result.append('.');
-		result.append(expression.field.getName());
-		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
-	}
-
-	@Override
-	public ExpressionString visitGetter(GetterExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(expression.target.accept(this));
-		result.append('.');
-		result.append(expression.getter.getName());
-		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
 	@Override
@@ -503,7 +527,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitPostCall(PostCallExpression expression) {
-		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, expression.member.getOperator() == OperatorType.INCREMENT ? "++" : "--");
+		MethodID.Operator operator = (MethodID.Operator) expression.member.getID();
+		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, operator.operator == OperatorType.INCREMENT ? "++" : "--");
 	}
 
 	@Override
@@ -541,27 +566,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
 		return new ExpressionString(
 				typeFormatter.format(expression.type) + "." + expression.field.getName() + " = " + expression.value.accept(this).value,
-				ZenScriptOperator.ASSIGN);
-	}
-
-	@Override
-	public ExpressionString visitSetter(SetterExpression expression) {
-		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.setter.member.name + " = " + expression.value.accept(this),
-				ZenScriptOperator.ASSIGN);
-	}
-
-	@Override
-	public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
-		return new ExpressionString(
-				typeFormatter.format(expression.type) + "." + expression.getter.member.name,
-				ZenScriptOperator.MEMBER);
-	}
-
-	@Override
-	public ExpressionString visitStaticSetter(StaticSetterExpression expression) {
-		return new ExpressionString(
-				typeFormatter.format(expression.type) + "." + expression.setter.getName() + " = " + expression.setter.getName(),
 				ZenScriptOperator.ASSIGN);
 	}
 

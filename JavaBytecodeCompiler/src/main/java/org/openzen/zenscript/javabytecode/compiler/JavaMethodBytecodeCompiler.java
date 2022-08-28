@@ -21,13 +21,13 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod OBJECTS_TOSTRING = JavaNativeMethod.getNativeStatic(new JavaClass("java.util", "Objects", JavaClass.Kind.CLASS), "toString", "(Ljava/lang/Object;)Ljava/lang/String;");
 	private static final JavaNativeMethod BYTE_PARSE = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;)B");
 	private static final JavaNativeMethod BYTE_PARSE_WITH_BASE = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;I)B");
-	private static final JavaField BYTE_MIN_VALUE = new JavaField(JavaClass.BYTE, "MIN_VALUE", "B");
-	private static final JavaField BYTE_MAX_VALUE = new JavaField(JavaClass.BYTE, "MAX_VALUE", "B");
+	private static final JavaNativeField BYTE_MIN_VALUE = new JavaNativeField(JavaClass.BYTE, "MIN_VALUE", "B");
+	private static final JavaNativeField BYTE_MAX_VALUE = new JavaNativeField(JavaClass.BYTE, "MAX_VALUE", "B");
 	private static final JavaNativeMethod BYTE_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "toString", "(B)Ljava/lang/String;");
 	private static final JavaNativeMethod SHORT_PARSE = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "parseShort", "(Ljava/lang/String;)S");
 	private static final JavaNativeMethod SHORT_PARSE_WITH_BASE = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "parseShort", "(Ljava/lang/String;I)S");
-	private static final JavaField SHORT_MIN_VALUE = new JavaField(JavaClass.SHORT, "MIN_VALUE", "S");
-	private static final JavaField SHORT_MAX_VALUE = new JavaField(JavaClass.SHORT, "MAX_VALUE", "S");
+	private static final JavaNativeField SHORT_MIN_VALUE = new JavaNativeField(JavaClass.SHORT, "MIN_VALUE", "S");
+	private static final JavaNativeField SHORT_MAX_VALUE = new JavaNativeField(JavaClass.SHORT, "MAX_VALUE", "S");
 	private static final JavaNativeMethod SHORT_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "toString", "(S)Ljava/lang/String;");
 	private static final JavaNativeMethod INTEGER_COMPARE_UNSIGNED = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "compareUnsigned", "(II)I");
 	private static final JavaNativeMethod INTEGER_DIVIDE_UNSIGNED = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "divideUnsigned", "(II)I");
@@ -40,8 +40,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod INTEGER_HIGHEST_ONE_BIT = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "highestOneBit", "(I)I");
 	private static final JavaNativeMethod INTEGER_LOWEST_ONE_BIT = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "lowestOneBit", "(I)I");
 	private static final JavaNativeMethod INTEGER_BIT_COUNT = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "bitCount", "(I)I");
-	private static final JavaField INTEGER_MIN_VALUE = new JavaField(JavaClass.INTEGER, "MIN_VALUE", "I");
-	private static final JavaField INTEGER_MAX_VALUE = new JavaField(JavaClass.INTEGER, "MAX_VALUE", "I");
+	private static final JavaNativeField INTEGER_MIN_VALUE = new JavaNativeField(JavaClass.INTEGER, "MIN_VALUE", "I");
+	private static final JavaNativeField INTEGER_MAX_VALUE = new JavaNativeField(JavaClass.INTEGER, "MAX_VALUE", "I");
 	private static final JavaNativeMethod INTEGER_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "toString", "(I)Ljava/lang/String;");
 	private static final JavaNativeMethod INTEGER_TO_UNSIGNED_STRING = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "toUnsignedString", "(I)Ljava/lang/String;");
 	private static final JavaNativeMethod LONG_COMPARE = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "compare", "(JJ)I");
@@ -57,28 +57,13 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod LONG_HIGHEST_ONE_BIT = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "highestOneBit", "(J)J");
 	private static final JavaNativeMethod LONG_LOWEST_ONE_BIT = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "lowestOneBit", "(J)J");
 	private static final JavaNativeMethod LONG_BIT_COUNT = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "bitCount", "(J)I");
-	private static final JavaField LONG_MIN_VALUE = new JavaField(JavaClass.LONG, "MIN_VALUE", "J");
-	private static final JavaField LONG_MAX_VALUE = new JavaField(JavaClass.LONG, "MAX_VALUE", "J");
-	private static final JavaNativeMethod LONG_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "toString", "(J)Ljava/lang/String;");
-	private static final JavaNativeMethod LONG_TO_UNSIGNED_STRING = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "toUnsignedString", "(J)Ljava/lang/String;");
-	private static final JavaNativeMethod FLOAT_COMPARE = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "compare", "(FF)I");
-	private static final JavaNativeMethod FLOAT_PARSE = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "parseFloat", "(Ljava/lang/String;)F");
-	private static final JavaNativeMethod FLOAT_FROM_BITS = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "intBitsToFloat", "(I)F");
-	private static final JavaNativeMethod FLOAT_BITS = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "floatToRawIntBits", "(F)I");
-	private static final JavaField FLOAT_MIN_VALUE = new JavaField(JavaClass.FLOAT, "MIN_VALUE", "F");
-	private static final JavaField FLOAT_MAX_VALUE = new JavaField(JavaClass.FLOAT, "MAX_VALUE", "F");
-	private static final JavaNativeMethod FLOAT_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "toString", "(F)Ljava/lang/String;");
-	private static final JavaNativeMethod DOUBLE_COMPARE = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "compare", "(DD)I");
-	private static final JavaNativeMethod DOUBLE_PARSE = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "parseDouble", "(Ljava/lang/String;)D");
-	private static final JavaNativeMethod DOUBLE_FROM_BITS = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "longBitsToDouble", "(J)D");
-	private static final JavaNativeMethod DOUBLE_BITS = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "doubleToRawLongBits", "(D)J");
-	private static final JavaField DOUBLE_MIN_VALUE = new JavaField(JavaClass.DOUBLE, "MIN_VALUE", "D");
-	private static final JavaField DOUBLE_MAX_VALUE = new JavaField(JavaClass.DOUBLE, "MAX_VALUE", "D");
-	private static final JavaNativeMethod DOUBLE_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "toString", "(D)Ljava/lang/String;");
+	private static final JavaNativeField LONG_MIN_VALUE = new JavaNativeField(JavaClass.LONG, "MIN_VALUE", "J");
+	private static final JavaNativeField LONG_MAX_VALUE = new JavaNativeField(JavaClass.LONG, "MAX_VALUE", "J");
+
 	private static final JavaNativeMethod CHARACTER_TO_LOWER_CASE = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "toLowerCase", "()C");
 	private static final JavaNativeMethod CHARACTER_TO_UPPER_CASE = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "toUpperCase", "()C");
-	private static final JavaField CHARACTER_MIN_VALUE = new JavaField(JavaClass.CHARACTER, "MIN_VALUE", "C");
-	private static final JavaField CHARACTER_MAX_VALUE = new JavaField(JavaClass.CHARACTER, "MAX_VALUE", "C");
+	private static final JavaNativeField CHARACTER_MIN_VALUE = new JavaNativeField(JavaClass.CHARACTER, "MIN_VALUE", "C");
+	private static final JavaNativeField CHARACTER_MAX_VALUE = new JavaNativeField(JavaClass.CHARACTER, "MAX_VALUE", "C");
 	private static final JavaNativeMethod CHARACTER_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.CHARACTER, "toString", "(C)Ljava/lang/String;");
 	private static final JavaNativeMethod STRING_INIT_CHARACTERS = JavaNativeMethod.getNativeConstructor(JavaClass.STRING, "([C)V");
 	private static final JavaNativeMethod STRING_INIT_BYTES_CHARSET = JavaNativeMethod.getNativeConstructor(JavaClass.STRING, "([BLjava/nio/charset/Charset;)V");
@@ -95,8 +80,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod STRING_GET_BYTES = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "getBytes", "(Ljava/nio/charset/Charset;)[B");
 	private static final JavaNativeMethod STRING_CONTAINS = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "contains", "(Ljava/lang/CharSequence;)Z");
 	private static final JavaNativeMethod ENUM_COMPARETO = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "compareTo", "(Ljava/lang/Enum;)I");
-	private static final JavaNativeMethod ENUM_NAME = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
-	private static final JavaNativeMethod ENUM_ORDINAL = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
 	private static final JavaNativeMethod HASHMAP_INIT = JavaNativeMethod.getNativeConstructor(JavaClass.HASHMAP, "()V");
 	private static final JavaNativeMethod MAP_GET = JavaNativeMethod.getInterface(JavaClass.MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
@@ -135,6 +118,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod ARRAYS_HASHCODE_CHARS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([C)I");
 	private static final JavaNativeMethod COLLECTION_SIZE = JavaNativeMethod.getNativeVirtual(JavaClass.COLLECTION, "size", "()I");
 	private static final JavaNativeMethod COLLECTION_TOARRAY = JavaNativeMethod.getNativeVirtual(JavaClass.COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+
+	private static final JavaNativeMethod OBJECTS_EQUALS = new JavaNativeMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaNativeMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false);
 
 	private static final JavaNativeMethod STRINGBUILDER_LENGTH = JavaNativeMethod.getNativeVirtual(JavaClass.STRINGBUILDER, "length", "()I");
 
@@ -460,7 +445,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 						javaWriter.ifICmpNE(loopStart);
 				} else {
 					//If equals, use Object.equals in case of null
-					javaWriter.invokeStatic(new JavaNativeMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaNativeMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false));
+					javaWriter.invokeStatic(OBJECTS_EQUALS);
 					javaWriter.ifEQ(loopStart);
 					// If ==
 					// javaWriter.ifACmpNe(loopStart);
@@ -814,13 +799,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.l2i();
 				javaWriter.i2s();
 				break;
-			case LONG_TO_STRING:
-				if (arguments[0].type.isOptional()) {
-					javaWriter.invokeStatic(OBJECTS_TOSTRING);
-				} else {
-					javaWriter.invokeStatic(LONG_TO_STRING);
-				}
-				break;
 			case ULONG_TO_BYTE:
 				javaWriter.l2i();
 				break;
@@ -849,13 +827,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.l2i();
 				javaWriter.i2s();
 				break;
-			case ULONG_TO_STRING:
-				if (arguments[0].type.isOptional()) {
-					javaWriter.invokeStatic(OBJECTS_TOSTRING);
-				} else {
-					javaWriter.invokeStatic(LONG_TO_UNSIGNED_STRING);
-				}
-				break;
 			case FLOAT_TO_BYTE:
 				javaWriter.f2i();
 				break;
@@ -879,13 +850,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case FLOAT_TO_DOUBLE:
 				javaWriter.f2d();
-				break;
-			case FLOAT_TO_STRING:
-				if (arguments[0].type.isOptional()) {
-					javaWriter.invokeStatic(OBJECTS_TOSTRING);
-				} else {
-					javaWriter.invokeStatic(FLOAT_TO_STRING);
-				}
 				break;
 			case DOUBLE_TO_BYTE:
 				javaWriter.d2i();
@@ -911,13 +875,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case DOUBLE_TO_FLOAT:
 				javaWriter.d2f();
 				break;
-			case DOUBLE_TO_STRING:
-				if (arguments[0].type.isOptional()) {
-					javaWriter.invokeStatic(OBJECTS_TOSTRING);
-				} else {
-					javaWriter.invokeStatic(DOUBLE_TO_STRING);
-				}
-				break;
 			case CHAR_TO_BYTE:
 				break;
 			case CHAR_TO_SBYTE:
@@ -939,9 +896,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				} else {
 					javaWriter.invokeStatic(CHARACTER_TO_STRING);
 				}
-				break;
-			case ENUM_TO_STRING:
-				javaWriter.invokeVirtual(ENUM_NAME);
 				break;
 
 			/* Methods and operators */
@@ -1130,6 +1084,70 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case STRING_INDEXGET:
 				javaWriter.invokeVirtual(STRING_CHAR_AT);
 				break;
+			case ASSOC_KEYS: {
+				Type resultType = context.getType(arguments[0].type);
+				javaWriter.invokeVirtual(MAP_KEYS);
+				javaWriter.dup();
+				javaWriter.invokeVirtual(COLLECTION_SIZE);
+				javaWriter.newArray(resultType);
+				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
+				javaWriter.checkCast(resultType);
+				return null;
+			}
+			case ASSOC_VALUES: {
+				Type resultType = context.getType(arguments[0].type);
+				javaWriter.invokeVirtual(MAP_VALUES);
+				javaWriter.dup();
+				javaWriter.invokeVirtual(COLLECTION_SIZE);
+				javaWriter.newArray(resultType);
+				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
+				javaWriter.checkCast(resultType);
+				return null;
+			}
+			case ARRAY_LENGTH1D: {
+				javaWriter.arrayLength();
+				return null;
+			}
+			case ARRAY_HASHCODE: {
+				ArrayTypeID type = (ArrayTypeID) arguments[0].type;
+				if (type.elementType instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType) {
+						case BOOL:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_BOOLS);
+							break;
+						case BYTE:
+						case SBYTE:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_BYTES);
+							break;
+						case SHORT:
+						case USHORT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_SHORTS);
+							break;
+						case INT:
+						case UINT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_INTS);
+							break;
+						case LONG:
+						case ULONG:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_LONGS);
+							break;
+						case FLOAT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_FLOATS);
+							break;
+						case DOUBLE:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_DOUBLES);
+							break;
+						case CHAR:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_CHARS);
+							break;
+						default:
+							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
+					}
+				} else {
+					javaWriter.invokeStatic(ARRAYS_DEEPHASHCODE);
+				}
+				break;
+			}
 			case ASSOC_CONTAINS:
 				javaWriter.invokeVirtual(MAP_CONTAINS_KEY);
 				break;
@@ -1164,6 +1182,36 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.label(exit);
 				break;
 			}
+			case ARRAY_ISEMPTY: {
+				Label isTrue = new Label();
+				Label exit = new Label();
+
+				javaWriter.arrayLength();
+				javaWriter.ifEQ(isTrue);
+				javaWriter.iConst0();
+				javaWriter.goTo(exit);
+				javaWriter.label(isTrue);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
+				break;
+			}
+			case ENUM_VALUES: {
+				DefinitionTypeID type = (DefinitionTypeID) ((ArrayTypeID) arguments[0].type).elementType;
+				JavaClass cls = context.getJavaClass(type.definition);
+				javaWriter.invokeStatic(JavaNativeMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
+				break;
+			}
+			case RANGE_FROM: {
+				RangeTypeID type = (RangeTypeID) arguments[0].type;
+				Type jType = context.getType(arguments[0].type);
+				javaWriter.getField(jType.getInternalName(), "from", context.getDescriptor(type.baseType));
+				break;
+			}
+			case RANGE_TO:
+				RangeTypeID type = (RangeTypeID) arguments[0].type;
+				Type jType = context.getType(arguments[0].type);
+				javaWriter.getField(jType.getInternalName(), "to", context.getDescriptor(type.baseType));
+				break;
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + method);
 		}
@@ -1286,7 +1334,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
-				final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+				final JavaNativeField charset = new JavaNativeField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
 				javaWriter.getStaticField(charset);
 				javaWriter.invokeVirtual(STRING_GET_BYTES);
 				break;
@@ -1296,7 +1344,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
-				final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+				final JavaNativeField charset = new JavaNativeField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
 				javaWriter.getStaticField(charset);
 				javaWriter.invokeVirtual(STRING_GET_BYTES);
 				break;
@@ -1306,7 +1354,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
-				final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+				final JavaNativeField charset = new JavaNativeField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
 
 				javaWriter.newObject(JavaClass.STRING);
 				javaWriter.dupX1();
@@ -1320,7 +1368,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
-				final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+				final JavaNativeField charset = new JavaNativeField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
 
 				javaWriter.newObject(JavaClass.STRING);
 				javaWriter.dupX1();
