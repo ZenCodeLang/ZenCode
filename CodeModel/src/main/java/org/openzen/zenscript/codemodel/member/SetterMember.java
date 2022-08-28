@@ -96,8 +96,4 @@ public class SetterMember extends FunctionalMember {
 		return name;
 	}
 
-	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.empty();
-	}
 }

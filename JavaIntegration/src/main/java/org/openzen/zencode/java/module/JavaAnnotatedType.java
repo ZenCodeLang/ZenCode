@@ -1,4 +1,4 @@
-package org.openzen.zencode.java.module.converters;
+package org.openzen.zencode.java.module;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;

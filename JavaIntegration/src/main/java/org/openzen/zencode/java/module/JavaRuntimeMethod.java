@@ -1,17 +1,15 @@
 package org.openzen.zencode.java.module;
 
 import org.objectweb.asm.Type;
-import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 
@@ -24,14 +22,13 @@ import java.util.Optional;
 
 public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	private final JavaRuntimeClass class_;
-	private final TypeSymbol target;
-	private final TypeID targetType;
+	private final TypeID target;
 	private final JavaNativeMethod method;
 	private final Modifiers modifiers;
-	private final OperatorType operator;
 	private final FunctionHeader header;
+	private final MethodID id;
 
-	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeSymbol target, Constructor<?> constructor) {
+	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Constructor<?> constructor, FunctionHeader header) {
 		method = new JavaNativeMethod(
 				class_.javaClass,
 				JavaNativeMethod.Kind.CONSTRUCTOR,
@@ -42,12 +39,12 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 				false);
 		this.class_ = class_;
 		this.target = target;
-		targetType = DefinitionTypeID.createThis(target);
 		modifiers = getMethodModifiers(constructor);
-		operator = OperatorType.CONSTRUCTOR;
+		this.header = header;
+		this.id = MethodID.operator(OperatorType.CONSTRUCTOR);
 	}
 
-	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeSymbol target, Method method, TypeID result) {
+	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header) {
 		JavaNativeMethod.Kind kind;
 		if (method.getName().equals("<init>"))
 			kind = JavaNativeMethod.Kind.CONSTRUCTOR;
@@ -67,13 +64,15 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 
 		this.class_ = class_;
 		this.target = target;
-		targetType = DefinitionTypeID.createThis(target);
 		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
-				.getModifiers(), result.isGeneric());
+				.getModifiers(), header.getReturnType().isGeneric());
 		modifiers = getMethodModifiers(method);
+		this.id = id;
+		this.header = header;
+	}
 
-		ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
-		this.operator = operator == null ? null : OperatorType.valueOf(operator.value().toString());
+	public JavaNativeMethod getNative() {
+		return method;
 	}
 
 	/* MethodSymbol implementation */
@@ -94,13 +93,13 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
-	public String getName() {
-		return method.name;
+	public MethodID getID() {
+		return id;
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.ofNullable(operator);
+	public String getName() {
+		return method.name;
 	}
 
 	@Override
@@ -117,17 +116,22 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 
 	@Override
 	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
-		return null;
+		return compiler.nativeConstructor(method, type, arguments);
 	}
 
 	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
-		return null;
+		return compiler.nativeVirtualMethod(method, returnType, target, arguments);
 	}
 
 	@Override
 	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
-		return null;
+		return compiler.nativeStaticMethod(method, returnType, arguments);
+	}
+
+	@Override
+	public String getMapping(JavaClass class_) {
+		return method.getMapping(class_);
 	}
 
 

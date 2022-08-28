@@ -49,11 +49,6 @@ public class BuiltinFunctionValueCall implements MethodSymbol {
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.of(OperatorType.CALL);
-	}
-
-	@Override
 	public FunctionHeader getHeader() {
 		return type.header;
 	}

@@ -72,11 +72,6 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.of(OperatorType.CAST);
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

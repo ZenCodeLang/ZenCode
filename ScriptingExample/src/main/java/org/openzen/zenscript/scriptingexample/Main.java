@@ -8,6 +8,7 @@ import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.PrefixedBracketParser;
@@ -50,7 +51,7 @@ public class Main {
 
 		final PrefixedBracketParser parser = new PrefixedBracketParser(null);
 
-		FunctionParameter parameter = new FunctionParameter(scriptingEngine.registry.getArray(BasicTypeID.STRING, 1), "args");
+		FunctionParameter parameter = new FunctionParameter(new ArrayTypeID(BasicTypeID.STRING), "args");
 		SemanticModule scripts = scriptingEngine.createScriptedModule("script", sourceFiles, parser, new FunctionParameter[]{parameter});
 		if (!scripts.isValid())
 			return;

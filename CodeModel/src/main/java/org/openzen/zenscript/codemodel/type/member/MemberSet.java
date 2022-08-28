@@ -208,7 +208,7 @@ public class MemberSet implements ResolvedType {
 		}
 
 		public Builder operator(MethodInstance method) {
-			OperatorType operator = method.method.getOperator()
+			OperatorType operator = method.method.getID().getOperator()
 					.orElseThrow(() -> new IllegalArgumentException("Not an operator"));
 			return operator(operator, method);
 		}

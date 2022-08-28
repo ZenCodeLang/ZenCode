@@ -3,8 +3,9 @@ package org.openzen.zenscript.codemodel.identifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public abstract class MethodID {
+import java.util.Optional;
 
+public abstract class MethodID {
 	public enum Kind {
 		METHOD,
 		OPERATOR,
@@ -46,6 +47,10 @@ public abstract class MethodID {
 
 	public abstract <T> T accept(Visitor<T> visitor);
 
+	public Optional<OperatorType> getOperator() {
+		return getKind() == Kind.OPERATOR ? Optional.of(((Operator) this).operator) : Optional.empty();
+	}
+
 	public static class Method extends MethodID {
 		public final String name;
 
@@ -66,6 +71,19 @@ public abstract class MethodID {
 		@Override
 		public <T> T accept(Visitor<T> visitor) {
 			return visitor.visitMethod(this);
+		}
+
+		@Override
+		public int hashCode() {
+			return 4502 + 97 * name.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other.getClass() != getClass())
+				return false;
+
+			return name.equals(((Method)other).name);
 		}
 	}
 
@@ -90,6 +108,19 @@ public abstract class MethodID {
 		public <T> T accept(Visitor<T> visitor) {
 			return visitor.visitOperator(this);
 		}
+
+		@Override
+		public int hashCode() {
+			return 1837 + 97 * operator.ordinal();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other.getClass() != getClass())
+				return false;
+
+			return operator == ((Operator)other).operator;
+		}
 	}
 
 	public static class Getter extends MethodID {
@@ -112,6 +143,19 @@ public abstract class MethodID {
 		@Override
 		public <T> T accept(Visitor<T> visitor) {
 			return visitor.visitGetter(this);
+		}
+
+		@Override
+		public int hashCode() {
+			return 3665 + 97 * name.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other.getClass() != getClass())
+				return false;
+
+			return name.equals(((Getter)other).name);
 		}
 	}
 
@@ -136,6 +180,19 @@ public abstract class MethodID {
 		public <T> T accept(Visitor<T> visitor) {
 			return visitor.visitSetter(this);
 		}
+
+		@Override
+		public int hashCode() {
+			return 399 + 97 * name.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other.getClass() != getClass())
+				return false;
+
+			return name.equals(((Setter)other).name);
+		}
 	}
 
 	public static class Caster extends MethodID {
@@ -158,6 +215,19 @@ public abstract class MethodID {
 		@Override
 		public <T> T accept(Visitor<T> visitor) {
 			return visitor.visitCaster(this);
+		}
+
+		@Override
+		public int hashCode() {
+			return 2521 + 97 * toType.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other.getClass() != getClass())
+				return false;
+
+			return toType.equals(((Caster)other).toType);
 		}
 	}
 

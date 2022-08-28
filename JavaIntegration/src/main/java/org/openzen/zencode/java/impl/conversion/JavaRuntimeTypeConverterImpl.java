@@ -1,26 +1,27 @@
-package org.openzen.zencode.java.module.converters;
+package org.openzen.zencode.java.impl.conversion;
 
+import org.openzen.zencode.java.JavaRuntimeTypeConverter;
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.impl.JavaNativeModuleSpace;
 import org.openzen.zencode.java.module.JavaNativeModule;
-import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
-import org.openzen.zencode.java.module.TypeVariableContext;
+import org.openzen.zencode.java.TypeVariableContext;
+import org.openzen.zencode.java.module.JavaAnnotatedType;
+import org.openzen.zencode.java.module.JavaNativePackageInfo;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.CompileContext;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.io.IOException;
@@ -30,72 +31,67 @@ import java.util.*;
 import static org.objectweb.asm.Type.getInternalName;
 import static org.objectweb.asm.Type.getMethodDescriptor;
 
-public class JavaNativeTypeConverter {
+public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
+	private final JavaNativeModuleSpace nativeModuleSpace;
+	private final JavaNativePackageInfo packageInfo;
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
-	private final JavaNativePackageInfo packageInfo;
-	private final JavaNativeModule javaNativeModule;
-	private final JavaNativeTypeConversionContext typeConversionContext;
-
-	private BracketExpressionParser bep;
 	private JavaNativeHeaderConverter headerConverter;
 
-	public JavaNativeTypeConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativePackageInfo packageInfo, JavaNativeModule javaNativeModule) {
-		this.typeConversionContext = typeConversionContext;
+	public JavaRuntimeTypeConverterImpl(JavaNativeModuleSpace nativeModuleSpace, JavaNativePackageInfo packageInfo) {
+		this.nativeModuleSpace = nativeModuleSpace;
 		this.packageInfo = packageInfo;
-		this.javaNativeModule = javaNativeModule;
-		fillByClassMaps();
+		fillClassMaps();
 	}
 
-	public TypeID loadStoredType(TypeVariableContext context, AnnotatedType annotatedType) {
-		return loadType(context, annotatedType);
+	public void setHeaderConverter(JavaNativeHeaderConverter headerConverter) {
+		this.headerConverter = headerConverter;
 	}
 
-	public TypeID loadStoredType(TypeVariableContext context, Parameter parameter) {
-		final TypeID type = loadStoredType(context, parameter.getAnnotatedType());
-		//Optional is a parameter annotation so passing the parameter's type does not pass the optional
-		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class) && !type.isOptional())
-			return new OptionalTypeID(type);
-		return type;
-	}
-
-	@Deprecated
-	public TypeID loadType(TypeVariableContext context, AnnotatedElement element) {
-		try {
-			return loadType(context, JavaAnnotatedType.of(element));
-		} catch (final IllegalArgumentException e) {
-			throw new IllegalArgumentException("Unable to analyze type: " + element, e);
+	@Override
+	public TypeID getType(TypeVariableContext context, AnnotatedType type) {
+		TypeID result;
+		if (type.isAnnotationPresent(ZenCodeType.Unsigned.class)) {
+			result = unsignedByClass.get((Class<?>) type.getType());
+		} else if (type.isAnnotationPresent(ZenCodeType.USize.class)) {
+			result = BasicTypeID.USIZE;
+		} else {
+			boolean unsigned = type.isAnnotationPresent(ZenCodeType.Unsigned.class);
+			result = loadType(context, JavaAnnotatedType.of(type), unsigned);
 		}
+
+		boolean isOptional = type.isAnnotationPresent(ZenCodeType.Nullable.class);
+		if (isOptional && !result.isOptional())
+			result = new OptionalTypeID(result);
+
+		return result;
 	}
 
-	public TypeID loadType(TypeVariableContext context, JavaAnnotatedType annotatedType) {
-		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
-			return BasicTypeID.USIZE;
-		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
-			return new OptionalTypeID(BasicTypeID.USIZE);
-
-		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
-		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
-
-		return loadType(context, annotatedType, nullable, unsigned);
-	}
-
-	@Deprecated
-	public TypeID loadType(TypeVariableContext context, AnnotatedElement element, boolean nullable, boolean unsigned) {
-		try {
-			return loadType(context, JavaAnnotatedType.of(element), nullable, unsigned);
-		} catch (final IllegalArgumentException e) {
-			throw new IllegalArgumentException("Unable to analyze type: " + element, e);
+	@Override
+	public TypeID parseType(String type) {
+		for (TypeID value : this.typeByClass.values()) {
+			if (value.toString().equals(type))
+				return value;
 		}
-	}
 
-	public TypeID loadType(TypeVariableContext context, JavaAnnotatedType type, boolean nullable, boolean unsigned) {
-		TypeID result = loadType(context, type, unsigned);
-		return nullable ? new OptionalTypeID(result) : result;
+		for (TypeID value : this.unsignedByClass.values()) {
+			if (value.toString().equals(type))
+				return value;
+		}
+
+		try {
+			CompileContext context = new CompileContext(packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
+			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + type, type), null);
+			return IParsedType.parse(tokens).compile(context);
+		} catch (IOException ex) {
+			throw new AssertionError("Not supposed to happen");
+		} catch (ParseException ex) {
+			// TODO: log this properly
+			return null;
+		}
 	}
 
 	private TypeID loadType(TypeVariableContext context, JavaAnnotatedType type, boolean unsigned) {
-
 		final JavaAnnotatedType.ElementType elementType = type.getElementType();
 
 		try {
@@ -130,7 +126,7 @@ public class JavaNativeTypeConverter {
 		final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
 
 		for (int i = 0; i < actualTypeArguments.length; i++) {
-			codeParameters[i] = this.loadType(context, actualTypeArguments[i], false, false);
+			codeParameters[i] = this.loadType(context, actualTypeArguments[i], false);
 		}
 
 		if (rawType.getElementType() == JavaAnnotatedType.ElementType.CLASS) {
@@ -165,7 +161,7 @@ public class JavaNativeTypeConverter {
 			});
 		}
 		if (type.isArray()) {
-			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()), false, false);
+			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()), false);
 			return new ArrayTypeID(baseType);
 		}
 		if (type.isAnnotationPresent(FunctionalInterface.class)) {
@@ -175,7 +171,7 @@ public class JavaNativeTypeConverter {
 			return typeByClass.get(type);
 		}
 
-		final TypeSymbol definition = javaNativeModule.addClass(type);
+		final TypeSymbol definition = findType(type);
 
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
@@ -196,20 +192,19 @@ public class JavaNativeTypeConverter {
 		final JavaAnnotatedType[] typeArguments = JavaAnnotatedType.arrayOf(type.getActualTypeArguments());
 
 		if (rawType.isAnnotationPresent(FunctionalInterface.class)) {
-
 			return loadFunctionalInterface(context, rawType, typeArguments);
 		}
 
 		TypeID[] codeParameters = new TypeID[typeArguments.length];
 		for (int i = 0; i < typeArguments.length; i++) {
-			codeParameters[i] = this.loadType(context, typeArguments[i], false, false);
+			codeParameters[i] = this.loadType(context, typeArguments[i], false);
 		}
 
 		if (rawType == Map.class) {
 			return new AssocTypeID(codeParameters[0], codeParameters[1]);
 		}
 
-		final TypeSymbol definition = javaNativeModule.addClass(rawType);
+		final TypeSymbol definition = findType(rawType);
 		return DefinitionTypeID.create(definition, codeParameters);
 	}
 
@@ -221,6 +216,13 @@ public class JavaNativeTypeConverter {
 		return BasicTypeID.UNDETERMINED;
 	}
 
+	private TypeSymbol findType(Class<?> cls) {
+		JavaNativeModule module = nativeModuleSpace.getModule(cls)
+				.orElseThrow(() -> new IllegalArgumentException("Could not find module for class " + cls.getName()));
+		return module.findClass(cls)
+				.orElseThrow(() -> new IllegalArgumentException("Could not find class " + cls.getName() + " in module " + module.getModule().name));
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> T getTypeIfValid(final JavaAnnotatedType type, final JavaAnnotatedType.ElementType expected) {
 		if (type.getElementType() != expected) {
@@ -229,7 +231,7 @@ public class JavaNativeTypeConverter {
 		return (T) type.getType();
 	}
 
-	public Class<?> getClassFromType(TypeID type) {
+/*	public Class<?> getClassFromType(TypeID type) {
 		if (type instanceof DefinitionTypeID) {
 			DefinitionTypeID definitionType = ((DefinitionTypeID) type);
 
@@ -285,7 +287,7 @@ public class JavaNativeTypeConverter {
 			// TODO: log this properly
 			return null;
 		}
-	}
+	}*/
 
 	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, JavaAnnotatedType... parameters) {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
@@ -297,7 +299,7 @@ public class JavaNativeTypeConverter {
 		Map<TypeParameter, TypeID> mapping = new HashMap<>();
 		TypeVariable<?>[] javaParameters = cls.getTypeParameters();
 		for (int i = 0; i < parameters.length; i++) {
-			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
+			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false));
 		}
 
 		header = header.withGenericArguments(new GenericMapper(mapping));
@@ -312,8 +314,43 @@ public class JavaNativeTypeConverter {
 		return new JavaFunctionalInterfaceTypeID(header, functionalInterfaceMethod, method);
 	}
 
-	@SuppressWarnings("DuplicatedCode")
-	private void fillByClassMaps() {
+	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
+		TypeVariableContext context = new TypeVariableContext();
+		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
+		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
+			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
+				TypeID type = getType(context, bound);
+				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
+			}
+			typeParameters[i] = parameter;
+
+			//Put up here so that Nested Type parameters may work..?
+			context.put(typeVariable, parameter);
+		}
+
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			for (AnnotatedType bound : javaTypeParameters[i].getAnnotatedBounds()) {
+				TypeID type = getType(context, bound);
+				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
+			}
+		}
+		return context;
+	}
+
+	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
+		for (Method method : functionalInterface.getMethods()) {
+			if (Modifier.isPublic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
+				return method;
+		}
+
+		throw new IllegalArgumentException("Could not find functionalInterface method for class " + functionalInterface.getCanonicalName());
+	}
+
+	private void fillClassMaps() {
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
 		typeByClass.put(byte.class, BasicTypeID.SBYTE);
@@ -341,49 +378,5 @@ public class JavaNativeTypeConverter {
 		unsignedByClass.put(Short.class, new OptionalTypeID(BasicTypeID.SHORT));
 		unsignedByClass.put(Integer.class, new OptionalTypeID(BasicTypeID.INT));
 		unsignedByClass.put(Long.class, new OptionalTypeID(BasicTypeID.LONG));
-	}
-
-	public void setBEP(BracketExpressionParser bep) {
-		this.bep = bep;
-	}
-
-	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
-		//TypeVariableContext context = new TypeVariableContext();
-		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
-		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
-
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(typeConversionContext.context, bound);
-				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
-			typeParameters[i] = parameter;
-
-			//Put up here so that Nested Type parameters may work..?
-			typeConversionContext.context.put(typeVariable, parameter);
-		}
-
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			for (AnnotatedType bound : javaTypeParameters[i].getAnnotatedBounds()) {
-				TypeID type = loadType(typeConversionContext.context, bound);
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
-		}
-		return typeConversionContext.context;
-	}
-
-	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
-		for (Method method : functionalInterface.getMethods()) {
-			if (Modifier.isPublic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
-				return method;
-		}
-
-		throw new IllegalArgumentException("Could not find functionalInterface method for class " + functionalInterface.getCanonicalName());
-	}
-
-	public void setHeaderConverter(JavaNativeHeaderConverter headerConverter) {
-		this.headerConverter = headerConverter;
 	}
 }

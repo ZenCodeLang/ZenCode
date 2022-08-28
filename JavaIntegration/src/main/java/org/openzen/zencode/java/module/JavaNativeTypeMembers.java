@@ -3,7 +3,10 @@ package org.openzen.zencode.java.module;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -40,7 +43,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findSuffixConstructor(String suffix) {
-		List<StaticCallableMethod> constructors = template.getMethod(suffix).stream()
+		List<StaticCallableMethod> constructors = template.getMethod(MethodID.method(suffix)).stream()
 				.filter(c -> c.getModifiers().isStatic() && c.getModifiers().isImplicit())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
@@ -49,62 +52,63 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
+		return template.getMethod(MethodID.caster(toType)).stream().findFirst().map(c -> mapper.map(type, c));
 
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticMethod(String name) {
-
+		return loadStatic(MethodID.method(name));
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticGetter(String name) {
-
+		return loadStatic(MethodID.getter(name));
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticSetter(String name) {
-
+		return loadStatic(MethodID.setter(name));
 	}
 
 	@Override
 	public Optional<InstanceCallable> findMethod(String name) {
-
+		return load(MethodID.method(name));
 	}
 
 	@Override
 	public Optional<InstanceCallable> findGetter(String name) {
-
+		return load(MethodID.getter(name));
 	}
 
 	@Override
 	public Optional<InstanceCallable> findSetter(String name) {
-
+		return load(MethodID.setter(name));
 	}
 
 	@Override
 	public Optional<InstanceCallable> findOperator(OperatorType operator) {
-
+		return load(MethodID.operator(operator));
 	}
 
 	@Override
 	public Optional<Field> findField(String name) {
-
+		return template.getField(name).map(f -> new RuntimeField(mapper.map(f)));
 	}
 
 	@Override
 	public Optional<TypeSymbol> findInnerType(String name) {
-
+		return Optional.empty(); // not yet supported
 	}
 
 	@Override
 	public Optional<CompilableExpression> getContextMember(String name) {
-
+		return template.getContextMember(name);
 	}
 
 	@Override
 	public Optional<SwitchMember> findSwitchMember(String name) {
-
+		return Optional.empty(); // TODO
 	}
 
 	@Override
@@ -115,5 +119,59 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
 		return Optional.empty();
+	}
+
+	private Optional<StaticCallable> loadStatic(MethodID id) {
+		List<StaticCallableMethod> methods = template.getMethod(id).stream()
+				.filter(c -> c.getModifiers().isStatic())
+				.map(c -> mapper.map(type, c))
+				.collect(Collectors.toList());
+		return methods.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(methods));
+	}
+
+	private Optional<InstanceCallable> load(MethodID id) {
+		List<InstanceCallableMethod> methods = template.getMethod(id).stream()
+				.filter(c -> !c.getModifiers().isStatic())
+				.map(c -> mapper.map(type, c))
+				.collect(Collectors.toList());
+		return methods.isEmpty() ? Optional.empty() : Optional.of(new InstanceCallable(methods));
+	}
+
+	private class RuntimeField implements Field {
+		private final FieldInstance field;
+
+		public RuntimeField(FieldInstance field) {
+			this.field = field;
+		}
+
+		@Override
+		public TypeID getType() {
+			return field.getType();
+		}
+
+		@Override
+		public boolean isStatic() {
+			return field.getModifiers().isStatic();
+		}
+
+		@Override
+		public Expression get(ExpressionBuilder builder, Expression target) {
+			return builder.getInstanceField(target, field);
+		}
+
+		@Override
+		public Expression set(ExpressionBuilder builder, Expression target, Expression value) {
+			return builder.setInstanceField(target, field, value);
+		}
+
+		@Override
+		public Expression getStatic(ExpressionBuilder builder) {
+			return builder.getStaticField(field);
+		}
+
+		@Override
+		public Expression setStatic(ExpressionBuilder builder, Expression value) {
+			return builder.setStaticField(field, value);
+		}
 	}
 }

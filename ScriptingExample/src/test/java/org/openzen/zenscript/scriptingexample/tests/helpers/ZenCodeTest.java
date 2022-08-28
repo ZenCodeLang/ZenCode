@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -87,7 +88,7 @@ public abstract class ZenCodeTest {
 
 	public FunctionParameterList getParameters() {
 		final FunctionParameterList functionParameterList = new FunctionParameterList();
-		final TypeID stringArrayType = engine.registry.getArray(BasicTypeID.STRING, 1);
+		final TypeID stringArrayType = new ArrayTypeID(BasicTypeID.STRING);
 		FunctionParameter args = new FunctionParameter(stringArrayType, "args");
 		functionParameterList.addParameter(args, new String[]{"a", "b", "c"});
 		return functionParameterList;

@@ -117,12 +117,12 @@ public class JavaNativeLoader {
 		}
 
 		module.resolved = new JavaNativeModule(
+				null, // TODO
+				null, // TODO
 				logger,
 				module.pkg,
 				module.name,
-				module.basePackage,
-				dependencies,
-				engine.root);
+				module.basePackage);
 		for (Class<?> cls : module.classes)
 			module.resolved.addClass(cls);
 		for (Class<?> cls : module.globals)

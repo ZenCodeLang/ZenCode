@@ -1,6 +1,6 @@
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
+import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -28,12 +28,5 @@ public class JavaNativeTypeConversionContext {
 
 		this.compiled = new JavaCompiledModule(packageInfo.getModule(), FunctionParameter.NONE);
 
-		for (JavaNativeModule dependency : dependencies) {
-			final JavaNativeTypeConversionContext dependencyTypeConversionContext = dependency.getTypeConversionContext();
-
-			definitionByClass.putAll(dependencyTypeConversionContext.definitionByClass);
-			context.putAllFrom(dependencyTypeConversionContext.context);
-			compiled.addAllFrom(dependencyTypeConversionContext.compiled);
-		}
 	}
 }

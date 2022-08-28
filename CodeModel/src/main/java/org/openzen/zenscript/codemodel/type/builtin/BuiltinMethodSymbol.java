@@ -622,11 +622,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.ofNullable(operator);
-	}
-
-	@Override
 	public FunctionHeader getHeader() {
 		return header;
 	}

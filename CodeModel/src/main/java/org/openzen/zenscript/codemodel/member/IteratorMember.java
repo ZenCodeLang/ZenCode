@@ -74,11 +74,6 @@ public class IteratorMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.empty();
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

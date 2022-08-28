@@ -1,8 +1,10 @@
-package org.openzen.zencode.java.module.converters;
+package org.openzen.zencode.java.impl.conversion;
 
+import org.openzen.zencode.java.JavaRuntimeTypeConverter;
 import org.openzen.zencode.java.ZenCodeType;
-import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
-import org.openzen.zencode.java.module.TypeVariableContext;
+import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zencode.java.TypeVariableContext;
+import org.openzen.zencode.java.module.JavaNativePackageInfo;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -28,16 +30,15 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class JavaNativeHeaderConverter {
-	private final JavaNativeTypeConverter typeConverter;
+	private final JavaRuntimeTypeConverter typeConverter;
 	private final JavaNativePackageInfo packageInfo;
-	private final JavaNativeTypeConversionContext typeConversionContext;
+	private final JavaNativeModule module;
 	private BracketExpressionParser bep;
 
-	public JavaNativeHeaderConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext) {
+	public JavaNativeHeaderConverter(JavaRuntimeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, JavaNativeModule module) {
 		this.typeConverter = typeConverter;
 		this.packageInfo = packageInfo;
-		this.typeConversionContext = typeConversionContext;
-		typeConverter.setHeaderConverter(this);
+		this.module = module;
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
@@ -64,9 +65,8 @@ public class JavaNativeHeaderConverter {
 			AnnotatedType javaReturnType,
 			Parameter[] javaParameters,
 			TypeVariable<Method>[] javaTypeParameters,
-			AnnotatedType[] exceptionTypes) {
-
-
+			AnnotatedType[] exceptionTypes
+	) {
 		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			//Put up here for nested parameters?
@@ -80,7 +80,7 @@ public class JavaNativeHeaderConverter {
 			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
 
 			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, typeConverter.loadType(context, bound)));
+				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, typeConverter.getType(context, bound)));
 		}
 
 		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
@@ -91,8 +91,7 @@ public class JavaNativeHeaderConverter {
 				classParameters++;
 			}
 
-			//AnnotatedType parameterType = parameter.getAnnotatedType();
-			TypeID type = typeConverter.loadStoredType(context, parameter);
+			TypeID type = typeConverter.getType(context, parameter.getAnnotatedType());
 			parameters[i] = new FunctionParameter(type, parameter.getName(), parameter.isVarArgs());
 			parameters[i].defaultValue = getDefaultValue(parameter, type, parameters[i]);
 		}
@@ -103,8 +102,8 @@ public class JavaNativeHeaderConverter {
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");
 
-		TypeID returnType = javaReturnType == null ? BasicTypeID.VOID : typeConverter.loadStoredType(context, javaReturnType);
-		TypeID thrownType = exceptionTypes.length == 0 ? null : typeConverter.loadStoredType(context, exceptionTypes[0]);
+		TypeID returnType = javaReturnType == null ? BasicTypeID.VOID : typeConverter.getType(context, javaReturnType);
+		TypeID thrownType = exceptionTypes.length == 0 ? null : typeConverter.getType(context, exceptionTypes[0]);
 		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 
@@ -139,8 +138,8 @@ public class JavaNativeHeaderConverter {
 				CompileContext context = new CompileContext(
 						packageInfo.getPkg().getRoot(),
 						packageInfo.getPkg(),
-						typeConversionContext.compiled.getExpansions(),
-						typeConversionContext.globals,
+						module.getCompiled().getExpansions(),
+						module.getGlobals(),
 						Collections.emptyList());
 				ExpressionCompiler compiler = context.createStaticCompiler();
 				return ParsedExpression.parse(tokens).compile(compiler).cast(CastedEval.implicit(compiler, CodePosition.GENERATED, type)).value;

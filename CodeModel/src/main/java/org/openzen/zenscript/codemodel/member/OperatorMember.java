@@ -72,11 +72,6 @@ public class OperatorMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.of(operator);
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

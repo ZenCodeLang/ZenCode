@@ -1,4 +1,4 @@
-package org.openzen.zencode.java.module.converters;
+package org.openzen.zencode.java.module;
 
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -7,14 +7,13 @@ import stdlib.Strings;
 import java.util.Optional;
 
 public class JavaNativePackageInfo {
-
-
+	private final ZSPackage root;
 	private final ZSPackage pkg;
 	private final String basePackage;
 	private final ModuleSymbol module;
 
-	public JavaNativePackageInfo(ZSPackage pkg, String basePackage, ModuleSymbol module) {
-
+	public JavaNativePackageInfo(ZSPackage root, ZSPackage pkg, String basePackage, ModuleSymbol module) {
+		this.root = root;
 		this.pkg = pkg;
 		this.basePackage = basePackage;
 		this.module = module;
@@ -67,6 +66,10 @@ public class JavaNativePackageInfo {
 
 	public String getBasePackage() {
 		return basePackage;
+	}
+
+	public ZSPackage getRoot() {
+		return root;
 	}
 
 	public ZSPackage getPkg() {

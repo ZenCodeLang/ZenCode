@@ -5,10 +5,10 @@
  */
 package org.openzen.zencode.java;
 
+import org.openzen.zencode.java.impl.JavaNativeModuleSpace;
 import org.openzen.zencode.java.logger.ScriptingEngineLogger;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
 import org.openzen.zencode.java.module.JavaNativeModule;
-import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -47,6 +47,7 @@ public class ScriptingEngine {
 	public final ZSPackage root = ZSPackage.createRoot();
 	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	private final ModuleSpace space;
+	private final JavaNativeModuleSpace nativeSpace = new JavaNativeModuleSpace();
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
 	private final List<SemanticModule> compiledModules = new ArrayList<>();
 	public boolean debug = false;
@@ -79,14 +80,9 @@ public class ScriptingEngine {
 		registerCompiled(stdlibModule);
 	}
 
-	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
+	public JavaNativeModule createNativeModule(String name, String basePackage) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(space, logger, testPackage, name, basePackage, dependencies, space.rootPackage);
-	}
-
-	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule[] dependencies, JavaNativeConverterBuilder nativeConverterBuilder) {
-		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(space, logger, testPackage, name, basePackage, dependencies, nativeConverterBuilder, space.rootPackage);
+		return new JavaNativeModule(space, nativeSpace, logger, testPackage, name, basePackage);
 	}
 
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
@@ -95,6 +91,7 @@ public class ScriptingEngine {
 			return;
 
 		space.addModule(module.getModule().name, semantic);
+		nativeSpace.register(module.getBasePackage(), module);
 		nativeModules.add(module);
 
 		for (Map.Entry<String, IGlobal> globalEntry : module.getGlobals().entrySet())

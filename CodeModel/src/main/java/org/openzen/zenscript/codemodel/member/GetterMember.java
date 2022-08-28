@@ -102,9 +102,4 @@ public class GetterMember extends FunctionalMember {
 	public String getName() {
 		return name;
 	}
-
-	@Override
-	public Optional<OperatorType> getOperator() {
-		return Optional.empty();
-	}
 }

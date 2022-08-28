@@ -1,6 +1,7 @@
 package org.openzen.zencode.java.module;
 
 import org.objectweb.asm.Type;
+import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -26,13 +27,18 @@ public class JavaRuntimeClass implements TypeSymbol {
 	private final Modifiers modifiers;
 	private final JavaNativeTypeTemplate template;
 	private final TypeParameter[] typeParameters;
+	private final TypeVariableContext context = new TypeVariableContext();
 
-	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, JavaClass.Kind kind) {
+	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, TypeID target, JavaClass.Kind kind) {
+		if (target == null)
+			target = DefinitionTypeID.createThis(this);
+
 		this.module = module;
 		this.javaClass = JavaClass.fromInternalName(Type.getInternalName(cls), kind);
 		this.cls = cls;
 		this.modifiers = translateModifiers(cls.getModifiers());
-		this.template = new JavaNativeTypeTemplate(module, this);
+
+		this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
 		this.typeParameters = translateTypeParameters(cls);
 	}
 
@@ -108,7 +114,7 @@ public class JavaRuntimeClass implements TypeSymbol {
 		return result;
 	}
 
-	private static TypeParameter[] translateTypeParameters(Class<?> cls) {
+	private TypeParameter[] translateTypeParameters(Class<?> cls) {
 		TypeVariable<?>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = TypeParameter.NONE;
 		if (javaTypeParameters.length > 0) {
@@ -118,6 +124,7 @@ public class JavaRuntimeClass implements TypeSymbol {
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			TypeVariable<?> typeVariable = javaTypeParameters[i];
 			typeParameters[i] = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			context.put(typeVariable, typeParameters[i]);
 		}
 
 		for (int i = 0; i < javaTypeParameters.length; i++) {
@@ -127,9 +134,11 @@ public class JavaRuntimeClass implements TypeSymbol {
 				if (bound.getType() == Object.class) {
 					continue; //Makes the stdlib types work as they have "no" bounds for T
 				}
-				TypeID type = typeConverter.loadType(typeConversionContext.context, bound);
+				TypeID type = module.getTypeConverter().getType(context, bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 		}
+
+		return typeParameters;
 	}
 }

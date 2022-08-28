@@ -24,8 +24,6 @@ public interface MethodSymbol {
 
 	String getName();
 
-	Optional<OperatorType> getOperator();
-
 	FunctionHeader getHeader();
 
 	Optional<MethodInstance> getOverrides();

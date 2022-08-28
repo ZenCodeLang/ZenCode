@@ -16,7 +16,8 @@ public class PostCallExpression extends Expression {
 	public PostCallExpression(CodePosition position, Expression target, MethodInstance member, FunctionHeader instancedHeader) {
 		super(position, instancedHeader.getReturnType(), binaryThrow(position, instancedHeader.thrownType, target.thrownType));
 
-		if (member.method.getOperator().orElse(null) != OperatorType.DECREMENT && member.method.getOperator().orElse(null) != OperatorType.INCREMENT)
+		OperatorType operator = member.method.getID().getOperator().orElse(null);
+		if (operator != OperatorType.DECREMENT && operator != OperatorType.INCREMENT)
 			throw new IllegalArgumentException("Operator must be increment or decrement");
 
 		this.target = target;
