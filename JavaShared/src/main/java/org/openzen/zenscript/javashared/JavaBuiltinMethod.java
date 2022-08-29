@@ -29,6 +29,6 @@ public class JavaBuiltinMethod implements JavaMethod {
 
 	@Override
 	public String getMapping(JavaClass class_) {
-		return class_.internalName + "::builtin::" + method.getName();
+		return class_.internalName + "::builtin::" + method.getID().toString();
 	}
 }

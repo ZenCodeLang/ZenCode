@@ -52,7 +52,7 @@ public class SetterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		members.setter(mapper.map(targetType, this));
+		members.method(mapper.map(targetType, this));
 	}
 
 	@Override

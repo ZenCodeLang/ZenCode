@@ -96,17 +96,17 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_CONSTRUCTOR));
 
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_GETOPTIONAL));
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_PUT));
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_CONTAINS));
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_ADDALL));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_GETOPTIONAL));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_PUT));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_CONTAINS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_ADDALL));
 
-		members.getter(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_SIZE));
-		members.getter(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_ISEMPTY));
-		members.getter(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_HASHCODE));
+		members.method(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_SIZE));
+		members.method(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_ISEMPTY));
+		members.method(new MethodInstance(BuiltinMethodSymbol.GENERICMAP_HASHCODE));
 
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_SAME));
-		members.operator(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_NOTSAME));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_SAME));
+		members.method(mapper.map(type, BuiltinMethodSymbol.GENERICMAP_NOTSAME));
 
 		return members.build();
 	}

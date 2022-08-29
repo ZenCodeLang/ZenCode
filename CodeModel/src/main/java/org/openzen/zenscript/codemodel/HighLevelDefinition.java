@@ -151,8 +151,8 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 			// TODO - register supertype members
 		}
 
-		members.operator(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
-		members.operator(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		resolveAdditional(type, members, mapper);
 		return members.build();
 	}

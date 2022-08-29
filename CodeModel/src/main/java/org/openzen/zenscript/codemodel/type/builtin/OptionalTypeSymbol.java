@@ -59,8 +59,7 @@ public class OptionalTypeSymbol implements TypeSymbol {
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
 		MemberSet.Builder optionalMembers = MemberSet.create();
-		optionalMembers.operator(new MethodInstance(BuiltinMethodSymbol.OPTIONAL_IS_NULL));
-
+		optionalMembers.method(new MethodInstance(BuiltinMethodSymbol.OPTIONAL_IS_NULL));
 		return null;
 	}
 

@@ -76,24 +76,24 @@ public class MapTypeSymbol implements TypeSymbol {
 		MemberSet.Builder members = MemberSet.create();
 
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ASSOC_CONSTRUCTOR));
-		members.indexGet(mapper.map(type, BuiltinMethodSymbol.ASSOC_INDEXGET));
-		members.indexSet(mapper.map(type, BuiltinMethodSymbol.ASSOC_INDEXSET));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_INDEXGET));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_INDEXSET));
 		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_GETORDEFAULT));
-		members.contains(mapper.map(type, BuiltinMethodSymbol.ASSOC_CONTAINS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_CONTAINS));
 
-		members.getter(new MethodInstance(BuiltinMethodSymbol.ASSOC_SIZE));
-		members.getter(new MethodInstance(BuiltinMethodSymbol.ASSOC_ISEMPTY));
-		members.getter(mapper.map(type, BuiltinMethodSymbol.ASSOC_KEYS));
-		members.getter(mapper.map(type, BuiltinMethodSymbol.ASSOC_VALUES));
-		members.getter(new MethodInstance(BuiltinMethodSymbol.ASSOC_HASHCODE));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ASSOC_SIZE));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ASSOC_ISEMPTY));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_KEYS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_VALUES));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ASSOC_HASHCODE));
 
-		members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEYS));
-		members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEY_VALUES));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEYS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEY_VALUES));
 
-		members.equals(mapper.map(type, BuiltinMethodSymbol.ASSOC_EQUALS));
-		members.notEquals(mapper.map(type, BuiltinMethodSymbol.ASSOC_NOTEQUALS));
-		members.same(mapper.map(type, BuiltinMethodSymbol.ASSOC_SAME));
-		members.notSame(mapper.map(type, BuiltinMethodSymbol.ASSOC_NOTSAME));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_EQUALS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_NOTEQUALS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_SAME));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_NOTSAME));
 
 		return members.build();
 	}

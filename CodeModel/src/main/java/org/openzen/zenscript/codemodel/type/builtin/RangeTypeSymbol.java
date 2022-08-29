@@ -70,8 +70,8 @@ public class RangeTypeSymbol implements TypeSymbol {
 		RangeTypeID type = new RangeTypeID(baseType);
 
 		MemberSet.Builder members = MemberSet.create();
-		members.getter(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));
-		members.getter(mapper.map(type, BuiltinMethodSymbol.RANGE_TO));
+		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));
+		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_TO));
 
 		if (baseType == BYTE
 				|| baseType == SBYTE
@@ -82,7 +82,7 @@ public class RangeTypeSymbol implements TypeSymbol {
 				|| baseType == LONG
 				|| baseType == ULONG
 				|| baseType == USIZE) {
-			members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_INT_RANGE));
+			members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_INT_RANGE));
 		}
 
 		return members.build();

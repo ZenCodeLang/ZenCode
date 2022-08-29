@@ -14,7 +14,7 @@ public class MethodMember extends FunctionalMember {
 	private MethodInstance overrides;
 
 	public MethodMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, FunctionHeader header) {
-		super(position, definition, modifiers, MethodID.method(name), header);
+		super(position, definition, modifiers, modifiers.isStatic() ? MethodID.staticMethod(name) : MethodID.instanceMethod(name), header);
 
 		this.name = name;
 	}
@@ -31,11 +31,7 @@ public class MethodMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		if (isStatic()) {
-			members.staticMethod(name, mapper.map(targetType, this));
-		} else {
-			members.method(name, mapper.map(targetType, this));
-		}
+		members.method(mapper.map(targetType, this));
 	}
 
 	@Override

@@ -43,11 +43,11 @@ public class EnumDefinition extends HighLevelDefinition {
 
 	@Override
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {
-		members.getter(mapper.map(type, BuiltinMethodSymbol.ENUM_NAME));
-		members.getter(mapper.map(type, BuiltinMethodSymbol.ENUM_ORDINAL));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ENUM_NAME));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ENUM_ORDINAL));
 
-		members.staticGetter(new MethodInstance(BuiltinMethodSymbol.ENUM_VALUES, new FunctionHeader(new ArrayTypeID(type)), type));
-		members.operator(new MethodInstance(BuiltinMethodSymbol.ENUM_COMPARE, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ENUM_VALUES, new FunctionHeader(new ArrayTypeID(type)), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ENUM_COMPARE, new FunctionHeader(BasicTypeID.BOOL, type), type));
 
 		//if (!members.canCast(STRING)) {
 		//	castImplicit(definition, ENUM_TO_STRING, STRING);

@@ -171,7 +171,7 @@ public class JavaCompiledModule {
 
 		JavaMethod method = methods.get(member);
 		if (method == null)
-			throw new IllegalStateException("Missing method info for method " + member.getDefiningType().describe() + "." + member.getName());
+			throw new IllegalStateException("Missing method info for method " + member.getDefiningType().describe() + "." + member.getID().toString());
 
 		return method;
 	}

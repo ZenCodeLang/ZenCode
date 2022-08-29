@@ -40,7 +40,7 @@ public class CasterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		members.cast(mapper.map(targetType, this));
+		members.method(mapper.map(targetType, this));
 	}
 
 	public boolean isImplicit() {

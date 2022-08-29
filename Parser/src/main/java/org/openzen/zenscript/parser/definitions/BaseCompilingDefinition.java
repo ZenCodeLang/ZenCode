@@ -61,7 +61,9 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 
 	@Override
 	public void linkTypes() {
-
+		for (CompilingMember member : members) {
+			member.linkTypes();
+		}
 	}
 
 	@Override

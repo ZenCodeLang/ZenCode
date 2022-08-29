@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
@@ -42,7 +43,7 @@ public class ImplementationMember extends DefinitionMember {
 		TypeID implementsType = mapper.map(type);
 		FunctionHeader header = new FunctionHeader(implementsType);
 		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(this, targetType, implementsType);
-		members.cast(new InstanceCallableMethod() {
+		members.method(MethodID.caster(type), new InstanceCallableMethod() {
 			@Override
 			public FunctionHeader getHeader() {
 				return header;

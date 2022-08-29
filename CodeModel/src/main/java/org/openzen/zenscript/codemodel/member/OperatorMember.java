@@ -41,7 +41,7 @@ public class OperatorMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
-		members.operator(mapper.map(targetType, this));
+		members.method(mapper.map(targetType, this));
 	}
 
 	@Override

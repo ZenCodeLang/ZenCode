@@ -5,266 +5,163 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
-public abstract class MethodID {
+public final class MethodID {
 	public enum Kind {
-		METHOD,
-		OPERATOR,
-		GETTER,
-		SETTER,
-		CASTER,
-		ITERATOR
+		INSTANCEMETHOD(false),
+		STATICMETHOD(true),
+		OPERATOR(false),
+		STATICOPERATOR(true),
+		GETTER(false),
+		SETTER(false),
+		STATICGETTER(true),
+		STATICSETTER(true),
+		CASTER(false),
+		ITERATOR(false);
+
+		private final boolean static_;
+
+		Kind(boolean static_) {
+			this.static_ = static_;
+		}
 	}
 
-	public static MethodID.Method method(String name) {
-		return new MethodID.Method(name);
+	public static MethodID instanceMethod(String name) {
+		return new MethodID(Kind.INSTANCEMETHOD, name);
 	}
 
-	public static MethodID.Operator operator(OperatorType operator) {
-		return new MethodID.Operator(operator);
+	public static MethodID staticMethod(String name) {
+		return new MethodID(Kind.STATICMETHOD, name);
 	}
 
-	public static MethodID.Getter getter(String name) {
-		return new MethodID.Getter(name);
+	public static MethodID operator(OperatorType operator) {
+		return new MethodID(Kind.OPERATOR, operator);
 	}
 
-	public static MethodID.Setter setter(String name) {
-		return new MethodID.Setter(name);
+	public static MethodID staticOperator(OperatorType operator) {
+		return new MethodID(Kind.STATICOPERATOR, operator);
 	}
 
-	public static MethodID.Caster caster(TypeID caster) {
-		return new MethodID.Caster(caster);
+	public static MethodID getter(String name) {
+		return new MethodID(Kind.GETTER, name);
 	}
 
-	public static MethodID.Iterator iterator(int variables) {
-		return new MethodID.Iterator(variables);
+	public static MethodID setter(String name) {
+		return new MethodID(Kind.SETTER, name);
 	}
 
-	private MethodID() {}
+	public static MethodID staticGetter(String name) {
+		return new MethodID(Kind.STATICGETTER, name);
+	}
 
-	public abstract Kind getKind();
+	public static MethodID staticSetter(String name) {
+		return new MethodID(Kind.STATICSETTER, name);
+	}
 
-	public abstract String toString();
+	public static MethodID caster(TypeID caster) {
+		return new MethodID(Kind.CASTER, caster);
+	}
 
-	public abstract <T> T accept(Visitor<T> visitor);
+	public static MethodID iterator(int variables) {
+		return new MethodID(Kind.OPERATOR, variables);
+	}
+
+	// I wish we had unions ^^
+	private final Kind kind;
+	private final String name;
+	private final OperatorType operator;
+	private final TypeID type;
+	private final int variables;
+
+	private MethodID(Kind kind, String name) {
+		this.kind = kind;
+		this.name = name;
+		this.operator = null;
+		this.type = null;
+		this.variables = 0;
+	}
+
+	private MethodID(Kind kind, OperatorType operator) {
+		this.kind = kind;
+		this.name = null;
+		this.operator = operator;
+		this.type = null;
+		this.variables = 0;
+	}
+
+	private MethodID(Kind kind, TypeID type) {
+		this.kind = kind;
+		this.name = null;
+		this.operator = null;
+		this.type = type;
+		this.variables = 0;
+	}
+
+	private MethodID(Kind kind, int variables) {
+		this.kind = kind;
+		this.name = null;
+		this.operator = null;
+		this.type = null;
+		this.variables = variables;
+	}
+
+	public Kind getKind() {
+		return kind;
+	}
+
+	public String toString() {
+		if (name != null)
+			return name;
+		if (operator != null)
+			return operator.operator;
+		if (type != null)
+			return type.toString();
+
+		return "iterator" + variables;
+	}
+
+	public <T> T accept(Visitor<T> visitor) {
+		switch (kind) {
+			case INSTANCEMETHOD: return visitor.visitInstanceMethod(name);
+			case STATICMETHOD: return visitor.visitStaticMethod(name);
+			case OPERATOR: return visitor.visitOperator(operator);
+			case STATICOPERATOR: return visitor.visitStaticOperator(operator);
+			case GETTER: return visitor.visitGetter(name);
+			case SETTER: return visitor.visitSetter(name);
+			case STATICGETTER: return visitor.visitStaticGetter(name);
+			case STATICSETTER: return visitor.visitStaticSetter(name);
+			case CASTER: return visitor.visitCaster(type);
+			case ITERATOR: return visitor.visitIterator(variables);
+			default: throw new IllegalStateException();
+		}
+	}
+
+	public boolean isStatic() {
+		return kind.static_;
+	}
 
 	public Optional<OperatorType> getOperator() {
-		return getKind() == Kind.OPERATOR ? Optional.of(((Operator) this).operator) : Optional.empty();
-	}
-
-	public static class Method extends MethodID {
-		public final String name;
-
-		public Method(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.METHOD;
-		}
-
-		@Override
-		public String toString() {
-			return name;
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitMethod(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return 4502 + 97 * name.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other.getClass() != getClass())
-				return false;
-
-			return name.equals(((Method)other).name);
-		}
-	}
-
-	public static class Operator extends MethodID {
-		public final OperatorType operator;
-
-		public Operator(OperatorType operator) {
-			this.operator = operator;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.OPERATOR;
-		}
-
-		@Override
-		public String toString() {
-			return operator.operator;
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitOperator(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return 1837 + 97 * operator.ordinal();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other.getClass() != getClass())
-				return false;
-
-			return operator == ((Operator)other).operator;
-		}
-	}
-
-	public static class Getter extends MethodID {
-		public final String name;
-
-		public Getter(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.GETTER;
-		}
-
-		@Override
-		public String toString() {
-			return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitGetter(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return 3665 + 97 * name.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other.getClass() != getClass())
-				return false;
-
-			return name.equals(((Getter)other).name);
-		}
-	}
-
-	public static class Setter extends MethodID {
-		public final String name;
-
-		public Setter(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.SETTER;
-		}
-
-		@Override
-		public String toString() {
-			return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitSetter(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return 399 + 97 * name.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other.getClass() != getClass())
-				return false;
-
-			return name.equals(((Setter)other).name);
-		}
-	}
-
-	public static class Caster extends MethodID {
-		public final TypeID toType;
-
-		public Caster(TypeID toType) {
-			this.toType = toType;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.CASTER;
-		}
-
-		@Override
-		public String toString() {
-			return "cast<" + toType.toString() + ">";
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitCaster(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return 2521 + 97 * toType.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other.getClass() != getClass())
-				return false;
-
-			return toType.equals(((Caster)other).toType);
-		}
-	}
-
-	public static class Iterator extends MethodID {
-		public final int variables;
-
-		public Iterator(int variables) {
-			this.variables = variables;
-		}
-
-		@Override
-		public Kind getKind() {
-			return Kind.ITERATOR;
-		}
-
-		@Override
-		public String toString() {
-			return "iterator" + variables;
-		}
-
-		@Override
-		public <T> T accept(Visitor<T> visitor) {
-			return visitor.visitIterator(this);
-		}
+		return Optional.ofNullable(operator);
 	}
 
 	public interface Visitor<T> {
-		T visitMethod(Method method);
+		T visitInstanceMethod(String name);
 
-		T visitOperator(Operator operator);
+		T visitStaticMethod(String name);
 
-		T visitGetter(Getter getter);
+		T visitOperator(OperatorType operator);
 
-		T visitSetter(Setter setter);
+		T visitStaticOperator(OperatorType operator);
 
-		T visitCaster(Caster caster);
+		T visitGetter(String name);
 
-		T visitIterator(Iterator iterator);
+		T visitSetter(String name);
+
+		T visitStaticGetter(String name);
+
+		T visitStaticSetter(String name);
+
+		T visitCaster(TypeID type);
+
+		T visitIterator(int variables);
 	}
 }

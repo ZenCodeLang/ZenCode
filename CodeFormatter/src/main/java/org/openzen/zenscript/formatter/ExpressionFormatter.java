@@ -52,8 +52,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitCall(CallExpression expression) {
 		MethodID id = expression.method.method.getID();
 		switch (id.getKind()) {
-			case METHOD: {
-				MethodID.Method method = (MethodID.Method) id;
+			case INSTANCEMETHOD: {
+				MethodID.InstanceMethod method = (MethodID.InstanceMethod) id;
 				StringBuilder result = new StringBuilder();
 				result.append(expression.target.accept(this).value);
 				result.append(".");
@@ -219,8 +219,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 		MethodID id = expression.member.getID();
 		switch (id.getKind()) {
-			case METHOD: {
-				MethodID.Method method = (MethodID.Method) id;
+			case INSTANCEMETHOD: {
+				MethodID.InstanceMethod method = (MethodID.InstanceMethod) id;
 				result.append(".");
 				result.append(method.name);
 				FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);

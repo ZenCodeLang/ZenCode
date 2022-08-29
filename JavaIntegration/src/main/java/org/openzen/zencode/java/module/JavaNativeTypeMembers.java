@@ -43,7 +43,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findSuffixConstructor(String suffix) {
-		List<StaticCallableMethod> constructors = template.getMethod(MethodID.method(suffix)).stream()
+		List<StaticCallableMethod> constructors = template.getMethod(MethodID.staticMethod(suffix)).stream()
 				.filter(c -> c.getModifiers().isStatic() && c.getModifiers().isImplicit())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
@@ -58,7 +58,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findStaticMethod(String name) {
-		return loadStatic(MethodID.method(name));
+		return loadStatic(MethodID.staticMethod(name));
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<InstanceCallable> findMethod(String name) {
-		return load(MethodID.method(name));
+		return load(MethodID.instanceMethod(name));
 	}
 
 	@Override

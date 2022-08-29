@@ -47,8 +47,8 @@ public class FunctionDefinition extends HighLevelDefinition {
 
 	@Override
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {
-		members.operator(OperatorType.CALL, new MethodInstance(caller, mapper.map(header), type));
-		members.same(new MethodInstance(BuiltinMethodSymbol.FUNCTION_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
-		members.notSame(new MethodInstance(BuiltinMethodSymbol.FUNCTION_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(caller, mapper.map(header), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.FUNCTION_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.FUNCTION_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 	}
 }

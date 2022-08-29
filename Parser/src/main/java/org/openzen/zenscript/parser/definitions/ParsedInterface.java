@@ -101,6 +101,8 @@ public class ParsedInterface extends BaseParsedDefinition {
 			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, typeParameters);
 			for (IParsedType type : superInterfaces)
 				compiled.baseInterfaces.add(type.compile(compiler.types()));
+
+			super.linkTypes();
 		}
 
 		@Override

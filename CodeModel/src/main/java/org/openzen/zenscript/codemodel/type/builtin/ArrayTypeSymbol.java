@@ -99,37 +99,37 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		for (int i = 0; i < indexGetParameters.length; i++)
 			indexGetParameters[i] = new FunctionParameter(USIZE);
 
-		members.indexGet(new MethodInstance(
+		members.method(new MethodInstance(
 				BuiltinMethodSymbol.ARRAY_INDEXGET,
 				new FunctionHeader(baseType, indexGetParameters),
 				type));
 
 		if (dimension == 1) {
 			FunctionHeader sliceHeader = new FunctionHeader(type, new FunctionParameter(RangeTypeID.USIZE, "range"));
-			members.indexGet(new MethodInstance(
+			members.method(new MethodInstance(
 					BuiltinMethodSymbol.ARRAY_INDEXGETRANGE,
 					sliceHeader,
 					type));
 
 			if (baseType == BYTE)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
 			if (baseType == SBYTE)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.SBYTE_ARRAY_AS_BYTE_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_ARRAY_AS_BYTE_ARRAY));
 			if (baseType == SHORT)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.SHORT_ARRAY_AS_USHORT_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.SHORT_ARRAY_AS_USHORT_ARRAY));
 			if (baseType == USHORT)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.USHORT_ARRAY_AS_SHORT_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.USHORT_ARRAY_AS_SHORT_ARRAY));
 			if (baseType == INT)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.INT_ARRAY_AS_UINT_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.INT_ARRAY_AS_UINT_ARRAY));
 			if (baseType == UINT)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.UINT_ARRAY_AS_INT_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.UINT_ARRAY_AS_INT_ARRAY));
 			if (baseType == LONG)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.LONG_ARRAY_AS_ULONG_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.LONG_ARRAY_AS_ULONG_ARRAY));
 			if (baseType == ULONG)
-				members.cast(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
+				members.method(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
 		}
 
-		members.contains(mapper.map(type, BuiltinMethodSymbol.ARRAY_CONTAINS));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ARRAY_CONTAINS));
 
 		if (baseType.hasDefaultValue()) {
 			members.constructor(new MethodInstance(
@@ -192,26 +192,26 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		indexSetParameters[dimension] = new FunctionParameter(baseType);
 
 		FunctionHeader indexSetHeader = new FunctionHeader(VOID, indexSetParameters);
-		members.indexSet(new MethodInstance(BuiltinMethodSymbol.ARRAY_INDEXSET, indexSetHeader, type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_INDEXSET, indexSetHeader, type));
 
 		if (dimension == 1) {
-			members.getter("length", new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTH1D));
+			members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTH1D));
 		} else {
-			members.getter("length", new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTHMD));
+			members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTHMD));
 		}
 
-		members.getter("isEmpty", new MethodInstance(BuiltinMethodSymbol.ARRAY_ISEMPTY));
-		members.getter("hashCode", new MethodInstance(BuiltinMethodSymbol.ARRAY_HASHCODE));
-		members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_ISEMPTY));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_HASHCODE));
+		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES));
 		if (dimension == 1) {
-			members.iterator(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES));
+			members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES));
 		}
 
 		FunctionHeader equalityHeader = new FunctionHeader(BOOL, type);
-		members.equals(new MethodInstance(BuiltinMethodSymbol.ARRAY_EQUALS, equalityHeader, type));
-		members.notEquals(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTEQUALS, equalityHeader, type));
-		members.same(new MethodInstance(BuiltinMethodSymbol.ARRAY_SAME, equalityHeader, type));
-		members.notSame(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTSAME, equalityHeader, type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_EQUALS, equalityHeader, type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTEQUALS, equalityHeader, type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_SAME, equalityHeader, type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTSAME, equalityHeader, type));
 
 		return members.build();
 

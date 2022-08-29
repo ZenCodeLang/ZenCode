@@ -149,7 +149,7 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? method.getName() : global.value();
 
 			FunctionHeader header = getHeaderConverter().getHeader(TypeVariableContext.EMPTY, method);
-			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, thisType, method, MethodID.method(name), header);
+			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, thisType, method, MethodID.staticMethod(name), header);
 			getCompiled().setMethodInfo(runtimeMethod, runtimeMethod.getNative());
 
 			globals.put(name, new ExpressionGlobal((compiler, position, typeArguments) ->

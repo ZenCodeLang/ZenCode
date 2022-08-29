@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 
 import java.util.*;
@@ -72,7 +73,7 @@ public class JavaCompilingClass {
 		module.module.setMethodInfo(method, compiling.compiled);
 
 		if (DEBUG_EMPTY && empty)
-			getContext().logger.trace("Class " + compiled.fullName + " not empty because of " + method.getName());
+			getContext().logger.trace("Class " + compiled.fullName + " not empty because of " + method.getID());
 		this.empty = false;
 	}
 
@@ -177,35 +178,53 @@ public class JavaCompilingClass {
 		private static final MethodNamer INSTANCE = new MethodNamer();
 
 		@Override
-		public String visitMethod(MethodID.Method method) {
-			return method.name;
+		public String visitInstanceMethod(String name) {
+			return name;
 		}
 
 		@Override
-		public String visitOperator(MethodID.Operator operator) {
-			return getOperatorName(operator.operator);
+		public String visitStaticMethod(String name) {
+			return name;
 		}
 
 		@Override
-		public String visitGetter(MethodID.Getter getter) {
-			String name = getter.name;
+		public String visitOperator(OperatorType operator) {
+			return getOperatorName(operator);
+		}
+
+		@Override
+		public String visitStaticOperator(OperatorType operator) {
+			return getOperatorName(operator);
+		}
+
+		@Override
+		public String visitGetter(String name) {
 			return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
 		}
 
 		@Override
-		public String visitSetter(MethodID.Setter setter) {
-			String name = setter.name;
+		public String visitSetter(String name) {
 			return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
 		}
 
 		@Override
-		public String visitCaster(MethodID.Caster caster) {
-			return "to" + JavaTypeNameVisitor.INSTANCE.process(caster.toType);
+		public String visitStaticGetter(String name) {
+			return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
 		}
 
 		@Override
-		public String visitIterator(MethodID.Iterator iterator) {
-			return iterator.variables == 1 ? "iterator" : "iterator" + iterator.variables;
+		public String visitStaticSetter(String name) {
+			return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+		}
+
+		@Override
+		public String visitCaster(TypeID type) {
+			return "to" + JavaTypeNameVisitor.INSTANCE.process(type);
+		}
+
+		@Override
+		public String visitIterator(int variables) {
+			return variables == 1 ? "iterator" : "iterator" + variables;
 		}
 
 		private String getOperatorName(OperatorType operator) {

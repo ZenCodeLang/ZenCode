@@ -99,7 +99,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		MethodID id = expression.method.getID();
 		switch (id.getKind()) {
-			case METHOD:
+			case INSTANCEMETHOD:
 			case OPERATOR:
 			case GETTER:
 			case SETTER:
@@ -119,7 +119,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		MethodID id = expression.member.getID();
 		switch (id.getKind()) {
-			case METHOD:
+			case INSTANCEMETHOD:
 			case OPERATOR:
 			case GETTER:
 			case SETTER:
@@ -695,7 +695,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	private void checkMemberAccess(CodePosition position, MethodInstance member) {
 		if (!hasAccess(member.getModifiers(), member.method.getDefiningType())) {
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.getName());
+			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.getID());
 		}
 	}
 

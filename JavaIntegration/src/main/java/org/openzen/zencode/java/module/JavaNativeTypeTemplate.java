@@ -75,7 +75,7 @@ public class JavaNativeTypeTemplate {
 	public Optional<CompilableExpression> getContextMember(String name) {
 		return getField(name)
 				.filter(JavaRuntimeField::isEnumConstant)
-				.map(f -> new EnumField(f));
+				.map(EnumField::new);
 	}
 
 	private void loadFields() {
@@ -130,11 +130,11 @@ public class JavaNativeTypeTemplate {
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value() == null ? method.getName() : methodAnnotation.value();
-				id = MethodID.method(name);
+				id = Modifiers.isStatic(method.getModifiers()) ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
 			} else if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
 				String name = methodAnnotation.value() == null ? method.getName() : methodAnnotation.value();
-				id = MethodID.method(name);
+				id = MethodID.staticMethod(name);
 				isStaticExpansion = true;
 			}
 			if (id == null)
