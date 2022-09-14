@@ -79,7 +79,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCompare(CompareExpression expression) {
-		if (!expression.right.type.equals(expression.operator.getHeader().parameters[0].type))
+		if (expression.operator.getHeader().parameters.length == 0)
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison operator has no parameters!");
+		else if (!expression.right.type.equals(expression.operator.getHeader().parameters[0].type))
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
 
 		checkMemberAccess(expression.position, expression.operator);
@@ -119,10 +121,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		MethodID id = expression.member.getID();
 		switch (id.getKind()) {
-			case INSTANCEMETHOD:
-			case OPERATOR:
-			case GETTER:
-			case SETTER:
+			case STATICOPERATOR:
+			case STATICMETHOD:
+			case STATICGETTER:
+			case STATICSETTER:
 				return null;
 			default:
 				validator.logError(ValidationLogEntry.Code.INVALID_METHOD_TYPE, expression.position, "Invalid method type: " + id.getKind());
@@ -473,18 +475,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			if (!hasDefault)
 				validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: must have a default option");
 		}
-		return null;
-	}
-
-	@Override
-	public Void visitNew(NewExpression expression) {
-		new TypeValidator(validator, expression.position).validate(TypeContext.CONSTRUCTOR_TYPE, expression.constructor.getTarget());
-		checkMemberAccess(expression.position, expression.constructor);
-		checkCallArguments(
-				expression.position,
-				expression.constructor.getHeader(),
-				expression.instancedHeader,
-				expression.arguments);
 		return null;
 	}
 

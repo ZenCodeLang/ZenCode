@@ -34,8 +34,6 @@ public class ParsedGetter extends ParsedFunctionalMember {
 	}
 
 	private class Compiling extends BaseCompiling<GetterMember> {
-		private GetterMember compiled;
-
 		public Compiling(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
 			super(compiler, definition, implementation);
 		}

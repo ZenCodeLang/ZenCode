@@ -6,9 +6,9 @@ import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -19,7 +19,7 @@ public class EnumConstantMember implements CompilableExpression {
 	public final int ordinal;
 
 	public Expression value = null;
-	public NewExpression constructor = null;
+	public CallStaticExpression constructor = null;
 
 	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int ordinal) {
 		this.position = position;

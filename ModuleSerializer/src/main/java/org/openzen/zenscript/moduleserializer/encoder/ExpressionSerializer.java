@@ -532,18 +532,6 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitNew(StatementSerializationContext context, NewExpression expression) {
-		output.writeUInt(ExpressionEncoding.TYPE_NEW);
-		int flags = getFlags(expression);
-		serialize(flags, expression);
-
-		output.serialize(context, expression.constructor.getOwnerType());
-		output.write(context, expression.constructor);
-		output.serialize(context, expression.arguments);
-		return null;
-	}
-
-	@Override
 	public Void visitNull(StatementSerializationContext context, NullExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_NULL);
 		int flags = getFlags(expression);

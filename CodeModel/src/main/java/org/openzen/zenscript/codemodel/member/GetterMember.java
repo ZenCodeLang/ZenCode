@@ -97,9 +97,4 @@ public class GetterMember extends FunctionalMember {
 
 		return result;
 	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
 }

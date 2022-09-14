@@ -90,10 +90,4 @@ public class SetterMember extends FunctionalMember {
 
 		return result;
 	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
 }

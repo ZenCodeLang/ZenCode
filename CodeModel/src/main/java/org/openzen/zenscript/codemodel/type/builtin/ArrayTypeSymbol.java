@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -202,9 +203,16 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_ISEMPTY));
 		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_HASHCODE));
-		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES));
+		members.iterator(new IteratorInstance(
+				type,
+				new TypeID[] { baseType },
+				mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_VALUES)));
+
 		if (dimension == 1) {
-			members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES));
+			members.iterator(new IteratorInstance(
+					type,
+					new TypeID[] { USIZE, baseType },
+					mapper.map(type, BuiltinMethodSymbol.ITERATOR_ARRAY_KEY_VALUES)));
 		}
 
 		FunctionHeader equalityHeader = new FunctionHeader(BOOL, type);
@@ -214,7 +222,6 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_NOTSAME, equalityHeader, type));
 
 		return members.build();
-
 	}
 
 	@Override

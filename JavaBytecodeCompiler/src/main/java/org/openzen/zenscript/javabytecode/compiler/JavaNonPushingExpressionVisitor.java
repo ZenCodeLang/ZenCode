@@ -446,12 +446,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
-	public Void visitNew(NewExpression expression) {
-		fallback(expression);
-		return null;
-	}
-
-	@Override
 	public Void visitNull(NullExpression expression) {
 		return null;
 	}

@@ -30,16 +30,16 @@ public class JavaRuntimeClass implements TypeSymbol {
 	private final TypeVariableContext context = new TypeVariableContext();
 
 	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, TypeID target, JavaClass.Kind kind) {
+		this.module = module;
+		this.cls = cls;
+		this.javaClass = JavaClass.fromInternalName(Type.getInternalName(cls), kind);
+		this.modifiers = translateModifiers(cls.getModifiers());
+		this.typeParameters = translateTypeParameters(cls);
+
 		if (target == null)
 			target = DefinitionTypeID.createThis(this);
 
-		this.module = module;
-		this.javaClass = JavaClass.fromInternalName(Type.getInternalName(cls), kind);
-		this.cls = cls;
-		this.modifiers = translateModifiers(cls.getModifiers());
-
 		this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
-		this.typeParameters = translateTypeParameters(cls);
 	}
 
 	@Override

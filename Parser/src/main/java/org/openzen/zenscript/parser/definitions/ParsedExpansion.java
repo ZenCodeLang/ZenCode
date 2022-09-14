@@ -104,10 +104,15 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 		@Override
 		public void linkTypes() {
-			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, ParsedExpansion.this.parameters);
-			compiled.target = ParsedExpansion.this.target.compile(compiler.types());
+			TypeBuilder typeBuilder = compiler.types().withGeneric(compiled.typeParameters);
+			ParsedTypeParameter.compile(typeBuilder, compiled.typeParameters, ParsedExpansion.this.parameters);
+			compiled.target = ParsedExpansion.this.target.compile(typeBuilder);
 			if (compiled.target == null)
 				throw new RuntimeException(position + ": Could not compile expansion target: " + target);
+
+			for (CompilingMember member : members) {
+				member.linkTypes();
+			}
 		}
 
 		@Override

@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.identifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public final class MethodID {
@@ -62,7 +63,7 @@ public final class MethodID {
 	}
 
 	public static MethodID iterator(int variables) {
-		return new MethodID(Kind.OPERATOR, variables);
+		return new MethodID(Kind.ITERATOR, variables);
 	}
 
 	// I wish we had unions ^^
@@ -73,6 +74,9 @@ public final class MethodID {
 	private final int variables;
 
 	private MethodID(Kind kind, String name) {
+		if (name == null)
+			throw new NullPointerException();
+
 		this.kind = kind;
 		this.name = name;
 		this.operator = null;
@@ -81,6 +85,9 @@ public final class MethodID {
 	}
 
 	private MethodID(Kind kind, OperatorType operator) {
+		if (operator == null)
+			throw new NullPointerException();
+
 		this.kind = kind;
 		this.name = null;
 		this.operator = operator;
@@ -89,6 +96,9 @@ public final class MethodID {
 	}
 
 	private MethodID(Kind kind, TypeID type) {
+		if (type == null)
+			throw new NullPointerException();
+
 		this.kind = kind;
 		this.name = null;
 		this.operator = null;
@@ -141,6 +151,63 @@ public final class MethodID {
 
 	public Optional<OperatorType> getOperator() {
 		return Optional.ofNullable(operator);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = kind.ordinal();
+		switch (kind) {
+			case INSTANCEMETHOD:
+			case STATICMETHOD:
+			case GETTER:
+			case SETTER:
+			case STATICGETTER:
+			case STATICSETTER:
+				return result * 97 + name.hashCode();
+			case OPERATOR:
+			case STATICOPERATOR:
+				if (operator == null)
+					throw new AssertionError();
+
+				return result * 97 + operator.ordinal();
+			case CASTER:
+				return result * 97 + type.hashCode();
+			case ITERATOR:
+				return result * 97 + variables;
+			default:
+				return result;
+		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other)
+			return true;
+		if (getClass() != other.getClass())
+			return false;
+
+		MethodID otherMethod = (MethodID) other;
+		if (this.kind != otherMethod.kind)
+			return false;
+
+		switch (kind) {
+			case INSTANCEMETHOD:
+			case STATICMETHOD:
+			case GETTER:
+			case SETTER:
+			case STATICGETTER:
+			case STATICSETTER:
+				return name.equals(otherMethod.name);
+			case OPERATOR:
+			case STATICOPERATOR:
+				return operator.equals(otherMethod.operator);
+			case CASTER:
+				return type.equals(otherMethod.type);
+			case ITERATOR:
+				return variables == otherMethod.variables;
+			default:
+				return false;
+		}
 	}
 
 	public interface Visitor<T> {

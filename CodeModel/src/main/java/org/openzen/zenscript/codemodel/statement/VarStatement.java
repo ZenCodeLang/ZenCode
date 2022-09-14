@@ -9,6 +9,8 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.function.Consumer;
 
 public class VarStatement extends Statement {
+	public static final VarStatement[] NONE = new VarStatement[0];
+
 	public final String name;
 	public final TypeID type;
 	public final Expression initializer;

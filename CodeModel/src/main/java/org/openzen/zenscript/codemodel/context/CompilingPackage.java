@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.context;
 
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -10,12 +10,13 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CompilingPackage {
 	public final ModuleSymbol module;
 	private final ZSPackage pkg;
 	private final Map<String, CompilingPackage> packages = new HashMap<>();
-	private final Map<String, CompilingType> types = new HashMap<>();
+	private final Map<String, CompilingDefinition> types = new HashMap<>();
 
 	public CompilingPackage(ZSPackage pkg, ModuleSymbol module) {
 		this.pkg = pkg;
@@ -39,59 +40,39 @@ public class CompilingPackage {
 		packages.put(name, package_);
 	}
 
-	public void addType(String name, CompilingType type) {
+	public void addType(String name, CompilingDefinition type) {
 		types.put(name, type);
 	}
 
-	public HighLevelDefinition getImport(TypeResolutionContext context, List<String> name) {
-		return getImport(context, name, 0);
+	public Optional<TypeID> getType(List<GenericName> name) {
+		return Optional.ofNullable(getType(name, 0));
 	}
 
-	private HighLevelDefinition getImport(TypeResolutionContext context, List<String> name, int index) {
-		if (packages.containsKey(name.get(index)))
-			return packages.get(name.get(index)).getImport(context, name, index + 1);
-		if (types.containsKey(name.get(index)))
-			return getImportType(context, types.get(name.get(index)), name, index + 1);
-
-		return null;
-	}
-
-	private HighLevelDefinition getImportType(TypeResolutionContext context, CompilingType type, List<String> name, int index) {
-		if (index == name.size())
-			return type.load();
-
-		return getImportType(context, type.getInner(name.get(index)), name, index + 1);
-	}
-
-	public TypeID getType(TypeResolutionContext context, List<GenericName> name) {
-		return getType(context, name, 0);
-	}
-
-	private TypeID getType(TypeResolutionContext context, List<GenericName> name, int index) {
+	private TypeID getType( List<GenericName> name, int index) {
 		if (index == name.size())
 			return null;
 
 		if (packages.containsKey(name.get(index).name))
-			return packages.get(name.get(index).name).getType(context, name, index + 1);
+			return packages.get(name.get(index).name).getType(name, index + 1);
 
 		if (types.containsKey(name.get(index).name)) {
-			CompilingType type = types.get(name.get(index).name);
-			TypeID result = DefinitionTypeID.create(type.load(), name.get(index).arguments);
-			return getInner(context, name, index + 1, type, result);
+			CompilingDefinition type = types.get(name.get(index).name);
+			TypeID result = DefinitionTypeID.create(type.getDefinition(), name.get(index).arguments);
+			return getInner(name, index + 1, type, result);
 		}
 
 		return null;
 	}
 
-	private TypeID getInner(TypeResolutionContext context, List<GenericName> name, int index, CompilingType type, TypeID result) {
+	private TypeID getInner(List<GenericName> name, int index, CompilingDefinition type, TypeID result) {
 		if (index == name.size())
 			return result;
 
-		CompilingType innerType = type.getInner(name.get(index).name);
-		if (innerType == null)
+		Optional<CompilingDefinition> innerType = type.getInner(name.get(index).name);
+		if (!innerType.isPresent())
 			return null;
 
-		TypeID innerResult = DefinitionTypeID.create(innerType.load(), name.get(index).arguments);
-		return getInner(context, name, index + 1, innerType, innerResult);
+		TypeID innerResult = DefinitionTypeID.create(innerType.get().getDefinition(), name.get(index).arguments);
+		return getInner(name, index + 1, innerType.get(), innerResult);
 	}
 }

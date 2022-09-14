@@ -78,7 +78,6 @@ public class ParsedFile {
 			}
 		}
 
-
 		ZSPackage rootPackage = registry.collectPackages();
 
 		definitions = sortTopologically(definitions);
@@ -96,6 +95,9 @@ public class ParsedFile {
 			}
 		}
 
+		for (CompilingDefinition definition : definitions) {
+			pkg.addType(definition.getName(), definition);
+		}
 		for (CompilingExpansion expansion : expansions) {
 			context.addExpansion(expansion.getCompiling());
 		}
@@ -103,6 +105,9 @@ public class ParsedFile {
 			if (!definition.isInner()) {
 				definition.linkTypes();
 			}
+		}
+		for (CompilingExpansion expansion : expansions) {
+			expansion.linkTypes();
 		}
 		{
 			List<CompileException> errors = new ArrayList<>();

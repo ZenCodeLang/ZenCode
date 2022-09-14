@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalParameterExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalVariableExpression;
@@ -25,6 +26,7 @@ public class LocalSymbols {
 	private final LoopStatement loop;
 	private final FunctionHeader header;
 	private final Map<String, VarStatement> localVariables = new HashMap<>();
+	private final CompilableExpression dollar;
 
 	public LocalSymbols(FunctionHeader header) {
 		this.parent = null;
@@ -32,6 +34,7 @@ public class LocalSymbols {
 		this.closure = null;
 		this.loop = null;
 		this.loopName = null;
+		this.dollar = null;
 	}
 
 	private LocalSymbols(LocalSymbols parent, FunctionHeader header, LambdaClosure closure) {
@@ -40,6 +43,7 @@ public class LocalSymbols {
 		this.loopName = null;
 		this.header = header;
 		this.closure = closure;
+		this.dollar = null;
 	}
 
 	private LocalSymbols(LocalSymbols parent, LoopStatement loop, String... loopName) {
@@ -48,6 +52,10 @@ public class LocalSymbols {
 		this.loop = loop;
 		this.loopName = loopName;
 		this.header = null;
+		this.dollar = null;
+
+		for (VarStatement loopVariable : loop.getLoopVariables())
+			localVariables.put(loopVariable.name, loopVariable);
 	}
 
 	public LocalSymbols forBlock() {
@@ -102,5 +110,9 @@ public class LocalSymbols {
 			return parent.findLocalVariable(position, name).map(var -> var.capture(closure));
 		else
 			return parent.findLocalVariable(position, name);
+	}
+
+	public Optional<CompilableExpression> getDollar() {
+		return Optional.ofNullable(dollar);
 	}
 }

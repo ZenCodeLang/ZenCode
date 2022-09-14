@@ -70,9 +70,4 @@ public class MethodMember extends FunctionalMember {
 		this.overrides = overrides;
 		header = header.inferFromOverride(overrides.getHeader());
 	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
 }

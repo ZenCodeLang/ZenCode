@@ -53,7 +53,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	 * @return expression compiler
 	 */
 	public ExpressionCompiler createStaticCompiler() {
-		return new ExpressionCompilerImpl(this,null, null, LocalSymbols.empty(), null);
+		return new ExpressionCompilerImpl(this,null, this, null, LocalSymbols.empty(), null);
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	 * @return expression compiler suited for the local context
 	 */
 	public ExpressionCompiler createExpressionCompiler(LocalType localType, TypeID thrownType, LocalSymbols locals, FunctionHeader header) {
-		return new ExpressionCompilerImpl(this, localType, thrownType, locals, header);
+		return new ExpressionCompilerImpl(this, localType, this, thrownType, locals, header);
 	}
 
 	public void addCompiling(CompilingDefinition definition) {

@@ -227,11 +227,6 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitNew(NewExpression expression) {
-		return true;
-	}
-
-	@Override
 	public Boolean visitNull(NullExpression expression) {
 		return false;
 	}

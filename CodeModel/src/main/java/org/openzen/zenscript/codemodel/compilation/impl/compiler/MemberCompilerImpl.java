@@ -30,12 +30,12 @@ public class MemberCompilerImpl implements MemberCompiler {
 
 	@Override
 	public ExpressionCompiler forFieldInitializers() {
-		return new ExpressionCompilerImpl(context, localType, null, LocalSymbols.empty(), FunctionHeader.EMPTY);
+		return new ExpressionCompilerImpl(context, localType, types, null, LocalSymbols.empty(), FunctionHeader.EMPTY);
 	}
 
 	@Override
 	public StatementCompiler forMethod(FunctionHeader header) {
-		return new StatementCompilerImpl(context, localType, header, new LocalSymbols(header));
+		return new StatementCompilerImpl(context, localType, types, header, new LocalSymbols(header));
 	}
 
 	@Override

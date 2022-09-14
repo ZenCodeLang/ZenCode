@@ -16,6 +16,9 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	public static TypeID createThis(TypeSymbol definition) {
+		if (definition.getTypeParameters() == null)
+			throw new AssertionError("Definition has null type parameters: " + definition.getName());
+
 		return create(definition, Arrays.stream(definition.getTypeParameters()).map(GenericTypeID::new).toArray(TypeID[]::new));
 	}
 

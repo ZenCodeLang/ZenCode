@@ -53,8 +53,8 @@ public class ParsedExpressionArray extends ParsedExpression {
 						compiler.types().arrayOf(BasicTypeID.UNDETERMINED));
 
 			Expression[] elements = new Expression[this.elements.length];
-			TypeID elementType = elements[0].type;
 			elements[0] = this.elements[0].eval();
+			TypeID elementType = elements[0].type;
 			for (int i = 1; i < elements.length; i++) {
 				elements[i] = this.elements[i].eval();
 				Optional<TypeID> maybeJoinedType = compiler.union(elementType, elements[i].type);

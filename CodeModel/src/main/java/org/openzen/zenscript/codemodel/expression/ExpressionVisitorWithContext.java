@@ -89,8 +89,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitMatch(C context, MatchExpression expression);
 
-	R visitNew(C context, NewExpression expression);
-
 	R visitNull(C context, NullExpression expression);
 
 	R visitOrOr(C context, OrOrExpression expression);

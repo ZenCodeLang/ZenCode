@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.lexer.ParseException;
@@ -97,20 +98,16 @@ public class ParsedVariant extends BaseParsedDefinition {
 		return new Compiling(compiler, compiled, outer != null);
 	}
 
-	private class Compiling extends BaseCompilingDefinition {
-		private final VariantDefinition compiled;
-
+	private class Compiling extends BaseCompilingDefinition<VariantDefinition> {
 		private Compiling(DefinitionCompiler compiler, VariantDefinition compiled, boolean inner) {
 			super(ParsedVariant.this, compiler, name, compiled, inner);
-
-			this.compiled = compiled;
 		}
 
 		@Override
 		public void linkTypes() {
 			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, typeParameters);
 			for (ParsedVariantOption variant : variants) {
-				compiled.options.add(variant.compile(compiled, compiler.types()));
+				compiled.options.add(variant.compile(compiled, compiler.types().withGeneric(compiled.typeParameters)));
 			}
 
 			super.linkTypes();

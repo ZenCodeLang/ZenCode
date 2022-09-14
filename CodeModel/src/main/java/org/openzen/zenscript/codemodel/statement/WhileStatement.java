@@ -62,4 +62,9 @@ public class WhileStatement extends LoopStatement {
 	public TypeID getReturnType() {
 		return content.getReturnType();
 	}
+
+	@Override
+	public VarStatement[] getLoopVariables() {
+		return VarStatement.NONE;
+	}
 }

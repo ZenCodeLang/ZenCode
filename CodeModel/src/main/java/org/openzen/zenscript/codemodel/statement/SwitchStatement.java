@@ -86,4 +86,9 @@ public class SwitchStatement extends LoopStatement {
 			//TODO make this real
 			throw new IllegalStateException("Too many possible types: " + c);
 	}
+
+	@Override
+	public VarStatement[] getLoopVariables() {
+		return VarStatement.NONE;
+	}
 }

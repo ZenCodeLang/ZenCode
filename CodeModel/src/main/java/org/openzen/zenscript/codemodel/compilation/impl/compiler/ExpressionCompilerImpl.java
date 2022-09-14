@@ -22,6 +22,7 @@ import java.util.Optional;
 public class ExpressionCompilerImpl implements ExpressionCompiler {
 	private final CompileContext context;
 	private final LocalType localType;
+	private final TypeBuilder types;
 	private final TypeID thrownType;
 	private final LocalSymbols locals;
 	private final FunctionHeader header;
@@ -29,12 +30,14 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	public ExpressionCompilerImpl(
 			CompileContext context,
 			LocalType localType,
+			TypeBuilder types,
 			TypeID thrownType,
 			LocalSymbols locals,
 			FunctionHeader header
 	) {
 		this.context = context;
 		this.localType = localType;
+		this.types = types;
 		this.thrownType = thrownType;
 		this.locals = locals;
 		this.header = header;
@@ -66,7 +69,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 	@Override
 	public TypeBuilder types() {
-		return context;
+		return types;
 	}
 
 	@Override
@@ -80,13 +83,13 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		if (global.isPresent())
 			return global.map(g -> g.getExpression(position, name.arguments).compile(this));
 
-		return context.resolve(position, Collections.singletonList(name))
+		return types.resolve(position, Collections.singletonList(name))
 				.map(type -> new TypeCompilingExpression(this, position, type));
 	}
 
 	@Override
 	public Optional<CompilingExpression> dollar() {
-		throw new UnsupportedOperationException("Not yet implemented");
+		return locals.getDollar().map(e -> e.compile(this));
 	}
 
 	@Override
@@ -130,13 +133,13 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		for (VarStatement variable : variables) {
 			newLocals.add(variable);
 		}
-		return new ExpressionCompilerImpl(context, localType, thrownType, newLocals, header);
+		return new ExpressionCompilerImpl(context, localType, types, thrownType, newLocals, header);
 	}
 
 	@Override
 	public StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header) {
 		LocalSymbols newLocals = locals.forLambda(closure, header);
-		return new StatementCompilerImpl(context, localType, header, newLocals);
+		return new StatementCompilerImpl(context, localType, types, header, newLocals);
 	}
 
 	@Override

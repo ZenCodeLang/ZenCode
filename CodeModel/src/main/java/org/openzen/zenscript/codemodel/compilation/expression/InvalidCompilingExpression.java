@@ -1,11 +1,14 @@
 package org.openzen.zenscript.codemodel.compilation.expression;
 
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.expression.Expression;
 
-public class InvalidCompilingExpression extends AbstractCompilingExpression {
+import java.util.Optional;
+
+public class InvalidCompilingExpression extends AbstractCompilingExpression implements CompilingCallable {
 	private final CompileError error;
 
 	public InvalidCompilingExpression(ExpressionCompiler compiler, CodePosition position, CompileError error) {
@@ -21,5 +24,30 @@ public class InvalidCompilingExpression extends AbstractCompilingExpression {
 	@Override
 	public CastedExpression cast(CastedEval cast) {
 		return cast.invalid(error);
+	}
+
+	@Override
+	public Optional<CompilingCallable> call() {
+		return Optional.of(this);
+	}
+
+	@Override
+	public CompilingExpression getMember(CodePosition position, GenericName name) {
+		return this;
+	}
+
+	@Override
+	public CompilingExpression assign(CompilingExpression value) {
+		return compiler.invalid(position, CompileErrors.invalidLValue());
+	}
+
+	@Override
+	public Expression call(CodePosition position, CompilingExpression[] arguments) {
+		return compiler.at(position).invalid(error);
+	}
+
+	@Override
+	public CastedExpression casted(CodePosition position, CastedEval cast, CompilingExpression[] arguments) {
+		return CastedExpression.invalid(compiler.at(position).invalid(error));
 	}
 }

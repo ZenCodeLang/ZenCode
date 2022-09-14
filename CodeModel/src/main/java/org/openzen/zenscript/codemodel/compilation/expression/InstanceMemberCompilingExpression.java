@@ -37,9 +37,10 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 	@Override
 	public Optional<CompilingCallable> call() {
-		return compiler.resolve(instance.type)
+		return Optional.of(compiler.resolve(instance.type)
 				.findMethod(name.name)
-				.map(method -> method.bind(compiler, instance, name.arguments));
+				.map(method -> method.bind(compiler, instance, name.arguments))
+				.orElseGet(() -> new InvalidCompilingExpression(compiler, position, CompileErrors.noMemberInType(instance.type, name.name))));
 	}
 
 	@Override

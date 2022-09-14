@@ -10,11 +10,11 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 import java.util.*;
 
-public class BaseCompilingDefinition implements CompilingDefinition {
+public class BaseCompilingDefinition<T extends HighLevelDefinition> implements CompilingDefinition {
 	protected final DefinitionCompiler compiler;
 	private final String name;
 	private final CompilingMember[] members;
-	private final HighLevelDefinition compiled;
+	protected final T compiled;
 	private final boolean inner;
 	private final Map<String, CompilingDefinition> innerDefinitions = new HashMap<>();
 
@@ -22,7 +22,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 			BaseParsedDefinition parsedDefinition,
 			DefinitionCompiler compiler,
 			String name,
-			HighLevelDefinition compiled,
+			T compiled,
 			boolean isInner
 	) {
 		this.compiler = compiler;
@@ -63,6 +63,7 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 	public void linkTypes() {
 		for (CompilingMember member : members) {
 			member.linkTypes();
+			compiled.addMember(member.getCompiled());
 		}
 	}
 

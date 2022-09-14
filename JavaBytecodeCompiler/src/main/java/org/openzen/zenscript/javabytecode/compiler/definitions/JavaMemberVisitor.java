@@ -352,7 +352,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 					argument.accept(clinitStatementVisitor.expressionVisitor);
 				}
 
-				clinitWriter.invokeSpecial(internalName, "<init>", context.getEnumConstructorDescriptor(constant.constructor.constructor.getHeader()));
+				clinitWriter.invokeSpecial(internalName, "<init>", context.getEnumConstructorDescriptor(constant.constructor.member.getHeader()));
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
 			}
 

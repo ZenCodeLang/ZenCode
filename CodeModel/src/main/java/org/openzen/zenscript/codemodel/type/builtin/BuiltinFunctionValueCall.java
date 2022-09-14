@@ -35,17 +35,12 @@ public class BuiltinFunctionValueCall implements MethodSymbol {
 
 	@Override
 	public Modifiers getModifiers() {
-		return Modifiers.PUBLIC_STATIC;
+		return id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
 	}
 
 	@Override
 	public MethodID getID() {
 		return id;
-	}
-
-	@Override
-	public String getName() {
-		return "()";
 	}
 
 	@Override

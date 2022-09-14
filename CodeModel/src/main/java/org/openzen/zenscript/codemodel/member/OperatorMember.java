@@ -67,11 +67,6 @@ public class OperatorMember extends FunctionalMember {
 	}
 
 	@Override
-	public String getName() {
-		return operator.operator;
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

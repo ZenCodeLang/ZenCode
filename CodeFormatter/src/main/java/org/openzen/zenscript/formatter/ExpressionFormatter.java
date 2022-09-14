@@ -227,8 +227,14 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 			}
 			case OPERATOR:
-				MethodID.Operator operator = (MethodID.Operator) id;
-				if (operator.operator == OperatorType.CALL) {
+				MethodID operator = (MethodID.Operator) id;
+				if (operator == OperatorType.CONSTRUCTOR) {
+					StringBuilder result = new StringBuilder();
+					result.append("new ");
+					result.append(typeFormatter.format(expression.type));
+					FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+					return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
+				} else if (operator.operator == OperatorType.CALL) {
 					// nothing
 				} else {
 					result.append(".");
@@ -493,15 +499,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.value.accept(this));
 		result.append(" {\n");
 
-		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
-	}
-
-	@Override
-	public ExpressionString visitNew(NewExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append("new ");
-		result.append(typeFormatter.format(expression.type));
-		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 	}
 

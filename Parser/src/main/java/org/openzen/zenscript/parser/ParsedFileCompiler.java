@@ -53,12 +53,12 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 
 	@Override
 	public MemberCompiler forMembers(TypeSymbol compiled) {
-		return new MemberCompilerImpl(context, this, compiled, localTypeBuilder);
+		return new MemberCompilerImpl(context, this, compiled, localTypeBuilder.withGeneric(compiled.getTypeParameters()));
 	}
 
 	@Override
 	public StatementCompiler forScripts(FunctionHeader scriptHeader) {
-		return new StatementCompilerImpl(context, null, scriptHeader, new LocalSymbols(scriptHeader));
+		return new StatementCompilerImpl(context, null, localTypeBuilder, scriptHeader, new LocalSymbols(scriptHeader));
 	}
 
 	private class FileTypeBuilder extends AbstractTypeBuilder {
@@ -80,6 +80,11 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 				}
 				return Optional.of(type);
 			}
+
+			Optional<TypeID> fromPackage = pkg.getType(name);
+			if (fromPackage.isPresent())
+				return fromPackage;
+
 			return context.resolve(position, name);
 		}
 
@@ -90,7 +95,7 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 
 		@Override
 		public ExpressionCompiler getDefaultValueCompiler() {
-			return new ExpressionCompilerImpl(context, null, null, LocalSymbols.empty(), FunctionHeader.EMPTY);
+			return new ExpressionCompilerImpl(context, null, localTypeBuilder, null, LocalSymbols.empty(), FunctionHeader.EMPTY);
 		}
 	}
 }

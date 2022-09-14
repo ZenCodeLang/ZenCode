@@ -417,7 +417,7 @@ public class FunctionHeader {
 				result.append(", ");
 			result.append(parameters[i].toString());
 		}
-		result.append(") as ");
+		result.append("): ");
 		result.append(returnType.toString());
 		return result.toString();
 	}

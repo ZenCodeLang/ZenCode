@@ -7,6 +7,8 @@ import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
@@ -28,6 +30,7 @@ import static org.openzen.zenscript.javabytecode.compiler.JavaMethodBytecodeComp
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final MethodID CONSTRUCTOR = MethodID.operator(OperatorType.CONSTRUCTOR);
 
 	final JavaWriter javaWriter;
 	final JavaBytecodeContext context;
@@ -249,7 +252,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
 		JavaMethod method = context.getJavaMethod(expression.member.method);
-		method.compileStatic(methodCompiler, expression.type, expression.arguments);
+		if (expression.member.getID().equals(CONSTRUCTOR)) {
+			method.compileConstructor(methodCompiler, expression.type, expression.arguments);
+		} else {
+			method.compileStatic(methodCompiler, expression.type, expression.arguments);
+		}
 		return null;
 	}
 
@@ -763,13 +770,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		if (!CompilerUtils.isPrimitive(expression.type)) {
 			javaWriter.checkCast(context.getType(expression.type));
 		}
-		return null;
-	}
-
-	@Override
-	public Void visitNew(NewExpression expression) {
-		JavaMethod method = context.getJavaMethod(expression.constructor.method);
-		method.compileConstructor(methodCompiler, expression.type, expression.arguments);
 		return null;
 	}
 

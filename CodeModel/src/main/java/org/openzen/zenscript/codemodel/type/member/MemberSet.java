@@ -25,6 +25,7 @@ public class MemberSet implements ResolvedType {
 	private final Map<String, CompilableExpression> contextMembers = new HashMap<>();
 	private final Map<String, SwitchMember> switchMembers = new HashMap<>();
 	private final Map<String, TypeSymbol> innerTypes = new HashMap<>();
+	private final List<IteratorInstance> iterators = new ArrayList<>();
 	private Comparator comparator;
 
 	@Override
@@ -125,23 +126,22 @@ public class MemberSet implements ResolvedType {
 
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
-		throw new UnsupportedOperationException("Not yet supported");
+		for (IteratorInstance iterator : iterators) {
+			if (iterator.getLoopVariableCount() == variables)
+				return Optional.of(iterator);
+		}
+
+		return Optional.empty();
 	}
 
 	private Optional<StaticCallable> findStatic(MethodID id) {
-		if (!this.instanceMethods.containsKey(id))
-			return Optional.empty();
-
 		List<StaticCallableMethod> methods = this.staticMethods.get(id);
-		return methods.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(methods));
+		return methods == null || methods.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(methods));
 	}
 
 	private Optional<InstanceCallable> find(MethodID id) {
-		if (!this.instanceMethods.containsKey(id))
-			return Optional.empty();
-
 		List<InstanceCallableMethod> methods = this.instanceMethods.get(id);
-		return methods.isEmpty() ? Optional.empty() : Optional.of(new InstanceCallable(methods));
+		return methods == null || methods.isEmpty() ? Optional.empty() : Optional.of(new InstanceCallable(methods));
 	}
 
 	public static class Builder {
@@ -197,6 +197,11 @@ public class MemberSet implements ResolvedType {
 
 		public Builder comparator(Comparator comparator) {
 			target.comparator = comparator;
+			return this;
+		}
+
+		public Builder iterator(IteratorInstance iterator) {
+			target.iterators.add(iterator);
 			return this;
 		}
 

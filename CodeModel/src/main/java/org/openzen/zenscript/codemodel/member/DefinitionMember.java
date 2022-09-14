@@ -13,16 +13,18 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
-	public final TypeSymbol target;
-	public final TypeID targetType;
+	protected final TypeID targetType;
 	protected final Modifiers modifiers;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 
 	public DefinitionMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers) {
 		this.position = position;
 		this.definition = definition;
-		this.target = (definition instanceof ExpansionDefinition) ? ((ExpansionDefinition)definition).target.asDefinition().get().definition : definition;
-		this.targetType = definition.isExpansion() ? ((ExpansionDefinition)definition).target : DefinitionTypeID.createThis(definition);
+		if (definition instanceof ExpansionDefinition) {
+			this.targetType = ((ExpansionDefinition)definition).target;
+		} else {
+			this.targetType = DefinitionTypeID.createThis(definition);
+		}
 		this.modifiers = modifiers;
 	}
 

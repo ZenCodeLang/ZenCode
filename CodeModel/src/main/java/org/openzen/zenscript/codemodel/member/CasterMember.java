@@ -67,11 +67,6 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
-	public String getName() {
-		return "as " + toType;
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

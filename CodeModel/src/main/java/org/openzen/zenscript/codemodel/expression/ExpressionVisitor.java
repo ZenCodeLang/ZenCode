@@ -93,8 +93,6 @@ public interface ExpressionVisitor<T> {
 
 	T visitMatch(MatchExpression expression);
 
-	T visitNew(NewExpression expression);
-
 	T visitNull(NullExpression expression);
 
 	T visitOrOr(OrOrExpression expression);

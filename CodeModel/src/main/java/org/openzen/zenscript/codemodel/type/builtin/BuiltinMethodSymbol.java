@@ -557,32 +557,37 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	private final TypeID type;
 	private final MethodID id;
 	private final FunctionHeader header;
+	private final Modifiers modifiers;
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, FunctionHeader header) {
 		this.definingType = definingType;
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
 		this.id = id;
 		this.header = header;
+		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
 		this.id = id;
+		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
 		header = new FunctionHeader(result, parameters);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
 		this.definingType = definingType;
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = MethodID.operator(operator);
+		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
+		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
 		this.header = header;
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = MethodID.operator(operator);
+		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
+		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
 		header = new FunctionHeader(result, parameters);
 	}
 
@@ -598,17 +603,12 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 
 	@Override
 	public Modifiers getModifiers() {
-		return Modifiers.PUBLIC.withFinal();
+		return modifiers;
 	}
 
 	@Override
 	public MethodID getID() {
 		return id;
-	}
-
-	@Override
-	public String getName() {
-		return id.toString();
 	}
 
 	@Override

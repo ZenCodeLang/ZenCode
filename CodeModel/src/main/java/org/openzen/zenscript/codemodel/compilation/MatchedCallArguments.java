@@ -8,12 +8,10 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MatchedCallArguments<T extends AnyMethod> {
@@ -129,9 +127,28 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					typeArguments,
 					Expression.NONE);
 
-		if (result != null && (typeArguments == null || typeArguments.length == 0)) {
-			// attempt to infer type arguments from the map
-			final Map<TypeParameter, TypeID> typeArgumentMap = method.getHeader().getReturnType().inferTypeParameters(result);
+		if ((typeArguments == null || typeArguments.length == 0) && method.getHeader().typeParameters.length > 0) {
+			// attempt to infer type arguments from the return type
+			final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
+			if (result != null) {
+				typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result));
+			}
+
+			// create a mapping with everything found so far
+			// NOTE - this means that inference is sensitive to order of parameters
+			GenericMapper mapper = new GenericMapper(typeArgumentMap);
+
+			// now try to infer type arguments from the arguments
+			for (int i = 0; i < arguments.length; i++) {
+				CompilingExpression argument = arguments[i];
+				Expression evaluated = argument.eval();
+				if (evaluated.type != BasicTypeID.UNDETERMINED) {
+					TypeID parameterType = mapper.map(method.getHeader().parameters[i].type);
+					Map<TypeParameter, TypeID> mapping = parameterType.inferTypeParameters(evaluated.type);
+					if (mapping != null)
+						typeArgumentMap.putAll(mapping);
+				}
+			}
 
 			TypeID[] typeArguments2 = new TypeID[method.getHeader().typeParameters.length];
 			for (int i = 0; i < method.getHeader().typeParameters.length; i++) {
@@ -186,7 +203,8 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 		if (levelVarargCall != null && levelVarargCall.min(levelNormalCall) == levelVarargCall) {
 			cArguments[cArguments.length - 1] = compiler.at(position).newArray(new ArrayTypeID(variadicType), varargArguments.toArray(Expression.NONE));
+			levelNormalCall = levelVarargCall;
 		}
-		return new CallArguments(typeArguments, cArguments);
+		return new CallArguments(levelNormalCall, typeArguments, cArguments);
 	}
 }

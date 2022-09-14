@@ -22,8 +22,6 @@ public interface MethodSymbol {
 
 	MethodID getID();
 
-	String getName();
-
 	FunctionHeader getHeader();
 
 	Optional<MethodInstance> getOverrides();

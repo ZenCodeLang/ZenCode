@@ -38,10 +38,6 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 		return method.getID();
 	}
 
-	public String getName() {
-		return method.getName();
-	}
-
 	public Modifiers getModifiers() {
 		return method.getModifiers();
 	}

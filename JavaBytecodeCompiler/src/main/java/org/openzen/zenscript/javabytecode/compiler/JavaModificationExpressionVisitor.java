@@ -281,11 +281,6 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	@Override
-	public Void visitNew(NewExpression expression) {
-		throw new UnsupportedOperationException("Invalid lvalue: new");
-	}
-
-	@Override
 	public Void visitNull(NullExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: null");
 	}

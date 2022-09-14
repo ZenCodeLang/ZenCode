@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.compilation.impl.capture;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.compilation.CompilingCallable;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
@@ -9,6 +10,8 @@ import org.openzen.zenscript.codemodel.expression.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+
+import java.util.Optional;
 
 public class LocalParameterExpression implements LocalExpression {
 	private final CodePosition position;

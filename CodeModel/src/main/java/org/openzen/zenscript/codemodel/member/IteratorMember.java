@@ -69,11 +69,6 @@ public class IteratorMember extends FunctionalMember {
 	}
 
 	@Override
-	public String getName() {
-		return "iterator";
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.ofNullable(overrides);
 	}

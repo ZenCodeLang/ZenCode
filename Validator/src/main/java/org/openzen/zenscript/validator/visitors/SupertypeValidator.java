@@ -88,4 +88,10 @@ public class SupertypeValidator implements TypeVisitor<Void> {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a generic map");
 		return null;
 	}
+
+	@Override
+	public Void visitInvalid(InvalidTypeID type) {
+		validator.logError(ValidationLogEntry.Code.INVALID_SUPERTYPE, position, type.error.description);
+		return null;
+	}
 }

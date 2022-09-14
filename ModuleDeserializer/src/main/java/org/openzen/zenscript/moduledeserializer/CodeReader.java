@@ -750,12 +750,6 @@ public class CodeReader implements CodeSerializationInput {
 				}
 				return new MatchExpression(position, value, type, cases);
 			}
-			case ExpressionEncoding.TYPE_NEW: {
-				TypeID type = deserializeType(context);
-				MethodInstance member = (MethodInstance) readMember(context, type);
-				CallArguments arguments = deserializeArguments(context);
-				return new NewExpression(position, type, member, arguments);
-			}
 			case ExpressionEncoding.TYPE_NULL: {
 				TypeID type = deserializeType(context);
 				return new NullExpression(position, type);

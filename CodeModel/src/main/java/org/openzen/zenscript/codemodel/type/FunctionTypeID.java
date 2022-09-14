@@ -114,11 +114,11 @@ public class FunctionTypeID implements TypeID {
 
 			FunctionParameter parameter = header.parameters[i];
 			result.append(parameter.name);
-			result.append(" as ");
+			result.append(": ");
 			result.append(parameter.type);
 		}
 		result.append(')');
-		result.append(" as ");
+		result.append(": ");
 		result.append(header.getReturnType());
 		return result.toString();
 	}

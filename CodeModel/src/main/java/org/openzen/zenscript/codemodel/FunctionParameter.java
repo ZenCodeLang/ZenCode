@@ -56,7 +56,7 @@ public class FunctionParameter extends Taggable {
 
 	@Override
 	public String toString() {
-		return name + " as " + type.toString();
+		return name + ": " + type.toString();
 	}
 
 	@Override

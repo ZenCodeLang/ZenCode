@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -24,8 +25,12 @@ public class ConstructorMember extends FunctionalMember {
 				position,
 				definition,
 				modifiers,
-				MethodID.operator(OperatorType.CONSTRUCTOR),
-				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters));
+				MethodID.staticOperator(OperatorType.CONSTRUCTOR),
+				new FunctionHeader(
+						header.typeParameters,
+						DefinitionTypeID.createThis(definition),
+						header.thrownType,
+						header.parameters));
 	}
 
 	public boolean isConstructorForwarded() {
@@ -74,18 +79,13 @@ public class ConstructorMember extends FunctionalMember {
 	}
 
 	@Override
-	public String getName() {
-		return "this";
-	}
-
-	@Override
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.empty();
 	}
 
 	@Override
 	public Modifiers getEffectiveModifiers() {
-		Modifiers result = modifiers;
+		Modifiers result = modifiers.withStatic();
 		if (definition.isEnum())
 			result = result.withPrivate();
 		else if (!modifiers.hasAccessModifiers())

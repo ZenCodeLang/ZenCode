@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -82,7 +83,11 @@ public class RangeTypeSymbol implements TypeSymbol {
 				|| baseType == LONG
 				|| baseType == ULONG
 				|| baseType == USIZE) {
-			members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_INT_RANGE));
+			IteratorInstance iterator = new IteratorInstance(
+					type,
+					new TypeID[] { baseType },
+					mapper.map(type, BuiltinMethodSymbol.ITERATOR_INT_RANGE));
+			members.iterator(iterator);
 		}
 
 		return members.build();

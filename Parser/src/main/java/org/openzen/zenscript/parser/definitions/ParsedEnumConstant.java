@@ -3,7 +3,7 @@ package org.openzen.zenscript.parser.definitions;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.expression.NewExpression;
+import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -67,7 +67,7 @@ public class ParsedEnumConstant {
 
 		public void compileCode(TypeID type, ExpressionCompiler compiler) {
 			ResolvedType members = compiler.resolve(type);
-			compiled.constructor = (NewExpression) members.getConstructor().call(
+			compiled.constructor = (CallStaticExpression) members.getConstructor().call(
 					compiler,
 					position,
 					TypeID.NONE,

@@ -16,9 +16,6 @@ public class ConditionalExpression extends Expression {
 			TypeID type) {
 		super(position, type, binaryThrow(position, condition.thrownType, binaryThrow(position, ifThen.thrownType, ifElse.thrownType)));
 
-		if (!ifThen.type.equals(ifElse.type))
-			throw new AssertionError();
-
 		this.condition = condition;
 		this.ifThen = ifThen;
 		this.ifElse = ifElse;

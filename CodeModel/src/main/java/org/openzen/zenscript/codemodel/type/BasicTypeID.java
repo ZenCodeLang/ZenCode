@@ -76,6 +76,9 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 
 	@Override
 	public ResolvedType resolve() {
+		if (members == null)
+			members = BasicTypeMembers.get(this);
+
 		return members;
 	}
 

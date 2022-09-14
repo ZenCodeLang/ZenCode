@@ -36,7 +36,7 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 
 	@Override
 	public Modifiers getModifiers() {
-		return modifiers;
+		return getEffectiveModifiers();
 	}
 
 	@Override

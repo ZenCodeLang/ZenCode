@@ -13,15 +13,12 @@ import java.util.Optional;
 
 public class LocalTypeImpl implements LocalType {
 	private final TypeID thisType;
-	private final TypeID superType;
 	private final ResolvedType resolvedThis;
-	private final ResolvedType resolvedSuper;
+	private ResolvedType resolvedSuper;
 
 	public LocalTypeImpl(TypeSymbol definition, TypeResolver resolver) {
 		thisType = DefinitionTypeID.createThis(definition);
-		superType = thisType.getSuperType();
 		resolvedThis = resolver.resolve(thisType);
-		resolvedSuper = superType == null ? null : resolver.resolve(superType);
 	}
 
 	@Override
@@ -31,7 +28,7 @@ public class LocalTypeImpl implements LocalType {
 
 	@Override
 	public Optional<TypeID> getSuperType() {
-		return Optional.ofNullable(superType);
+		return Optional.ofNullable(thisType.getSuperType());
 	}
 
 	@Override
@@ -41,8 +38,14 @@ public class LocalTypeImpl implements LocalType {
 
 	@Override
 	public Optional<StaticCallable> superCall() {
+		if (thisType.getSuperType() == null)
+			return Optional.empty();
+
+		if (resolvedSuper == null)
+			resolvedSuper = thisType.getSuperType().resolve();
+
 		return Optional.ofNullable(resolvedSuper)
-				.map(super_ -> super_.getConstructor().map(constructor -> new SuperCallable(superType, constructor)));
+				.map(super_ -> super_.getConstructor().map(constructor -> new SuperCallable(thisType.getSuperType(), constructor)));
 	}
 
 	private static class ThisCallable implements StaticCallableMethod {

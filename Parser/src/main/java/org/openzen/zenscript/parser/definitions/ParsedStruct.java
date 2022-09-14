@@ -65,13 +65,10 @@ public class ParsedStruct extends BaseParsedDefinition {
 		return new Compiling(compiler, compiled, outer != null);
 	}
 
-	private class Compiling extends BaseCompilingDefinition {
-		private final StructDefinition compiled;
-
+	private class Compiling extends BaseCompilingDefinition<StructDefinition> {
 		public Compiling(DefinitionCompiler compiler, StructDefinition compiled, boolean inner) {
 			super(ParsedStruct.this, compiler, name, compiled, inner);
 
-			this.compiled = compiled;
 			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 		}
 

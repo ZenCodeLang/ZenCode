@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -354,7 +355,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 			reader.enqueueCode(input -> {
 				MethodInstance constructor = (MethodInstance) reader.readMember(context, type);
 				CallArguments arguments = reader.deserializeArguments(initContext);
-				constant.constructor = new NewExpression(position, type, constructor, arguments);
+				constant.constructor = new CallStaticExpression(position, constructor, arguments);
 			});
 			definition.enumConstants.add(constant);
 		}

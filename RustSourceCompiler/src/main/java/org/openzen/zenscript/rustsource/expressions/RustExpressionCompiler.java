@@ -276,11 +276,6 @@ public class RustExpressionCompiler {
 		}
 
 		@Override
-		public ExpressionString visitNew(NewExpression expression) {
-			return null;
-		}
-
-		@Override
 		public ExpressionString visitNull(NullExpression expression) {
 			return new ExpressionString(
 					imports.addImport(RustModule.STD_OPTION, "Option") + "::None",

@@ -86,14 +86,12 @@ public class ParsedInterface extends BaseParsedDefinition {
 		return new Compiling(compiler, compiled, outer != null);
 	}
 
-	private class Compiling extends BaseCompilingDefinition {
-		private final InterfaceDefinition compiled;
+	private class Compiling extends BaseCompilingDefinition<InterfaceDefinition> {
 
 		public Compiling(DefinitionCompiler compiler, InterfaceDefinition compiled, boolean inner) {
 			super(ParsedInterface.this, compiler, name, compiled, inner);
 
-			this.compiled = compiled;
-			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
+			compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 		}
 
 		@Override

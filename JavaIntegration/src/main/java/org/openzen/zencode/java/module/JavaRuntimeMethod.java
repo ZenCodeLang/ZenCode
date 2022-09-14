@@ -98,11 +98,6 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
-	public String getName() {
-		return method.name;
-	}
-
-	@Override
 	public FunctionHeader getHeader() {
 		return header;
 	}
