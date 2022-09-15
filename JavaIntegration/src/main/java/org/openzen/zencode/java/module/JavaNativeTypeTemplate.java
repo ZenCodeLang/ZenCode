@@ -147,6 +147,7 @@ public class JavaNativeTypeTemplate {
 
 			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header);
 			methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
+			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
 		}
 	}
 
