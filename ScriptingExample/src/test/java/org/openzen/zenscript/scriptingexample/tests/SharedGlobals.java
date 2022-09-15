@@ -10,6 +10,7 @@ public class SharedGlobals {
 	public static ZenCodeTestLogger currentlyActiveLogger;
 
 	@ZenCodeGlobals.Global
+	@ZenCodeType.Method // ToDo: Currently required, otherwise it can't be resolved?
 	public static void println(String s) {
 		currentlyActiveLogger.logPrintln(s);
 	}
