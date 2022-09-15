@@ -61,16 +61,22 @@ public class ScriptingEngine {
 	}
     
     public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter) {
-        this.space = new ModuleSpace(new ArrayList<>());
-        this.logger = logger;
-        try {
-            ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
-			registerLibFromStdLibs(logger, stdlibs, "stdlib", stdlib);
-			registerLibFromStdLibs(logger, stdlibs, "math", root.getOrCreatePackage("math"));
-		} catch (CompileException | ParseException | IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        this(logger, resourceGetter, "stdlib", "math");
     }
+
+	public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter, String... stdLibModulesToRegister) {
+		this.space = new ModuleSpace(new ArrayList<>());
+		this.logger = logger;
+		try {
+			ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
+			for (String moduleName : stdLibModulesToRegister) {
+				registerLibFromStdLibs(logger, stdlibs, moduleName, root.getOrCreatePackage(moduleName));
+			}
+
+		} catch (CompileException | ParseException | IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
 
 	private void registerLibFromStdLibs(ScriptingEngineLogger logger, ZippedPackage stdlibs, String name, ZSPackage zsPackage) throws ParseException, CompileException {

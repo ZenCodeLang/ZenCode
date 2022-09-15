@@ -17,6 +17,7 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.scriptingexample.tests.SharedGlobals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -34,7 +35,11 @@ public abstract class ZenCodeTest {
 	@BeforeEach
 	public void beforeEach() throws CompileException {
 		this.logger = new ZenCodeTestLogger();
-		this.engine = new ScriptingEngine(logger);
+		this.engine = new ScriptingEngine(
+				logger,
+				ScriptingEngine.class::getResourceAsStream,
+				getRequiredStdLibModules().toArray(new String[0])
+		);
 		engine.debug = true;
 		this.testModule = engine.createNativeModule("test_module", "org.openzen.zenscript.scripting_tests");
 		SharedGlobals.currentlyActiveLogger = logger;
@@ -98,5 +103,9 @@ public abstract class ZenCodeTest {
 		final ArrayList<Class<?>> result = new ArrayList<>();
 		result.add(SharedGlobals.class);
 		return result;
+	}
+
+	public List<String> getRequiredStdLibModules() {
+		return Collections.emptyList();
 	}
 }

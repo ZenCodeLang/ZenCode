@@ -14,6 +14,7 @@ import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.java.impl.conversion.JavaRuntimeTypeConverterImpl;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.expression.StaticMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.globals.ExpressionGlobal;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
@@ -153,7 +154,7 @@ public class JavaNativeModule {
 			getCompiled().setMethodInfo(runtimeMethod, runtimeMethod.getNative());
 
 			globals.put(name, new ExpressionGlobal((compiler, position, typeArguments) ->
-					compiler.at(position).callStatic(new MethodInstance(runtimeMethod), CallArguments.EMPTY).wrap(compiler)));
+					new StaticMemberCompilingExpression(compiler, position, thisType, new GenericName(name, typeArguments))));
 		}
 	}
 
