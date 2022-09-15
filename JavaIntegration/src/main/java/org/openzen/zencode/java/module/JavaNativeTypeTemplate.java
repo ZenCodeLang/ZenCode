@@ -7,7 +7,6 @@ import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
@@ -16,6 +15,7 @@ import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaNativeField;
 
 import java.lang.reflect.Constructor;
@@ -106,7 +106,7 @@ public class JavaNativeTypeTemplate {
 		for (Method method : class_.cls.getMethods()) {
 			if (isNotAccessible(method) || isOverridden(class_.cls, method))
 				continue;
-			if (expansion && !Modifiers.isStatic(method.getModifiers()))
+			if (expansion && !JavaModifiers.isStatic(method.getModifiers()))
 				continue;
 
 			MethodID id = null;
@@ -130,7 +130,7 @@ public class JavaNativeTypeTemplate {
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				id = Modifiers.isStatic(method.getModifiers()) ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				id = JavaModifiers.isStatic(method.getModifiers()) ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
 			} else if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
