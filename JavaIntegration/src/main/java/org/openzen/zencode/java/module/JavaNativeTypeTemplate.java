@@ -117,11 +117,11 @@ public class JavaNativeTypeTemplate {
 				id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
 			} else if (method.isAnnotationPresent(ZenCodeType.Getter.class)) {
 				ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
-				String name = getter.value() == null ? method.getName() : getter.value();
+				String name = getter.value().isEmpty() ? method.getName() : getter.value();
 				id = MethodID.getter(name);
 			} else if (method.isAnnotationPresent(ZenCodeType.Setter.class)) {
 				ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
-				String name = setter.value() == null ? method.getName() : setter.value();
+				String name = setter.value().isEmpty() ? method.getName() : setter.value();
 				id = MethodID.setter(name);
 			} else if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
 				ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
@@ -129,11 +129,11 @@ public class JavaNativeTypeTemplate {
 				id = MethodID.caster(header.getReturnType());
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
-				String name = methodAnnotation.value() == null ? method.getName() : methodAnnotation.value();
+				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				id = Modifiers.isStatic(method.getModifiers()) ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
 			} else if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
-				String name = methodAnnotation.value() == null ? method.getName() : methodAnnotation.value();
+				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				id = MethodID.staticMethod(name);
 				isStaticExpansion = true;
 			}
