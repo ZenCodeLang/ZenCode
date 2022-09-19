@@ -96,7 +96,15 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitCall(CallExpression expression) {
 		expression.target.accept(this);
 		checkMemberAccess(expression.position, expression.method);
-		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
+
+		// ToDo: This probably needs to be done elsewhere?
+		//   Reason: INT_TO_STRING as method is (int): string
+		//   But the call is <int>.caster()
+		//   Hence the checkCallArguments method will say that () != (int) argument mismatch!
+		final CallArguments arguments = expression.method.getID().getKind() == MethodID.Kind.CASTER
+				? expression.arguments.bind(expression.target)
+				: expression.arguments;
+		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), arguments);
 		checkNotStatic(expression.position, expression.method);
 
 		MethodID id = expression.method.getID();
