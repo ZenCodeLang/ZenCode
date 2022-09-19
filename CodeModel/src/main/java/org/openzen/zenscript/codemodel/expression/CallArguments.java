@@ -48,6 +48,7 @@ public class CallArguments {
 
 	public CallArguments bind(Expression target) {
 		Expression[] newArguments = new Expression[arguments.length + 1];
+		newArguments[0] = target;
 		System.arraycopy(arguments, 0, newArguments, 1, arguments.length);
 		return new CallArguments(typeArguments, newArguments);
 	}
