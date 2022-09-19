@@ -568,27 +568,19 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, TypeID result, TypeID... parameters) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = id;
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		header = new FunctionHeader(result, parameters);
+		this(definingType, id, new FunctionHeader(result, parameters));
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		this.header = header;
+		this(
+				definingType,
+				operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator),
+				header
+		);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		header = new FunctionHeader(result, parameters);
+		this(definingType, operator, new FunctionHeader(result, parameters));
 	}
 
 	@Override
