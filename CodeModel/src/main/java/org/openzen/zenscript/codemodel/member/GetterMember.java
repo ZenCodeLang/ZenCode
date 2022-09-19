@@ -23,7 +23,7 @@ public class GetterMember extends FunctionalMember {
 			Modifiers modifiers,
 			String name,
 			TypeID type) {
-		super(position, definition, modifiers, MethodID.getter(name), new FunctionHeader(type));
+		super(position, definition, modifiers, modifiers.isStatic() ? MethodID.staticGetter(name) : MethodID.getter(name), new FunctionHeader(type));
 		this.type = type;
 		this.name = name;
 	}

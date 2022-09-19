@@ -71,12 +71,12 @@ public class MemberSet implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findStaticGetter(String name) {
-		return findStatic(MethodID.getter(name));
+		return findStatic(MethodID.staticGetter(name));
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticSetter(String name) {
-		return findStatic(MethodID.setter(name));
+		return findStatic(MethodID.staticSetter(name));
 	}
 
 	@Override

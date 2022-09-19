@@ -41,6 +41,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
 
+		// ToDo: This is never used?
 		TypeID[] parameters = null;
 		if (definition.typeParameters != null) {
 			parameters = new TypeID[definition.typeParameters.length];
@@ -48,28 +49,38 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 				parameters[i] = new GenericTypeID(definition.typeParameters[i]);
 		}
 
-		boolean isStatic = modifiers.isStatic();
-		if (autoGetterAccess != null) {
-			Modifiers autoGetterModifiers = isStatic ? autoGetterAccess.withStatic() : autoGetterAccess;
-			this.autoGetter = new GetterMember(position, definition, autoGetterModifiers, name, type);
-			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
-					position,
-					new ThisExpression(position, thisType),
-					new FieldInstance(this, type))));
+		final FieldInstance fieldInstance = new FieldInstance(this, type);
+		autoGetter = autoGetterAccess == null ? null : constructAutoGetter(thisType, fieldInstance);
+		autoSetter = autoSetterAccess == null ? null : constructAutoSetter(thisType, fieldInstance);
+	}
+
+	private SetterMember constructAutoSetter(TypeID thisType, FieldInstance fieldInstance) {
+		Modifiers autoSetterModifiers = isStatic() ? autoSetterAccess.withStatic() : autoSetterAccess;
+		final SetterMember autoSetter = new SetterMember(position, definition, autoSetterModifiers, name, type);
+		final GetFunctionParameterExpression setValue = new GetFunctionParameterExpression(position, autoSetter.parameter);
+		final Expression setFieldExpression;
+		if (isStatic()) {
+			setFieldExpression = new SetStaticFieldExpression(position, fieldInstance, setValue);
 		} else {
-			this.autoGetter = null;
+			setFieldExpression = new SetFieldExpression(position, new ThisExpression(position, thisType), fieldInstance, setValue);
 		}
-		if (autoSetterAccess != null) {
-			Modifiers autoSetterModifiers = isStatic ? autoSetterAccess.withStatic() : autoSetterAccess;
-			this.autoSetter = new SetterMember(position, definition, autoSetterModifiers, name, type);
-			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
-					position,
-					new ThisExpression(position, thisType),
-					new FieldInstance(this, type),
-					new GetFunctionParameterExpression(position, this.autoSetter.parameter))));
+		autoSetter.setBody(new ExpressionStatement(position, setFieldExpression));
+		return autoSetter;
+	}
+
+	private GetterMember constructAutoGetter(TypeID thisType, FieldInstance fieldInstance) {
+		Modifiers autoGetterModifiers = isStatic() ? autoGetterAccess.withStatic() : autoGetterAccess;
+		final GetterMember autoGetter = new GetterMember(position, definition, autoGetterModifiers, name, type);
+
+		final Expression getFieldExpression;
+		if(isStatic()) {
+			getFieldExpression = new GetStaticFieldExpression(position, fieldInstance);
 		} else {
-			this.autoSetter = null;
+			getFieldExpression = new GetFieldExpression(position, new ThisExpression(position, thisType), fieldInstance);
 		}
+
+		autoGetter.setBody(new ReturnStatement(position, getFieldExpression));
+		return autoGetter;
 	}
 
 	public boolean hasAutoGetter() {
