@@ -16,6 +16,7 @@ import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -97,7 +98,7 @@ public class ParsedFunction extends ParsedDefinition {
 
 		@Override
 		public Set<TypeSymbol> getDependencies() {
-			return null;
+			return new HashSet<>();
 		}
 
 		@Override
