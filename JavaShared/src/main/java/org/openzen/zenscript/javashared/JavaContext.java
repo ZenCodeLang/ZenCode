@@ -551,11 +551,18 @@ public abstract class JavaContext {
 	}
 
 	public String getMethodDescriptorConstructor(MethodSymbol method) {
+		// In Java, the .ctor does not return the type, so let's override the return type
+		final FunctionHeader javaHeader = new FunctionHeader(
+				method.getHeader().typeParameters,
+				BasicTypeID.VOID,
+				method.getHeader().thrownType,
+				method.getHeader().parameters);
+
 		StringBuilder startBuilder = new StringBuilder();
 		DefinitionSymbol type = method.getDefiningType();
 		for (TypeParameter typeParameter : type.getTypeParameters()) {
 			startBuilder.append("Ljava/lang/Class;");
 		}
-		return getMethodDescriptor(method.getHeader(), type.asType().map(TypeSymbol::isEnum).orElse(false), startBuilder.toString());
+		return getMethodDescriptor(javaHeader, type.asType().map(TypeSymbol::isEnum).orElse(false), startBuilder.toString());
 	}
 }
