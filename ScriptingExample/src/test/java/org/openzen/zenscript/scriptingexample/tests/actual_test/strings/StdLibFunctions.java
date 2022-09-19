@@ -1,5 +1,6 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.strings;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 
+@Disabled("Required Stdlib")
 public class StdLibFunctions extends ZenCodeTest {
 
 	@Test

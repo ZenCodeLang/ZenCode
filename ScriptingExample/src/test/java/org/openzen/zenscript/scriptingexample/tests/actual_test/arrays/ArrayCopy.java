@@ -1,10 +1,12 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.arrays;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
+@Disabled("Required stdlib")
 public class ArrayCopy extends ZenCodeTest {
 
 	@ParameterizedTest

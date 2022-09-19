@@ -1,9 +1,11 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.joined_tests;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
+@Disabled("Requires Stdlib")
 public class ConwaysGame extends ZenCodeTest {
 
 	private static final String expandUsizeZs;

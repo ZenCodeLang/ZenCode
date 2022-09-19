@@ -1,5 +1,6 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.arrays;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
@@ -31,6 +32,7 @@ public class ArrayOperators extends ZenCodeTest {
 	}
 
 	@Test
+	@Disabled("Requires stdlib")
 	public void canCastToList() {
 		ScriptBuilder.create()
 				.add("var array = ['a', 'b', 'c'] as string[];")
@@ -47,6 +49,7 @@ public class ArrayOperators extends ZenCodeTest {
 	}
 
 	@Test
+	@Disabled("Requires stdlib")
 	public void canCastFromList() {
 		ScriptBuilder.create()
 				.add("var list = new stdlib.List<string>();")
@@ -72,6 +75,7 @@ public class ArrayOperators extends ZenCodeTest {
 	}
 
 	@Test
+	@Disabled("Requires stdlib")
 	public void sortedWithComparatorWorks() {
 		final int length = 10;
 
@@ -106,6 +110,7 @@ public class ArrayOperators extends ZenCodeTest {
 	}
 
 	@Test
+	@Disabled("Requires stdlib")
 	public void sortWithComparatorWorks() {
 		final int length = 10;
 
