@@ -405,6 +405,14 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.invokeVirtual(STRING_SUBSTRING);
 				return null;
 			}
+			case STRING_TO_UPPER_CASE:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_TO_UPPER_CASE);
+				return null;
+			case STRING_TO_LOWER_CASE:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_TO_LOWER_CASE);
+				return null;
 			case ARRAY_CONTAINS: {
 				arguments[0].accept(expressionVisitor);
 				final Label loopStart = new Label();
