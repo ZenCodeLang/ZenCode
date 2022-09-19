@@ -1000,6 +1000,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case USHORT_SHR:
 			case UINT_SHR:
 			case USIZE_SHR:
+			case INT_USHR:
 				javaWriter.iUShr();
 				break;
 			case LONG_ADD_LONG:
