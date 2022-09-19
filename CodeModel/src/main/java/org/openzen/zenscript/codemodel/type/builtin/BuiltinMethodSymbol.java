@@ -564,7 +564,14 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
 		this.id = id;
 		this.header = header;
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
+
+		// TODO: Other casters need to be implicit as well, so we need to make this more generic than this
+		//       And probably move it to a better location?
+		if(this.id.getKind() == MethodID.Kind.CASTER && this.name().endsWith("_TO_STRING")) {
+			this.modifiers = new Modifiers(Modifiers.FLAG_IMPLICIT | Modifiers.FLAG_PUBLIC);
+		} else {
+			this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
+		}
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, TypeID result, TypeID... parameters) {
