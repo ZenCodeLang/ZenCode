@@ -40,6 +40,6 @@ public class GenericExpansions extends ZenCodeTest {
 
 		logger.assertPrintOutputSize(0);
 		logger.errors().assertSize(1);
-		logger.errors().assertLineContains(0, "No such member: printMe");
+		logger.errors().assertLineContains(0, "No member printMe in type MyClass<bool>");
 	}
 }
