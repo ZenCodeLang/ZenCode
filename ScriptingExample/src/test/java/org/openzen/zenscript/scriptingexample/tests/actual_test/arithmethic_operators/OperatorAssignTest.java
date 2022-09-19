@@ -125,7 +125,7 @@ public class OperatorAssignTest extends ZenCodeTest {
     public void testAndAssign() {
         
         ScriptBuilder.create()
-                .add("var x = 0b0001;")
+                .add("var x = 0b1001;")
                 .add("x &= 0b0011;")
                 .add("println(x);")
                 .execute(this);
