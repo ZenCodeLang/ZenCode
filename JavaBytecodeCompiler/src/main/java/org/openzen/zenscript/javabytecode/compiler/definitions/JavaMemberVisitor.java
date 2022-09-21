@@ -20,10 +20,7 @@ import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
 	private final ClassWriter writer;
@@ -361,7 +358,11 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 					argument.accept(clinitStatementVisitor.expressionVisitor);
 				}
 
-				clinitWriter.invokeSpecial(internalName, "<init>", context.getEnumConstructorDescriptor(constant.constructor.member.getHeader()));
+				JavaNativeMethod compiled = Optional.ofNullable(class_.getMethod(constant.constructor.member.method))
+								.map(method -> method.compiled)
+								.orElseThrow(() -> new IllegalStateException("Cannot find constructor for enum: " + definition.name));
+
+				clinitWriter.invokeSpecial(compiled);
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
 			}
 
