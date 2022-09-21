@@ -100,6 +100,7 @@ public class JavaCompiler {
 
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
 		String scriptDescriptor = context.getMethodDescriptor(scriptHeader);
+		String scriptSignature = context.getMethodSignature(scriptHeader);
 		JavaParameterInfo[] javaScriptParameters = new JavaParameterInfo[module.parameters.length];
 		for (int i = 0; i < module.parameters.length; i++) {
 			FunctionParameter parameter = module.parameters[i];
@@ -123,11 +124,11 @@ public class JavaCompiler {
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 			final JavaClassWriter visitor = scriptFile.classWriter;
 			JavaClass scriptsClass = new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS);
-			JavaNativeMethod method = JavaNativeMethod.getStatic(scriptsClass, methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			JavaNativeMethod method = JavaNativeMethod.getStatic(scriptsClass, methodName, scriptDescriptor, scriptSignature, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null, null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);

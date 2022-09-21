@@ -105,6 +105,7 @@ public class JavaCompilingClass {
 					"<init>",
 					true,
 					getContext().getMethodDescriptorConstructor(method),
+					getContext().getMethodSignature(method.getHeader()),
 					JavaModifiers.getJavaModifiers(method.getModifiers()),
 					false,
 					method.getHeader().useTypeParameters()
@@ -123,10 +124,13 @@ public class JavaCompilingClass {
 		} else {
 			final JavaNativeMethod.Kind kind = getKind(method);
 			final String descriptor;
+			final String signature;
 			if (kind == JavaNativeMethod.Kind.EXPANSION) {
 				descriptor = getContext().getMethodDescriptorExpansion(method.getHeader(), method.getTargetType());
+				signature = getContext().getMethodSignatureExpansion(method.getHeader(), method.getTargetType());
 			} else {
 				descriptor = getContext().getMethodDescriptor(method.getHeader());
+				signature = getContext().getMethodSignature(method.getHeader());
 			}
 			JavaNativeMethod javaMethod = new JavaNativeMethod(
 					compiled,
@@ -134,6 +138,7 @@ public class JavaCompilingClass {
 					method.getID().accept(MethodNamer.INSTANCE),
 					true,
 					descriptor,
+					signature,
 					JavaModifiers.getJavaModifiers(method.getModifiers()),
 					method.getHeader().getReturnType() instanceof GenericTypeID,
 					method.getHeader().useTypeParameters());

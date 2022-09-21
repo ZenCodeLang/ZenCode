@@ -24,6 +24,7 @@ public class JavaWriter {
 	private static final JavaNativeMethod STRING_CONCAT = JavaNativeMethod.getNativeStatic(
 			JavaClass.STRING,
 			"concat",
+			"(Ljava/lang/String;)Ljava/lang/String;",
 			"(Ljava/lang/String;)Ljava/lang/String;");
 
 	public final JavaCompilingMethod method;
@@ -47,10 +48,9 @@ public class JavaWriter {
 			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
-			String signature,
 			String[] exceptions,
 			String... annotations) {
-		this(logger, visitor, nameVariables, method, forDefinition, false, signature, method.compiled.descriptor, exceptions, annotations);
+		this(logger, visitor, nameVariables, method, forDefinition, false, method.compiled.signature, method.compiled.descriptor, exceptions, annotations);
 		this.position(position.fromLine);
 	}
 
@@ -83,8 +83,8 @@ public class JavaWriter {
 	}
 
 
-	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
-		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
+	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String[] exceptions, String... annotations) {
+		this(logger, position, visitor, true, method, forDefinition, exceptions, annotations);
 	}
 
 	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {

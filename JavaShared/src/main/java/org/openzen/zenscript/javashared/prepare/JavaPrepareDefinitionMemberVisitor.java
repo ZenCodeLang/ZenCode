@@ -57,7 +57,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Voi
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
-		JavaNativeMethod method = JavaNativeMethod.getStatic(class_.compiled, definition.name, class_.getContext().getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		JavaNativeMethod method = JavaNativeMethod.getStatic(class_.compiled, definition.name, class_.getContext().getMethodDescriptor(definition.header), class_.getContext().getMethodSignature(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
 		class_.addMethod(definition.caller, new JavaCompilingMethod(class_.compiled, method));
 		return null;
 	}

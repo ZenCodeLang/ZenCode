@@ -256,6 +256,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					baseMethod.name,
 					true,
 					context.getMethodDescriptor(header),
+					context.getMethodSignature(member.header),
 					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType() instanceof GenericTypeID,
 					header.useTypeParameters()));
@@ -267,6 +268,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						name,
 						true,
 						context.getMethodDescriptorConstructor(member),
+						context.getMethodSignatureConstructor(member),
 						// In Java, the .ctor is NOT static!
 						(modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers().withoutStatic())),
 						false,
@@ -278,6 +280,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						name,
 						true,
 						context.getMethodDescriptor(header),
+						context.getMethodSignature(header),
 						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 						header.getReturnType() instanceof GenericTypeID,
 						header.useTypeParameters()));

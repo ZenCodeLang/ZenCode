@@ -309,6 +309,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 				functionalInterfaceMethod.getName(),
 				false,
 				getMethodDescriptor(functionalInterfaceMethod),
+				// ToDo: Write a test to see if we can keep the descriptor as signature here or if we need the actual
+				//  signature
+				getMethodDescriptor(functionalInterfaceMethod),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().isGeneric());
 		return new JavaFunctionalInterfaceTypeID(header, functionalInterfaceMethod, method);

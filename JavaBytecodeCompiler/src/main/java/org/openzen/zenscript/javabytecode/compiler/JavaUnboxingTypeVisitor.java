@@ -6,14 +6,14 @@ import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
 
-	private static final JavaNativeMethod UNBOX_BOOLEAN = JavaNativeMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z");
-	private static final JavaNativeMethod UNBOX_BYTE = JavaNativeMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B");
-	private static final JavaNativeMethod UNBOX_SHORT = JavaNativeMethod.getNativeVirtual(JavaClass.SHORT, "shortValue", "()S");
-	private static final JavaNativeMethod UNBOX_INTEGER = JavaNativeMethod.getNativeVirtual(JavaClass.INTEGER, "intValue", "()I");
-	private static final JavaNativeMethod UNBOX_LONG = JavaNativeMethod.getNativeVirtual(JavaClass.LONG, "longValue", "()J");
-	private static final JavaNativeMethod UNBOX_FLOAT = JavaNativeMethod.getNativeVirtual(JavaClass.FLOAT, "floatValue", "()F");
-	private static final JavaNativeMethod UNBOX_DOUBLE = JavaNativeMethod.getNativeVirtual(JavaClass.DOUBLE, "doubleValue", "()D");
-	private static final JavaNativeMethod UNBOX_CHARACTER = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "charValue", "()C");
+	private static final JavaNativeMethod UNBOX_BOOLEAN = JavaNativeMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z", "()Z");
+	private static final JavaNativeMethod UNBOX_BYTE = JavaNativeMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B", "()B");
+	private static final JavaNativeMethod UNBOX_SHORT = JavaNativeMethod.getNativeVirtual(JavaClass.SHORT, "shortValue", "()S", "()S");
+	private static final JavaNativeMethod UNBOX_INTEGER = JavaNativeMethod.getNativeVirtual(JavaClass.INTEGER, "intValue", "()I", "()I");
+	private static final JavaNativeMethod UNBOX_LONG = JavaNativeMethod.getNativeVirtual(JavaClass.LONG, "longValue", "()J", "()J");
+	private static final JavaNativeMethod UNBOX_FLOAT = JavaNativeMethod.getNativeVirtual(JavaClass.FLOAT, "floatValue", "()F", "()F");
+	private static final JavaNativeMethod UNBOX_DOUBLE = JavaNativeMethod.getNativeVirtual(JavaClass.DOUBLE, "doubleValue", "()D", "()D");
+	private static final JavaNativeMethod UNBOX_CHARACTER = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "charValue", "()C", "()C");
 
 	private final JavaWriter writer;
 

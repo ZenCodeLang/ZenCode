@@ -5,14 +5,14 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
-	private static final JavaNativeMethod BOOLEAN_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
-	private static final JavaNativeMethod BYTE_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
-	private static final JavaNativeMethod SHORT_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");
-	private static final JavaNativeMethod INTEGER_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "valueOf", "(I)Ljava/lang/Integer;");
-	private static final JavaNativeMethod LONG_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "valueOf", "(J)Ljava/lang/Long;");
-	private static final JavaNativeMethod FLOAT_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "valueOf", "(F)Ljava/lang/Float;");
-	private static final JavaNativeMethod DOUBLE_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "valueOf", "(D)Ljava/lang/Double;");
-	private static final JavaNativeMethod CHARACTER_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.CHARACTER, "valueOf", "(C)Ljava/lang/Character;");
+	private static final JavaNativeMethod BOOLEAN_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;", "(Z)Ljava/lang/Boolean;");
+	private static final JavaNativeMethod BYTE_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;", "(B)Ljava/lang/Byte;");
+	private static final JavaNativeMethod SHORT_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;", "(S)Ljava/lang/Short;");
+	private static final JavaNativeMethod INTEGER_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.INTEGER, "valueOf", "(I)Ljava/lang/Integer;", "(I)Ljava/lang/Integer;");
+	private static final JavaNativeMethod LONG_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "valueOf", "(J)Ljava/lang/Long;", "(J)Ljava/lang/Long;");
+	private static final JavaNativeMethod FLOAT_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "valueOf", "(F)Ljava/lang/Float;", "(F)Ljava/lang/Float;");
+	private static final JavaNativeMethod DOUBLE_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "valueOf", "(D)Ljava/lang/Double;", "(D)Ljava/lang/Double;");
+	private static final JavaNativeMethod CHARACTER_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.CHARACTER, "valueOf", "(C)Ljava/lang/Character;", "(C)Ljava/lang/Character;");
 
 	private final JavaWriter writer;
 
@@ -64,8 +64,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 				return null;
 		}
 
-		if (method != null)
-			writer.invokeStatic(method);
+		writer.invokeStatic(method);
 		return null;
 	}
 

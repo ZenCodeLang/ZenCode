@@ -40,9 +40,9 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		JavaNativeMethod clinit = new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
+		JavaNativeMethod clinit = new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", "()V", Opcodes.ACC_STATIC, false);
 		JavaCompilingMethod clinitCompiling = new JavaCompilingMethod(class_.compiled, clinit);
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);

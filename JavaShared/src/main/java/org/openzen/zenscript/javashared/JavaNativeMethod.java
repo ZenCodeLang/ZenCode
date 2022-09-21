@@ -18,15 +18,16 @@ public class JavaNativeMethod implements JavaMethod {
 	public final String name;
 	public final boolean compile;
 	public final String descriptor;
+	public final String signature;
 	public final int modifiers; // these are Java modifiers!
 	public final boolean genericResult;
 	public final boolean[] typeParameterArguments;
 
-	public JavaNativeMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult) {
-		this(cls, kind, name, compile, descriptor, modifiers, genericResult, new boolean[0]);
+	public JavaNativeMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, String signature, int modifiers, boolean genericResult) {
+		this(cls, kind, name, compile, descriptor, signature, modifiers, genericResult, new boolean[0]);
 	}
 
-	public JavaNativeMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult, boolean[] typeParameterArguments) {
+	public JavaNativeMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, String signature, int modifiers, boolean genericResult, boolean[] typeParameterArguments) {
 		if (descriptor.contains("<")) // fix signature bug
 			throw new IllegalArgumentException("Invalid descriptor!");
 		if (cls.isInterface() && !JavaModifiers.isStatic(modifiers))
@@ -37,46 +38,47 @@ public class JavaNativeMethod implements JavaMethod {
 		this.name = name;
 		this.compile = compile;
 
+		this.signature = signature;
 		this.descriptor = descriptor;
 		this.modifiers = modifiers;
 		this.genericResult = genericResult;
 		this.typeParameterArguments = typeParameterArguments;
 	}
 
-	public static JavaNativeMethod getConstructor(JavaClass cls, String descriptor, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.CONSTRUCTOR, "<init>", true, descriptor, modifiers, false);
+	public static JavaNativeMethod getConstructor(JavaClass cls, String descriptor, String signature, int modifiers) {
+		return new JavaNativeMethod(cls, Kind.CONSTRUCTOR, "<init>", true, descriptor, signature, modifiers, false);
 	}
 
-	public static JavaNativeMethod getNativeConstructor(JavaClass cls, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC, false);
+	public static JavaNativeMethod getNativeConstructor(JavaClass cls, String descriptor, String signature) {
+		return new JavaNativeMethod(cls, Kind.CONSTRUCTOR, "<init>", false, descriptor, signature, JavaModifiers.PUBLIC, false);
 	}
 
 	public static JavaNativeMethod getDestructor(JavaClass cls, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.INSTANCE, "close", true, "()V", modifiers, false);
+		return new JavaNativeMethod(cls, Kind.INSTANCE, "close", true, "()V", "()V", modifiers, false);
 	}
 
-	public static JavaNativeMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, false);
+	public static JavaNativeMethod getStatic(JavaClass cls, String name, String descriptor, String signature, int modifiers) {
+		return new JavaNativeMethod(cls, Kind.STATIC, name, true, descriptor, signature, modifiers | JavaModifiers.STATIC, false);
 	}
 
-	public static JavaNativeMethod getNativeStatic(JavaClass cls, String name, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.STATIC, name, false, descriptor, JavaModifiers.STATIC | JavaModifiers.PUBLIC, false);
+	public static JavaNativeMethod getNativeStatic(JavaClass cls, String name, String descriptor, String signature) {
+		return new JavaNativeMethod(cls, Kind.STATIC, name, false, descriptor, signature, JavaModifiers.STATIC | JavaModifiers.PUBLIC, false);
 	}
 
-	public static JavaNativeMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, false);
+	public static JavaNativeMethod getVirtual(JavaClass cls, String name, String descriptor, String signature, int modifiers) {
+		return new JavaNativeMethod(cls, Kind.INSTANCE, name, true, descriptor, signature, modifiers, false);
 	}
 
-	public static JavaNativeMethod getNativeVirtual(JavaClass cls, String name, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+	public static JavaNativeMethod getNativeVirtual(JavaClass cls, String name, String descriptor, String signature) {
+		return new JavaNativeMethod(cls, Kind.INSTANCE, name, false, descriptor, signature, JavaModifiers.PUBLIC, false);
 	}
 
-	public static JavaNativeMethod getInterface(JavaClass cls, String name, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+	public static JavaNativeMethod getInterface(JavaClass cls, String name, String descriptor, String signature) {
+		return new JavaNativeMethod(cls, Kind.INTERFACE, name, false, descriptor, signature, JavaModifiers.PUBLIC, false);
 	}
 
-	public static JavaNativeMethod getNativeExpansion(JavaClass cls, String name, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.EXPANSION, name, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC, false);
+	public static JavaNativeMethod getNativeExpansion(JavaClass cls, String name, String descriptor, String signature) {
+		return new JavaNativeMethod(cls, Kind.EXPANSION, name, false, descriptor, signature, JavaModifiers.PUBLIC | JavaModifiers.STATIC, false);
 	}
 
 	public String getMapping(JavaClass definition) {
@@ -98,7 +100,7 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	public JavaNativeMethod createBridge(String descriptor) {
-		return new JavaNativeMethod(cls, kind, name, compile, descriptor, modifiers, genericResult, typeParameterArguments);
+		return new JavaNativeMethod(cls, kind, name, compile, descriptor, signature, modifiers, genericResult, typeParameterArguments);
 	}
 
 	@Override

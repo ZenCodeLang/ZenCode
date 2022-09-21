@@ -81,10 +81,12 @@ public class JavaBytecodeContext extends JavaContext {
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(range.baseType), null, null).visitEnd();
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(range.baseType), null, null).visitEnd();
 
-		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V", Opcodes.ACC_PUBLIC);
+		final String descriptor = "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V";
+		final String signature = "(" + getSignature(range.baseType) + getSignature(range.baseType) + ")V";
+		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, descriptor, signature, Opcodes.ACC_PUBLIC);
 		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(range.compiling.compiled, method);
 
-		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, compilingMethod, null, method.descriptor, null);
+		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, compilingMethod, null, null);
 		constructorWriter.loadObject(0);
 		constructorWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
 		constructorWriter.loadObject(0);

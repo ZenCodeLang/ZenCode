@@ -24,7 +24,7 @@ import java.util.List;
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	final JavaTypeGenericVisitor javaTypeGenericVisitor;
 	private final JavaNativeMethod ENUM_VALUEOF
-			= JavaNativeMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
+			= JavaNativeMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;", "(Ljava/lang/Class<TT;>;Ljava/lang/String;)TT;");
 	private final JavaClassWriter outerWriter;
 	private final JavaBytecodeContext context;
 	private final JavaCompilingModule module;
@@ -136,19 +136,19 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		}
 		visitor.end();
 
-		JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", "()[L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valuesMethod), definition, null, null);
+		JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", "()[L" + class_.getInternalName() + ";","()[L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valuesMethod), definition, null);
 		valuesWriter.start();
 		valuesWriter.getStaticField(class_.getInternalName(), "$VALUES", "[L" + class_.getInternalName() + ";");
 
-		final JavaNativeMethod arrayClone = JavaNativeMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + class_.getInternalName() + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;");
+		final JavaNativeMethod arrayClone = JavaNativeMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + class_.getInternalName() + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;", "()Ljava/lang/Object;");
 		valuesWriter.invokeVirtual(arrayClone);
 		valuesWriter.checkCast("[L" + class_.getInternalName() + ";");
 		valuesWriter.returnObject();
 		valuesWriter.end();
 
-		JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", "(Ljava/lang/String;)L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valueOfMethod), definition, null, null);
+		JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", "(Ljava/lang/String;)L" + class_.getInternalName() + ";", "(Ljava/lang/String;)L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+		JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valueOfMethod), definition, null);
 		valueOfWriter.start();
 		valueOfWriter.constantClass(class_.compiled);
 		valueOfWriter.loadObject(0);
@@ -171,11 +171,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true, Collections
 				.emptyList());
 
-		final String signature = context.getMethodSignature(definition.header);
 		JavaCompilingClass class_ = module.getClass(definition);
 		JavaCompilingMethod method = class_.getMethod(definition.caller);
 
-		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, signature, null);
+		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, null);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
 		statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
@@ -289,8 +288,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionInitDescBuilder.append(")V");
 			optionInitSignatureBuilder.append(")V");
 
-			JavaNativeMethod constructorMethod = JavaNativeMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
-			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, constructorMethod), variant, optionInitSignatureBuilder.toString(), null);
+			JavaNativeMethod constructorMethod = JavaNativeMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), optionInitSignatureBuilder.toString(), JavaModifiers.PUBLIC);
+			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, constructorMethod), variant, null);
 			initWriter.start();
 			initWriter.loadObject(0);
 			initWriter.dup();
@@ -307,7 +306,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			initWriter.end();
 
 			//Denominator for switch-cases
-			JavaNativeMethod denominator = JavaNativeMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
+			JavaNativeMethod denominator = JavaNativeMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", "()I", JavaModifiers.PUBLIC);
 			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, denominator), null, null, null, "java/lang/Override");
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
@@ -328,9 +327,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				context.logger,
 				variant.position,
 				writer,
-				new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "()V", Opcodes.ACC_PUBLIC)),
+				new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "()V", "()V", Opcodes.ACC_PUBLIC)),
 				variant,
-				"()V",
 				null);
 		superInitWriter.start();
 		superInitWriter.loadObject(0);

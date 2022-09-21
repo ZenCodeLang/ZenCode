@@ -35,6 +35,8 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 				"init",
 				false,
 				Type.getConstructorDescriptor(constructor),
+				// ToDo: Write tests to see if we can keep the descriptor here vs. the actual signature
+				Type.getConstructorDescriptor(constructor),
 				constructor.getModifiers(),
 				false);
 		this.class_ = class_;
@@ -64,8 +66,16 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 
 		this.class_ = class_;
 		this.target = target;
-		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
-				.getModifiers(), header.getReturnType().isGeneric());
+		this.method = new JavaNativeMethod(
+				class_.javaClass,
+				kind,
+				method.getName(),
+				compile,
+				Type.getMethodDescriptor(method),
+				// ToDo: Write tests to see if we can keep the descriptor here vs. the actual signature
+				Type.getMethodDescriptor(method),
+				method.getModifiers(),
+				header.getReturnType().isGeneric());
 		modifiers = getMethodModifiers(method);
 		this.id = id;
 		this.header = header;

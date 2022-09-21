@@ -167,7 +167,7 @@ public class JavaCompiledModule {
 
 	public JavaMethod getMethodInfo(MethodSymbol member) {
 		if (member == BuiltinMethodSymbol.CLASS_DEFAULT_CONSTRUCTOR) // TODO: handle this differently
-			return new JavaNativeMethod(getClassInfo(member.getDefiningType()), JavaNativeMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.FLAG_PUBLIC, false);
+			return new JavaNativeMethod(getClassInfo(member.getDefiningType()), JavaNativeMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", "()V", Modifiers.FLAG_PUBLIC, false);
 
 		JavaMethod method = methods.get(member);
 		if (method == null)

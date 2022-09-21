@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
@@ -29,7 +30,7 @@ import java.util.*;
 import static org.openzen.zenscript.javabytecode.compiler.JavaMethodBytecodeCompiler.OBJECT_HASHCODE;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
-	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", "(TK;TV;)TV;");
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 
 	final JavaWriter javaWriter;
@@ -479,7 +480,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final String className = interfaces[0].replace("java", "j").replace("/", "_") + "_" + context.getLambdaCounter();
 		{
 			final JavaNativeMethod m = context.getFunctionalInterface(expression.type);
-			methodInfo = new JavaNativeMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
+			methodInfo = new JavaNativeMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, signature, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
 		}
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		JavaClass lambdaClass = JavaClass.fromInternalName(className, JavaClass.Kind.CLASS);
@@ -488,9 +489,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		//Bridge method!!!
 		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
-			final JavaNativeMethod bridgeMethodInfo = new JavaNativeMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			final JavaNativeMethod bridgeMethodInfo = new JavaNativeMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, signature, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			JavaCompilingMethod compilingBridgeMethod = new JavaCompilingMethod(javaWriter.method.class_, bridgeMethodInfo);
-			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, compilingBridgeMethod, null, methodInfo.descriptor, null, "java/lang/Override");
+			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, compilingBridgeMethod, null, null, "java/lang/Override");
 			bridgeWriter.start();
 
 			//This.name(parameters, casted)
@@ -505,7 +506,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				}
 			}
 
-			bridgeWriter.invokeVirtual(new JavaNativeMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaNativeMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, methodInfo.modifiers, methodInfo.genericResult));
+			bridgeWriter.invokeVirtual(new JavaNativeMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaNativeMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, signature, methodInfo.modifiers, methodInfo.genericResult));
 			final TypeID returnType = expression.header.getReturnType();
 			if (returnType != BasicTypeID.VOID) {
 				final Type returnTypeASM = context.getType(returnType);
@@ -521,20 +522,24 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			JavaNativeMethod actualMethod = methodInfo.createBridge(context.getMethodDescriptor(expression.header));
 			JavaCompilingMethod actualCompiling = new JavaCompilingMethod(lambdaClass, actualMethod);
 			//No @Override
-			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null, signature, null);
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null, null);
 		} else {
 			JavaCompilingMethod actualCompiling = new JavaCompilingMethod(lambdaClass, methodInfo);
-			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null, signature, null, "java/lang/Override");
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null, null, "java/lang/Override");
 		}
 
 		javaWriter.newObject(className);
 		javaWriter.dup();
 
-		final String constructorDesc = calcFunctionSignature(expression.closure);
+		final TypeID[] closureTypes = expression.closure.captures.stream().map(closure -> closure.type).toArray(TypeID[]::new);
+		final FunctionHeader constructorHeader = new FunctionHeader(BasicTypeID.VOID, closureTypes);
 
-		JavaNativeMethod constructor = JavaNativeMethod.getConstructor(lambdaClass, constructorDesc, Opcodes.ACC_PUBLIC);
+		final String constructorDescriptor = context.getMethodDescriptor(constructorHeader);
+		final String constructorSignature = context.getMethodSignature(constructorHeader);
+
+		JavaNativeMethod constructor = JavaNativeMethod.getConstructor(lambdaClass, constructorDescriptor, constructorSignature, Opcodes.ACC_PUBLIC);
 		JavaCompilingMethod constructorCompiling = new JavaCompilingMethod(lambdaClass, constructor);
-		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, constructorCompiling, null, null, null);
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, constructorCompiling, null, null);
 		constructorWriter.start();
 		constructorWriter.loadObject(0);
 		constructorWriter.dup();
@@ -554,7 +559,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		constructorWriter.pop();
 
-		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
+		javaWriter.invokeSpecial(className, "<init>", constructorDescriptor);
 
 		constructorWriter.ret();
 		constructorWriter.end();
@@ -600,15 +605,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		context.register(className, lambdaCW.toByteArray());
 
 		return null;
-	}
-
-	private String calcFunctionSignature(LambdaClosure closure) {
-		StringJoiner joiner = new StringJoiner("", "(", ")V");
-		for (CapturedExpression capture : closure.captures) {
-			String descriptor = context.getDescriptor(capture.type);
-			joiner.add(descriptor);
-		}
-		return joiner.toString();
 	}
 
 	@Override
@@ -721,7 +717,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			if (aCase.key instanceof VariantOptionSwitchValue) {
 				VariantOptionSwitchValue variantOptionSwitchValue = (VariantOptionSwitchValue) aCase.key;
 				JavaVariantOption option = context.getJavaVariantOption(variantOptionSwitchValue.option);
-				javaWriter.invokeVirtual(JavaNativeMethod.getNativeVirtual(option.variantClass, "getDenominator", "()I"));
+				javaWriter.invokeVirtual(JavaNativeMethod.getNativeVirtual(option.variantClass, "getDenominator", "()I", "()I"));
 				break;
 			}
 		}
@@ -1070,6 +1066,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		String[] interfaces;
 		String wrappedFromSignature = context.getDescriptor(fromType);
 		String methodDescriptor;
+		String methodSignature;
 		Type[] methodParameterTypes;
 		JavaNativeMethod implementationMethod;
 		if (toType instanceof JavaFunctionalInterfaceTypeID) {
@@ -1080,13 +1077,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					javaMethod.name,
 					true,
 					javaMethod.descriptor,
+					javaMethod.signature,
 					javaMethod.modifiers & ~JavaModifiers.ABSTRACT,
 					javaMethod.genericResult,
 					javaMethod.typeParameterArguments);
 
 			final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceTypeID) toType).functionalInterfaceMethod;
 
-			methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
 			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 
 			final Class<?>[] methodParameterClasses = functionalInterfaceMethod.getParameterTypes();
@@ -1098,6 +1095,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		} else {
 			wrappedFromSignature = context.getMethodSignature(toType.header, true);
 			methodDescriptor = context.getMethodDescriptor(toType.header);
+			methodSignature = context.getMethodDescriptor(toType.header);
 			interfaces = new String[]{context.getInternalName(toType)};
 
 			JavaSynthesizedFunctionInstance function = context.getFunction(toType);
@@ -1108,6 +1106,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					function.getMethod(),
 					true,
 					methodDescriptor,
+					methodSignature,
 					JavaModifiers.PUBLIC,
 					false // TODO: generic result or not
 			);
@@ -1120,6 +1119,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		final JavaNativeMethod wrappedMethod = context.getFunctionalInterface(fromType);
 		final String constructorDesc = "(" + wrappedFromSignature + ")V";
+		final String constructorSignature = "(" + wrappedFromSignature + ")V";
 
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
@@ -1131,9 +1131,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		//Constructor
 		{
-			JavaNativeMethod constructor = JavaNativeMethod.getConstructor(classInfo, constructorDesc, Opcodes.ACC_PUBLIC);
+			JavaNativeMethod constructor = JavaNativeMethod.getConstructor(classInfo, constructorDesc, constructorSignature, Opcodes.ACC_PUBLIC);
 			JavaCompilingMethod compiling = new JavaCompilingMethod(classInfo, constructor);
-			final JavaWriter constructorWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null, null, null);
+			final JavaWriter constructorWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null, null);
 			constructorWriter.start();
 			constructorWriter.loadObject(0);
 			constructorWriter.dup();
@@ -1149,7 +1149,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		//The actual method
 		{
 			JavaCompilingMethod compiling = new JavaCompilingMethod(classInfo, implementationMethod);
-			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null, methodDescriptor, null, "java/lang/Override");
+			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null, null, "java/lang/Override");
 			functionWriter.start();
 
 			//this.wrapped

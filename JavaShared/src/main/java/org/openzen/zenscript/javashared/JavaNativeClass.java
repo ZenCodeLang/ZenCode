@@ -29,28 +29,28 @@ public class JavaNativeClass {
 		methods.put(key, method);
 	}
 
-	public void addConstructor(String key, String descriptor) {
-		methods.put(key, createMethod("<init>", descriptor, JavaNativeMethod.Kind.CONSTRUCTOR));
+	public void addConstructor(String key, String descriptor, String signature) {
+		methods.put(key, createMethod("<init>", descriptor, signature, JavaNativeMethod.Kind.CONSTRUCTOR));
 	}
 
-	public void addInstanceMethod(String key, String name, String descriptor) {
-		addInstanceMethod(key, name, descriptor, false);
+	public void addInstanceMethod(String key, String name, String descriptor, String signature) {
+		addInstanceMethod(key, name, descriptor, signature, false);
 	}
 
-	public void addInstanceMethod(String key, String name, String descriptor, boolean genericReturnType) {
-		methods.put(key, createMethod(name, descriptor, JavaNativeMethod.Kind.INSTANCE, genericReturnType));
+	public void addInstanceMethod(String key, String name, String descriptor, String signature, boolean genericReturnType) {
+		methods.put(key, createMethod(name, descriptor, signature, JavaNativeMethod.Kind.INSTANCE, genericReturnType));
 	}
 
-	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind instance) {
-		return createMethod(name, descriptor, instance, false);
+	public JavaNativeMethod createMethod(String name, String descriptor, String signature, JavaNativeMethod.Kind instance) {
+		return createMethod(name, descriptor, signature, instance, false);
 	}
 
-	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind instance, boolean genericReturnType) {
-		return new JavaNativeMethod(cls, instance, name, false, descriptor, JavaModifiers.PUBLIC, genericReturnType);
+	public JavaNativeMethod createMethod(String name, String descriptor, String signature, JavaNativeMethod.Kind instance, boolean genericReturnType) {
+		return new JavaNativeMethod(cls, instance, name, false, descriptor, signature, JavaModifiers.PUBLIC, genericReturnType);
 	}
 
-	public JavaNativeMethod createInstanceMethod(String name, String descriptor) {
-		return createMethod(name, descriptor, JavaNativeMethod.Kind.INSTANCE);
+	public JavaNativeMethod createInstanceMethod(String name, String descriptor, String signature) {
+		return createMethod(name, descriptor, signature, JavaNativeMethod.Kind.INSTANCE);
 	}
 
 	public JavaMethod getMethod(String name) {

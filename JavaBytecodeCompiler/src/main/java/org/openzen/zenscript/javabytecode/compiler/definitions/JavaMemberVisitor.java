@@ -46,8 +46,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaCompilingMethod(class_.compiled, clinitMethod), definition, null, null);
+		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", "()V", Opcodes.ACC_STATIC, false);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaCompilingMethod(class_.compiled, clinitMethod), definition, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -79,7 +79,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
-		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header, true, true), null);
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null);
 		constructorWriter.label(constructorStart);
 		CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
 		if (isEnum) {
@@ -175,7 +175,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final boolean isAbstract = member.body == null || member.getEffectiveModifiers().isAbstract();
 		final JavaCompilingMethod method = class_.getMethod(member);
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null);
 
 		if (!isAbstract) {
 			if (method.compiled.isAbstract() || method.compiled.cls.kind == JavaClass.Kind.INTERFACE)
@@ -255,13 +255,13 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			if (member.body == null)
 				modifiers |= Opcodes.ACC_ABSTRACT;
 
-			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers));
+			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", "()V", modifiers));
 			if (member.body == null)
 				return null;
 
 			final Label constructorStart = new Label();
 			final Label constructorEnd = new Label();
-			final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null, null);
+			final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null);
 			destructorWriter.label(constructorStart);
 
 			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
