@@ -101,10 +101,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		//   Reason: INT_TO_STRING as method is (int): string
 		//   But the call is <int>.caster()
 		//   Hence the checkCallArguments method will say that () != (int) argument mismatch!
-		final CallArguments arguments = expression.method.getID().getKind() == MethodID.Kind.CASTER
-				? expression.arguments.bind(expression.target)
-				: expression.arguments;
-		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), arguments);
+		//final CallArguments arguments = expression.method.getID().getKind() == MethodID.Kind.CASTER
+		//		? expression.arguments.bind(expression.target)
+		//		: expression.arguments;
+		//checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), arguments);
+		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
 		checkNotStatic(expression.position, expression.method);
 
 		MethodID id = expression.method.getID();

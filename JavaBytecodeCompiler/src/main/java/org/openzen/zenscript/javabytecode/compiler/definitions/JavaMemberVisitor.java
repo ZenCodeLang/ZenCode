@@ -62,8 +62,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		JavaNativeField field = class_.getField(member);
 		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
 
-		// ToDo: Does this belong here, or should the auto-getter/setter already be part of the definition,
-		//  so they would be called automatically?
 		if (member.hasAutoGetter()) {
 			member.autoGetter.accept(this);
 		}
