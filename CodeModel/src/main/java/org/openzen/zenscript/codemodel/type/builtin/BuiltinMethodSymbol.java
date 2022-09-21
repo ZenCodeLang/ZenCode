@@ -525,7 +525,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	CLASS_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, CONSTRUCTOR, FunctionHeader.EMPTY),
 	STRUCT_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, CONSTRUCTOR, VOID),
 	STRUCT_DEFAULT_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, CONSTRUCTOR, VOID),
-	ENUM_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, CONSTRUCTOR, VOID),
+	ENUM_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, CONSTRUCTOR, FunctionHeader.PLACEHOLDER),
 	ENUM_NAME(FunctionTypeSymbol.PLACEHOLDER, MethodID.getter("name"), STRING),
 	ENUM_ORDINAL(FunctionTypeSymbol.PLACEHOLDER, MethodID.getter("ordinal"), USIZE),
 	ENUM_VALUES(FunctionTypeSymbol.PLACEHOLDER, MethodID.staticGetter("values"), FunctionHeader.PLACEHOLDER),

@@ -2,13 +2,18 @@ package org.openzen.zenscript.javabytecode.compiler.definitions;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.*;
@@ -133,6 +138,23 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, definition);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(visitor);
+		}
+
+		// ToDo: Does this belong here?
+		//  Or does this need to be done by someone else elsewhere?
+		//  Do not merge PR with this comment still in place!
+
+		// No explicit constructor -> let's add our own!
+		if (definition.members.stream().noneMatch(it -> it instanceof ConstructorMember)) {
+			final ConstructorMember autoConstructor = new ConstructorMember(CodePosition.BUILTIN, definition, Modifiers.NONE, new FunctionHeader(BasicTypeID.VOID));
+			final JavaCompilingMethod compiling = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "(Ljava/lang/String;I)V", "(Ljava/lang/String;I)V", 0));
+
+			// This is used in the accept call below
+			class_.addMethod(autoConstructor, compiling);
+			// This is used in JavaMemberVisitor#end as constructor of each enum variant
+			class_.addMethod(BuiltinMethodSymbol.ENUM_EMPTY_CONSTRUCTOR, compiling);
+
+			autoConstructor.accept(visitor);
 		}
 		visitor.end();
 
