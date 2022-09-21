@@ -138,6 +138,10 @@ public class Modifiers {
 		return new Modifiers(value | FLAG_STATIC);
 	}
 
+	public Modifiers withoutStatic() {
+		return new Modifiers(value & ~FLAG_STATIC);
+	}
+
 	public static boolean isStatic(int modifiers) {
 		return (modifiers & FLAG_STATIC) > 0;
 	}

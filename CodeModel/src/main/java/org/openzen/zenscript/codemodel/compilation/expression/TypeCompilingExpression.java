@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.compilation.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -31,7 +32,8 @@ public class TypeCompilingExpression implements CompilingExpression {
 
 	@Override
 	public Optional<CompilingCallable> call() {
-		return Optional.empty();
+		return compiler.resolve(type).findStaticOperator(OperatorType.CALL)
+				.map(operator -> new StaticCompilingCallable(compiler, operator));
 	}
 
 	@Override

@@ -375,7 +375,11 @@ public abstract class JavaContext {
 	}
 
 	public String getMethodSignature(FunctionHeader header, boolean withGenerics) {
-		return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header, withGenerics);
+		return getMethodSignature(header, withGenerics, false);
+	}
+
+	public String getMethodSignature(FunctionHeader header, boolean withGenerics, boolean voidReturnType) {
+		return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header, withGenerics, voidReturnType);
 	}
 
 	public String getEnumConstructorDescriptor(FunctionHeader header) {

@@ -61,7 +61,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 				getGenericSignature(header.getReturnType());
 	}
 
-	public String getGenericMethodSignature(FunctionHeader header, boolean addGenerics) {
+	public String getGenericMethodSignature(FunctionHeader header, boolean addGenerics, boolean voidReturnType) {
 		final StringBuilder sb = new StringBuilder();
 		final boolean doGenerics = addGenerics && header.typeParameters.length > 0;
 
@@ -85,7 +85,11 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 		sb.append(getGenericSignature(header.parameters));
 		sb.append(")");
-		sb.append(getGenericSignature(header.getReturnType()));
+		if (voidReturnType) {
+			sb.append("V");
+		} else {
+			sb.append(getGenericSignature(header.getReturnType()));
+		}
 		return sb.toString();
 	}
 

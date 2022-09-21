@@ -90,13 +90,11 @@ public class ParsedFunction extends ParsedDefinition {
 		@Override
 		public void linkTypes() {
 			if (compiled.header == null)
-				compiled.setHeader(compiler.types(), header.compile(compiler.types()));
+				compiled.setHeader(header.compile(compiler.types()));
 		}
 
 		@Override
 		public Set<TypeSymbol> getDependencies() {
-			// ToDo: @Stan wanted to check, if this should return _something_
-			//  And check if getDependencies is required at all?
 			return Collections.emptySet();
 		}
 

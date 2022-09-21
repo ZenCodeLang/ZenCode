@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.definition;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
@@ -21,14 +20,14 @@ public class FunctionDefinition extends HighLevelDefinition {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
-	public FunctionDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, FunctionHeader header, TypeBuilder types) {
-		this(position, module, pkg, name, modifiers, null);
-		setHeader(types, header);
+	public FunctionDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, FunctionHeader header) {
+		this(position, module, pkg, name, modifiers, (TypeSymbol) null);
+		setHeader(header);
 	}
 
-	public void setHeader(TypeBuilder types, FunctionHeader header) {
+	public void setHeader(FunctionHeader header) {
 		this.header = header;
-		addMember(caller = new OperatorMember(position, this, Modifiers.PUBLIC.withStatic(), OperatorType.CALL, header));
+		caller = new OperatorMember(position, this, Modifiers.PUBLIC.withStatic(), OperatorType.CALL, header);
 	}
 
 	public void setCode(Statement statement) {

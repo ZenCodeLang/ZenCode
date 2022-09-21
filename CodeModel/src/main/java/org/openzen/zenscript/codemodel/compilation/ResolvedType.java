@@ -70,6 +70,8 @@ public interface ResolvedType {
 
     Optional<IteratorInstance> findIterator(int variables);
 
+	Optional<StaticCallable> findStaticOperator(OperatorType operator);
+
 	interface SwitchMember {
 		SwitchValue toSwitchValue(String[] bindingNames);
 	}

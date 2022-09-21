@@ -19,7 +19,7 @@ public class OperatorMember extends FunctionalMember {
 			Modifiers modifiers,
 			OperatorType operator,
 			FunctionHeader header) {
-		super(position, definition, modifiers, MethodID.operator(operator), header);
+		super(position, definition, modifiers, modifiers.isStatic() ? MethodID.staticOperator(operator) : MethodID.operator(operator), header);
 
 		this.operator = operator;
 	}

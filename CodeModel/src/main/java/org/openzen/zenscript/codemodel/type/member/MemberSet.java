@@ -100,6 +100,11 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
+	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
+		return findStatic(MethodID.staticOperator(operator));
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return Optional.ofNullable(fields.get(name));
 	}

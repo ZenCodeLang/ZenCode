@@ -150,6 +150,18 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
+	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
+		StaticCallable result = base.findStaticOperator(operator).orElse(null);
+		for (ResolvedType expansion : expansions) {
+			StaticCallable expanded = expansion.findStaticOperator(operator).orElse(null);
+			if (expanded != null) {
+				result = result == null ? expanded : result.union(expanded);
+			}
+		}
+		return Optional.ofNullable(result);
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return base.findField(name);
 	}

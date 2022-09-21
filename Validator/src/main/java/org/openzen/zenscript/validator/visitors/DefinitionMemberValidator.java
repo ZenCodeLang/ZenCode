@@ -85,7 +85,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.getDefinition() instanceof EnumDefinition) {
 			ValidationUtils.validateModifiers(
 					validator,
-					member.getEffectiveModifiers(),
+					member.getSpecifiedModifiers(),
 					Modifiers.FLAG_PRIVATE,
 					member.position,
 					"Invalid modifier");

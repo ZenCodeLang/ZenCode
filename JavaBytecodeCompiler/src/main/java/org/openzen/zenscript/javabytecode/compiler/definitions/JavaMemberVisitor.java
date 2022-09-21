@@ -79,7 +79,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
-		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header, true, true), null);
 		constructorWriter.label(constructorStart);
 		CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
 		if (isEnum) {

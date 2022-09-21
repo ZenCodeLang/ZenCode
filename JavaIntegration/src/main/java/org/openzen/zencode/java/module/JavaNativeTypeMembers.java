@@ -92,6 +92,11 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
+	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
+		return loadStatic(MethodID.staticOperator(operator));
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return template.getField(name).map(f -> new RuntimeField(mapper.map(f)));
 	}
