@@ -43,13 +43,42 @@ public class EnumMembers extends ZenCodeTest {
 	}
 
 	@Test
-	public void useNameAsExpression() {
+	public void contextMemberIsInferredFromTypeHint() {
 		ScriptBuilder.create()
 				.add("public enum MyEnum {")
 				.add("    A, B, C;")
 				.add("    this(){}")
 				.add("}")
 				.add("var x as MyEnum = B;")
+				.add("println(x.name);")
+				.execute(this);
+
+		logger.assertPrintOutput(0, "B");
+	}
+
+	@Test
+	public void contextMemberIsInferredFromVariableType() {
+		ScriptBuilder.create()
+				.add("public enum MyEnum {")
+				.add("    A, B, C;")
+				.add("    this(){}")
+				.add("}")
+				.add("var x as MyEnum;")
+				.add("x = B;")
+				.add("println(x.name);")
+				.execute(this);
+
+		logger.assertPrintOutput(0, "B");
+	}
+
+	@Test
+	public void contextMemberIsInferredFromCastedType() {
+		ScriptBuilder.create()
+				.add("public enum MyEnum {")
+				.add("    A, B, C;")
+				.add("    this(){}")
+				.add("}")
+				.add("var x = B as MyEnum;")
 				.add("println(x.name);")
 				.execute(this);
 
