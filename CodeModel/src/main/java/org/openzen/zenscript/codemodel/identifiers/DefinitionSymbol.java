@@ -13,6 +13,8 @@ public interface DefinitionSymbol {
 
 	boolean isExpansion();
 
+	boolean isEnum();
+
 	TypeParameter[] getTypeParameters();
 
 	Optional<TypeSymbol> asType();
