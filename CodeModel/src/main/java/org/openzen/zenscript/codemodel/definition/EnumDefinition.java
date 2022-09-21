@@ -57,7 +57,7 @@ public class EnumDefinition extends HighLevelDefinition {
 		}
 
 		if (members.hasNoConstructor()) {
-			members.constructor(new MethodInstance(BuiltinMethodSymbol.ENUM_EMPTY_CONSTRUCTOR));
+			members.constructor(new MethodInstance(BuiltinMethodSymbol.ENUM_EMPTY_CONSTRUCTOR, new FunctionHeader(type), type));
 		}
 	}
 
