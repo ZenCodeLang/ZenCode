@@ -50,9 +50,9 @@ public class ParsedExpressionOpAssign extends ParsedExpression {
 		public Expression eval() {
 			Expression left = this.left.eval();
 			ResolvedType resolvedType = compiler.resolve(left.type);
-			return resolvedType.findOperator(operator.assignOperatorFor)
+			return resolvedType.findOperator(operator)
 					.map(method -> method.call(compiler, position, left, TypeID.NONE, right))
-					.orElseGet(() -> this.left.assign(new ParsedExpressionBinary.Compiling(compiler, position, this.left, right, operator)).eval());
+					.orElseGet(() -> this.left.assign(new ParsedExpressionBinary.Compiling(compiler, position, this.left, right, operator.assignOperatorFor)).eval());
 		}
 
 		@Override

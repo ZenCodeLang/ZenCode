@@ -267,7 +267,8 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						name,
 						true,
 						context.getMethodDescriptorConstructor(member),
-						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						// In Java, the .ctor is NOT static!
+						(modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers())) & ~JavaModifiers.STATIC,
 						false,
 						header.useTypeParameters()));
 			} else {

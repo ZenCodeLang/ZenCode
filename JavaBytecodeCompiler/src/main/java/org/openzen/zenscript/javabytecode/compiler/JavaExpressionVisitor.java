@@ -30,7 +30,7 @@ import static org.openzen.zenscript.javabytecode.compiler.JavaMethodBytecodeComp
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-	private static final MethodID CONSTRUCTOR = MethodID.operator(OperatorType.CONSTRUCTOR);
+	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 
 	final JavaWriter javaWriter;
 	final JavaBytecodeContext context;

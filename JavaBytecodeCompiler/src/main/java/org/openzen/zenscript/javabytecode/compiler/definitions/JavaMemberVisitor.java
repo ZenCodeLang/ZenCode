@@ -61,6 +61,14 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	public Void visitField(FieldMember member) {
 		JavaNativeField field = class_.getField(member);
 		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
+
+		if (member.hasAutoGetter()) {
+			member.autoGetter.accept(this);
+		}
+
+		if(member.hasAutoSetter()) {
+			member.autoSetter.accept(this);
+		}
 		return null;
 	}
 
@@ -225,10 +233,11 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		//in script you use $ but the parameter is named "value", which to choose?
 		//final String name = member.parameter.name;
 		final String name = "$";
-		methodWriter.nameVariable(1, name, methodStart, methodEnd, context.getType(member.type));
+		final int localIndex = member.isStatic() ? 0 : 1;
+		methodWriter.nameVariable(localIndex, name, methodStart, methodEnd, context.getType(member.type));
 		methodWriter.nameParameter(0, name);
 
-		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(1, context.getDescriptor(member.type)));
+		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(localIndex, context.getDescriptor(member.type)));
 
 		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 		javaStatementVisitor.start();

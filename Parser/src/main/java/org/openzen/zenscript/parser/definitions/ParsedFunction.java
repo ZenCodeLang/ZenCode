@@ -16,9 +16,7 @@ import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.T_IDENTIFIER;
 
@@ -97,7 +95,9 @@ public class ParsedFunction extends ParsedDefinition {
 
 		@Override
 		public Set<TypeSymbol> getDependencies() {
-			return null;
+			// ToDo: @Stan wanted to check, if this should return _something_
+			//  And check if getDependencies is required at all?
+			return Collections.emptySet();
 		}
 
 		@Override

@@ -63,7 +63,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SBYTE_INC(SBYTE, INCREMENT, SBYTE, SBYTE),
 	SBYTE_DEC(SBYTE, DECREMENT, SBYTE, SBYTE),
 	SBYTE_ADD_SBYTE(SBYTE, ADD, SBYTE, SBYTE),
-	SBYTE_SUB_SBYTE(SBYTE, NEG, SBYTE, SBYTE),
+	SBYTE_SUB_SBYTE(SBYTE, SUB, SBYTE, SBYTE),
 	SBYTE_MUL_SBYTE(SBYTE, MUL, SBYTE, SBYTE),
 	SBYTE_DIV_SBYTE(SBYTE, DIV, SBYTE, SBYTE),
 	SBYTE_MOD_SBYTE(SBYTE, MOD, SBYTE, SBYTE),
@@ -94,7 +94,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SHORT_INC(SHORT, INCREMENT, SHORT, SHORT),
 	SHORT_DEC(SHORT, DECREMENT, SHORT, SHORT),
 	SHORT_ADD_SHORT(SHORT, ADD, SHORT, SHORT),
-	SHORT_SUB_SHORT(SHORT, NEG, SHORT, SHORT),
+	SHORT_SUB_SHORT(SHORT, SUB, SHORT, SHORT),
 	SHORT_MUL_SHORT(SHORT, MUL, SHORT, SHORT),
 	SHORT_DIV_SHORT(SHORT, DIV, SHORT, SHORT),
 	SHORT_MOD_SHORT(SHORT, MOD, SHORT, SHORT),
@@ -124,7 +124,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USHORT_INC(USHORT, INCREMENT, USHORT, USHORT),
 	USHORT_DEC(USHORT, DECREMENT, USHORT, USHORT),
 	USHORT_ADD_USHORT(USHORT, ADD, USHORT, USHORT),
-	USHORT_SUB_USHORT(USHORT, NEG, USHORT, USHORT),
+	USHORT_SUB_USHORT(USHORT, SUB, USHORT, USHORT),
 	USHORT_MUL_USHORT(USHORT, MUL, USHORT, USHORT),
 	USHORT_DIV_USHORT(USHORT, DIV, USHORT, USHORT),
 	USHORT_MOD_USHORT(USHORT, MOD, USHORT, USHORT),
@@ -155,7 +155,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	INT_DEC(INT, DECREMENT, INT, INT),
 	INT_ADD_INT(INT, ADD, INT, INT),
 	INT_ADD_USIZE(INT, ADD, USIZE, USIZE),
-	INT_SUB_INT(INT, NEG, INT, INT),
+	INT_SUB_INT(INT, SUB, INT, INT),
 	INT_MUL_INT(INT, MUL, INT, INT),
 	INT_DIV_INT(INT, DIV, INT, INT),
 	INT_MOD_INT(INT, MOD, INT, INT),
@@ -196,7 +196,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	UINT_INC(UINT, INCREMENT, UINT, UINT),
 	UINT_DEC(UINT, DECREMENT, UINT, UINT),
 	UINT_ADD_UINT(UINT, ADD, UINT, UINT),
-	UINT_SUB_UINT(UINT, NEG, UINT, UINT),
+	UINT_SUB_UINT(UINT, SUB, UINT, UINT),
 	UINT_MUL_UINT(UINT, MUL, UINT, UINT),
 	UINT_DIV_UINT(UINT, DIV, UINT, UINT),
 	UINT_MOD_UINT(UINT, MOD, UINT, UINT),
@@ -235,7 +235,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	LONG_INC(LONG, INCREMENT, LONG, LONG),
 	LONG_DEC(LONG, DECREMENT, LONG, LONG),
 	LONG_ADD_LONG(LONG, ADD, LONG, LONG),
-	LONG_SUB_LONG(LONG, NEG, LONG, LONG),
+	LONG_SUB_LONG(LONG, SUB, LONG, LONG),
 	LONG_MUL_LONG(LONG, MUL, LONG, LONG),
 	LONG_DIV_LONG(LONG, DIV, LONG, LONG),
 	LONG_MOD_LONG(LONG, MOD, LONG, LONG),
@@ -275,7 +275,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ULONG_INC(ULONG, INCREMENT, ULONG, ULONG),
 	ULONG_DEC(ULONG, DECREMENT, ULONG, ULONG),
 	ULONG_ADD_ULONG(ULONG, ADD, ULONG, ULONG),
-	ULONG_SUB_ULONG(ULONG, NEG, ULONG, ULONG),
+	ULONG_SUB_ULONG(ULONG, SUB, ULONG, ULONG),
 	ULONG_MUL_ULONG(ULONG, MUL, ULONG, ULONG),
 	ULONG_DIV_ULONG(ULONG, DIV, ULONG, ULONG),
 	ULONG_MOD_ULONG(ULONG, MOD, ULONG, ULONG),
@@ -564,31 +564,30 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
 		this.id = id;
 		this.header = header;
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
+
+		// TODO: Other casters need to be implicit as well, so we need to make this more generic than this
+		//       And probably move it to a better location?
+		if(this.id.getKind() == MethodID.Kind.CASTER && this.name().endsWith("_TO_STRING")) {
+			this.modifiers = new Modifiers(Modifiers.FLAG_IMPLICIT | Modifiers.FLAG_PUBLIC);
+		} else {
+			this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
+		}
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, TypeID result, TypeID... parameters) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = id;
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		header = new FunctionHeader(result, parameters);
+		this(definingType, id, new FunctionHeader(result, parameters));
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		this.header = header;
+		this(
+				definingType,
+				operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator),
+				header
+		);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
-		this.definingType = definingType;
-		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
-		this.id = operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator);
-		this.modifiers = id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC;
-		header = new FunctionHeader(result, parameters);
+		this(definingType, operator, new FunctionHeader(result, parameters));
 	}
 
 	@Override

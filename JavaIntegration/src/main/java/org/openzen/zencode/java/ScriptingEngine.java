@@ -67,6 +67,11 @@ public class ScriptingEngine {
 	public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter, String... stdLibModulesToRegister) {
 		this.space = new ModuleSpace(new ArrayList<>());
 		this.logger = logger;
+
+		if(stdLibModulesToRegister.length == 0) {
+			return;
+		}
+
 		try {
 			ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
 			for (String moduleName : stdLibModulesToRegister) {
