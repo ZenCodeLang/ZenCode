@@ -1,0 +1,15 @@
+#output: hello
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {
+		print() {
+			println("hello");
+		}
+	}
+}
+
+new TestClass().print();

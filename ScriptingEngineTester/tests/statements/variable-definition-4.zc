@@ -1,0 +1,7 @@
+#error: 6:CANNOT_SET_FINAL_VARIABLE
+
+val a = 1;
+println(a);
+
+a = 2;
+println(a);

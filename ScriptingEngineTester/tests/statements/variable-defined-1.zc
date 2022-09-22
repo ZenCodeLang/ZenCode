@@ -1,0 +1,10 @@
+#output: 1
+
+val a as int;
+if true {
+	a = 1;
+} else {
+	a = 2;
+}
+
+println(a);

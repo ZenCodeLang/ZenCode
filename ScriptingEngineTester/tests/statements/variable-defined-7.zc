@@ -1,0 +1,10 @@
+#output: 1
+
+val a as int;
+try {
+	throw new TestException("test");
+} catch {
+	a = 1;
+}
+
+println(a);

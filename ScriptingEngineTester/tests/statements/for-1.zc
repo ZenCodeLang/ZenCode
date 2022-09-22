@@ -1,0 +1,8 @@
+#output:
+# 1
+# 2
+# 3
+
+val a = [1, 2, 3];
+for x in a
+	println(x);

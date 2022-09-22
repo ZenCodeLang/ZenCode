@@ -1,0 +1,7 @@
+#error: 6:INVALID_CAST
+
+var a = 1;
+println(a);
+
+a = "hello";
+println(a);

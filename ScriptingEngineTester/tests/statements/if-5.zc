@@ -1,0 +1,9 @@
+#output: 3
+
+var a = 1;
+if false
+	a = 2;
+else
+	a = 3;
+
+println(a);

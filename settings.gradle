@@ -19,4 +19,5 @@ subDirs.each { File dir ->
     include dir.name
 }
 include 'CodeCompiler'
+include 'ScriptingEngineTester'
 

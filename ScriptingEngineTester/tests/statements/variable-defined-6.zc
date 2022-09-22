@@ -1,0 +1,8 @@
+#error: 8:VARIABLE_NOT_SET
+
+val a as int;
+for x in [1, 2, 3] {
+	a = 1;
+}
+
+println(a);

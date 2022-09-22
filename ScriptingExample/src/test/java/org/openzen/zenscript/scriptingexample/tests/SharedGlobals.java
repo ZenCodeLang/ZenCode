@@ -7,7 +7,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTestLogger;
 @ZenCodeType.Name(".SharedGlobals")
 public class SharedGlobals {
 
-	public static ZenCodeTestLogger currentlyActiveLogger;
+	public static PrintLogger currentlyActiveLogger;
 
 	@ZenCodeGlobals.Global
 	@ZenCodeType.Method // ToDo: Currently required, otherwise it can't be resolved?

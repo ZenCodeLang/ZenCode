@@ -1,0 +1,8 @@
+#output:
+# 0-a
+# 1-b
+# 2-c
+
+val a = ["a", "b", "c"];
+for i, x in a
+	println(i + "-" + x);

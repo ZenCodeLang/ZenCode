@@ -1,0 +1,15 @@
+#error: 9:OVERRIDE_WITHOUT_BASE
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {
+		print() {
+			return "hello";
+		}
+	}
+}
+
+new TestClass().print();

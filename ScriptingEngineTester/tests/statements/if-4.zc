@@ -1,0 +1,7 @@
+#output: 1
+
+var a = 1;
+if false
+	a = 2;
+
+println(a);
