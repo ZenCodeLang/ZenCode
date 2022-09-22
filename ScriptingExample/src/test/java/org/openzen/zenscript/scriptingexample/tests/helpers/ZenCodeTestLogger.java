@@ -2,8 +2,11 @@ package org.openzen.zenscript.scriptingexample.tests.helpers;
 
 import org.junit.jupiter.api.Assertions;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
+import org.openzen.zenscript.scriptingexample.tests.PrintLogger;
 
-public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
+import java.util.List;
+
+public class ZenCodeTestLogger extends ScriptingEngineStreamLogger implements PrintLogger {
 
 	private static final boolean logDebug = false;
 	private final ZenCodeTestLoggerOutput printlnOutputs;
@@ -99,5 +102,9 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
 
 	public boolean isEngineComplete() {
 		return isEngineComplete;
+	}
+
+	public List<String> getOutputLines() {
+		return printlnOutputs.lines;
 	}
 }

@@ -1,0 +1,8 @@
+#output: 1
+
+val a as int;
+do {
+	a = 1;
+} while false;
+
+println(a);

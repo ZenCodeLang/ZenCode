@@ -1,0 +1,6 @@
+#output: ok
+
+if false
+	println("yes");
+
+println("ok");

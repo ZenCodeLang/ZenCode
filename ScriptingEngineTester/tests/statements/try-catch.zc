@@ -1,0 +1,10 @@
+#output:
+# TestException
+# test
+
+try {
+	throw new TestException("test");
+} catch ex {
+	println(typeof(ex));
+	println(ex.message);
+}

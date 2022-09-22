@@ -1,0 +1,14 @@
+#output:
+# 1
+# 2
+# 1
+
+val a = 1;
+println(a);
+
+{
+	val a = 2;
+	println(a);
+}
+
+println(a);

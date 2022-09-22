@@ -1,0 +1,7 @@
+#output: 1
+
+val a as int;
+if true {
+	a = 1;
+	println(a);
+}

@@ -1,0 +1,8 @@
+#error: 8:VARIABLE_NOT_SET
+
+val a as int;
+while false {
+	a = 1;
+}
+
+println(a);

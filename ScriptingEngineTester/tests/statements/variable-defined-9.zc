@@ -1,0 +1,14 @@
+#output:
+# test
+# 3
+
+val a as int;
+try {
+	throw new TestException("test");
+} catch ex {
+	println("test");
+} finally {
+	a = 3;
+}
+
+println(a);

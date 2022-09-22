@@ -1,0 +1,15 @@
+#error: 9:INVALID_MODIFIER
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {
+		protected print() {
+			return "hello";
+		}
+	}
+}
+
+new TestClass().print();
