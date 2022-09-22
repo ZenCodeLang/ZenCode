@@ -26,7 +26,8 @@ public class ScriptingEngineTester implements TestEngine {
 		TestDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "ZenCode scripting engine test");
 
 		try {
-			TestSuite suite = new TestSuite(new File("C:\\Repositories\\OpenZen\\ZenScript\\ScriptingEngineTester\\tests"));
+			final File testRoot = new TestDiscoverer().findTestRoot();
+			TestSuite suite = new TestSuite(testRoot);
 
 			request.getSelectorsByType(ClasspathRootSelector.class).forEach(selector -> {
 				appendTestsInClasspathRoot(suite, selector.getClasspathRoot(), engineDescriptor);
