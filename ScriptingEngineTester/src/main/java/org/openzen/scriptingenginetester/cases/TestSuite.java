@@ -12,7 +12,12 @@ public class TestSuite {
 		if (!directory.isDirectory())
 			throw new IllegalArgumentException("Not a valid directory");
 
-		for (File file : directory.listFiles()) {
+		final File[] files = directory.listFiles();
+		if(files == null || files.length == 0) {
+			throw new IllegalStateException("No Tests found!");
+		}
+
+		for (File file : files) {
 			if (file.isDirectory()) {
 				groups.add(new TestGroup(file));
 			}
