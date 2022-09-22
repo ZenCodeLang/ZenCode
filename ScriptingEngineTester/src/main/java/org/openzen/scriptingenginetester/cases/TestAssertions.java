@@ -46,10 +46,11 @@ public class TestAssertions {
 	}
 
 	public void validate(TestOutput output) {
-		// Output
-		Assertions.assertLinesMatch(expectedOutput, output.output, "Test may only return what was added in '#output:' Preprocessors");
+		validateOutput(output);
+		validateErrors(output);
+	}
 
-		// Errors
+	private void validateErrors(TestOutput output) {
 		final String format = "%s:%s %s"; // file:line error-name
 		final Stream<String> expectedErrors = this.expectedErrors.stream()
 				.map(expectedError -> String.format(
@@ -67,5 +68,9 @@ public class TestAssertions {
 						actualError.error.code.name())
 				);
 		Assertions.assertLinesMatch(expectedErrors, actualErrors, "Test may only throw errors what were specified as '#error:' Preprocessors");
+	}
+
+	private void validateOutput(TestOutput output) {
+		Assertions.assertLinesMatch(expectedOutput, output.output, "Test may only return what was added in '#output:' Preprocessors");
 	}
 }
