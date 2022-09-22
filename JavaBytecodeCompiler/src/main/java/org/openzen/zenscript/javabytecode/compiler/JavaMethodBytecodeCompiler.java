@@ -1284,6 +1284,12 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case ENUM_VALUES: {
+				// ToDo: We need a way here to get the Enum Class
+				//  Is this even something in JavaMethodBytecodeCompiler or should this be done elsewhere?
+				//  We can't use a virtual member like for name() and ordinal() since "values()" is a static Method
+				//  Therefore, we either need to use Enum.valueOf(SomeEnum.class, name) or SomeEnum.valueOf(name)
+				//  In both cases we need to know SomeEnum. Atm, only the builtin signature valueOf(name) is known
+				//  With no ref back to the type!
 				DefinitionTypeID type = (DefinitionTypeID) ((ArrayTypeID) arguments[0].type).elementType;
 				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaNativeMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
