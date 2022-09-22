@@ -16,8 +16,8 @@ if (!hasProperty('mainClass')) {
 dependencies {
 	api project(':JavaIntegration')
 	testImplementation project(':ScriptingEngineTester')
-	testImplementation group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
-	testRuntimeOnly group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
+	testImplementation group: "org.junit.jupiter", name: "junit-jupiter", version: "5.9.0"
+	testRuntimeOnly group: "org.junit.jupiter", name: "junit-jupiter", version: "5.9.0"
 }
 
 processResources {
