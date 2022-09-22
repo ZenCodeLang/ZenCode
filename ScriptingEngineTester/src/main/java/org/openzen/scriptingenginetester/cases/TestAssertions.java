@@ -48,6 +48,15 @@ public class TestAssertions {
 	public void validate(TestOutput output) {
 		validateOutput(output);
 		validateErrors(output);
+
+		// ToDo: Do we want to call them at once like below, or one after another like above?
+		//   Will we ever have a case where both validateOutput and validateErrors mismatch at once?
+		//   If so, then assertAll would return both errors, whereas running them sequentially would only return
+		//   The first error that was encountered.
+		////Assertions.assertAll(
+		////		() -> validateOutput(output),
+		////		() -> validateErrors(output)
+		////);
 	}
 
 	private void validateErrors(TestOutput output) {
