@@ -16,6 +16,11 @@ public class TestAssertions {
 	private final List<String> expectedOutput;
 	private final List<ExpectedError> expectedErrors;
 
+	private TestAssertions(List<String> expectedOutput, List<ExpectedError> expectedErrors) {
+		this.expectedOutput = expectedOutput;
+		this.expectedErrors = expectedErrors;
+	}
+
 	public static TestAssertions extractFrom(File file) throws IOException {
 		List<String> expectedOutput = new ArrayList<>();
 		List<ExpectedError> expectedErrors = new ArrayList<>();
@@ -39,11 +44,6 @@ public class TestAssertions {
 		}
 
 		return new TestAssertions(expectedOutput, expectedErrors);
-	}
-
-	private TestAssertions(List<String> expectedOutput, List<ExpectedError> expectedErrors) {
-		this.expectedOutput = expectedOutput;
-		this.expectedErrors = expectedErrors;
 	}
 
 	public void validate(TestOutput output) {
