@@ -29,6 +29,10 @@ public class Modifiers {
 		this.value = value;
 	}
 
+	public Modifiers with(Modifiers other) {
+		return new Modifiers(this.value | other.value);
+	}
+
 	public boolean isPublic() {
 		return (value & FLAG_PUBLIC) > 0;
 	}
