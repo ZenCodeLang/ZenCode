@@ -65,7 +65,7 @@ public class GenericMapTypeID implements TypeID {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		result.append(value.toString());
+		result.append(value.toStringSuffixed());
 		result.append("[<");
 		result.append(key.toString());
 		result.append(">]");

@@ -20,7 +20,8 @@ public enum TypeContext {
 	OPTION_MEMBER_TYPE("option member type"),
 	CAST_TARGET_TYPE("cast target type"),
 	TYPE_CHECK_TYPE("type check type"),
-	CONSTRUCTOR_TYPE("constructed object type");
+	CONSTRUCTOR_TYPE("constructed object type"),
+	VARIABLE_TYPE("variable");
 
 	public final String display;
 

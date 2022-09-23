@@ -1,8 +1,11 @@
-#output:
-# 1
-# hello
+#output: 1
+#output: 1x
+#output: hello
 
 val a = 1;
+println(a);
+
+val a = a + "x";
 println(a);
 
 val a = "hello";

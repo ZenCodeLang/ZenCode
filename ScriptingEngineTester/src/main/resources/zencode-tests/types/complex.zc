@@ -1,0 +1,7 @@
+#output: function(x: int, y: float): void
+#output: (function(x: int, y: float): void)[]
+
+val t: function (x: int, y: float): void = (x, y) => {};
+println(typeof(t));
+val t: (function (x: int, y: float): void)[] = [];
+println(typeof(t));

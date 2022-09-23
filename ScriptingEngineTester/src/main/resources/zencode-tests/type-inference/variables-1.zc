@@ -1,0 +1,12 @@
+#output: int
+#output: string
+#output: string
+
+val a = 1;
+println(typeof(a));
+
+val a = "";
+println(typeof(a));
+
+val a = '~';
+println(typeof(a));

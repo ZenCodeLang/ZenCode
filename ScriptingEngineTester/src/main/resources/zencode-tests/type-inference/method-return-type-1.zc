@@ -1,0 +1,14 @@
+#output: hello
+#output: void
+
+class Foo {
+	print() {
+		println("hello");
+	}
+}
+
+new Foo().print();
+
+// expressions inside typeof will not be executed, so the print() won't be called
+// the type will still be resolved, though
+println(typeof(new Foo().print()));

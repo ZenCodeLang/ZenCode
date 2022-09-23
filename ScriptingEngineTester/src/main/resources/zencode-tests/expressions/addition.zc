@@ -1,0 +1,57 @@
+#output: byte
+#output: 2
+#output: sbyte
+#output: 3
+#output: short
+#output: 4
+#output: ushort
+#output: 5
+#output: int
+#output: 6
+#output: uint
+#output: 7
+#output: long
+#output: 8
+#output: ulong
+#output: 9
+#output: usize
+#output: 10
+#output: float
+#output: 11
+#output: double
+#output: 12
+
+val byteValue = 1 as byte;
+val sbyteValue = 2 as sbyte;
+val shortValue = 3 as short;
+val ushortValue = 4 as ushort;
+val intValue = 5 as int;
+val uintValue = 6 as uint;
+val longValue = 7 as long;
+val ulongValue = 8 as ulong;
+val usizeValue = 9 as usize;
+val floatValue = 10 as float;
+val doubleValue = 11 as double;
+
+println(typeof(byteValue + byteValue));
+println(byteValue + byteValue);
+println(typeof(byteValue + sbyteValue));
+println(byteValue + sbyteValue);
+println(typeof(byteValue + shortValue));
+println(byteValue + shortValue);
+println(typeof(byteValue + ushortValue));
+println(byteValue + ushortValue);
+println(typeof(byteValue + intValue));
+println(byteValue + intValue);
+println(typeof(byteValue + uintValue));
+println(byteValue + uintValue);
+println(typeof(byteValue + longValue));
+println(byteValue + longValue);
+println(typeof(byteValue + ulongValue));
+println(byteValue + ulongValue);
+println(typeof(byteValue + usizeValue));
+println(byteValue + usizeValue);
+println(typeof(byteValue + floatValue));
+println(byteValue + floatValue);
+println(typeof(byteValue + doubleValue));
+println(byteValue + doubleValue);

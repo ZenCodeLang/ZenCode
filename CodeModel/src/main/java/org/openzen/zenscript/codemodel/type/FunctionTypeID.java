@@ -95,7 +95,18 @@ public class FunctionTypeID implements TypeID {
 
 	@Override
 	public String toString() {
+		return toString(false);
+	}
+
+	@Override
+	public String toStringSuffixed() {
+		return toString(true);
+	}
+
+	public String toString(boolean suffixed) {
 		StringBuilder result = new StringBuilder();
+		if (suffixed)
+			result.append("(");
 		result.append("function");
 		if (header.typeParameters.length > 0) {
 			result.append('<');
@@ -120,6 +131,8 @@ public class FunctionTypeID implements TypeID {
 		result.append(')');
 		result.append(": ");
 		result.append(header.getReturnType());
+		if (suffixed)
+			result.append(")");
 		return result.toString();
 	}
 }

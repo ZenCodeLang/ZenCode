@@ -26,11 +26,7 @@ public class ConstructorMember extends FunctionalMember {
 				definition,
 				modifiers,
 				MethodID.staticOperator(OperatorType.CONSTRUCTOR),
-				new FunctionHeader(
-						header.typeParameters,
-						DefinitionTypeID.createThis(definition),
-						header.thrownType,
-						header.parameters));
+				header.withReturnType(DefinitionTypeID.createThis(definition)));
 	}
 
 	public boolean isConstructorForwarded() {

@@ -111,7 +111,7 @@ public class ArrayTypeID implements TypeID {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		result.append(elementType.toString());
+		result.append(elementType.toStringSuffixed());
 		result.append('[');
 		for (int i = 1; i < dimension; i++) {
 			result.append(',');

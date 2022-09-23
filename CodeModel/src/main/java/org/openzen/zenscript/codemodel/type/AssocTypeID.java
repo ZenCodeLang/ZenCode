@@ -88,6 +88,6 @@ public class AssocTypeID implements TypeID {
 
 	@Override
 	public String toString() {
-		return valueType.toString() + '[' + keyType.toString() + ']';
+		return valueType.toStringSuffixed() + '[' + keyType.toString() + ']';
 	}
 }

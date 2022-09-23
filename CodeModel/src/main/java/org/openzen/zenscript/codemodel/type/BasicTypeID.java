@@ -173,6 +173,11 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
+	public boolean isInvalid() {
+		return this == INVALID;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}

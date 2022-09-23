@@ -22,8 +22,8 @@ public class TestAssertions {
 	}
 
 	public void validate(TestOutput output) {
-		validateOutput(output);
 		validateErrors(output);
+		validateOutput(output);
 		// doesn't output very nicely
 		/*Assertions.assertAll(
 				() -> validateOutput(output),

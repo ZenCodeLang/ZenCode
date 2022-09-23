@@ -39,6 +39,11 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
+	public boolean isInvalid() {
+		return true;
+	}
+
+	@Override
 	public ResolvedType resolve() {
 		return new MemberSet();
 	}

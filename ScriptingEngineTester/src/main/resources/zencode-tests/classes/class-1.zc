@@ -1,0 +1,9 @@
+#output: hello
+
+class Foo {
+	print(): void {
+		println("hello");
+	}
+}
+
+new Foo().print();

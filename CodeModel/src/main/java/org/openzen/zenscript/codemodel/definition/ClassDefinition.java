@@ -50,7 +50,7 @@ public class ClassDefinition extends HighLevelDefinition {
 			}
 
 			if (noUninitializedFields) {
-				members.constructor(mapper.map(type, BuiltinMethodSymbol.CLASS_EMPTY_CONSTRUCTOR));
+				members.constructor(new MethodInstance(BuiltinMethodSymbol.CLASS_DEFAULT_CONSTRUCTOR, new FunctionHeader(type), type));
 			}
 		}
 	}

@@ -4,13 +4,10 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
-import org.openzen.zenscript.parser.type.ParsedBasicType;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ParsedExpressionBracket extends ParsedExpression {
 	public List<CompilableExpression> expressions;
@@ -27,6 +24,18 @@ public class ParsedExpressionBracket extends ParsedExpression {
 				compiler,
 				position,
 				expressions.stream().map(e -> e.compile(compiler)).toArray(CompilingExpression[]::new));
+	}
+
+	@Override
+	public Optional<CompilableLambdaHeader> asLambdaHeader() {
+		CompilableLambdaHeader.Parameter[] parameters = new CompilableLambdaHeader.Parameter[expressions.size()];
+		for (int i = 0; i < expressions.size(); i++) {
+			Optional<CompilableLambdaHeader.Parameter> parameter = expressions.get(i).asLambdaHeaderParameter();
+			if (!parameter.isPresent())
+				return Optional.empty();
+			parameters[i] = parameter.get();
+		}
+		return Optional.of(new CompilableLambdaHeader(BasicTypeID.UNDETERMINED, parameters));
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {

@@ -83,6 +83,11 @@ public interface IParsedType {
 
 		IParsedType result;
 		switch (tokens.peek().type) {
+			case T_BROPEN:
+				tokens.next();
+				result = tryParse(tokens);
+				tokens.required(T_BRCLOSE, ") expected");
+				break;
 			case K_VOID:
 				tokens.next();
 				result = ParsedBasicType.VOID;

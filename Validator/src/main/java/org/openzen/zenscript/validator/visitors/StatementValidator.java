@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -12,6 +13,8 @@ import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
@@ -185,7 +188,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitVar(VarStatement statement) {
-		if (statement.initializer != null) {
+		new TypeValidator(validator, statement.position).validate(TypeContext.VARIABLE_TYPE, statement.type);
+		if (!statement.type.isInvalid() && statement.initializer != null) {
 			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
 

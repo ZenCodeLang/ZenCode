@@ -86,6 +86,10 @@ public interface TypeID {
 		return false;
 	}
 
+	default boolean isInvalid() {
+		return false;
+	}
+
 	default boolean canCastImplicitTo(TypeID other) {
 		return false;
 	}
@@ -154,5 +158,14 @@ public interface TypeID {
 
 	default boolean extendsOrImplements(TypeID type) {
 		return false;
+	}
+
+	/**
+	 * Called if the type will be suffixed with ? or []. Ensures that function types are formatted correctly.
+	 *
+	 * @return type converted to a string, compatible with types that add a suffix
+	 */
+	default String toStringSuffixed() {
+		return toString();
 	}
 }

@@ -97,7 +97,7 @@ public class OptionalTypeID implements TypeID {
 
 	@Override
 	public String toString() {
-		return baseType.toString() + "?";
+		return baseType.toStringSuffixed() + "?";
 	}
 
 	@Override
