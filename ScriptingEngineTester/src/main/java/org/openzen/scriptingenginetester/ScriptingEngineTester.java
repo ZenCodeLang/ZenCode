@@ -6,21 +6,21 @@ import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.ClasspathRootSelector;
 import org.junit.platform.engine.discovery.PackageSelector;
 import org.junit.platform.engine.discovery.UniqueIdSelector;
-import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.openzen.scriptingenginetester.cases.TestSuite;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-public class ScriptingEngineTester implements TestEngine {
+public class ScriptingEngineTester implements TestEngine, AutoCloseable {
 	private final Predicate<Class<?>> IS_TESTABLE_ENGINE = TestableScriptingEngine.class::isAssignableFrom;
+
+	private final TestDiscoverer testDiscoverer = new TestDiscoverer();
 
 	@Override
 	public String getId() {
@@ -31,8 +31,9 @@ public class ScriptingEngineTester implements TestEngine {
 	public TestDescriptor discover(EngineDiscoveryRequest request, UniqueId uniqueId) {
 		TestDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "ZenCode scripting engine test");
 
-		try {
-			final File testRoot = new TestDiscoverer().findTestRoot();
+
+
+			final Path testRoot = testDiscoverer.findTestRoot();
 			TestSuite suite = new TestSuite(testRoot);
 
 			request.getSelectorsByType(ClasspathRootSelector.class).forEach(selector -> {
@@ -50,9 +51,7 @@ public class ScriptingEngineTester implements TestEngine {
 			request.getSelectorsByType(UniqueIdSelector.class).forEach(selector -> {
 				appendTestsByUid(suite, selector.getUniqueId(), engineDescriptor);
 			});
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
+
 
 		return engineDescriptor;
 	}
@@ -130,5 +129,10 @@ public class ScriptingEngineTester implements TestEngine {
 				.stream()
 				.filter(child -> !toCheck.hasPrefix(child.getUniqueId()))
 				.forEach(descriptor::removeChild);
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.testDiscoverer.close();
 	}
 }
