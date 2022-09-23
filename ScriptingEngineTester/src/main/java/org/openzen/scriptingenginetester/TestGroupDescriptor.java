@@ -15,7 +15,7 @@ public class TestGroupDescriptor extends AbstractTestDescriptor {
 		super(
 				parent.getUniqueId().append("class", group.getName()),
 				group.getName(),
-				FileSource.from(group.getFile()));
+				group.getSource());
 
 		this.group = group;
 		setParent(parent);
