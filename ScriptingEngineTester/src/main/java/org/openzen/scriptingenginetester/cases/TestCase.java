@@ -25,7 +25,7 @@ public class TestCase {
 	private final TestSource source;
 	private final String name;
 	private final List<SourceFile> sourceFiles = new ArrayList<>();
-	private final TestAssertions assertions;
+	private final TestAnnotations annotations;
 
 	public TestCase(File file) throws IOException {
 		this.source = FileSource.from(file);
@@ -34,8 +34,9 @@ public class TestCase {
 		if (file.isDirectory()) {
 			throw new IllegalArgumentException("Multi-file tests are not yet supported");
 		} else if (file.isFile()) {
-			sourceFiles.add(new FileSourceFile(file.getName(), file));
-			assertions = TestAssertions.extractFrom(file);
+			FileSourceFile sourceFile = new FileSourceFile(file.getName(), file);
+			sourceFiles.add(sourceFile);
+			annotations = TestAnnotations.extractFrom(sourceFile);
 		} else {
 			throw new IllegalArgumentException("Not a valid file or directory");
 		}
@@ -47,8 +48,10 @@ public class TestCase {
 		} else if(Files.isRegularFile(path)) {
 			this.source = UriSource.from(path.toUri());
 			this.name = path.getFileName().toString();
-			this.assertions = TestAssertions.extractFrom(path);
 			this.sourceFiles.add(new PathSourceFile(name, path));
+
+			PathSourceFile sourceFile = new PathSourceFile(name, path);
+			annotations = TestAnnotations.extractFrom(sourceFile);
 		} else {
 			throw new IllegalArgumentException("Not a valid file or directory");
 		}
@@ -60,11 +63,11 @@ public class TestCase {
 	}
 
 	public List<String> getRequiredStdLibModules() {
-		return Collections.emptyList(); // TODO
+		return annotations.getDependencies();
 	}
 
 	public void validate(TestOutput output) {
-		assertions.validate(output);
+		annotations.getAssertions().validate(output);
 	}
 
     public List<SourceFile> getSourceFiles() {

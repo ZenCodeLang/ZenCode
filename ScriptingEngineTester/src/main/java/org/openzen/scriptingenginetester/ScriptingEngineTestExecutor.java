@@ -30,14 +30,10 @@ public class ScriptingEngineTestExecutor {
 		request.getEngineExecutionListener().executionStarted(descriptor);
 		try {
 			TestOutput output = engine.run(descriptor.getTest());
-			try {
-				descriptor.getTest().validate(output);
-				request.getEngineExecutionListener().executionFinished(descriptor, TestExecutionResult.successful());
-			} catch (AssertionError ex) {
-				request.getEngineExecutionListener().executionFinished(descriptor, TestExecutionResult.failed(ex));
-			}
-		} catch (RuntimeException ex) {
-			request.getEngineExecutionListener().executionFinished(descriptor, TestExecutionResult.aborted(ex));
+			descriptor.getTest().validate(output);
+			request.getEngineExecutionListener().executionFinished(descriptor, TestExecutionResult.successful());
+		} catch (AssertionError|RuntimeException ex) {
+			request.getEngineExecutionListener().executionFinished(descriptor, TestExecutionResult.failed(ex));
 		}
 	}
 }
