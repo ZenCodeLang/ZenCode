@@ -776,7 +776,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		for (int i = arguments.arguments.length; i < instancedHeader.parameters.length; i++) {
 			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.defaultValue == null && !parameter.variadic) {
-				validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "missing call argument for " + parameter.name);
+				validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, parameter.name == null ? "missing call argument" : "missing call argument for " + parameter.name);
 			}
 		}
 	}

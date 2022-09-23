@@ -6,18 +6,14 @@ import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.ClasspathRootSelector;
 import org.junit.platform.engine.discovery.PackageSelector;
 import org.junit.platform.engine.discovery.UniqueIdSelector;
-import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.openzen.scriptingenginetester.cases.TestSuite;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class ScriptingEngineTester implements TestEngine {
 	private final Predicate<Class<?>> IS_TESTABLE_ENGINE = TestableScriptingEngine.class::isAssignableFrom;
@@ -31,28 +27,23 @@ public class ScriptingEngineTester implements TestEngine {
 	public TestDescriptor discover(EngineDiscoveryRequest request, UniqueId uniqueId) {
 		TestDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "ZenCode scripting engine test");
 
-		try {
-			final File testRoot = new TestDiscoverer().findTestRoot();
-			TestSuite suite = new TestSuite(testRoot);
+		TestSuite suite = new TestDiscoverer().loadTests();
 
-			request.getSelectorsByType(ClasspathRootSelector.class).forEach(selector -> {
-				appendTestsInClasspathRoot(suite, selector.getClasspathRoot(), engineDescriptor);
-			});
+		request.getSelectorsByType(ClasspathRootSelector.class).forEach(selector -> {
+			appendTestsInClasspathRoot(suite, selector.getClasspathRoot(), engineDescriptor);
+		});
 
-			request.getSelectorsByType(PackageSelector.class).forEach(selector -> {
-				appendTestsInPackage(suite, selector.getPackageName(), engineDescriptor);
-			});
+		request.getSelectorsByType(PackageSelector.class).forEach(selector -> {
+			appendTestsInPackage(suite, selector.getPackageName(), engineDescriptor);
+		});
 
-			request.getSelectorsByType(ClassSelector.class).forEach(selector -> {
-				appendTestsInClass(suite, selector.getJavaClass(), engineDescriptor);
-			});
+		request.getSelectorsByType(ClassSelector.class).forEach(selector -> {
+			appendTestsInClass(suite, selector.getJavaClass(), engineDescriptor);
+		});
 
-			request.getSelectorsByType(UniqueIdSelector.class).forEach(selector -> {
-				appendTestsByUid(suite, selector.getUniqueId(), engineDescriptor);
-			});
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
+		request.getSelectorsByType(UniqueIdSelector.class).forEach(selector -> {
+			appendTestsByUid(suite, selector.getUniqueId(), engineDescriptor);
+		});
 
 		return engineDescriptor;
 	}

@@ -2,11 +2,8 @@ package org.openzen.scriptingenginetester;
 
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
-import org.junit.platform.engine.support.descriptor.ClassSource;
-import org.junit.platform.engine.support.descriptor.FileSource;
 import org.openzen.scriptingenginetester.cases.TestCase;
 import org.openzen.scriptingenginetester.cases.TestGroup;
-import org.openzen.scriptingenginetester.cases.TestSuite;
 
 public class TestGroupDescriptor extends AbstractTestDescriptor {
 	private final TestGroup group;
@@ -15,7 +12,7 @@ public class TestGroupDescriptor extends AbstractTestDescriptor {
 		super(
 				parent.getUniqueId().append("class", group.getName()),
 				group.getName(),
-				FileSource.from(group.getFile()));
+				group.getSource());
 
 		this.group = group;
 		setParent(parent);

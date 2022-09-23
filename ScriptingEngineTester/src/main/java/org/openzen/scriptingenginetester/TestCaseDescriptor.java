@@ -10,9 +10,9 @@ public class TestCaseDescriptor extends AbstractTestDescriptor {
 
 	public TestCaseDescriptor(TestDescriptor parent, TestCase case_) {
 		super(
-				parent.getUniqueId().append("class", case_.getName()),
+				parent.getUniqueId().append("test", case_.getName()),
 				case_.getName(),
-				FileSource.from(case_.getFile()));
+				case_.getSource());
 
 		this.case_ = case_;
 		setParent(parent);
