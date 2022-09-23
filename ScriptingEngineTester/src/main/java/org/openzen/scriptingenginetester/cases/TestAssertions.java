@@ -22,17 +22,10 @@ public class TestAssertions {
 	}
 
 	public void validate(TestOutput output) {
-		validateOutput(output);
-		validateErrors(output);
-
-		// ToDo: Do we want to call them at once like below, or one after another like above?
-		//   Will we ever have a case where both validateOutput and validateErrors mismatch at once?
-		//   If so, then assertAll would return both errors, whereas running them sequentially would only return
-		//   The first error that was encountered.
-		////Assertions.assertAll(
-		////		() -> validateOutput(output),
-		////		() -> validateErrors(output)
-		////);
+		Assertions.assertAll(
+				() -> validateOutput(output),
+				() -> validateErrors(output)
+		);
 	}
 
 	private void validateErrors(TestOutput output) {
@@ -52,10 +45,10 @@ public class TestAssertions {
 						actualError.getPosition().getFromLine(),
 						actualError.error.code.name())
 				);
-		Assertions.assertLinesMatch(expectedErrors, actualErrors, "Test may only throw errors what were specified as '#error:' Preprocessors");
+		Assertions.assertLinesMatch(expectedErrors, actualErrors, "Test must throw errors exactly as specified as '#error:' Preprocessors");
 	}
 
 	private void validateOutput(TestOutput output) {
-		Assertions.assertLinesMatch(expectedOutput, output.output, "Test may only return what was added in '#output:' Preprocessors");
+		Assertions.assertLinesMatch(expectedOutput, output.output, "Test must print exactly as specified in '#output:' Preprocessors");
 	}
 }
