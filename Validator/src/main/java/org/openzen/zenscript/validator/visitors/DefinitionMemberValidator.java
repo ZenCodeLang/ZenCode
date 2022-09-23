@@ -6,6 +6,7 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -50,10 +51,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitField(FieldMember member) {
 		if (fieldNames.contains(member.name)) {
-			validator.logError(
-					ValidationLogEntry.Code.DUPLICATE_FIELD_NAME,
-					member.position,
-					"Duplicate field name: " + member.name);
+			validator.logError(member.position, CompileErrors.duplicateFieldName(member.name));
 		}
 		if (member.getModifiers().isConst()) {
 			ValidationUtils.validateModifiers(
@@ -63,10 +61,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					member.position,
 					"Invalid modifier");
 			if (member.getType() != member.initializer.type) {
-				validator.logError(
-						ValidationLogEntry.Code.INVALID_TYPE,
-						member.position,
-						"Expression type doesn't match const type");
+				validator.logError(member.position, CompileErrors.constValueInvalidType(member.name, member.getType(), member.initializer.type));
 			}
 			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
 		}
@@ -93,7 +88,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 		for (FunctionHeader existing : constructors) {
 			if (existing.isSimilarTo(member.header)) {
-				validator.logError(ValidationLogEntry.Code.DUPLICATE_CONSTRUCTOR, member.position, "Duplicate constructor, conflicts with this" + existing.toString());
+				validator.logError(member.position, CompileErrors.duplicateConstructor(existing));
 			}
 		}
 		constructors.add(member.header);
@@ -101,7 +96,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 		if (member.body == null) {
 			if (!member.isExtern()) {
-				validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
+				validator.logError(member.position, CompileErrors.constructorWithoutBody());
 				return null;
 			}
 		} else {
@@ -126,7 +121,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 				return;
 			}
 
-			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
+			validator.logError(member.position, CompileErrors.constructorNotForwarded());
 		}
 	}
 
@@ -160,7 +155,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			member.constructor.accept(new ExpressionValidator(validator, new EnumConstantInitializerScope()));
 		}
 		if (members.contains(member.name)) {
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, member.position, "Duplicate enum value: " + member.name);
+			validator.logError(member.position, CompileErrors.duplicateEnumValue(member.name));
 		}
 
 		initializedEnumConstants.add(member);
@@ -170,11 +165,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitOperator(OperatorMember member) {
 		if (member.operator == OperatorType.DESTRUCTOR) {
 			if (hasDestructor) {
-				validator.logError(ValidationLogEntry.Code.MULTIPLE_DESTRUCTORS, member.position, "A type have only a single destructor");
+				validator.logError(member.position, CompileErrors.duplicateDestructor());
 			}
 			hasDestructor = true;
 			if (member.header.thrownType != null)
-				validator.logError(ValidationLogEntry.Code.DESTRUCTOR_CANNOT_THROW, member.position, "Destructor cannot throw");
+				validator.logError(member.position, CompileErrors.destructorCannotThrow());
 		} else {
 			ValidationUtils.validateHeader(validator, member.position, member.header);
 		}
@@ -202,23 +197,20 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitImplementation(ImplementationMember implementation) {
 		if (context == DefinitionMemberContext.IMPLEMENTATION) {
-			validator.logError(ValidationLogEntry.Code.IMPLEMENTATION_NESTED, implementation.position, "Cannot nest implementations");
+			validator.logError(implementation.position, CompileErrors.cannotNestImplementations());
 			return null;
 		}
 		if (implementedTypes.contains(implementation.type)) {
-			validator.logError(
-					ValidationLogEntry.Code.TYPE_ALREADY_IMPLEMENTED,
-					implementation.position,
-					"Type is already implemented: " + implementation.type);
+			validator.logError(implementation.position, CompileErrors.duplicateImplementation(implementation.type));
 		}
 		implementedTypes.add(implementation.type);
 
 		if (!(implementation.type instanceof DefinitionTypeID)) {
-			validator.logError(ValidationLogEntry.Code.INVALID_IMPLEMENTATION_TYPE, implementation.position, "Implementation type must be an interface");
+			validator.logError(implementation.position, CompileErrors.invalidImplementedType(implementation.type));
 		} else {
 			DefinitionTypeID type = (DefinitionTypeID) (implementation.type);
 			if (!type.definition.isInterface())
-				validator.logError(ValidationLogEntry.Code.INVALID_IMPLEMENTATION_TYPE, implementation.position, "Implementation type must be an interface");
+				validator.logError(implementation.position, CompileErrors.invalidImplementedType(type));
 		}
 
 		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, DefinitionMemberContext.IMPLEMENTATION);
@@ -256,10 +248,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember innerDefinition) {
 		if (members.contains(innerDefinition.innerDefinition.name)) {
-			validator.logError(
-					ValidationLogEntry.Code.DUPLICATE_MEMBER_NAME,
-					innerDefinition.position,
-					"Duplicate member name: " + innerDefinition.innerDefinition.name);
+			validator.logError(innerDefinition.position, CompileErrors.duplicateMember(innerDefinition.innerDefinition.name));
 		}
 
 		innerDefinition.innerDefinition.accept(new DefinitionValidator(validator));
@@ -270,13 +259,17 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
 		if (member.body.thrownType != null)
-			validator.logError(ValidationLogEntry.Code.STATIC_INITIALIZER_CANNOT_THROW, member.position, "Static initializer cannot throw");
+			validator.logError(member.position, CompileErrors.staticInitializerCannotThrow());
 		return null;
 	}
 
 	private void validateThrow(DefinitionMember member, FunctionHeader header, Statement body) {
-		if (body.thrownType != null && header.thrownType == null) // TODO: validate thrown type
-			validator.logError(ValidationLogEntry.Code.THROW_WITHOUT_THROWS, member.position, "Method is throwing but doesn't declare throws type");
+		if (body.thrownType != null) {
+			if (header.thrownType == null)
+				validator.logError(member.position, CompileErrors.cannotThrowWithoutThrows());
+			else if (!body.thrownType.equals(header.thrownType))
+				validator.logError(member.position, CompileErrors.invalidThrownType(header.thrownType, body.thrownType));
+		}
 	}
 
 	private void validateFunctional(FunctionalMember member, StatementScope scope) {
@@ -285,7 +278,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			if (maybeOverrides.isPresent()) {
 				ValidationUtils.validateValidOverride(validator, member.position, member.header, maybeOverrides.get().getHeader());
 			} else {
-				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
+				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
 			}
 		}
 
@@ -299,7 +292,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	private void validateGetter(GetterMember member, StatementScope scope) {
 		if (member.getEffectiveModifiers().isOverride() || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (!member.getOverrides().isPresent()) {
-				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
+				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
 			}
 		}
 
@@ -314,7 +307,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	private void validateSetter(SetterMember member, StatementScope scope) {
 		if (member.getEffectiveModifiers().isOverride() || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (!member.getOverrides().isPresent()) {
-				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
+				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
 			}
 		}
 

@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -284,6 +285,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 	}
 
+	public static CompileError overriddenMethodNotFound(MethodID method, FunctionHeader header) {
+		return new CompileError(CompileExceptionCode.OVERRIDEN_METHOD_NOT_FOUND, "Could not find the base method for " + method + header);
+	}
+
 	public static CompileError fieldWithoutType() {
 		return new CompileError(CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
 	}
@@ -294,5 +299,227 @@ public class CompileErrors {
 
 	public static CompileError deserializationError(String message) {
 		return new CompileError(CompileExceptionCode.DESERIALIZATION_ERROR, message);
+	}
+
+	public static CompileError notAnExpression(String message) {
+		return new CompileError(CompileExceptionCode.NOT_AN_EXPRESSION, message);
+	}
+
+	public static CompileError duplicateFieldName(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_FIELD_NAME, "Duplicate field name: " + name);
+	}
+
+	public static CompileError constValueInvalidType(String name, TypeID expected, TypeID actual) {
+		return new CompileError(CompileExceptionCode.CONST_INVALID_INITIALIZER, "Invalid initializer for const " + name + ": " + expected + " expected but " + actual + " given");
+	}
+
+	public static CompileError duplicateConstructor(FunctionHeader existing) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_CONSTRUCTOR, "Duplicate constructor, conflicts with this" + existing);
+	}
+
+	public static CompileError constructorWithoutBody() {
+		return new CompileError(CompileExceptionCode.METHOD_BODY_REQUIRED, "Constructors must have a method body");
+	}
+
+	public static CompileError constructorNotForwarded() {
+		return new CompileError(CompileExceptionCode.CONSTRUCTOR_FORWARD_MISSING, "Constructor not forwarded to base type");
+	}
+
+	public static CompileError duplicateEnumValue(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_ENUM_VALUE, "Duplicate enum value: " + name);
+	}
+
+	public static CompileError duplicateDestructor() {
+		return new CompileError(CompileExceptionCode.DUPLICATE_DESTRUCTOR, "Type already has a destructor");
+	}
+
+	public static CompileError destructorCannotThrow() {
+		return new CompileError(CompileExceptionCode.DESTRUCTOR_CANNOT_THROW, "Destructor cannot throw exceptions");
+	}
+
+	public static CompileError cannotNestImplementations() {
+		return new CompileError(CompileExceptionCode.CANNOT_NEST_IMPLEMENTATIONS, "Implementations cannot be nested");
+	}
+
+	public static CompileError duplicateImplementation(TypeID type) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_IMPLEMENTATION, "Type is already implemented: " + type);
+	}
+
+	public static CompileError invalidImplementedType(TypeID type) {
+		return new CompileError(CompileExceptionCode.INVALID_IMPLEMENTED_TYPE, "Cannot implement " + type + " since it is not an interface");
+	}
+
+	public static CompileError duplicateMember(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_MEMBER, "Duplicate member: " + name);
+	}
+
+	public static CompileError staticInitializerCannotThrow() {
+		return new CompileError(CompileExceptionCode.CANNOT_THROW_HERE, "Static initializer cannot throw exceptions");
+	}
+
+	public static CompileError cannotThrowWithoutThrows() {
+		return new CompileError(CompileExceptionCode.CANNOT_THROW_HERE, "Method is throwing but doesn't declare thrown type in method header");
+	}
+
+	public static CompileError invalidThrownType(TypeID expected, TypeID actual) {
+		return new CompileError(CompileExceptionCode.INVALID_THROWN_TYPE, "Thrown type is wrong: " + expected + " expected but " + actual + " thrown");
+	}
+
+	public static CompileError invalidOperand(String message) {
+		return new CompileError(CompileExceptionCode.INVALID_OPERAND_TYPE, message);
+	}
+
+	public static CompileError notInstanceCallableMethod(MethodID id) {
+		return new CompileError(CompileExceptionCode.CANNOT_CALL, "Cannot call this method on a value: " + id + "(" + id.getKind() + ")");
+	}
+
+	public static CompileError notStaticCallableMethod(MethodID id) {
+		return new CompileError(CompileExceptionCode.CANNOT_CALL, "Cannot call this method statically: " + id + "(" + id.getKind() + ")");
+	}
+
+	public static CompileError constructorForwardOutsideConstructor() {
+		return new CompileError(CompileExceptionCode.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, "Can only forward constructors inside constructors");
+	}
+
+	public static CompileError constructorForwardMustBeFirstStatement() {
+		return new CompileError(CompileExceptionCode.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, "Constructor forward must be first statement in the constructor");
+	}
+
+	public static CompileError enumConstantNotYetInitialized(String name) {
+		return new CompileError(CompileExceptionCode.ENUM_CONSTANT_NOT_YET_INITIALIZED, "Using an enum constant that is not yet initialized: " + name);
+	}
+
+	public static CompileError fieldNotYetInitialized(String name) {
+		return new CompileError(CompileExceptionCode.FIELD_NOT_YET_INITIALIZED, "Field " + name + " is not yet initialized");
+	}
+
+	public static CompileError localVariableNotYetInitialized(String name) {
+		return new CompileError(CompileExceptionCode.LOCAL_VARIABLE_NOT_YET_INITIALIZED,  "Local variable not yet initialized: " + name);
+	}
+
+	public static CompileError invalidMatchingVariantField(int index) {
+		return new CompileError(CompileExceptionCode.INVALID_MATCHING_VARIANT_FIELD, "Invalid matching field field (" + index + ")");
+	}
+
+	public static CompileError duplicateDefaultMatchCase() {
+		return new CompileError(CompileExceptionCode.DUPLICATE_DEFAULT_MATCH_CASE, "Duplicate default in match");
+	}
+
+	public static CompileError duplicateMatchCase(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_MATCH_CASE, "Duplicate case in match: " + name);
+	}
+
+	public static CompileError invalidVariantMatchCase() {
+		return new CompileError(CompileExceptionCode.INVALID_MATCH_CASE, "Invalid match case: must be a variant option or default");
+	}
+
+	public static CompileError invalidEnumMatchCase() {
+		return new CompileError(CompileExceptionCode.INVALID_MATCH_CASE, "Invalid match case: must be a enum constant or default");
+	}
+
+	public static CompileError incompleteMatch(List<String> missingOptions) {
+		return new CompileError(
+				CompileExceptionCode.INCOMPLETE_MATCH,
+				"Incomplete match: missing cases " + String.join(", ", missingOptions));
+	}
+
+	public static CompileError incompleteMatchBecauseDefaultRequired() {
+		return new CompileError(CompileExceptionCode.INCOMPLETE_MATCH, "Incomplete match: must have a default option");
+	}
+
+	public static CompileError panicArgumentMustBeString() {
+		return new CompileError(CompileExceptionCode.PANIC_ARGUMENT_NO_STRING, "Panic argument must be a string");
+	}
+
+	public static CompileError cannotSetFinalField(String name) {
+		return new CompileError(CompileExceptionCode.CANNOT_SET_FINAL_FIELD,  "Cannot update field " + name + " since it is final");
+	}
+
+	public static CompileError typeMismatch(TypeID expected, TypeID actual) {
+		return new CompileError(CompileExceptionCode.TYPE_MISMATCH, "Provided a " + actual + " where a " + expected + " was expected");
+	}
+
+	public static CompileError cannotSetFinalVariable(String name) {
+		return new CompileError(CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot update " + name + " since it is a final variable");
+	}
+
+	public static CompileError invalidCallArgument(String message) {
+		return new CompileError(CompileExceptionCode.INVALID_CALL_ARGUMENT, message);
+	}
+
+	public static CompileError noAccess(String message) {
+		return new CompileError(CompileExceptionCode.NO_ACCESS, message);
+	}
+
+	public static CompileError memberMustBeStatic() {
+		return new CompileError(CompileExceptionCode.MEMBER_NOT_STATIC, "Static member expected");
+	}
+
+	public static CompileError memberMustNotBeStatic() {
+		return new CompileError(CompileExceptionCode.MEMBER_IS_STATIC, "Non-static member expected");
+	}
+
+	public static CompileError returnValueInVoidFunction() {
+		return new CompileError(CompileExceptionCode.RETURN_VALUE_VOID, "Return type is void; cannot return a value");
+	}
+
+	public static CompileError missingReturnValue() {
+		return new CompileError(CompileExceptionCode.MISSING_RETURN_VALUE, "Missing return value");
+	}
+
+	public static CompileError tryCatchResourceWithoutInitializer() {
+		return new CompileError(CompileExceptionCode.TRY_CATCH_RESOURCE_REQUIRES_INITIALIZER, "try with resource requires initializer");
+	}
+
+	public static CompileError invalidSuperclass(TypeID type) {
+		return new CompileError(CompileExceptionCode.INVALID_SUPERCLASS, type + " is not a valid superclass");
+	}
+
+	public static CompileError superclassNotVirtual(TypeID type) {
+		return new CompileError(CompileExceptionCode.INVALID_SUPERCLASS, "Cannot use " + type + " as superclass since it is not virtual");
+	}
+
+	public static CompileError typeNotDetermined(String display) {
+		return new CompileError(CompileExceptionCode.INVALID_TYPE,  display + " could not be inferred");
+	}
+
+	public static CompileError invalidArrayDimension(int dimension) {
+		return new CompileError(CompileExceptionCode.INVALID_TYPE, "Invalid array dimension: " + dimension);
+	}
+
+	public static CompileError invalidOverride(String message) {
+		return new CompileError(CompileExceptionCode.INVALID_OVERRIDE, message);
+	}
+
+	public static CompileError invalidIdentifier(String identifier) {
+		return new CompileError(CompileExceptionCode.INVALID_IDENTIFIER, "Invalid identifier: " + identifier);
+	}
+
+	public static CompileError duplicateParameterName(String name) {
+		return new CompileError(CompileExceptionCode.DUPLICATE_PARAMETER_NAME, "Duplicate parameter name: " + name);
+	}
+
+	public static CompileError variadicParameterMustBeLast() {
+		return new CompileError(CompileExceptionCode.VARIADIC_PARAMETER_MUST_BE_LAST,  "variadic parameter must be the last parameter");
+	}
+
+	public static CompileError variadicParameterMustBeArray() {
+		return new CompileError(CompileExceptionCode.VARIADIC_PARAMETER_MUST_BE_ARRAY,  "variadic parameter must be an array");
+	}
+
+	public static CompileError invalidModifier(String message) {
+		return new CompileError(CompileExceptionCode.INVALID_MODIFIER, message);
+	}
+
+	public static CompileError invalidNumberOfTypeArguments(int expectedTypeArguments, int actualTypeArguments) {
+		return new CompileError(CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments: "
+				+ actualTypeArguments
+				+ " arguments given but "
+				+ expectedTypeArguments
+				+ " expected");
+	}
+
+	public static CompileError parseError(String message) {
+		return new CompileError(CompileExceptionCode.PARSE_ERROR, message);
 	}
 }

@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
@@ -22,14 +23,10 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.TypeContext;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Hoofdgebruiker
@@ -50,15 +47,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		if (expression.left.type != BasicTypeID.BOOL) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
-					"left hand side operand of && must be a bool");
+					CompileErrors.invalidOperand("left hand side operand of && must be a bool"));
 		}
 		if (expression.right.type != BasicTypeID.BOOL) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
-					"right hand side operand of && must be a bool");
+					CompileErrors.invalidOperand("right hand side operand of && must be a bool"));
 		}
 		return null;
 	}
@@ -68,9 +63,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		for (Expression element : expression.expressions) {
 			if (!element.type.equals(expression.arrayType.elementType)) {
 				validator.logError(
-						ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 						expression.position,
-						"array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType);
+						CompileErrors.invalidOperand("array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType));
 			}
 			element.accept(this);
 		}
@@ -80,9 +74,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCompare(CompareExpression expression) {
 		if (expression.operator.getHeader().parameters.length == 0)
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison operator has no parameters!");
+			validator.logError(expression.position, CompileErrors.invalidOperand("comparison operator has no parameters!"));
 		else if (!expression.right.type.equals(expression.operator.getHeader().parameters[0].type))
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
+			validator.logError(expression.position, CompileErrors.invalidOperand("comparison has invalid right type!"));
 
 		checkMemberAccess(expression.position, expression.operator);
 		checkNotStatic(expression.position, expression.operator);
@@ -97,14 +91,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.target.accept(this);
 		checkMemberAccess(expression.position, expression.method);
 
-		// ToDo: This probably needs to be done elsewhere?
-		//   Reason: INT_TO_STRING as method is (int): string
-		//   But the call is <int>.caster()
-		//   Hence the checkCallArguments method will say that () != (int) argument mismatch!
-		//final CallArguments arguments = expression.method.getID().getKind() == MethodID.Kind.CASTER
-		//		? expression.arguments.bind(expression.target)
-		//		: expression.arguments;
-		//checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), arguments);
 		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
 		checkNotStatic(expression.position, expression.method);
 
@@ -117,7 +103,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			case CASTER:
 				return null;
 			default:
-				validator.logError(ValidationLogEntry.Code.INVALID_METHOD_TYPE, expression.position, "Invalid method type: " + id.getKind());
+				validator.logError(expression.position, CompileErrors.notInstanceCallableMethod(id));
 				return null;
 		}
 	}
@@ -136,7 +122,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			case STATICSETTER:
 				return null;
 			default:
-				validator.logError(ValidationLogEntry.Code.INVALID_METHOD_TYPE, expression.position, "Invalid method type: " + id.getKind());
+				validator.logError(expression.position, CompileErrors.notStaticCallableMethod(id));
 				return null;
 		}
 	}
@@ -165,7 +151,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitCheckNull(CheckNullExpression expression) {
 		expression.value.accept(this);
 		if (!expression.value.type.isOptional()) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "target of a null check is not optional");
+			validator.logError(expression.position, CompileErrors.invalidOperand("target of a null check is not optional"));
 		}
 		return null;
 	}
@@ -175,7 +161,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.left.accept(this);
 		expression.right.accept(this);
 		if (!expression.left.type.isOptional()) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "target of a null coalesce is not optional");
+			validator.logError(expression.position, CompileErrors.invalidOperand("target of a null coalesce is not optional"));
 		}
 		return null;
 	}
@@ -186,7 +172,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.ifThen.accept(this);
 		expression.ifElse.accept(this);
 		if (expression.condition.type != BasicTypeID.BOOL) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "conditional expression condition must be a bool");
+			validator.logError(expression.position, CompileErrors.invalidOperand("conditional expression condition must be a bool"));
 		}
 		return null;
 	}
@@ -264,10 +250,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		if (!scope.isConstructor()) {
-			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
+			validator.logError(expression.position, CompileErrors.constructorForwardOutsideConstructor());
 		}
 		if (!scope.isFirstStatement()) {
-			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
+			validator.logError(expression.position, CompileErrors.constructorForwardMustBeFirstStatement());
 		}
 		scope.markConstructorForwarded();
 		checkCallArguments(expression.position, expression.constructor.getHeader(), expression.constructor.getHeader(), expression.arguments);
@@ -279,10 +265,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkMemberAccess(expression.position, expression.constructor);
 
 		if (!scope.isConstructor()) {
-			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
+			validator.logError(expression.position, CompileErrors.constructorForwardOutsideConstructor());
 		}
 		if (!scope.isFirstStatement()) {
-			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
+			validator.logError(expression.position, CompileErrors.constructorForwardMustBeFirstStatement());
 		}
 		scope.markConstructorForwarded();
 		checkCallArguments(expression.position, expression.constructor.getHeader(), expression.constructor.getHeader(), expression.arguments);
@@ -292,10 +278,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitEnumConstant(EnumConstantExpression expression) {
 		if (!scope.isEnumConstantInitialized(expression.value)) {
-			validator.logError(
-					ValidationLogEntry.Code.ENUM_CONSTANT_NOT_YET_INITIALIZED,
-					expression.position,
-					"Using an enum constant that is not yet initialized: " + expression.value.name);
+			validator.logError(expression.position, CompileErrors.enumConstantNotYetInitialized(expression.value.name));
 		}
 		return null;
 	}
@@ -315,9 +298,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.target.accept(this);
 		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field.field)) {
 			validator.logError(
-					ValidationLogEntry.Code.FIELD_NOT_YET_INITIALIZED,
 					expression.position,
-					"Using a field that was not yet initialized");
+					CompileErrors.fieldNotYetInitialized(expression.field.getName()));
 		}
 		return null;
 	}
@@ -330,7 +312,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		if (!scope.isLocalVariableInitialized(expression.variable)) {
-			validator.logError(ValidationLogEntry.Code.LOCAL_VARIABLE_NOT_YET_INITIALIZED, expression.position, "Local variable not yet initialized");
+			validator.logError(expression.position, CompileErrors.localVariableNotYetInitialized(expression.variable.name));
 		}
 		return null;
 	}
@@ -338,7 +320,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		if (expression.index >= expression.value.parameters.length) {
-			validator.logError(ValidationLogEntry.Code.MATCHING_VARIANT_FIELD_INVALID, expression.position, "Invalid matching variant field");
+			validator.logError(expression.position, CompileErrors.invalidMatchingVariantField(expression.index));
 		}
 		return null;
 	}
@@ -369,7 +351,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitInvalid(InvalidExpression expression) {
-		validator.logError(ValidationLogEntry.Code.INVALID_EXPRESSION, expression.position, expression.error.description);
+		validator.logError(expression.position, expression.error);
 		return null;
 	}
 
@@ -402,10 +384,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			key.accept(this);
 			value.accept(this);
 			if (!key.type.equals(type.keyType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type " + key.type + " must match the associative array key type " + type.keyType);
+				validator.logError(key.position, CompileErrors.invalidOperand("Key type " + key.type + " must match the associative array key type " + type.keyType));
 			}
 			if (!value.type.equals(type.valueType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type " + value.type + " must match the associative array value type " + type.valueType);
+				validator.logError(key.position, CompileErrors.invalidOperand("Value type " + value.type + " must match the associative array value type " + type.valueType));
 			}
 		}
 		return null;
@@ -424,25 +406,29 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			for (MatchExpression.Case case_ : expression.cases) {
 				if (case_.key == null) {
 					if (hasDefault)
-						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+						validator.logError(expression.position, CompileErrors.duplicateDefaultMatchCase());
 
 					hasDefault = true;
 				} else if (case_.key instanceof VariantOptionSwitchValue) {
 					VariantDefinition.Option option = ((VariantOptionSwitchValue) case_.key).option.getOption();
 					if (options.contains(option))
-						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
+						validator.logError(expression.position, CompileErrors.duplicateMatchCase(option.name));
 
 					options.add(option);
 				} else {
-					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or option value");
+					validator.logError(expression.position, CompileErrors.invalidVariantMatchCase());
 				}
 			}
 
 			if (!hasDefault) {
 				VariantDefinition variant = (VariantDefinition) ((DefinitionTypeID) expression.value.type).definition;
+				List<String> missingOptions = new ArrayList<>();
 				for (VariantDefinition.Option option : variant.options) {
 					if (!options.contains(option))
-						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
+						missingOptions.add(option.name);
+				}
+				if (!missingOptions.isEmpty()) {
+					validator.logError(expression.position, CompileErrors.incompleteMatch(missingOptions));
 				}
 			}
 		} else if (expression.type.isEnum()) {
@@ -450,39 +436,43 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			for (MatchExpression.Case case_ : expression.cases) {
 				if (case_.key == null) {
 					if (hasDefault)
-						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+						validator.logError(expression.position, CompileErrors.duplicateDefaultMatchCase());
 
 					hasDefault = true;
 				} else if (case_.key instanceof EnumConstantSwitchValue) {
 					EnumConstantMember option = ((EnumConstantSwitchValue) case_.key).constant;
 					if (options.contains(option))
-						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
+						validator.logError(expression.position, CompileErrors.duplicateMatchCase(option.name));
 
 					options.add(option);
 				} else {
-					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or enum value");
+					validator.logError(expression.position, CompileErrors.invalidEnumMatchCase());
 				}
 			}
 
 			if (!hasDefault) {
 				EnumDefinition enum_ = (EnumDefinition) ((DefinitionTypeID) expression.value.type).definition;
+				List<String> missingOptions = new ArrayList<>();
 				for (EnumConstantMember option : enum_.enumConstants) {
 					if (!options.contains(option))
-						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
+						missingOptions.add(option.name);
+				}
+				if (!missingOptions.isEmpty()) {
+					validator.logError(expression.position, CompileErrors.incompleteMatch(missingOptions));
 				}
 			}
 		} else {
 			for (MatchExpression.Case case_ : expression.cases) {
 				if (case_.key == null) {
 					if (hasDefault)
-						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+						validator.logError(expression.position, CompileErrors.duplicateDefaultMatchCase());
 
 					hasDefault = true;
 				}
 			}
 
 			if (!hasDefault)
-				validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: must have a default option");
+				validator.logError(expression.position, CompileErrors.incompleteMatchBecauseDefaultRequired());
 		}
 		return null;
 	}
@@ -498,9 +488,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.right.accept(this);
 
 		if (expression.left.type != BasicTypeID.BOOL)
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Left hand side of || expression is not a bool");
+			validator.logError(expression.position, CompileErrors.invalidOperand("Left hand side of || expression is not a bool"));
 		if (expression.right.type != BasicTypeID.BOOL)
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
+			validator.logError(expression.position, CompileErrors.invalidOperand("Right hand side of || expression is not a bool"));
 
 		return null;
 	}
@@ -509,7 +499,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitPanic(PanicExpression expression) {
 		expression.value.accept(this);
 		if (expression.value.type != BasicTypeID.STRING)
-			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
+			validator.logError(expression.position, CompileErrors.panicArgumentMustBeString());
 
 		return null;
 	}
@@ -537,10 +527,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		RangeTypeID rangeType = (RangeTypeID) expression.type;
 		if (!expression.from.type.equals(rangeType.baseType)) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
+			validator.logError(expression.position, CompileErrors.invalidOperand("From operand must be a " + rangeType.baseType));
 		}
 		if (!expression.to.type.equals(rangeType.baseType)) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.baseType.toString());
+			validator.logError(expression.position, CompileErrors.invalidOperand("To operand must be a " + rangeType.baseType));
 		}
 		return null;
 	}
@@ -559,15 +549,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.field.getType())) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
-		}
+		checkCorrectType(expression.position, expression.field.getType(), expression.value.type);
 		if (expression.field.getModifiers().isFinal()) {
 			if (!(expression.target instanceof ThisExpression && scope.isConstructor())) {
-				validator.logError(ValidationLogEntry.Code.SETTING_FINAL_FIELD, expression.position, "Cannot set a final field");
+				validator.logError(expression.position, CompileErrors.cannotSetFinalField(expression.field.getName()));
 			}
 		}
 		return null;
@@ -576,26 +561,16 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.parameter.type)) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a parameter of type " + expression.parameter.type + " to a value of type " + expression.value.type);
-		}
+		checkCorrectType(expression.position, expression.parameter.type, expression.value.type);
 		return null;
 	}
 
 	@Override
 	public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.variable.type)) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a variable of type " + expression.variable.type + " to a value of type " + expression.value.type);
-		}
+		checkCorrectType(expression.position, expression.variable.type, expression.value.type);
 		if (expression.variable.isFinal) {
-			validator.logError(ValidationLogEntry.Code.SETTING_FINAL_VARIABLE, expression.position, "Trying to set final variable " + expression.variable.name);
+			validator.logError(expression.position, CompileErrors.cannotSetFinalVariable(expression.variable.name));
 		}
 		return null;
 	}
@@ -606,18 +581,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkStatic(expression.position, expression.field);
 
 		expression.value.accept(this);
-		if (!expression.value.type.equals(expression.field.getType())) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
-					expression.position,
-					"Trying to set a static field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
-		}
+		checkCorrectType(expression.position, expression.field.getType(), expression.value.type);
 		if (expression.field.getModifiers().isFinal()) {
 			if (!scope.isStaticInitializer() || expression.field.field.getDefiningType() != scope.getDefinition()) {
 				validator.logError(
-						ValidationLogEntry.Code.SETTING_FINAL_FIELD,
 						expression.position,
-						"Trying to set final field " + expression.field.field.getName());
+						CompileErrors.cannotSetFinalField(expression.field.getName()));
 			}
 		}
 		return null;
@@ -638,7 +607,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitThis(ThisExpression expression) {
 		if (!scope.hasThis()) {
-			validator.logError(ValidationLogEntry.Code.THIS_IN_STATIC_SCOPE, expression.position, "Cannot use this in a static scope");
+			validator.logError(expression.position, CompileErrors.noThisInScope());
 		}
 
 		return null;
@@ -670,14 +639,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitVariantValue(VariantValueExpression expression) {
 		if (expression.getNumberOfArguments() != expression.option.types.length) {
-			validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, expression.position, "Invalid number of variant arguments for variant element " + expression.option.getName());
+			validator.logError(expression.position, CompileErrors.invalidCallArgument("Invalid number of variant arguments for variant element " + expression.option.getName()));
 		}
 		for (int i = 0; i < expression.getNumberOfArguments(); i++) {
 			if (!expression.arguments[i].type.equals(expression.option.types[i])) {
 				validator.logError(
-						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						expression.position,
-						"Invalid variant argument for argument " + i + ": " + expression.arguments[i].type + " given but " + expression.option.types[i] + " expected");
+						CompileErrors.invalidCallArgument("Invalid variant argument for argument " + i + ": " + expression.arguments[i].type + " given but " + expression.option.types[i] + " expected"));
 			}
 		}
 		return null;
@@ -687,20 +655,29 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		expression.value.accept(this);
 		if (expression.value.type.isOptional()) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "expression value is already optional");
+			validator.logError(expression.position, CompileErrors.invalidOperand("expression value is already optional"));
 		}
 		return null;
 	}
 
+	private void checkCorrectType(CodePosition position, TypeID expected, TypeID actual) {
+		if (actual == BasicTypeID.INVALID)
+			return; // in this case the underlying error will already by reported elsewhere
+
+		if (!expected.equals(actual)) {
+			validator.logError(position, CompileErrors.typeMismatch(expected, actual));
+		}
+	}
+
 	private void checkMemberAccess(CodePosition position, MethodInstance member) {
 		if (!hasAccess(member.getModifiers(), member.method.getDefiningType())) {
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.getID());
+			validator.logError(position, CompileErrors.noAccess("no access to " + member.getID()));
 		}
 	}
 
 	private void checkFieldAccess(CodePosition position, FieldSymbol field) {
 		if (!hasAccess(field.getModifiers(), field.getDefiningType()))
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.getName());
+			validator.logError(position, CompileErrors.noAccess("no field access to " + field.getName()));
 	}
 
 	private boolean hasAccess(Modifiers modifiers, DefinitionSymbol definition) {
@@ -718,22 +695,22 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	private void checkStatic(CodePosition position, MethodInstance member) {
 		if (!member.getModifiers().isStatic())
-			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
+			validator.logError(position, CompileErrors.memberMustBeStatic());
 	}
 
 	private void checkStatic(CodePosition position, FieldInstance member) {
 		if (!member.getModifiers().isStatic())
-			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
+			validator.logError( position, CompileErrors.memberMustBeStatic());
 	}
 
 	private void checkNotStatic(CodePosition position, FieldInstance member) {
 		if (member.getModifiers().isStatic())
-			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
+			validator.logError(position, CompileErrors.memberMustNotBeStatic());
 	}
 
 	private void checkNotStatic(CodePosition position, MethodInstance member) {
 		if (member.getModifiers().isStatic())
-			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
+			validator.logError(position, CompileErrors.memberMustNotBeStatic());
 	}
 
 	private void checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
@@ -747,36 +724,27 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			if (i >= instancedHeader.parameters.length) {
 				Optional<FunctionParameter> variadic = instancedHeader.getVariadicParameter();
 				if (!variadic.isPresent()) {
-					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
+					validator.logError(position, CompileErrors.invalidCallArgument("too many call arguments"));
 					break;
 				} else {
 					Optional<ArrayTypeID> maybeArray = variadic.get().type.asArray();
 					if (maybeArray.isPresent()) {
 						TypeID elementType = maybeArray.get().elementType;
-						if (!elementType.equals(argument.type)) {
-							validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
-							break;
-						}
+						checkCorrectType(position, elementType, argument.type);
 					} else {
-						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "variadic parameter is not an array");
+						validator.logError(position, CompileErrors.invalidCallArgument("variadic parameter is not an array"));
 					}
 				}
 			}
 
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
-			if (!parameter.type.equals(argument.type) && (parameter.defaultValue == null || !Objects.equals(parameter.defaultValue.type, argument.type))) {
-				if (!parameter.type.equals(argument.type))
-					validator.logError(
-							ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
-							position,
-							"invalid value for parameter " + parameter.name + ": " + parameter.type.toString() + " expected but " + arguments.arguments[i].type + " given");
-			}
+			checkCorrectType(position, parameter.type, arguments.arguments[i].type);
 		}
 
 		for (int i = arguments.arguments.length; i < instancedHeader.parameters.length; i++) {
 			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.defaultValue == null && !parameter.variadic) {
-				validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "missing call argument for " + parameter.name);
+				validator.logError(position, CompileErrors.invalidCallArgument("missing call argument for " + parameter.name));
 			}
 		}
 	}

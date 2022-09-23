@@ -7,6 +7,7 @@ package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
@@ -37,12 +38,12 @@ public class ValidationUtils {
 
 	public static void validateValidOverride(Validator target, CodePosition position, FunctionHeader header, FunctionHeader overridden) {
 		if (!header.canOverride(target.resolver, overridden))
-			target.logError(INVALID_OVERRIDE, position, "Invalid override: incompatible parameters or return type");
+			target.logError(position, CompileErrors.invalidOverride("Invalid override: incompatible parameters or return type"));
 	}
 
 	public static void validateIdentifier(Validator target, CodePosition position, String identifier) {
 		if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
-			target.logError(INVALID_IDENTIFIER, position, "Invalid identifier: " + identifier);
+			target.logError(position, CompileErrors.invalidIdentifier(identifier));
 		}
 	}
 
@@ -54,7 +55,7 @@ public class ValidationUtils {
 		int i = 0;
 		for (FunctionParameter parameter : header.parameters) {
 			if (parameterNames.contains(parameter.name)) {
-				target.logError(DUPLICATE_PARAMETER_NAME, position, "Duplicate parameter name: " + parameter.name);
+				target.logError(position, CompileErrors.duplicateParameterName(parameter.name));
 			}
 
 			parameterNames.add(parameter.name);
@@ -65,16 +66,16 @@ public class ValidationUtils {
 				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
 				typeValidator.validate(TypeContext.PARAMETER_TYPE, defaultValue.type);
 				if (!defaultValue.type.equals(parameter.type) && !target.resolver.resolve(defaultValue.type).canCastImplicitlyTo(parameter.type)) {
-					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
+					target.logError(position, CompileErrors.typeMismatch(parameter.type, defaultValue.type));
 				}
 			}
 
 			if (parameter.variadic) {
 				if (i != header.parameters.length - 1) {
-					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
+					target.logError(position, CompileErrors.variadicParameterMustBeLast());
 				}
 				if (!(parameter.type instanceof ArrayTypeID)) {
-					target.logError(INVALID_TYPE, position, "variadic parameter must be an array");
+					target.logError(position, CompileErrors.variadicParameterMustBeArray());
 				}
 			}
 			i++;
@@ -88,49 +89,49 @@ public class ValidationUtils {
 			CodePosition position,
 			String error) {
 		if (modifiers.isPublic() && modifiers.isInternal())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and internal");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine public and internal"));
 		if (modifiers.isPublic() && modifiers.isPrivate())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and private");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine public and private"));
 		if (modifiers.isPublic() && modifiers.isProtected())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and protected");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine public and protected"));
 		if (modifiers.isInternal() && modifiers.isPrivate())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and private");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine internal and private"));
 		if (modifiers.isInternal() && modifiers.isProtected())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and protected");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine internal and protected"));
 		if (modifiers.isPrivate() && modifiers.isProtected())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine private and protected");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine private and protected"));
 
 		if (modifiers.isConst() && modifiers.isConstOptional())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine const and const?");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine const and const?"));
 		if (modifiers.isFinal() && modifiers.isAbstract())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine abstract and final");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine abstract and final"));
 		if (modifiers.isFinal() && modifiers.isVirtual())
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine final and virtual");
+			target.logError(position, CompileErrors.invalidModifier(error + ": cannot combine final and virtual"));
 
 		Modifiers invalid = new Modifiers(modifiers.value & ~allowedModifiers);
 		if (invalid.value == 0)
 			return;
 
 		if (invalid.isPublic())
-			target.logError(INVALID_MODIFIER, position, error + ": public");
+			target.logError(position, CompileErrors.invalidModifier(error + ": public not allowed here"));
 		if (invalid.isInternal())
-			target.logError(INVALID_MODIFIER, position, error + ": internal");
+			target.logError(position, CompileErrors.invalidModifier(error + ": internal not allowed here"));
 		if (invalid.isProtected())
-			target.logError(INVALID_MODIFIER, position, error + ": protected");
+			target.logError(position, CompileErrors.invalidModifier(error + ": protected not allowed here"));
 		if (invalid.isPrivate())
-			target.logError(INVALID_MODIFIER, position, error + ": private");
+			target.logError(position, CompileErrors.invalidModifier(error + ": private not allewed here"));
 		if (modifiers.isFinal())
-			target.logError(INVALID_MODIFIER, position, error + ": final");
+			target.logError(position, CompileErrors.invalidModifier(error + ": final not allowed here"));
 		if (modifiers.isConst())
-			target.logError(INVALID_MODIFIER, position, error + ": const");
+			target.logError(position, CompileErrors.invalidModifier(error + ": const not allowed here"));
 		if (modifiers.isConstOptional())
-			target.logError(INVALID_MODIFIER, position, error + ": const?");
+			target.logError(position, CompileErrors.invalidModifier(error + ": const? not allowed here"));
 		if (modifiers.isStatic())
-			target.logError(INVALID_MODIFIER, position, error + ": static");
+			target.logError(position, CompileErrors.invalidModifier(error + ": static not allowed here"));
 		if (modifiers.isImplicit())
-			target.logError(INVALID_MODIFIER, position, error + ": implicit");
+			target.logError(position, CompileErrors.invalidModifier(error + ": implicit not allowed here"));
 		if (modifiers.isVirtual())
-			target.logError(INVALID_MODIFIER, position, error + ": virtual");
+			target.logError(position, CompileErrors.invalidModifier(error + ": virtual not allowed here"));
 	}
 
 	public static void validateTypeArguments(
@@ -138,39 +139,11 @@ public class ValidationUtils {
 			CodePosition position,
 			TypeParameter[] typeParameters,
 			TypeID[] typeArguments) {
-		if (typeParameters == null || typeParameters.length == 0) {
-			if (typeArguments == null || typeArguments.length == 0) {
-				return;
-			} else {
-				target.logError(
-						ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
-						position,
-						"Invalid number of type arguments: "
-								+ typeArguments.length
-								+ " arguments given but none expected");
-				return;
-			}
-		}
-		if (typeArguments == null || typeArguments.length == 0) {
-			target.logError(
-					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
-					position,
-					"Invalid number of type arguments: "
-							+ typeParameters.length
-							+ " arguments expected but none given");
-			return;
-		}
 
-		if (typeParameters.length != typeArguments.length) {
-			target.logError(
-					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
-					position,
-					"Invalid number of type arguments: "
-							+ typeArguments.length
-							+ " arguments given but "
-							+ typeParameters.length
-							+ " expected");
-			return;
+		int expectedTypeArguments = typeParameters == null ? 0 : typeParameters.length;
+		int actualTypeArguments = typeArguments == null ? 0 : typeArguments.length;
+		if (expectedTypeArguments != actualTypeArguments) {
+			target.logError(position, CompileErrors.invalidNumberOfTypeArguments(expectedTypeArguments, actualTypeArguments));
 		}
 
 		for (int i = 0; i < typeParameters.length; i++) {

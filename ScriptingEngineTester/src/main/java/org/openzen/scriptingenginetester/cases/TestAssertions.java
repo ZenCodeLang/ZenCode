@@ -22,10 +22,13 @@ public class TestAssertions {
 	}
 
 	public void validate(TestOutput output) {
-		Assertions.assertAll(
+		validateOutput(output);
+		validateErrors(output);
+		// doesn't output very nicely
+		/*Assertions.assertAll(
 				() -> validateOutput(output),
 				() -> validateErrors(output)
-		);
+		);*/
 	}
 
 	private void validateErrors(TestOutput output) {

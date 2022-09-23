@@ -14,6 +14,7 @@ import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.java.impl.conversion.JavaRuntimeTypeConverterImpl;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.StaticMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.globals.ExpressionGlobal;
@@ -156,6 +157,10 @@ public class JavaNativeModule {
 			globals.put(name, new ExpressionGlobal((compiler, position, typeArguments) ->
 					new StaticMemberCompilingExpression(compiler, position, thisType, new GenericName(name, typeArguments))));
 		}
+	}
+
+	public void addGlobal(String name, IGlobal global) {
+		globals.put(name, global);
 	}
 
 	public void registerBEP(BracketExpressionParser bep) {

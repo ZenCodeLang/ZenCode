@@ -1,6 +1,5 @@
-#output:
-# hello
-# world
+#output: hello
+#output: world
 
 interface Test {
 	print(): void;

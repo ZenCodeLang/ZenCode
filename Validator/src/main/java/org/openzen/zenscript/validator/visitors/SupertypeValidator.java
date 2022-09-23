@@ -7,8 +7,8 @@ package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 
 /**
@@ -30,68 +30,68 @@ public class SupertypeValidator implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitBasic(BasicTypeID basic) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a basic type");
+		validator.logError(position, CompileErrors.invalidSuperclass(basic));
 		return null;
 	}
 
 	@Override
 	public Void visitArray(ArrayTypeID array) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an array");
+		validator.logError(position, CompileErrors.invalidSuperclass(array));
 		return null;
 	}
 
 	@Override
 	public Void visitAssoc(AssocTypeID assoc) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an associative array");
+		validator.logError(position, CompileErrors.invalidSuperclass(assoc));
 		return null;
 	}
 
 	@Override
 	public Void visitIterator(IteratorTypeID iterator) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an iterator");
+		validator.logError(position, CompileErrors.invalidSuperclass(iterator));
 		return null;
 	}
 
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a function");
+		validator.logError(position, CompileErrors.invalidSuperclass(function));
 		return null;
 	}
 
 	@Override
 	public Void visitDefinition(DefinitionTypeID definition) {
 		if (!definition.definition.getModifiers().isVirtual())
-			validator.logError(ValidationLogEntry.Code.INVALID_SUPERTYPE, position, "Supertype must be virtual");
+			validator.logError(position, CompileErrors.superclassNotVirtual(definition));
 		return null;
 	}
 
 	@Override
 	public Void visitGeneric(GenericTypeID generic) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a type parameter");
+		validator.logError(position, CompileErrors.invalidSuperclass(generic));
 		return null;
 	}
 
 	@Override
 	public Void visitRange(RangeTypeID range) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a range");
+		validator.logError(position, CompileErrors.invalidSuperclass(range));
 		return null;
 	}
 
 	@Override
 	public Void visitOptional(OptionalTypeID type) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an optional type");
+		validator.logError(position, CompileErrors.invalidSuperclass(type));
 		return null;
 	}
 
 	@Override
 	public Void visitGenericMap(GenericMapTypeID map) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a generic map");
+		validator.logError(position, CompileErrors.invalidSuperclass(map));
 		return null;
 	}
 
 	@Override
 	public Void visitInvalid(InvalidTypeID type) {
-		validator.logError(ValidationLogEntry.Code.INVALID_SUPERTYPE, position, type.error.description);
+		validator.logError(position, type.error);
 		return null;
 	}
 }

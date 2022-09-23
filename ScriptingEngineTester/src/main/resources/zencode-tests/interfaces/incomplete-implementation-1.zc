@@ -1,0 +1,9 @@
+#error: 7:INCOMPLETE_IMPLEMENTATION
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {}
+}

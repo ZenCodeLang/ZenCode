@@ -1,6 +1,5 @@
-#output:
-# 1
-# 2
+#output: 1
+#output: 2
 
 var a = 1;
 println(a);

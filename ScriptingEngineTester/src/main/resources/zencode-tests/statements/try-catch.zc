@@ -1,6 +1,5 @@
-#output:
-# TestException
-# test
+#output: TestException
+#output: test
 
 try {
 	throw new TestException("test");

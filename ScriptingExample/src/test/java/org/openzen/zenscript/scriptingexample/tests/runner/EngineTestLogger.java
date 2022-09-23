@@ -22,13 +22,7 @@ public class EngineTestLogger extends ScriptingEngineStreamLogger implements Pri
 	@Override
 	public void logValidationError(ValidationLogEntry errorEntry) {
 		super.logValidationError(errorEntry);
-		// TODO
-	}
-
-	@Override
-	public void logValidationWarning(ValidationLogEntry warningEntry) {
-		super.logValidationWarning(warningEntry);
-		// TODO
+		exceptions.add(new CompileException(errorEntry.position, errorEntry.error));
 	}
 
 	@Override

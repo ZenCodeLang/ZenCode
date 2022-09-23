@@ -6,9 +6,9 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.TypeContext;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 
 /**
@@ -30,17 +30,15 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 	@Override
 	public Void visitBasic(TypeContext context, BasicTypeID basic) {
 		if (basic == BasicTypeID.UNDETERMINED)
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, context.display + " could not be determined");
+			validator.logError(position, CompileErrors.typeNotDetermined(context.display));
 
 		return null;
 	}
 
 	@Override
 	public Void visitArray(TypeContext context, ArrayTypeID array) {
-		if (array.dimension < 1) {
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "array dimension must be at least 1");
-		} else if (array.dimension > 16) {
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "array dimension must be at most 16");
+		if (array.dimension < 1 || array.dimension > 16) {
+			validator.logError(position, CompileErrors.invalidArrayDimension(array.dimension));
 		}
 
 		validate(context, array.elementType);
@@ -58,7 +56,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 
 	@Override
 	public Void visitInvalid(TypeContext context, InvalidTypeID type) {
-		validator.logError(ValidationLogEntry.Code.INVALID_TYPE, type.position, type.error.description);
+		validator.logError(type.position, type.error);
 		return null;
 	}
 

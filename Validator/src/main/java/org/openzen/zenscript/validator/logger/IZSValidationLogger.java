@@ -5,14 +5,7 @@ import org.openzen.zenscript.validator.ValidationLogEntry;
 public interface IZSValidationLogger {
 
 	default void logValidationLogEntry(ValidationLogEntry entry) {
-		switch (entry.kind) {
-			case ERROR:
-				logValidationError(entry);
-				break;
-			case WARNING:
-				logValidationWarning(entry);
-				break;
-		}
+		logValidationError(entry);
 	}
 
 	void logValidationError(ValidationLogEntry errorEntry);

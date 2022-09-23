@@ -6,34 +6,26 @@
 package org.openzen.zenscript.validator;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 
 /**
  * @author Hoofdgebruiker
  */
 public class ValidationLogEntry {
-	public final Kind kind;
-	public final Code code;
 	public final CodePosition position;
-	public final String message;
+	public final CompileError error;
 
-	public ValidationLogEntry(Kind kind, Code code, CodePosition position, String message) {
-		this.kind = kind;
-		this.code = code;
+	public ValidationLogEntry(CodePosition position, CompileError error) {
 		this.position = position;
-		this.message = message;
+		this.error = error;
 	}
 
 	@Override
 	public String toString() {
-		return kind + " " + position + ": " + message;
+		return position + ": " + error.description;
 	}
 
-	public static enum Kind {
-		ERROR,
-		WARNING
-	}
-
-	public static enum Code {
+	public enum Code {
 		SUPERCLASS_NOT_A_CLASS,
 		SUPERCLASS_NOT_VIRTUAL,
 		INVALID_MODIFIER,

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.validator;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -84,13 +85,9 @@ public class Validator {
 		return hasErrors;
 	}
 
-	public void logError(ValidationLogEntry.Code code, CodePosition position, String message) {
-		log.add(new ValidationLogEntry(ValidationLogEntry.Kind.ERROR, code, position, message));
+	public void logError(CodePosition position, CompileError error) {
+		log.add(new ValidationLogEntry(position, error));
 		hasErrors = true;
-	}
-
-	public void logWarning(ValidationLogEntry.Code code, CodePosition position, String message) {
-		log.add(new ValidationLogEntry(ValidationLogEntry.Kind.WARNING, code, position, message));
 	}
 
 	private static class ScriptScope implements StatementScope {

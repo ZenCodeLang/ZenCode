@@ -229,12 +229,8 @@ public abstract class ParsedStatement implements CompilableStatement {
 					if (parser.isNext(ZSTokenType.T_IDENTIFIER))
 						catchName = parser.next().content;
 
-					IParsedType catchType = null;
-					if (parser.optional(K_AS) != null)
-						catchType = IParsedType.parse(parser);
-
 					ParsedStatement catchContent = ParsedStatement.parse(parser);
-					catchClauses.add(new ParsedCatchClause(catchPosition, catchName, catchType, catchContent));
+					catchClauses.add(new ParsedCatchClause(catchPosition, catchName, catchContent));
 				}
 
 				ParsedStatement finallyClause = null;

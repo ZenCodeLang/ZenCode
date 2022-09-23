@@ -5,21 +5,18 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Hoofdgebruiker
@@ -27,18 +24,12 @@ import java.util.Set;
 public class StatementValidator implements StatementVisitor<Void> {
 	private final Validator validator;
 	private final StatementScope scope;
-	private final VariableSet variables;
 	public boolean constructorForwarded = false;
 	private boolean firstStatement = true;
 
 	public StatementValidator(Validator validator, StatementScope scope) {
-		this(validator, scope, null);
-	}
-
-	public StatementValidator(Validator validator, StatementScope scope, VariableSet variableSet) {
 		this.validator = validator;
 		this.scope = scope;
-		this.variables = new VariableSet(variableSet);
 	}
 
 	@Override
@@ -64,9 +55,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 	public Void visitDoWhile(DoWhileStatement statement) {
 		if (statement.condition.type != BasicTypeID.BOOL) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					statement.position,
-					"condition must be a boolean expression");
+					CompileErrors.typeMismatch(BasicTypeID.BOOL, statement.condition.type));
 		}
 
 		statement.condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
@@ -93,13 +83,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	public Void visitForeach(ForeachStatement statement) {
 		statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 
-		validateInnerBlock(
-				statement.content,
-				Arrays.stream(statement.loopVariables)
-						.peek(it -> validateUniqueVariableName(it.position, it.name))
-						.map(it -> it.name)
-						.toArray(String[]::new)
-		);
+		validateInnerBlock(statement.content);
 
 		firstStatement = false;
 		return null;
@@ -118,7 +102,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitInvalid(InvalidStatement statement) {
-		validator.logError(ValidationLogEntry.Code.INVALID_STATEMENT, statement.position, statement.error.description);
+		validator.logError(statement.position, statement.error);
 		return null;
 	}
 
@@ -135,7 +119,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitReturn(ReturnStatement statement) {
 		if (scope.getFunctionHeader() == null) {
-			validator.logError(ValidationLogEntry.Code.SCRIPT_CANNOT_RETURN, statement.position, "Cannot return from a script");
+			validator.logError(statement.position, CompileErrors.returnOutsideFunction());
 			return null;
 		}
 
@@ -145,12 +129,12 @@ public class StatementValidator implements StatementVisitor<Void> {
 					new StatementExpressionScope()));
 
 			if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID) {
-				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
+				validator.logError(statement.position, CompileErrors.returnValueInVoidFunction());
 			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
-				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type);
+				validator.logError(statement.position, CompileErrors.typeMismatch(scope.getFunctionHeader().getReturnType(), statement.value.type));
 			}
 		} else if (scope.getFunctionHeader().getReturnType() != BasicTypeID.VOID) {
-			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
+			validator.logError(statement.position, CompileErrors.missingReturnValue());
 		}
 
 		firstStatement = false;
@@ -183,19 +167,16 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitTryCatch(TryCatchStatement statement) {
 		if (statement.resource != null) {
-			validateUniqueVariableName(statement.position, statement.resource.name);
 			if (statement.resource.initializer == null) {
 				validator.logError(
-						ValidationLogEntry.Code.TRY_CATCH_RESOURCE_REQUIRES_INITIALIZER,
 						statement.position,
-						"try with resource requires initializer");
+						CompileErrors.tryCatchResourceWithoutInitializer());
 			}
 		}
 
 		statement.content.accept(this);
 		for (CatchClause catchClause : statement.catchClauses) {
-			validateUniqueVariableName(catchClause.exceptionVariable.position, catchClause.exceptionVariable.name);
-			validateInnerBlock(catchClause.content, catchClause.exceptionVariable.name);
+			validateInnerBlock(catchClause.content);
 		}
 
 		firstStatement = false;
@@ -204,8 +185,6 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitVar(VarStatement statement) {
-		validateUniqueVariableName(statement.position, statement.name);
-		this.variables.trackVariable(statement.name);
 		if (statement.initializer != null) {
 			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
@@ -228,30 +207,19 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 		if (condition.type != BasicTypeID.BOOL) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,
-					"condition must be a boolean expression");
+					CompileErrors.typeMismatch(BasicTypeID.BOOL, condition.type));
 		}
 	}
 
-	private void validateInnerBlock(final Statement statement, final String... variablesToTrack) {
-		validateInnerBlock(new Statement[] { statement }, variablesToTrack);
+	private void validateInnerBlock(final Statement statement) {
+		validateInnerBlock(new Statement[] { statement });
 	}
 
-	private void validateInnerBlock(final Statement[] statements, final String... variablesToTrack) {
-		final StatementValidator innerValidator = new StatementValidator(this.validator, this.scope, this.variables);
-		Arrays.stream(variablesToTrack).forEach(innerValidator.variables::trackVariable);
+	private void validateInnerBlock(final Statement[] statements) {
+		final StatementValidator innerValidator = new StatementValidator(this.validator, this.scope);
 		Arrays.stream(statements).forEach(it -> it.accept(this));
 		this.constructorForwarded |= innerValidator.constructorForwarded;
-	}
-
-	private void validateUniqueVariableName(final CodePosition pos, final String varName) {
-		if (this.variables.hasVariable(varName)) {
-			validator.logError(
-					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
-					pos,
-					"Duplicate variable name: " + varName);
-		}
 	}
 
 	private class StatementExpressionScope implements ExpressionScope {
@@ -298,24 +266,6 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return scope.getDefinition();
-		}
-	}
-
-	private static final class VariableSet {
-		private final VariableSet parent;
-		private final Set<String> currentScope;
-
-		private VariableSet(final VariableSet parent) {
-			this.parent = parent;
-			this.currentScope = new HashSet<>();
-		}
-
-		public void trackVariable(final String variable) {
-			this.currentScope.add(variable);
-		}
-
-		public boolean hasVariable(final String variable) {
-			return this.currentScope.contains(variable) || (this.parent != null && this.parent.hasVariable(variable));
 		}
 	}
 }
