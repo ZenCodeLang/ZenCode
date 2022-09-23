@@ -1,7 +1,6 @@
-#output:
-# 1
-# 2
-# 3
+#output: 1
+#output: 2
+#output: 3
 
 val a = [1, 2, 3];
 for x in a

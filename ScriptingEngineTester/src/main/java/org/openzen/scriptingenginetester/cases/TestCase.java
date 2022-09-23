@@ -29,7 +29,7 @@ public class TestCase {
 
 	public TestCase(File file) throws IOException {
 		this.source = FileSource.from(file);
-		this.name = file.getName();
+		this.name = withoutExtension(file.getName());
 
 		if (file.isDirectory()) {
 			throw new IllegalArgumentException("Multi-file tests are not yet supported");
@@ -47,10 +47,11 @@ public class TestCase {
 			throw new IllegalArgumentException("Multi-file tests are not yet supported");
 		} else if(Files.isRegularFile(path)) {
 			this.source = UriSource.from(path.toUri());
-			this.name = path.getFileName().toString();
-			this.sourceFiles.add(new PathSourceFile(name, path));
+			String filename = path.getFileName().toString();
+			this.name = withoutExtension(filename);
 
-			PathSourceFile sourceFile = new PathSourceFile(name, path);
+			PathSourceFile sourceFile = new PathSourceFile(filename, path);
+			this.sourceFiles.add(sourceFile);
 			annotations = TestAnnotations.extractFrom(sourceFile);
 		} else {
 			throw new IllegalArgumentException("Not a valid file or directory");
@@ -76,5 +77,10 @@ public class TestCase {
 
 	public TestSource getSource() {
 		return source;
+	}
+
+	private static String withoutExtension(String filename) {
+		int index = filename.lastIndexOf('.');
+		return index <= 0 ? filename : filename.substring(0, index);
 	}
 }
