@@ -5,13 +5,19 @@ import org.junit.platform.engine.*;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.ClasspathRootSelector;
 import org.junit.platform.engine.discovery.PackageSelector;
+import org.junit.platform.engine.discovery.UniqueIdSelector;
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import org.openzen.scriptingenginetester.cases.TestSuite;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class ScriptingEngineTester implements TestEngine {
 	private final Predicate<Class<?>> IS_TESTABLE_ENGINE = TestableScriptingEngine.class::isAssignableFrom;
@@ -40,6 +46,10 @@ public class ScriptingEngineTester implements TestEngine {
 			request.getSelectorsByType(ClassSelector.class).forEach(selector -> {
 				appendTestsInClass(suite, selector.getJavaClass(), engineDescriptor);
 			});
+
+			request.getSelectorsByType(UniqueIdSelector.class).forEach(selector -> {
+				appendTestsByUid(suite, selector.getUniqueId(), engineDescriptor);
+			});
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -67,6 +77,43 @@ public class ScriptingEngineTester implements TestEngine {
 		}
 	}
 
+	private void appendTestsByUid(TestSuite suite, UniqueId uniqueId, TestDescriptor engineDescriptor) {
+
+		// If we have multiple engines running, we only want ones matching the engine
+		// If we don't have an engine set, then we also return
+		final Optional<String> engineId = uniqueId.getEngineId();
+		if(!engineId.isPresent() || !engineId.get().equals(getId())) {
+			return;
+		}
+
+		final List<UniqueId.Segment> segments = uniqueId.getSegments();
+
+		try {
+			Class<?> javaClass = Class.forName(segments.get(1).getValue());
+			if (!TestableScriptingEngine.class.isAssignableFrom(javaClass)) {
+				throw new IllegalArgumentException("Invalid Engine class not assignable to TestableScriptingEngine: " + javaClass.getCanonicalName());
+			}
+
+			final TestSuiteDescriptor descriptor = new TestSuiteDescriptor((Class<? extends TestableScriptingEngine>) javaClass, engineDescriptor, suite);
+
+
+			// ToDo: Should an invalid test name throw or just return an empty set?
+			//  For empty set, remove this findBy().orElseThrow call.
+			descriptor.findByUniqueId(uniqueId)
+					.orElseThrow(() -> new IllegalArgumentException("Unknown Test: " + uniqueId));
+
+			// Let's remove all found tests, except the one we matched against
+			// Since we atm only have 2 levels of hierarchy, this works, if we need deeper levels, this must be adapted!
+			removeChildrenThatAreNotPrefixOf(descriptor, uniqueId);
+			descriptor.getChildren().forEach(child -> removeChildrenThatAreNotPrefixOf(child, uniqueId));
+
+			engineDescriptor.addChild(descriptor);
+
+		} catch (ClassNotFoundException ex) {
+			throw new IllegalArgumentException("Could not find engine class: " + segments.get(1).getValue(), ex);
+		}
+	}
+
 	@Override
 	public void execute(ExecutionRequest request) {
 		TestDescriptor root = request.getRootTestDescriptor();
@@ -76,5 +123,12 @@ public class ScriptingEngineTester implements TestEngine {
 				new ScriptingEngineTestExecutor().execute(request, (TestSuiteDescriptor) child);
 			}
 		});
+	}
+
+	private static void removeChildrenThatAreNotPrefixOf(TestDescriptor descriptor, UniqueId toCheck) {
+		new ArrayList<>(descriptor.getChildren())
+				.stream()
+				.filter(child -> !toCheck.hasPrefix(child.getUniqueId()))
+				.forEach(descriptor::removeChild);
 	}
 }
