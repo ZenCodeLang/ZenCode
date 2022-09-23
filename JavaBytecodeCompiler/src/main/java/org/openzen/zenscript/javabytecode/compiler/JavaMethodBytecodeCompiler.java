@@ -10,6 +10,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.*;
 
+import javax.print.DocFlavor;
 import java.util.Collections;
 
 public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
@@ -59,6 +60,10 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod LONG_BIT_COUNT = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "bitCount", "(J)I");
 	private static final JavaNativeField LONG_MIN_VALUE = new JavaNativeField(JavaClass.LONG, "MIN_VALUE", "J");
 	private static final JavaNativeField LONG_MAX_VALUE = new JavaNativeField(JavaClass.LONG, "MAX_VALUE", "J");
+	private static final JavaNativeMethod LONG_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "toString", "(J)Ljava/lang/String;");
+	private static final JavaNativeMethod LONG_TO_UNSIGNED_STRING = JavaNativeMethod.getNativeStatic(JavaClass.LONG, "toUnsignedString", "(J)Ljava/lang/String;");
+	private static final JavaNativeMethod FLOAT_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.FLOAT, "toString", "(F)Ljava/lang/String;");
+	private static final JavaNativeMethod DOUBLE_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.DOUBLE, "toString", "(D)Ljava/lang/String;");
 
 	private static final JavaNativeMethod CHARACTER_TO_LOWER_CASE = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "toLowerCase", "()C");
 	private static final JavaNativeMethod CHARACTER_TO_UPPER_CASE = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "toUpperCase", "()C");
@@ -380,6 +385,89 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void builtinStaticMethod(BuiltinMethodSymbol method, CallArguments args) {
 		Expression[] arguments = args.arguments;
 		switch (method) {
+			case BOOL_ADD_STRING:
+			case BOOL_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(BOOLEAN_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case BYTE_ADD_STRING:
+			case BYTE_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.constant(0xFF);
+				javaWriter.iAnd();
+				javaWriter.invokeStatic(INTEGER_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case SBYTE_ADD_STRING:
+			case SBYTE_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(BYTE_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case SHORT_ADD_STRING:
+			case SHORT_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(SHORT_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeStatic(STRING_CONCAT);
+				return null;
+			case USHORT_ADD_STRING:
+			case USHORT_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.constant(0xFFFF);
+				javaWriter.iAnd();
+				javaWriter.invokeStatic(INTEGER_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case INT_ADD_STRING:
+			case INT_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(INTEGER_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case UINT_ADD_STRING:
+			case UINT_CAT_STRING:
+			case USIZE_ADD_STRING:
+			case USIZE_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case LONG_ADD_STRING:
+			case LONG_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(LONG_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case ULONG_ADD_STRING:
+			case ULONG_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(LONG_TO_UNSIGNED_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case FLOAT_ADD_STRING:
+			case FLOAT_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(FLOAT_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
+			case DOUBLE_ADD_STRING:
+			case DOUBLE_CAT_STRING:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invokeStatic(DOUBLE_TO_STRING);
+				arguments[1].accept(expressionVisitor);
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				return null;
 			case STRING_RANGEGET: {
 				arguments[0].accept(expressionVisitor);
 				Expression argument = arguments[1];
