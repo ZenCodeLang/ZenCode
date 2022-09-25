@@ -163,7 +163,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			// Enums aren't generic, so the descriptor and signature will always be the same
 			String valuesMethodDescriptorAndAlsoSignature = "()[L" + class_.getInternalName() + ";";
 			JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", valuesMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-			JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valuesMethod, valuesMethodDescriptorAndAlsoSignature), definition, null, null);
+			JavaCompilingMethod valuesMethodCompiling = new JavaCompilingMethod(class_.compiled, valuesMethod, valuesMethodDescriptorAndAlsoSignature);
+			JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, valuesMethodCompiling, definition);
 			valuesWriter.start();
 			valuesWriter.getStaticField(class_.getInternalName(), "$VALUES", "[L" + class_.getInternalName() + ";");
 
@@ -180,7 +181,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			// Enums aren't generic, so the descriptor and signature will always be the same
 			String valueOfMethodDescriptorAndAlsoSignature = "(Ljava/lang/String;)L" + class_.getInternalName() + ";";
 			JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", valueOfMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-			JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valueOfMethod, valueOfMethodDescriptorAndAlsoSignature), definition, null, null);
+			final JavaCompilingMethod javaCompilingMethod = new JavaCompilingMethod(class_.compiled, valueOfMethod, valueOfMethodDescriptorAndAlsoSignature);
+			JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, javaCompilingMethod, definition);
 			valueOfWriter.start();
 			valueOfWriter.constantClass(class_.compiled);
 			valueOfWriter.loadObject(0);
@@ -204,11 +206,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true, Collections
 				.emptyList());
 
-		final String signature = context.getMethodSignature(definition.header);
 		JavaCompilingClass class_ = module.getClass(definition);
 		JavaCompilingMethod method = class_.getMethod(definition.caller);
 
-		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, signature, null);
+		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, method, definition);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
 		statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
@@ -323,7 +324,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionInitSignatureBuilder.append(")V");
 
 			JavaNativeMethod constructorMethod = JavaNativeMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
-			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, constructorMethod, signature), variant, optionInitSignatureBuilder.toString(), null);
+			final JavaCompilingMethod constructorMethodCompiling = new JavaCompilingMethod(class_.compiled, constructorMethod, signature);
+			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, constructorMethodCompiling, variant);
 			initWriter.start();
 			initWriter.loadObject(0);
 			initWriter.dup();
@@ -341,7 +343,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			//Denominator for switch-cases
 			JavaNativeMethod denominator = JavaNativeMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
-			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, denominator, signature), null, null, null, "java/lang/Override");
+			final JavaCompilingMethod denominatorMethodCompiling = new JavaCompilingMethod(class_.compiled, denominator, signature);
+			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, denominatorMethodCompiling, variant);
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
 			getDenominator.returnInt();
@@ -357,14 +360,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			member.accept(visitor);
 		}
 
-		final JavaWriter superInitWriter = new JavaWriter(
-				context.logger,
-				variant.position,
-				writer,
-				new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "()V", Opcodes.ACC_PUBLIC), "()V"),
-				variant,
-				"()V",
-				null);
+		final JavaNativeMethod superInitMethod = JavaNativeMethod.getConstructor(class_.compiled, "()V", Opcodes.ACC_PUBLIC);
+		final JavaCompilingMethod superInitMethodCompiling = new JavaCompilingMethod(class_.compiled, superInitMethod, "()V");
+		final JavaWriter superInitWriter = new JavaWriter(context.logger, variant.position, writer, superInitMethodCompiling, variant);
 		superInitWriter.start();
 		superInitWriter.loadObject(0);
 		superInitWriter.invokeSpecial("java/lang/Object", "<init>", "()V");

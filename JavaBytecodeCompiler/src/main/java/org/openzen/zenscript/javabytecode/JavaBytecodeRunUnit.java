@@ -170,7 +170,7 @@ public class JavaBytecodeRunUnit {
 
 		JavaNativeMethod runMethod = JavaNativeMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		JavaCompilingMethod runMethodCompiling = new JavaCompilingMethod(scriptsClass, runMethod, headerBuilder.toString());
-		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethodCompiling, null, null, null);
+		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethodCompiling, null);
 		runWriter.start();
 		for (JavaScriptMethod method : scripts) {
 			for (int i = 0; i < method.parameters.length; i++) {
