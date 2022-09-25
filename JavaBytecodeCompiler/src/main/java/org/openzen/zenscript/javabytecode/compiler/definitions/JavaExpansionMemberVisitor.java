@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -42,7 +41,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 		JavaNativeMethod clinit = new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
 		JavaCompilingMethod clinitCompiling = new JavaCompilingMethod(class_.compiled, clinit, "()V");
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);

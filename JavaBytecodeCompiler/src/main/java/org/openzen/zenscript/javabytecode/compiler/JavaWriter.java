@@ -77,43 +77,30 @@ public class JavaWriter {
 			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
-			String signature,
 			String[] exceptions,
 			String... annotations) {
-		this(logger, visitor, nameVariables, method, forDefinition, false, signature, method.compiled.descriptor, exceptions, annotations);
-		this.position(position.fromLine);
+		this(logger, position, visitor, nameVariables, method, forDefinition, false, exceptions, annotations);
 	}
 
 
-	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
-		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
-	}
-
-	private JavaWriter(
+	public JavaWriter(
 			IZSLogger logger,
+			CodePosition position,
 			ClassVisitor visitor,
-			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
-			boolean isExtension,
-			String signature,
-			String descriptor,
 			String[] exceptions,
-			String[] annotations) {
-		this.logger = logger;
-		this.clazzVisitor = visitor;
-		this.method = method;
-		this.forDefinition = forDefinition;
+			String... annotations) {
+		this(logger, position, visitor, true, method, forDefinition, exceptions, annotations);
+	}
 
-		final int access = isExtension ? method.compiled.modifiers | ACC_STATIC : method.compiled.modifiers;
-		final MethodVisitor methodVisitor = visitor.visitMethod(access, method.compiled.name, descriptor, signature, exceptions);
-
-		for (String annotation : annotations) {
-			methodVisitor.visitAnnotation(annotation, true).visitEnd();
-		}
-
-		this.visitor = new LocalVariablesSorter(access, descriptor, methodVisitor);
-		this.nameVariables = nameVariables;
+	public JavaWriter(
+			IZSLogger logger,
+			CodePosition position,
+			ClassVisitor visitor,
+			JavaCompilingMethod method,
+			HighLevelDefinition forDefinition) {
+		this(logger, position, visitor, method, forDefinition, new String[0]);
 	}
 
 

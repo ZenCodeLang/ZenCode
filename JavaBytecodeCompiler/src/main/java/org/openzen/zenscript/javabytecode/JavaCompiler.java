@@ -127,7 +127,7 @@ public class JavaCompiler {
 			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method, scriptDescriptor);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null, null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);
