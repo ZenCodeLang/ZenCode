@@ -47,6 +47,36 @@ public class JavaWriter {
 			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
+			boolean isExtension,
+			String[] exceptions,
+			String... annotations) {
+		this.logger = logger;
+		this.clazzVisitor = visitor;
+		this.method = method;
+		this.forDefinition = forDefinition;
+
+		final String descriptor = method.compiled.descriptor;
+		final String signature = method.signature;
+		final int access = isExtension ? method.compiled.modifiers | ACC_STATIC : method.compiled.modifiers;
+		final MethodVisitor methodVisitor = visitor.visitMethod(access, method.compiled.name, descriptor, signature, exceptions);
+
+		for (String annotation : annotations) {
+			methodVisitor.visitAnnotation(annotation, true).visitEnd();
+		}
+
+		this.visitor = new LocalVariablesSorter(access, descriptor, methodVisitor);
+		this.nameVariables = nameVariables;
+		this.position(position.fromLine);
+	}
+
+
+	public JavaWriter(
+			IZSLogger logger,
+			CodePosition position,
+			ClassVisitor visitor,
+			boolean nameVariables,
+			JavaCompilingMethod method,
+			HighLevelDefinition forDefinition,
 			String signature,
 			String[] exceptions,
 			String... annotations) {
@@ -55,7 +85,11 @@ public class JavaWriter {
 	}
 
 
-	public JavaWriter(
+	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
+	}
+
+	private JavaWriter(
 			IZSLogger logger,
 			ClassVisitor visitor,
 			boolean nameVariables,
@@ -65,7 +99,7 @@ public class JavaWriter {
 			String signature,
 			String descriptor,
 			String[] exceptions,
-			String... annotations) {
+			String[] annotations) {
 		this.logger = logger;
 		this.clazzVisitor = visitor;
 		this.method = method;
@@ -82,10 +116,6 @@ public class JavaWriter {
 		this.nameVariables = nameVariables;
 	}
 
-
-	public JavaWriter(IZSLogger logger, CodePosition position, ClassVisitor visitor, JavaCompilingMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
-		this(logger, position, visitor, true, method, forDefinition, signature, exceptions, annotations);
-	}
 
 	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {
 		localVariables.put(variable, info);
