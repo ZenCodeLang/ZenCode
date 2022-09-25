@@ -36,7 +36,7 @@ public class JavaWriter {
 	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
 	private final List<Integer> lineNumberLabels = new ArrayList<>();
 	private boolean debug = false;
-	private final boolean nameVariables;
+	private final boolean nameVariables = true;
 	private int labelIndex = 1;
 	private Map<Label, String> labelNames = new HashMap<>();
 
@@ -44,7 +44,6 @@ public class JavaWriter {
 			IZSLogger logger,
 			CodePosition position,
 			ClassVisitor visitor,
-			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
 			boolean isExtension,
@@ -65,7 +64,6 @@ public class JavaWriter {
 		}
 
 		this.visitor = new LocalVariablesSorter(access, descriptor, methodVisitor);
-		this.nameVariables = nameVariables;
 		this.position(position.fromLine);
 	}
 
@@ -74,14 +72,12 @@ public class JavaWriter {
 			IZSLogger logger,
 			CodePosition position,
 			ClassVisitor visitor,
-			boolean nameVariables,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
-			String[] exceptions,
-			String... annotations) {
-		this(logger, position, visitor, nameVariables, method, forDefinition, false, exceptions, annotations);
+			boolean isExtension,
+			String[] exceptions) {
+		this(logger, position, visitor, method, forDefinition, isExtension, exceptions, new String[0]);
 	}
-
 
 	public JavaWriter(
 			IZSLogger logger,
@@ -89,9 +85,8 @@ public class JavaWriter {
 			ClassVisitor visitor,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition,
-			String[] exceptions,
-			String... annotations) {
-		this(logger, position, visitor, true, method, forDefinition, exceptions, annotations);
+			boolean isExtension) {
+		this(logger, position, visitor, method, forDefinition, isExtension, new String[0]);
 	}
 
 	public JavaWriter(
@@ -100,7 +95,7 @@ public class JavaWriter {
 			ClassVisitor visitor,
 			JavaCompilingMethod method,
 			HighLevelDefinition forDefinition) {
-		this(logger, position, visitor, method, forDefinition, new String[0]);
+		this(logger, position, visitor, method, forDefinition, false);
 	}
 
 
