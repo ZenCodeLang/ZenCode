@@ -47,7 +47,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		javaModule = context.getJavaModule(definition.module);
 
 		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
-		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaCompilingMethod(class_.compiled, clinitMethod), definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaCompilingMethod(class_.compiled, clinitMethod, "()V"), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -255,7 +255,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			if (member.body == null)
 				modifiers |= Opcodes.ACC_ABSTRACT;
 
-			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers));
+			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers), "()V");
 			if (member.body == null)
 				return null;
 

@@ -111,22 +111,27 @@ public class JavaCompilingClass {
 			);
 		}
 
-		JavaCompilingMethod compiling = new JavaCompilingMethod(compiled, javaMethod);
+		JavaCompilingMethod compiling = new JavaCompilingMethod(compiled, javaMethod, getContext().getMethodSignatureConstructor(method));
 		addMethod(method, compiling);
 		return compiling;
 	}
 
 	public void addMethod(MethodSymbol method, NativeTag native_) {
+
 		if (native_ != null && nativeClass != null) {
+			final String signature = getContext().getMethodSignature(method.getHeader());
 			JavaNativeMethod javaMethod = (JavaNativeMethod) nativeClass.getMethod(native_.value);
-			addMethod(method, new JavaCompilingMethod(compiled, javaMethod));
+			addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
 		} else {
 			final JavaNativeMethod.Kind kind = getKind(method);
 			final String descriptor;
+			final String signature;
 			if (kind == JavaNativeMethod.Kind.EXPANSION) {
 				descriptor = getContext().getMethodDescriptorExpansion(method.getHeader(), method.getTargetType());
+				signature = getContext().getMethodSignatureExpansion(method.getHeader(), method.getTargetType());
 			} else {
 				descriptor = getContext().getMethodDescriptor(method.getHeader());
+				signature = getContext().getMethodSignature(method.getHeader());
 			}
 			JavaNativeMethod javaMethod = new JavaNativeMethod(
 					compiled,
@@ -137,7 +142,7 @@ public class JavaCompilingClass {
 					JavaModifiers.getJavaModifiers(method.getModifiers()),
 					method.getHeader().getReturnType() instanceof GenericTypeID,
 					method.getHeader().useTypeParameters());
-			addMethod(method, new JavaCompilingMethod(compiled, javaMethod));
+			addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
 		}
 	}
 

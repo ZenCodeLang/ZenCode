@@ -241,14 +241,18 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private void visitFunctional(FunctionalMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
 		JavaCompilingMethod method = null;
-		if (nativeTag != null && class_.nativeClass != null)
-			method = new JavaCompilingMethod(class_.compiled, (JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value));
+		if (nativeTag != null && class_.nativeClass != null) {
+			final String signature = context.getMethodSignature(header);
+			method = new JavaCompilingMethod(class_.compiled, (JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value), signature);
+		}
 
 		int modifiers = class_.compiled.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
 		if (member.getOverrides().isPresent()) {
 			MethodInstance base = member.getOverrides().get();
-
 			JavaNativeMethod baseMethod = (JavaNativeMethod) context.getJavaMethod(base);
+
+			// ToDo: Signature of base method vs. overridden method?
+			final String signature = context.getMethodSignature(header);
 
 			method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
 					class_.compiled,
@@ -258,9 +262,12 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					context.getMethodDescriptor(header),
 					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType() instanceof GenericTypeID,
-					header.useTypeParameters()));
+					header.useTypeParameters()),
+					signature);
 		} else if (method == null) {
 			if (member instanceof ConstructorMember) {
+				final String signature = context.getMethodSignatureConstructor(member);
+
 				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
 						class_.compiled,
 						getKind(member),
@@ -270,8 +277,10 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						// In Java, the .ctor is NOT static!
 						(modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers().withoutStatic())),
 						false,
-						header.useTypeParameters()));
+						header.useTypeParameters()),
+						signature);
 			} else {
+				final String signature = context.getMethodSignature(header);
 				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
 						class_.compiled,
 						getKind(member),
@@ -280,7 +289,8 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						context.getMethodDescriptor(header),
 						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 						header.getReturnType() instanceof GenericTypeID,
-						header.useTypeParameters()));
+						header.useTypeParameters()),
+						signature);
 			}
 		}
 

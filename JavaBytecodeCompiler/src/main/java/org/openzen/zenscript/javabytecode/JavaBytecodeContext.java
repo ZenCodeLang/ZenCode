@@ -10,7 +10,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.*;
@@ -81,8 +84,12 @@ public class JavaBytecodeContext extends JavaContext {
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(range.baseType), null, null).visitEnd();
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(range.baseType), null, null).visitEnd();
 
-		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V", Opcodes.ACC_PUBLIC);
-		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(range.compiling.compiled, method);
+		final FunctionHeader ctorHeader = new FunctionHeader(BasicTypeID.VOID,
+				new FunctionParameter(range.baseType, "from"),
+				new FunctionParameter(range.baseType, "to")
+		);
+		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, getMethodDescriptor(ctorHeader), Opcodes.ACC_PUBLIC);
+		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(range.compiling.compiled, method, getMethodSignature(ctorHeader));
 
 		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, compilingMethod, null, method.descriptor, null);
 		constructorWriter.loadObject(0);
