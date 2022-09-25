@@ -201,7 +201,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod method = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, method, definition);
 
 		methodWriter.label(methodStart);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
@@ -219,7 +219,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition);
 		methodWriter.label(methodStart);
 
 		//ToDo:
@@ -287,7 +287,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition);
 
 		methodWriter.label(methodStart);
 

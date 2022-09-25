@@ -88,7 +88,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, method, definition, true, null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, true);
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {
@@ -134,7 +134,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod method = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, true, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, method, definition, true);
 
 		methodWriter.label(methodStart);
 
@@ -176,7 +176,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition, true);
 
 
 		methodWriter.label(methodStart);
@@ -231,7 +231,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition, true);
 
 		methodWriter.label(methodStart);
 		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
