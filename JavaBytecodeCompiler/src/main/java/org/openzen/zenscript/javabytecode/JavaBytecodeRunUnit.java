@@ -160,7 +160,6 @@ public class JavaBytecodeRunUnit {
 		JavaClass scriptsClass = JavaClass.fromInternalName("Scripts", JavaClass.Kind.CLASS);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 
-		FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, scriptParameters.toArray(new FunctionParameter[scriptParameters.size()]));
 		StringBuilder headerBuilder = new StringBuilder();
 		headerBuilder.append('(');
 		for (int i = 0; i < scriptParameters.size(); i++) {
