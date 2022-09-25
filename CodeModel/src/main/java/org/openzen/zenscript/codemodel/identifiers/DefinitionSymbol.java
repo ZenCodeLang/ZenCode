@@ -17,4 +17,5 @@ public interface DefinitionSymbol {
 
 	Optional<TypeSymbol> asType();
 
+    boolean isEnum();
 }
