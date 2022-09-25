@@ -136,26 +136,37 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		}
 		visitor.end();
 
-		JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", "()[L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valuesMethod), definition, null, null);
-		valuesWriter.start();
-		valuesWriter.getStaticField(class_.getInternalName(), "$VALUES", "[L" + class_.getInternalName() + ";");
+		{
+			// ## MyEnum.values ##
+			// Enums aren't generic, so the descriptor and signature will always be the same
+			String valuesMethodDescriptorAndAlsoSignature = "()[L" + class_.getInternalName() + ";";
+			JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", valuesMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+			JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valuesMethod, valuesMethodDescriptorAndAlsoSignature), definition, null, null);
+			valuesWriter.start();
+			valuesWriter.getStaticField(class_.getInternalName(), "$VALUES", "[L" + class_.getInternalName() + ";");
 
-		final JavaNativeMethod arrayClone = JavaNativeMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + class_.getInternalName() + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;");
-		valuesWriter.invokeVirtual(arrayClone);
-		valuesWriter.checkCast("[L" + class_.getInternalName() + ";");
-		valuesWriter.returnObject();
-		valuesWriter.end();
 
-		JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", "(Ljava/lang/String;)L" + class_.getInternalName() + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valueOfMethod), definition, null, null);
-		valueOfWriter.start();
-		valueOfWriter.constantClass(class_.compiled);
-		valueOfWriter.loadObject(0);
-		valueOfWriter.invokeStatic(ENUM_VALUEOF);
-		valueOfWriter.checkCast(class_.getInternalName());
-		valueOfWriter.returnObject();
-		valueOfWriter.end();
+			final JavaNativeMethod arrayClone = JavaNativeMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + class_.getInternalName() + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;");
+			valuesWriter.invokeVirtual(arrayClone);
+			valuesWriter.checkCast("[L" + class_.getInternalName() + ";");
+			valuesWriter.returnObject();
+			valuesWriter.end();
+		}
+
+		{
+			// ## MyEnum.valueOf ##
+			// Enums aren't generic, so the descriptor and signature will always be the same
+			String valueOfMethodDescriptorAndAlsoSignature = "(Ljava/lang/String;)L" + class_.getInternalName() + ";";
+			JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", valueOfMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+			JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, new JavaCompilingMethod(class_.compiled, valueOfMethod, valueOfMethodDescriptorAndAlsoSignature), definition, null, null);
+			valueOfWriter.start();
+			valueOfWriter.constantClass(class_.compiled);
+			valueOfWriter.loadObject(0);
+			valueOfWriter.invokeStatic(ENUM_VALUEOF);
+			valueOfWriter.checkCast(class_.getInternalName());
+			valueOfWriter.returnObject();
+			valueOfWriter.end();
+		}
 
 		writer.visitEnd();
 		return writer.toByteArray();
@@ -290,7 +301,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionInitSignatureBuilder.append(")V");
 
 			JavaNativeMethod constructorMethod = JavaNativeMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
-			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, constructorMethod), variant, optionInitSignatureBuilder.toString(), null);
+			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, constructorMethod, signature), variant, optionInitSignatureBuilder.toString(), null);
 			initWriter.start();
 			initWriter.loadObject(0);
 			initWriter.dup();
@@ -308,7 +319,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			//Denominator for switch-cases
 			JavaNativeMethod denominator = JavaNativeMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
-			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, denominator), null, null, null, "java/lang/Override");
+			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, new JavaCompilingMethod(class_.compiled, denominator, signature), null, null, null, "java/lang/Override");
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
 			getDenominator.returnInt();
@@ -328,7 +339,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				context.logger,
 				variant.position,
 				writer,
-				new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "()V", Opcodes.ACC_PUBLIC)),
+				new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "()V", Opcodes.ACC_PUBLIC), "()V"),
 				variant,
 				"()V",
 				null);

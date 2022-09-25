@@ -7,10 +7,12 @@ public class JavaCompilingMethod {
 	public final JavaClass class_;
 	public final JavaNativeMethod compiled;
 	public boolean compile;
+	public final String signature;
 
-	public JavaCompilingMethod(JavaClass class_, JavaNativeMethod compiled) {
+	public JavaCompilingMethod(JavaClass class_, JavaNativeMethod compiled, String signature) {
 		this.class_ = class_;
 		this.compiled = compiled;
+		this.signature = signature;
 		this.compile = true;
 	}
 }

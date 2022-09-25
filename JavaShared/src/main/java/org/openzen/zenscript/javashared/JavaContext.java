@@ -569,4 +569,28 @@ public abstract class JavaContext {
 		}
 		return getMethodDescriptor(javaHeader, type.asType().map(TypeSymbol::isEnum).orElse(false), startBuilder.toString());
 	}
+
+	public String getMethodSignatureConstructor(MethodSymbol method) {
+		FunctionParameter[] parameters;
+
+		if(method.getDefiningType().isEnum()) {
+			final int parameterCount = method.getHeader().parameters.length;
+			parameters = new FunctionParameter[parameterCount + 2];
+			parameters[0] = new FunctionParameter(BasicTypeID.STRING, "name");
+			parameters[1] = new FunctionParameter(BasicTypeID.INT, "ordinal");
+			System.arraycopy(method.getHeader().parameters, 0, parameters, 2, parameterCount);
+		} else {
+			parameters = method.getHeader().parameters;
+		}
+
+		// In Java, the .ctor does not return the type, so let's override the return type
+		final FunctionHeader javaHeader = new FunctionHeader(
+				method.getHeader().typeParameters,
+				BasicTypeID.VOID,
+				method.getHeader().thrownType,
+				parameters);
+
+
+		return getMethodSignature(javaHeader, true, true);
+	}
 }

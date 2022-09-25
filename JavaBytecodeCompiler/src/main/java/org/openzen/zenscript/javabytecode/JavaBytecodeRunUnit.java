@@ -18,9 +18,7 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
-import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
-import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -171,7 +169,7 @@ public class JavaBytecodeRunUnit {
 		headerBuilder.append(")V");
 
 		JavaNativeMethod runMethod = JavaNativeMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		JavaCompilingMethod runMethodCompiling = new JavaCompilingMethod(scriptsClass, runMethod);
+		JavaCompilingMethod runMethodCompiling = new JavaCompilingMethod(scriptsClass, runMethod, headerBuilder.toString());
 		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethodCompiling, null, null, null);
 		runWriter.start();
 		for (JavaScriptMethod method : scripts) {
