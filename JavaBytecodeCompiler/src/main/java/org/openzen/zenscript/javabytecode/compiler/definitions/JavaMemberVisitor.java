@@ -196,14 +196,11 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			return null;
 		}
 
-		final String descriptor = context.getMethodDescriptor(member.getHeader());
-		final String signature = context.getMethodSignature(member.getHeader(), true);
-
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod method = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, new String[0]);
 
 		methodWriter.label(methodStart);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
@@ -217,17 +214,15 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		final String signature = context.getMethodSignature(member.getHeader());
-		final String description = context.getMethodDescriptor(member.getHeader());
-
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, new String[0]);
 		methodWriter.label(methodStart);
 
-		//in script you use $ but the parameter is named "value", which to choose?
+		//ToDo:
+		// in scripts, you use $ but the parameter is named "value", which to choose?
 		//final String name = member.parameter.name;
 		final String name = "$";
 		final int localIndex = member.isStatic() ? 0 : 1;
@@ -287,14 +282,11 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
 		member.toType.extractTypeParameters(typeParameters);
 
-		final String methodSignature = context.getMethodSignature(member.getHeader());
-		final String methodDescriptor = context.getMethodDescriptor(member.getHeader());
-
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 
-		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, false, methodSignature, methodDescriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, new String[0]);
 
 		methodWriter.label(methodStart);
 

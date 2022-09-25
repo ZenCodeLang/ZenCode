@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -19,7 +20,6 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
@@ -85,52 +85,15 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 		CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), typeParameters);
 
-		final String expandedClassDescriptor = context.getDescriptor(expandedClass);
-		final String expandedClassSignature = context.getSignature(expandedClass);
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
-		final String methodSignature;
-		final String methodDescriptor;
 
 
-		if (!isStatic) {
-			String methodSignature1 = context.getMethodSignature(member.header);
-
-			//Add the expanded type as first generic parameter to the list.
-			if (!typeParameters.isEmpty()) {
-				final String collect = typeParameters.stream()
-						.map(t -> t.name + ":" + "Ljava/lang/Object;")
-						.collect(Collectors.joining("", "<", ""));
-				if (methodSignature1.startsWith("<")) {
-					methodSignature1 = collect + methodSignature1.substring(1);
-				} else {
-					methodSignature1 = collect + ">" + methodSignature1;
-				}
-			}
-
-			final StringBuilder typeParamSigBuilder = new StringBuilder();
-			final StringBuilder typeParamDescBuilder = new StringBuilder();
-			int i = 1;
-			for (TypeParameter typeParameter : typeParameters) {
-				typeParamSigBuilder.append("Ljava/lang/Class<T").append(typeParameter.name).append(";>;");
-				typeParamDescBuilder.append("Ljava/lang/Class;");
-			}
-
-
-			final int index = methodSignature1.lastIndexOf('(') + 1;
-			methodSignature = methodSignature1.substring(0, index) + expandedClassSignature + typeParamSigBuilder.toString() + methodSignature1.substring(index);
-			methodDescriptor = "(" + expandedClassDescriptor + typeParamDescBuilder.toString() + context.getMethodDescriptor(member.header).substring(1);
-		} else {
-			methodSignature = context.getMethodSignature(member.header);
-			methodDescriptor = context.getMethodDescriptor(member.header);
-		}
-
-
-		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, method, definition, true, methodSignature, methodDescriptor, null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, method, definition, true, null);
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {
-			methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, Type.getType(expandedClassDescriptor));
+			methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(expandedClass));
 			methodWriter.nameParameter(0, "expandedObj");
 
 			for (TypeParameter typeParameter : typeParameters) {
@@ -165,49 +128,14 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		final boolean isStatic = member.isStatic();
-		final TypeID returnType = member.type;
-		final String descriptor;
-		final String signature;
-
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
-		{
-
-			final String descMiddle, signatureMiddle, signatureStart;
-			if (typeParameters.isEmpty()) {
-				descMiddle = signatureMiddle = signatureStart = "";
-			} else {
-				final StringBuilder descMiddleBuilder = new StringBuilder();
-				final StringBuilder signatureMiddleBuilder = new StringBuilder();
-				final StringBuilder signatureStartBuilder = new StringBuilder("<");
-
-				for (TypeParameter typeParameter : typeParameters) {
-					descMiddleBuilder.append("Ljava/lang/Class;");
-					signatureMiddleBuilder.append("Ljava/lang/Class<T").append(typeParameter.name).append(";>;");
-					signatureStartBuilder.append(typeParameter.name).append(":Ljava/lang/Object;");
-				}
-
-				descMiddle = descMiddleBuilder.toString();
-				signatureMiddle = signatureMiddleBuilder.toString();
-				signatureStart = signatureStartBuilder.append(">").toString();
-			}
-
-
-			if (isStatic) {
-				descriptor = "(" + descMiddle + ")" + context.getDescriptor(returnType);
-				signature = signatureStart + "(" + signatureMiddle + ")" + context.getSignature(returnType);
-			} else {
-				descriptor = "(" + context.getDescriptor(expandedClass) + descMiddle + ")" + context.getDescriptor(returnType);
-				signature = signatureStart + "(" + context.getSignature(expandedClass) + signatureMiddle + ")" + context
-						.getSignature(returnType);
-			}
-		}
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod method = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, true, new String[0]);
 
 		methodWriter.label(methodStart);
 
@@ -245,14 +173,11 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		setterType.extractTypeParameters(typeParameters);
 
 
-		final String signature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
-		final String description = context.getMethodDescriptorExpansion(member.getHeader(), expandedClass);
-
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, new String[0]);
 
 
 		methodWriter.label(methodStart);
@@ -303,14 +228,11 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
 		member.toType.extractTypeParameters(typeParameters);
 
-		final String methodSignature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
-		final String methodDescriptor = context.getMethodDescriptorExpansion(member.getHeader(), expandedClass);
-
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(context.logger, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, new String[0]);
 
 		methodWriter.label(methodStart);
 		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
