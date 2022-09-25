@@ -164,7 +164,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			String valuesMethodDescriptorAndAlsoSignature = "()[L" + class_.getInternalName() + ";";
 			JavaNativeMethod valuesMethod = JavaNativeMethod.getStatic(class_.compiled, "values", valuesMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 			JavaCompilingMethod valuesMethodCompiling = new JavaCompilingMethod(class_.compiled, valuesMethod, valuesMethodDescriptorAndAlsoSignature);
-			JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, valuesMethodCompiling, definition);
+			JavaWriter valuesWriter = new JavaWriter(context.logger, CodePosition.BUILTIN, writer, valuesMethodCompiling, definition);
 			valuesWriter.start();
 			valuesWriter.getStaticField(class_.getInternalName(), "$VALUES", "[L" + class_.getInternalName() + ";");
 
@@ -182,7 +182,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			String valueOfMethodDescriptorAndAlsoSignature = "(Ljava/lang/String;)L" + class_.getInternalName() + ";";
 			JavaNativeMethod valueOfMethod = JavaNativeMethod.getStatic(class_.compiled, "valueOf", valueOfMethodDescriptorAndAlsoSignature, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 			final JavaCompilingMethod javaCompilingMethod = new JavaCompilingMethod(class_.compiled, valueOfMethod, valueOfMethodDescriptorAndAlsoSignature);
-			JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, javaCompilingMethod, definition);
+			JavaWriter valueOfWriter = new JavaWriter(context.logger, CodePosition.BUILTIN, writer, javaCompilingMethod, definition);
 			valueOfWriter.start();
 			valueOfWriter.constantClass(class_.compiled);
 			valueOfWriter.loadObject(0);
