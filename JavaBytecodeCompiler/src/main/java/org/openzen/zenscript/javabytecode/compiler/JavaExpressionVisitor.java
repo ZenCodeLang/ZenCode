@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -713,6 +714,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.label(start);
 		expression.value.accept(this);
 
+		// For Options, we need to access the switched value inside the switch, so we dup here
+		//  We need the Option so that we can destruct the variant into its components.
+		javaWriter.dup(context.getType(expression.value.type));
+
 		//TODO replace beforeSwitch visitor or similar
 		if (expression.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(OBJECT_HASHCODE);
@@ -747,18 +752,32 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		i = 0;
 		for (final MatchExpression.Case switchCase : cases) {
+			final Label caseStart = new Label();
+			final Label caseEnd = new Label();
+
 			if (hasNoDefault || switchCase.key != null) {
 				javaWriter.label(switchLabels[i++].label);
 			} else {
 				javaWriter.label(defaultLabel);
 			}
-			//switchCase.value.body.setTag(MatchExpression.class, expression);
+			javaWriter.label(caseStart);
+
+			// switchCase.key == null => default case
+			if(switchCase.key != null) {
+				switchCase.key.accept(new JavaSwitchKeyVariableVisitor(javaWriter, context, caseStart, caseEnd));
+			}
+			// Pop the duplicated switched expression, now that everything's been populated
+			javaWriter.pop(context.getType(expression.value.type));
+
 			switchCase.value.accept(this);
+			javaWriter.label(caseEnd);
 			javaWriter.goTo(end);
 		}
 
 		if (hasNoDefault) {
 			javaWriter.label(defaultLabel);
+			// Pop the duplicated switched expression, now that everything's been populated
+			javaWriter.pop(context.getType(expression.value.type));
 			if (context.getType(expression.type).getOpcode(Opcodes.ISTORE) == Opcodes.ASTORE)
 				javaWriter.aConstNull();
 			else
@@ -1025,7 +1044,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
 		expression.value.accept(this);
-		javaWriter.dup(CompilerUtils.isLarge(expression.value.type));
+		javaWriter.dup(context.getType(expression.value.type));
 		JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
 		javaWriter.store(context.getType(expression.type), parameter.index);
 		return null;
@@ -1039,7 +1058,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
 		tag.end = label;
 
-		javaWriter.dup(CompilerUtils.isLarge(expression.value.type));
+		javaWriter.dup(context.getType(expression.value.type));
 		javaWriter.store(tag.type, tag.local);
 		return null;
 	}
