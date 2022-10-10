@@ -573,7 +573,7 @@ public abstract class JavaContext {
 	public String getMethodSignatureConstructor(MethodSymbol method) {
 		FunctionParameter[] parameters;
 
-		if(method.getDefiningType().isEnum()) {
+		if(method.getDefiningType().asType().map(TypeSymbol::isEnum).orElse(false)) {
 			final int parameterCount = method.getHeader().parameters.length;
 			parameters = new FunctionParameter[parameterCount + 2];
 			parameters[0] = new FunctionParameter(BasicTypeID.STRING, "name");

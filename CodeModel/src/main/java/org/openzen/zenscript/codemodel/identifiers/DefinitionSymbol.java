@@ -16,6 +16,4 @@ public interface DefinitionSymbol {
 	TypeParameter[] getTypeParameters();
 
 	Optional<TypeSymbol> asType();
-
-    boolean isEnum();
 }
