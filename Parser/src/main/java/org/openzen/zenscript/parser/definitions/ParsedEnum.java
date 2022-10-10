@@ -37,7 +37,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public static ParsedEnum parseEnum(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		IParsedType asType = null;
-		if (tokens.optional(ZSTokenType.K_AS) != null)
+		if (tokens.optional(ZSTokenType.K_AS) != null || tokens.optional(ZSTokenType.T_COLON) != null)
 			asType = IParsedType.parse(tokens);
 
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");

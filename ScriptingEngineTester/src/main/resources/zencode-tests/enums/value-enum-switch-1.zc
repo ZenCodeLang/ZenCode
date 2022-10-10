@@ -1,0 +1,11 @@
+#output: 0
+
+enum MyEnum: int {
+	A, B, C
+}
+
+val a = match MyEnum.A {
+	case A: 0,
+	default: 1
+};
+println(a);

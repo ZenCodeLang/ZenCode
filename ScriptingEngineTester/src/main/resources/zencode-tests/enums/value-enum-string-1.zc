@@ -1,0 +1,13 @@
+#output: X
+#output: Y
+#output: C
+
+enum MyEnum: string {
+	A = "X",
+	B = "Y",
+	C
+}
+
+println(MyEnum.A);
+println(MyEnum.B);
+println(MyEnum.C);

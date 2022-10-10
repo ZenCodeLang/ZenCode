@@ -1,0 +1,11 @@
+#output: 0
+#output: 1
+#output: 2
+
+enum MyEnum: int {
+	A, B, C
+}
+
+for value in MyEnum.values {
+	println(value);
+}

@@ -1,0 +1,15 @@
+#error: 6:ENUM_CONSTANT_NOT_YET_INITIALIZED
+
+public enum MyEnum {
+	A('X1'),
+	B('Y1'),
+	C;
+
+	this(symbol as string) {
+		$symbol = symbol;
+	}
+
+	public val symbol as string;
+}
+
+println(MyEnum.A.symbol);

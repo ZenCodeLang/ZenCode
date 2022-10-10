@@ -1,0 +1,15 @@
+#output: X1
+
+public enum MyEnum {
+	A('X1'),
+	B('Y1'),
+	C('Z1');
+
+	this(symbol as string) {
+		$symbol = symbol;
+	}
+
+	public val symbol as string;
+}
+
+println(MyEnum.A.symbol);

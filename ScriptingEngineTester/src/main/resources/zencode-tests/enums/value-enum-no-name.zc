@@ -1,0 +1,7 @@
+#error: 7:NO_SUCH_MEMBER
+
+enum MyEnum: int {
+	A, B, C
+}
+
+println(MyEnum.A.name);

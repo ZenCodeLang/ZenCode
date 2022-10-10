@@ -1,0 +1,14 @@
+#output: B
+#output: C
+
+public enum MyEnum {
+	A, B, C;
+
+	this(){}
+}
+
+val x: MyEnum = B;
+val y: MyEnum;
+y = G;
+println(x.name);
+println(y.name);

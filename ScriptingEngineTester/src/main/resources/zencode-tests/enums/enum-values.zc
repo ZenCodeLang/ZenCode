@@ -1,0 +1,12 @@
+#output: A
+#output: B
+#output: C
+
+public enum MyEnum {
+	A, B, C;
+
+	this() {}
+}
+
+for e in MyEnum.values
+	println(e.name);

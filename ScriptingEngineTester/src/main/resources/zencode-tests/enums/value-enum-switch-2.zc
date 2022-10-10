@@ -1,0 +1,10 @@
+#error: 7:INCOMPLETE_MATCH
+
+enum MyEnum: int {
+	A, B, C
+}
+
+val a = match MyEnum.A {
+	case A: 0
+};
+println(a);

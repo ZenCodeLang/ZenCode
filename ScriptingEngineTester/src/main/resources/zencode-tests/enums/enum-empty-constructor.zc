@@ -1,0 +1,20 @@
+#output: B
+#output: A
+#output: C
+#output: 1
+#output: 0
+#output: 2
+
+public enum MyEnum {
+	A, B, C;
+
+	this(){}
+}
+
+println(MyEnum.B.name);
+println(MyEnum.A.name);
+println(MyEnum.C.name);
+
+println(MyEnum.B.ordinal);
+println(MyEnum.A.ordinal);
+println(MyEnum.C.ordinal);

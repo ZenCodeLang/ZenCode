@@ -1,0 +1,11 @@
+#output: 2
+#output: 0
+
+enum MyEnum: int {
+	A = 2,
+	B = 1,
+	C = 0
+}
+
+println(MyEnum.A);
+println(MyEnum.C);

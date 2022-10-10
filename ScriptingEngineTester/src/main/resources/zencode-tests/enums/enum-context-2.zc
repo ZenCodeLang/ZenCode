@@ -1,0 +1,10 @@
+#output: B
+
+public enum MyEnum {
+	A, B, C;
+
+	this(){}
+}
+
+val x = B as MyEnum;
+println(x.name);

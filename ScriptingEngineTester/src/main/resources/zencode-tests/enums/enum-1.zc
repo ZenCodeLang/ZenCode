@@ -1,0 +1,11 @@
+#output: B
+#output: A
+#output: C
+
+public enum MyEnum {
+	A, B, C;
+}
+
+println(MyEnum.B.name);
+println(MyEnum.A.name);
+println(MyEnum.C.name);
