@@ -55,7 +55,7 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public TypeBuilder types() {
-		return context;
+		return types;
 	}
 
 	@Override

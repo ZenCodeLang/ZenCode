@@ -16,7 +16,7 @@ public interface JavaMethodCompiler<T> {
 
 	T builtinVirtualMethod(BuiltinMethodSymbol method, Expression target, CallArguments arguments);
 
-	T builtinStaticMethod(BuiltinMethodSymbol method, CallArguments arguments);
+	T builtinStaticMethod(BuiltinMethodSymbol method, TypeID returnType, CallArguments arguments);
 
 	T specialConstructor(JavaSpecialMethod method, TypeID type, CallArguments arguments);
 

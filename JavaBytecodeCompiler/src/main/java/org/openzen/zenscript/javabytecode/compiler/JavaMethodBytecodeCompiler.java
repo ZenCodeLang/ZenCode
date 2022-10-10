@@ -378,11 +378,11 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 	@Override
 	public Void builtinVirtualMethod(BuiltinMethodSymbol method, Expression target, CallArguments arguments) {
-		return builtinStaticMethod(method, arguments.bind(target));
+		return builtinStaticMethod(method, target.type, arguments.bind(target));
 	}
 
 	@Override
-	public Void builtinStaticMethod(BuiltinMethodSymbol method, CallArguments args) {
+	public Void builtinStaticMethod(BuiltinMethodSymbol method, TypeID returnType, CallArguments args) {
 		Expression[] arguments = args.arguments;
 		switch (method) {
 			case BOOL_ADD_STRING:
@@ -1284,13 +1284,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case ENUM_VALUES: {
-				// ToDo: We need a way here to get the Enum Class
-				//  Is this even something in JavaMethodBytecodeCompiler or should this be done elsewhere?
-				//  We can't use a virtual member like for name() and ordinal() since "values()" is a static Method
-				//  Therefore, we either need to use Enum.valueOf(SomeEnum.class, name) or SomeEnum.valueOf(name)
-				//  In both cases we need to know SomeEnum. Atm, only the builtin signature valueOf(name) is known
-				//  With no ref back to the type!
-				DefinitionTypeID type = (DefinitionTypeID) ((ArrayTypeID) arguments[0].type).elementType;
+				DefinitionTypeID type = returnType.asArray().get().elementType.asDefinition().get();
 				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaNativeMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
