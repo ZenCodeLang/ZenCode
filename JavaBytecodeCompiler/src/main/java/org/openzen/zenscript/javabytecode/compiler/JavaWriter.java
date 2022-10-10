@@ -220,6 +220,10 @@ public class JavaWriter {
 		visitor.visitInsn(POP);
 	}
 
+	public void pop(Type type) {
+		pop(type.getSize() == 2);
+	}
+
 	public void pop(boolean large) {
 		if (debug)
 			logger.debug("pop");
