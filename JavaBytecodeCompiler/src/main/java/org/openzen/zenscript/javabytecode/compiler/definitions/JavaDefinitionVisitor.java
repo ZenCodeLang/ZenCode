@@ -140,11 +140,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			member.accept(visitor);
 		}
 
-		// ToDo: Does this belong here?
-		//  Or does this need to be done by someone else elsewhere?
-		//  Do not merge PR with this comment still in place!
-
 		// No explicit constructor -> let's add our own!
+		// TODO - expose an additional set of members including these generated ones
 		if (definition.members.stream().noneMatch(it -> it instanceof ConstructorMember)) {
 			final ConstructorMember autoConstructor = new ConstructorMember(CodePosition.BUILTIN, definition, Modifiers.NONE, new FunctionHeader(BasicTypeID.VOID));
 			final JavaCompilingMethod compiling = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getConstructor(class_.compiled, "(Ljava/lang/String;I)V", 0), "(Ljava/lang/String;I)V");
