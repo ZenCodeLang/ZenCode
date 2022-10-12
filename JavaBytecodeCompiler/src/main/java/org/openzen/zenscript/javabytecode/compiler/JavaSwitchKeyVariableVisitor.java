@@ -48,7 +48,7 @@ public class JavaSwitchKeyVariableVisitor implements SwitchValueVisitor<Void> {
 		final JavaVariantOption javaVariantOption = context.getJavaVariantOption(key.option);
 
 		// If our variant does not have components we can skip all of this
-		if(key.getBindings().isEmpty()) {
+		if (key.getBindings().isEmpty()) {
 			return null;
 		}
 

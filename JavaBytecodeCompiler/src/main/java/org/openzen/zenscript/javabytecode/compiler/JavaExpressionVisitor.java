@@ -710,26 +710,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitMatch(MatchExpression expression) {
 		final Label start = new Label();
 		final Label end = new Label();
+		final boolean isVariantOptionSwitch = expression.value.type.isVariant();
 
 		javaWriter.label(start);
 		expression.value.accept(this);
 
-		// For Options, we need to access the switched value inside the switch, so we dup here
-		//  We need the Option so that we can destruct the variant into its components.
-		javaWriter.dup(context.getType(expression.value.type));
+		if (isVariantOptionSwitch) {
+			// For Variant options, we need to access the switched value inside the switch, so we dup here
+			//  We need the Option so that we can destruct the variant into its components.
+			// this value will be popped at the JavaSwitchKeyVariableVisitor
+			javaWriter.dup(context.getType(expression.value.type));
+		}
 
 		//TODO replace beforeSwitch visitor or similar
 		if (expression.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(OBJECT_HASHCODE);
 
 		//TODO replace with beforeSwitch visitor or similar
-		for (MatchExpression.Case aCase : expression.cases) {
-			if (aCase.key instanceof VariantOptionSwitchValue) {
-				VariantOptionSwitchValue variantOptionSwitchValue = (VariantOptionSwitchValue) aCase.key;
-				JavaVariantOption option = context.getJavaVariantOption(variantOptionSwitchValue.option);
-				javaWriter.invokeVirtual(JavaNativeMethod.getNativeVirtual(option.variantClass, "getDenominator", "()I"));
-				break;
-			}
+		if (isVariantOptionSwitch) {
+			JavaClass cls = context.getJavaClass(expression.value.type.asDefinition().get().definition);
+			javaWriter.invokeVirtual(JavaNativeMethod.getNativeVirtual(cls, "getDenominator", "()I"));
 		}
 
 		final boolean hasNoDefault = hasNoDefault(expression);
@@ -766,8 +766,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			if(switchCase.key != null) {
 				switchCase.key.accept(new JavaSwitchKeyVariableVisitor(javaWriter, context, caseStart, caseEnd));
 			}
-			// Pop the duplicated switched expression, now that everything's been populated
-			javaWriter.pop(context.getType(expression.value.type));
+			if (isVariantOptionSwitch) {
+				javaWriter.pop();
+			}
 
 			switchCase.value.accept(this);
 			javaWriter.label(caseEnd);
@@ -775,13 +776,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		if (hasNoDefault) {
+			// this can only occur if the switch was deemed exhaustive by the validator,
+			// so ending up here is always an error
 			javaWriter.label(defaultLabel);
-			// Pop the duplicated switched expression, now that everything's been populated
-			javaWriter.pop(context.getType(expression.value.type));
-			if (context.getType(expression.type).getOpcode(Opcodes.ISTORE) == Opcodes.ASTORE)
-				javaWriter.aConstNull();
-			else
-				javaWriter.iConst0();
+			if (isVariantOptionSwitch) {
+				javaWriter.pop();
+			}
+
+			javaWriter.newObject("java/lang/AssertionError");
+			javaWriter.dup();
+			javaWriter.constant("Reached default case on an exhaustive switch");
+			javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/Object;)V");
+			javaWriter.aThrow();
 		}
 
 		javaWriter.label(end);
