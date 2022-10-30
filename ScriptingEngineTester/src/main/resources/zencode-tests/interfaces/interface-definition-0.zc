@@ -1,0 +1,20 @@
+#output: hello
+
+// This test contains an explicit .ctor and upcast to the interface type
+// This ensures that none of these things interfere with the compilation ^^
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	public this(){}
+
+	implements Test {
+		print() {
+			println("hello");
+		}
+	}
+}
+
+(new TestClass() as Test).print();
