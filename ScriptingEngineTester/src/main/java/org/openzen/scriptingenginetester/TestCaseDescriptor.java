@@ -2,8 +2,9 @@ package org.openzen.scriptingenginetester;
 
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
-import org.junit.platform.engine.support.descriptor.FileSource;
 import org.openzen.scriptingenginetester.cases.TestCase;
+
+import java.util.Optional;
 
 public class TestCaseDescriptor extends AbstractTestDescriptor {
 	private final TestCase case_;
@@ -25,5 +26,17 @@ public class TestCaseDescriptor extends AbstractTestDescriptor {
 	@Override
 	public Type getType() {
 		return Type.TEST;
+	}
+
+	/**
+	 * Returns an empty optional if this test should run.
+	 * If this test is disabled, returns an Optional that contains the reason why the test should be skipped
+	 */
+	public Optional<String> getDisabledReason() {
+		if (case_.getSourceFiles().stream().anyMatch(sourceFile -> sourceFile.getFilename().endsWith(".disabled"))) {
+			return Optional.of("Some of the source files were disabled (filename ended with .disabled)");
+		}
+
+		return Optional.empty();
 	}
 }

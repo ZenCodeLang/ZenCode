@@ -4,7 +4,7 @@ import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 
-import java.text.ParseException;
+import java.util.Optional;
 
 public class ScriptingEngineTestExecutor {
 	public void execute(ExecutionRequest request, TestSuiteDescriptor suite) {
@@ -29,6 +29,12 @@ public class ScriptingEngineTestExecutor {
 	}
 
 	private void executeCase(ExecutionRequest request, TestableScriptingEngine engine, TestCaseDescriptor descriptor) {
+		final Optional<String> disabledReason = descriptor.getDisabledReason();
+		if(disabledReason.isPresent()) {
+			request.getEngineExecutionListener().executionSkipped(descriptor, disabledReason.get());
+			return;
+		}
+
 		request.getEngineExecutionListener().executionStarted(descriptor);
 		try {
 			TestOutput output = engine.run(descriptor.getTest());
