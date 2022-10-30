@@ -1,0 +1,29 @@
+// Disabled until .isPresent method definition properly compiles
+#output: Hello World
+#output: Done
+
+public variant Optional<T> {
+	Present(T),
+	Empty;
+
+	public expect() as T {
+		return match this {
+			Present(value) => value,
+			Empty() => panic('Expect called on empty value')
+		};
+	}
+
+	public ifPresent(consumer as function(value as T) as void) as void {
+		if(this.isPresent) {
+			consumer(this.expect());
+		}
+	}
+
+	public get isPresent as bool => match(this) {
+		Present(value) => true,
+		Empty => false
+	};
+}
+
+var opt as Optional<string> = Present('Hello World');
+opt.ifPresent((value) => println(value));

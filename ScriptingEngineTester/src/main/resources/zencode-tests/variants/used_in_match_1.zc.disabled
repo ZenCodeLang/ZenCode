@@ -1,0 +1,14 @@
+// Disabled, since accessing Optional$Present.field0 errors with "no such field" for whatever reason (the field is there!)
+#output: Hello World
+
+public variant Optional<T> {
+	Present(T),
+	Empty;
+}
+
+var opt as Optional<string> = Present('Hello World');
+
+println(match opt {
+	Present(value) => value,
+	Empty => 'Empty'
+});
