@@ -1,0 +1,8 @@
+#output: uint
+#output: 7
+
+val leftUint = 3 as uint;
+val rightUshort = 4 as ushort;
+
+println(typeof(leftUint + rightUshort));
+println(leftUint + rightUshort);

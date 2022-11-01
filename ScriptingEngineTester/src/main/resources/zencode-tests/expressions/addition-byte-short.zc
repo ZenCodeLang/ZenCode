@@ -1,0 +1,8 @@
+#output: short
+#output: 7
+
+val leftByte = 3 as byte;
+val rightShort = 4 as short;
+
+println(typeof(leftByte + rightShort));
+println(leftByte + rightShort);

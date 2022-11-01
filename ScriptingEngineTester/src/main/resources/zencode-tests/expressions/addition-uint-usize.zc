@@ -1,0 +1,8 @@
+#output: usize
+#output: 7
+
+val leftUint = 3 as uint;
+val rightUsize = 4 as usize;
+
+println(typeof(leftUint + rightUsize));
+println(leftUint + rightUsize);

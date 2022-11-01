@@ -1,0 +1,8 @@
+#output: long
+#output: 7
+
+val leftLong = 3 as long;
+val rightInt = 4 as int;
+
+println(typeof(leftLong + rightInt));
+println(leftLong + rightInt);

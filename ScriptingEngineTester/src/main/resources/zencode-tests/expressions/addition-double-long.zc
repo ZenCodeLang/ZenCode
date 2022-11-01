@@ -1,0 +1,8 @@
+#output: double
+#output: 7.0
+
+val leftDouble = 3 as double;
+val rightLong = 4 as long;
+
+println(typeof(leftDouble + rightLong));
+println(leftDouble + rightLong);

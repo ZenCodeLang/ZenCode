@@ -1,0 +1,8 @@
+#output: int
+#output: 7
+
+val leftInt = 3 as int;
+val rightSbyte = 4 as sbyte;
+
+println(typeof(leftInt + rightSbyte));
+println(leftInt + rightSbyte);

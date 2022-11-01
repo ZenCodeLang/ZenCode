@@ -1,0 +1,8 @@
+#output: short
+#output: 7
+
+val leftShort = 3 as short;
+val rightShort = 4 as short;
+
+println(typeof(leftShort + rightShort));
+println(leftShort + rightShort);

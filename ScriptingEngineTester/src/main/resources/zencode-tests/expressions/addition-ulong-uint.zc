@@ -1,0 +1,8 @@
+#output: ulong
+#output: 7
+
+val leftUlong = 3 as ulong;
+val rightUint = 4 as uint;
+
+println(typeof(leftUlong + rightUint));
+println(leftUlong + rightUint);

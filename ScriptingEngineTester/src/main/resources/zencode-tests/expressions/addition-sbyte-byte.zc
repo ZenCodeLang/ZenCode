@@ -1,0 +1,8 @@
+#output: sbyte
+#output: 7
+
+val leftSbyte = 3 as sbyte;
+val rightByte = 4 as byte;
+
+println(typeof(leftSbyte + rightByte));
+println(leftSbyte + rightByte);

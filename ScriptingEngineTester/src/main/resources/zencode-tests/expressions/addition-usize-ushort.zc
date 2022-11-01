@@ -1,0 +1,8 @@
+#output: usize
+#output: 7
+
+val leftUsize = 3 as usize;
+val rightUshort = 4 as ushort;
+
+println(typeof(leftUsize + rightUshort));
+println(leftUsize + rightUshort);

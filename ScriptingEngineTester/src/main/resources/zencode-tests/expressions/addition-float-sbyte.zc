@@ -1,0 +1,8 @@
+#output: float
+#output: 7.0
+
+val leftFloat = 3 as float;
+val rightSbyte = 4 as sbyte;
+
+println(typeof(leftFloat + rightSbyte));
+println(leftFloat + rightSbyte);
