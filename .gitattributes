@@ -1,4 +1,5 @@
 * text eol=lf
+*.zc text eol=lf linguist-language=ZenScript
 *.bat text eol=crlf
 *.patch text eol=lf
 *.java text eol=lf
