@@ -1,0 +1,11 @@
+#output: hello
+
+function test(check: bool): string {
+	if check {
+		return "hello";
+	} else {
+		return "fail";
+	}
+}
+
+println(test(true));

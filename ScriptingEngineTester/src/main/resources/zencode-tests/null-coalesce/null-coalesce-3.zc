@@ -1,0 +1,5 @@
+#output: b
+
+function test(): string? -> null;
+
+println(test() ?? "b");

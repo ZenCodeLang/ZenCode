@@ -1,0 +1,16 @@
+#output: string
+#output: 1
+#output: string
+#output: 1
+
+function test(): string? -> "x";
+
+val a = test();
+if a != null {
+	println(typeof(a));
+	println(a.length);
+}
+if a {
+	println(typeof(a));
+	println(a.length);
+}

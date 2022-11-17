@@ -1,0 +1,7 @@
+class MyClass {
+  asString(): string => "asdvyukl;adjhysadashydiusajfashjdrf";
+  public implements IntA { asString() => asString(); }
+}
+
+val a = new MyClass();
+println(a.asString());

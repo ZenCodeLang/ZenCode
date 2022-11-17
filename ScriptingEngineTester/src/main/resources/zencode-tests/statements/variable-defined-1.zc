@@ -1,6 +1,6 @@
 #output: 1
 
-val a as int;
+val a: int;
 if true {
 	a = 1;
 } else {

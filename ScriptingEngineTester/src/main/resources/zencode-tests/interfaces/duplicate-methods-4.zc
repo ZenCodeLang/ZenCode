@@ -1,0 +1,30 @@
+#output: Baz
+#output: Baz
+#output: Foo
+
+interface IntA {
+     asString(): string;
+}
+
+interface IntB {
+     asString(): string;
+}
+
+class MyClass {
+    asString(): string => "Baz";
+
+    public implements IntA {
+        asString() => asString();
+    }
+
+    public implements IntB {
+        asString() => "Foo";
+    }
+}
+
+val a = new MyClass();
+val b = a as IntA;
+val c = a as IntB;
+println(a.asString());
+println(b.asString());
+println(c.asString());

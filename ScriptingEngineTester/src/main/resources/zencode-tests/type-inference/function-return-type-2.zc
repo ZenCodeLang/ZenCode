@@ -1,0 +1,7 @@
+#output: void
+
+function test() {
+
+}
+
+println(typeof(test()));

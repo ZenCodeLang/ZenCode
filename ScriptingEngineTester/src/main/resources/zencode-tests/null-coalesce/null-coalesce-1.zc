@@ -1,0 +1,5 @@
+#output: a
+
+function test(): string? -> "a";
+
+println(test() ?? "b");

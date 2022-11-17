@@ -1,0 +1,3 @@
+#output: value
+
+println(softNullString(false));

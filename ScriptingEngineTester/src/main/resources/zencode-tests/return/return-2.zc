@@ -1,0 +1,5 @@
+#output: hello
+
+function test(): string -> "hello";
+
+println(test());

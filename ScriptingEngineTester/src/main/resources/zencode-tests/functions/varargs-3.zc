@@ -1,0 +1,7 @@
+#output:
+
+function test(args...: string) {
+	println(args.join(','));
+}
+
+test();

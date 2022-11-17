@@ -1,0 +1,5 @@
+#output: 5
+#output: 5
+
+println(softNullString(false).length);
+println(softNullString(false)?.length ?? 0);

@@ -1,0 +1,11 @@
+#output: ok
+
+function test1(): string? -> "hello";
+function test2(): string? -> null;
+
+if test1() {
+	println("ok");
+}
+if test2() {
+	println("nok");
+}

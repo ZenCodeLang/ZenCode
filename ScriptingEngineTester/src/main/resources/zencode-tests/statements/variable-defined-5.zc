@@ -1,6 +1,6 @@
 #error: 8:VARIABLE_NOT_SET
 
-val a as int;
+var a: int;
 while false {
 	a = 1;
 }

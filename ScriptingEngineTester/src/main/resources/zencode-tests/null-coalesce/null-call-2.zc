@@ -1,0 +1,8 @@
+#output: null
+#output: hello
+
+function test(): string? -> null;
+function test(): string? -> "hELLo";
+
+println(test()?.toLowerCase());
+println(test()?.toLowerCase());

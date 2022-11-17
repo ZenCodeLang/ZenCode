@@ -1,0 +1,5 @@
+#output: string
+
+function test() -> "hello";
+
+println(typeof(test()));

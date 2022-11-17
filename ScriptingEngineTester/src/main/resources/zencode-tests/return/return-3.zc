@@ -1,0 +1,9 @@
+#error: 3:MISSING_RETURN
+
+function test(check: bool): string {
+	if check {
+		return "hello";
+	}
+}
+
+println(test(true));

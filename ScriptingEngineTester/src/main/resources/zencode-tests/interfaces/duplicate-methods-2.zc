@@ -1,0 +1,27 @@
+#output: MyClass
+#output: MyClass
+
+interface IntA {
+     asString(): string;
+}
+
+interface IntB {
+     asString(): string;
+}
+
+class MyClass {
+    asString(): string => "MyClass";
+
+    public implements IntA {
+        asString() => (this as MyClass).asString();
+    }
+
+    public implements IntB {
+        asString() => (this as MyClass).asString();
+    }
+}
+
+val a = new MyClass();
+val b = a as IntA;
+println(a.asString());
+println(b.asstring());

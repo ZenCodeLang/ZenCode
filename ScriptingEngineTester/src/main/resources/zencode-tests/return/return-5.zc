@@ -1,0 +1,13 @@
+#error: 10:UNREACHABLE_STATEMENT
+
+function test(check: bool): string {
+	if check {
+		return "hello";
+	} else {
+		return "fail";
+	}
+
+	return "nok";
+}
+
+println(test(true));

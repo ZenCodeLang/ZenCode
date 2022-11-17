@@ -2,7 +2,7 @@
 # test
 # 3
 
-val a as int;
+val a: int;
 try {
 	throw new TestException("test");
 } catch ex {

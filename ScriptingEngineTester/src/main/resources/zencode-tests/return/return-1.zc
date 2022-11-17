@@ -1,0 +1,7 @@
+#output: hello
+
+function test(): string {
+	return "hello";
+}
+
+println(test());
