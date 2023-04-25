@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.StatementSerializationContext;
 import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
@@ -76,6 +77,7 @@ public class PreconditionForMethod implements MemberAnnotation {
 		if (body == null)
 			return body;
 
+		CodeBlock block = new CodeBlock();
 		Expression inverseCondition = new CallExpression(
 				position,
 				condition,

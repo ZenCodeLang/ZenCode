@@ -1,6 +1,7 @@
 package org.openzen.scriptingenginetester.cases;
 
 import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.support.descriptor.FileSource;
 import org.junit.platform.engine.support.descriptor.UriSource;
 import org.openzen.scriptingenginetester.TestOutput;
 import org.openzen.zencode.shared.PathSourceFile;

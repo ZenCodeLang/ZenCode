@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -144,6 +146,22 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 
 			return cast.invalid(CompileErrors.invalidMapType(cast.type));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			for (CompilingExpression key : keys)
+				key.collect(collector);
+			for (CompilingExpression value : values)
+				value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			for (CompilingExpression key : keys)
+				key.linkVariables(linker);
+			for (CompilingExpression value : values)
+				value.linkVariables(linker);
 		}
 	}
 }

@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;

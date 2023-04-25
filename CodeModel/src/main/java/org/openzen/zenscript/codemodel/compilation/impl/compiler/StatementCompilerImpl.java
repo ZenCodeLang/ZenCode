@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
@@ -49,11 +50,6 @@ public class StatementCompilerImpl implements StatementCompiler {
 	}
 
 	@Override
-	public SwitchValue compileSwitchValue(CompilableExpression expression, TypeID type) {
-		return expression.asSwitchValue(type, expressionCompiler);
-	}
-
-	@Override
 	public TypeBuilder types() {
 		return types;
 	}
@@ -69,32 +65,19 @@ public class StatementCompilerImpl implements StatementCompiler {
 	}
 
 	@Override
-	public StatementCompiler forLoop(LoopStatement loop) {
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forLoop(loop, loop.label));
+	public StatementCompiler forLoop(CompilingLoopStatement loop) {
+		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forLoop(loop, loop.getLabels().toArray(new String[0])));
 	}
 
 	@Override
-	public StatementCompiler forForeach(ForeachStatement statement) {
-		LocalSymbols locals = this.locals.forLoop(
-				statement,
-				Arrays.stream(statement.loopVariables).map(v -> v.name).toArray(String[]::new));
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals);
-	}
-
-	@Override
-	public StatementCompiler forSwitch(SwitchStatement statement) {
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forLoop(statement, statement.label));
-	}
-
-	@Override
-	public StatementCompiler forCatch(VarStatement exceptionVariable) {
+	public StatementCompiler forCatch(CompilingVariable exceptionVariable) {
 		LocalSymbols locals = this.locals.forBlock();
 		locals.add(exceptionVariable);
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals);
+		return new StatementCompilerImpl(context, localType, types, functionHeader.withThrownType(exceptionVariable.type), locals);
 	}
 
 	@Override
-	public Optional<LoopStatement> getLoop(String name) {
+	public Optional<CompilingLoopStatement> getLoop(String name) {
 		return locals.findLoop(name);
 	}
 
@@ -104,7 +87,7 @@ public class StatementCompilerImpl implements StatementCompiler {
 	}
 
 	@Override
-	public void addLocalVariable(VarStatement variable) {
+	public void addLocalVariable(CompilingVariable variable) {
 		locals.add(variable);
 	}
 }

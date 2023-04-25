@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -72,6 +74,16 @@ public class ParsedExpressionFloat extends ParsedExpression {
 						.map(method -> method.casted(compiler, position, cast, null, this))
 						.orElseGet(() -> cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type, suffix)));
 			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

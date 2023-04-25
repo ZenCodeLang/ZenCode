@@ -13,14 +13,23 @@ public class ForeachStatement extends LoopStatement {
 	public final VarStatement[] loopVariables;
 	public final Expression list;
 	public final IteratorInstance iterator;
-	public Statement content;
+	protected Statement content;
 
 	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorInstance iterator, Expression list) {
-		super(position, loopVariables[0].name, null); // TODO: thrown type
+		super(position, loopVariables[0].name, null);
 
 		this.loopVariables = loopVariables;
 		this.list = list;
 		this.iterator = iterator;
+	}
+
+	public Statement getContent() {
+		return content;
+	}
+
+	public void setContent(Statement content) {
+		this.content = content;
+		setThrownType(content.getThrownType());
 	}
 
 	@Override
@@ -42,34 +51,21 @@ public class ForeachStatement extends LoopStatement {
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tList = list.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (tList == list && tContent == content)
-			return this;
-
 		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList);
-		result.content = content.transform(transformer, modified.concat(this, result));
+		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tList = list.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (tList == list && tContent == content)
-			return this;
-
 		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList);
-		result.content = content.transform(transformer, modified.concat(this, result));
+		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
 
 	@Override
 	public TypeID getReturnType() {
 		return content.getReturnType();
-	}
-
-	@Override
-	public VarStatement[] getLoopVariables() {
-		return loopVariables;
 	}
 }

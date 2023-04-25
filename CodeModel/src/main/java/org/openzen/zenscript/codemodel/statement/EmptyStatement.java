@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.statement;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 
 import java.util.function.Consumer;
 

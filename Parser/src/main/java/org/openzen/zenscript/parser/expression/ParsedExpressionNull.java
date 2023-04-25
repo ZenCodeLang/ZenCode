@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 public class ParsedExpressionNull extends ParsedExpression {
 	public ParsedExpressionNull(CodePosition position) {
@@ -28,6 +30,16 @@ public class ParsedExpressionNull extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(compiler.at(position).constantNull(cast.type));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

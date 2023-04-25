@@ -224,7 +224,7 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		JavaLocalVariableInfo variable = javaWriter.getLocalVariable(expression.variable.variable);
+		JavaLocalVariableInfo variable = javaWriter.getLocalVariable(expression.variable.id);
 		javaWriter.load(variable);
 		modify(expression.type);
 		javaWriter.store(variable);

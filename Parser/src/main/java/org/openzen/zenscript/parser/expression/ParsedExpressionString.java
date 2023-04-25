@@ -9,7 +9,8 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -32,17 +33,19 @@ public class ParsedExpressionString extends ParsedExpression {
 	}
 
 	@Override
-	public SwitchValue asSwitchValue(TypeID type, ExpressionCompiler compiler) {
-		if (type == BasicTypeID.CHAR) {
-			if (value.length() != 1)
-				return new ErrorSwitchValue(position, CompileErrors.stringInsteadOfChar());
+	public CompilingSwitchValue compileSwitchValue(ExpressionCompiler compiler) {
+		return type -> {
+			if (type == BasicTypeID.CHAR) {
+				if (value.length() != 1)
+					return new ErrorSwitchValue(position, CompileErrors.stringInsteadOfChar());
 
-			return new CharSwitchValue(value.charAt(0));
-		} else if (type == BasicTypeID.STRING) {
-			return new StringSwitchValue(value);
-		} else {
-			return new ErrorSwitchValue(position, CompileErrors.stringForNonStringSwitchValue(type));
-		}
+				return new CharSwitchValue(value.charAt(0));
+			} else if (type == BasicTypeID.STRING) {
+				return new StringSwitchValue(value);
+			} else {
+				return new ErrorSwitchValue(position, CompileErrors.stringForNonStringSwitchValue(type));
+			}
+		};
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {
@@ -78,6 +81,16 @@ public class ParsedExpressionString extends ParsedExpression {
 					return cast.of(eval());
 				}
 			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

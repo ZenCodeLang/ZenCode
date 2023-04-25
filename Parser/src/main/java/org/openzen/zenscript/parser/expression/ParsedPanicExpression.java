@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedPanicExpression extends ParsedExpression {
@@ -37,6 +39,16 @@ public class ParsedPanicExpression extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return CastedExpression.exact(compiler.at(position).panic(cast.type, value.cast(cast(BasicTypeID.STRING)).value));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

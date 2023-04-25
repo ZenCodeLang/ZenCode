@@ -3,10 +3,12 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
+import org.openzen.zenscript.codemodel.ssa.SSAVariable;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -45,7 +47,7 @@ public interface ExpressionBuilder {
 
 	Expression getFunctionParameter(FunctionParameter parameter);
 
-	Expression getLocalVariable(VarStatement variable);
+	Expression getLocalVariable(VariableDefinition variable);
 
 	Expression getStaticField(FieldInstance field);
 
@@ -77,7 +79,7 @@ public interface ExpressionBuilder {
 
 	Expression setInstanceField(Expression target, FieldInstance field, Expression value);
 
-	Expression setLocalVariable(VarStatement variable, Expression value);
+	Expression setLocalVariable(VariableDefinition variable, Expression value);
 
 	Expression setStaticField(FieldInstance field, Expression value);
 

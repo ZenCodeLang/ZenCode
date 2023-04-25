@@ -23,6 +23,10 @@ public class SwitchStatement extends LoopStatement {
 		this.value = value;
 	}
 
+	public void addCase(SwitchCase case_) {
+		cases.add(case_);
+	}
+
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitSwitch(this);
@@ -85,10 +89,5 @@ public class SwitchStatement extends LoopStatement {
 		else
 			//TODO make this real
 			throw new IllegalStateException("Too many possible types: " + c);
-	}
-
-	@Override
-	public VarStatement[] getLoopVariables() {
-		return VarStatement.NONE;
 	}
 }

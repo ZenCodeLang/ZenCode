@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -63,6 +65,18 @@ public class ParsedExpressionRange extends ParsedExpression {
 						.map(constructor -> cast.of(constructor.call(compiler, position, TypeID.NONE, this)))
 						.orElseGet(() -> cast.invalid(CompileErrors.invalidRangeType(type)));
 			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			from.collect(collector);
+			to.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			from.linkVariables(linker);
+			to.linkVariables(linker);
 		}
 	}
 }

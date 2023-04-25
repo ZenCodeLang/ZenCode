@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 import java.util.Optional;
 
@@ -59,6 +61,16 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 		public CompilingExpression assign(CompilingExpression value) {
 			return new CompilingStaticAssign(compiler, position, field, value);
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
+		}
 	}
 
 	private static class CompilingStaticAssign extends AbstractCompilingExpression {
@@ -80,6 +92,16 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 
@@ -107,6 +129,12 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 		public CompilingExpression assign(CompilingExpression value) {
 			return new CompilingStaticAssign(compiler, position, field, value);
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 	}
 
 	private static class CompilingInstanceAssign extends AbstractCompilingExpression {
@@ -130,6 +158,16 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

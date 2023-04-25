@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 
 /**
  * @author Hoofdgebruiker
@@ -24,7 +25,7 @@ public interface ExpressionScope {
 
 	boolean isEnumConstantInitialized(EnumConstantMember member);
 
-	boolean isLocalVariableInitialized(VarStatement variable);
+	boolean isLocalVariableInitialized(VariableID variable);
 
 	void markConstructorForwarded();
 

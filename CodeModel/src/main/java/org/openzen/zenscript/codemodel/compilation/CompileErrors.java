@@ -397,6 +397,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.LOCAL_VARIABLE_NOT_YET_INITIALIZED,  "Local variable not yet initialized: " + name);
 	}
 
+	public static CompileError localVaribaleTypeUnknown(String name) {
+		return new CompileError(CompileExceptionCode.LOCAL_VARIABLE_TYPE_UNKNOWN, "Could not determine type of local variable " + name);
+	}
+
 	public static CompileError invalidMatchingVariantField(int index) {
 		return new CompileError(CompileExceptionCode.INVALID_MATCHING_VARIANT_FIELD, "Invalid matching field field (" + index + ")");
 	}

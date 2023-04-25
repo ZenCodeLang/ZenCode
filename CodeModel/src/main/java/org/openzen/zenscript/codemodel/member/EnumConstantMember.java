@@ -9,6 +9,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -51,5 +53,11 @@ public class EnumConstantMember implements CompilableExpression {
 		public Expression eval() {
 			return new EnumConstantExpression(position, DefinitionTypeID.create(member.definition, TypeID.NONE), member);
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 	}
 }

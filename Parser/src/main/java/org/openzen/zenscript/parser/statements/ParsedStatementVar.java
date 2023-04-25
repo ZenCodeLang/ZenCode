@@ -2,10 +2,11 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
+import org.openzen.zenscript.codemodel.ssa.VarBlockStatement;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -30,21 +31,48 @@ public class ParsedStatementVar extends ParsedStatement {
 	}
 
 	@Override
-	public Statement compile(StatementCompiler compiler) {
-		Expression initializer;
-		TypeID type;
-		if (this.type == null) {
-			if (this.initializer == null)
-				return new InvalidStatement(position, CompileErrors.varWithoutTypeOrInitializer());
+	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
+		CompilingExpression initializer = this.initializer == null ? null : this.initializer.compile(compiler.expressions());
+		lastBlock.add(new VarBlockStatement(initializer));
+		CompilingVariable compilingVariable = new CompilingVariable(new VariableID(), name, type == null ? null : type.compile(compiler.types()), isFinal);
+		compiler.addLocalVariable(compilingVariable);
+		return new Compiling(compiler, compilingVariable, initializer, lastBlock);
+	}
 
-			initializer = compiler.compile(this.initializer);
-			type = initializer.type;
-		} else {
-			type = this.type.compile(compiler.types());
-			initializer = this.initializer == null ? null : compiler.compile(this.initializer, type);
+	private class Compiling implements CompilingStatement {
+		private final StatementCompiler compiler;
+		private final CompilingVariable compilingVariable;
+		private final CompilingExpression initializer;
+		private final CodeBlock block;
+
+		public Compiling(StatementCompiler compiler, CompilingVariable compilingVariable, CompilingExpression initializer, CodeBlock block) {
+			this.compiler = compiler;
+			this.compilingVariable = compilingVariable;
+			this.initializer = initializer;
+			this.block = block;
 		}
-		VarStatement result = new VarStatement(position, new VariableID(), name, type, initializer, isFinal);
-		compiler.addLocalVariable(result);
-		return result(result, compiler);
+
+		@Override
+		public Statement complete() {
+			Expression initializer;
+			TypeID ctype;
+			if (type == null) {
+				if (this.initializer == null)
+					return new InvalidStatement(position, CompileErrors.varWithoutTypeOrInitializer());
+
+				initializer = this.initializer.eval();
+				ctype = initializer.type;
+			} else {
+				ctype = type.compile(compiler.types());
+				initializer = this.initializer == null ? null : this.initializer.as(ctype);
+			}
+			VarStatement result = new VarStatement(position, compilingVariable.id, compilingVariable.name, ctype, initializer, isFinal);
+			return result(result, compiler);
+		}
+
+		@Override
+		public CodeBlock getTail() {
+			return block;
+		}
 	}
 }

@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionCoalesce extends ParsedExpression {
@@ -50,6 +52,18 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 
 			Expression cRight = right.cast(cast).value;
 			return cast.of(compiler.at(position).coalesce(cLeft.value, cRight));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			left.collect(collector);
+			right.collect(collector.conditional());
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			left.linkVariables(linker);
+			right.linkVariables(linker);
 		}
 	}
 }

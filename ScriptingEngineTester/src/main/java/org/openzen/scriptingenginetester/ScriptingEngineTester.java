@@ -30,9 +30,6 @@ public class ScriptingEngineTester implements TestEngine, AutoCloseable {
 	@Override
 	public TestDescriptor discover(EngineDiscoveryRequest request, UniqueId uniqueId) {
 		TestDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "ZenCode scripting engine test");
-
-
-
 			final Path testRoot = testDiscoverer.findTestRoot();
 			TestSuite suite = new TestSuite(testRoot);
 

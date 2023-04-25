@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedThrowExpression extends ParsedExpression {
@@ -41,6 +43,16 @@ public class ParsedThrowExpression extends ParsedExpression {
 			return CastedExpression.exact(compiler.getThrowableType()
 					.map(t -> compiler.at(position).throw_(cast.type, value.cast(cast(t)).value))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.cannotThrowHere(), cast.type)));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

@@ -4,9 +4,12 @@ import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
+import org.openzen.zenscript.codemodel.ssa.SSA;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -152,10 +155,25 @@ public class ParsedFile {
 		for (ParsedFile file : files) {
 			if (!file.statements.isEmpty() || file.postComment != null) {
 				StatementCompiler compiler = definitionCompilers.get(file).forScripts(scriptHeader);
-				List<Statement> statements = file.statements.stream()
-					.map(statement -> statement.compile(compiler))
-					.collect(Collectors.toList());
-				ScriptBlock block = new ScriptBlock(file.file, pkg.module, pkg.getPackage(), scriptHeader, statements);
+				CodeBlock start = new CodeBlock();
+				CodeBlock codeBlock = start;
+
+				List<CompilingStatement> statements = new ArrayList<>();
+				for (ParsedStatement statement : file.statements) {
+					CompilingStatement compiling = statement.compile(compiler, codeBlock);
+					codeBlock = compiling.getTail();
+					statements.add(compiling);
+				}
+
+				SSA ssa = new SSA(start);
+				ssa.compute();
+
+				List<Statement> compiledStatements = new ArrayList<>();
+				for (CompilingStatement statement : statements) {
+					compiledStatements.add(statement.complete());
+				}
+
+				ScriptBlock block = new ScriptBlock(file.file, pkg.module, pkg.getPackage(), scriptHeader, compiledStatements);
 				block.setTag(WhitespacePostComment.class, file.postComment);
 				scripts.add(block);
 			}

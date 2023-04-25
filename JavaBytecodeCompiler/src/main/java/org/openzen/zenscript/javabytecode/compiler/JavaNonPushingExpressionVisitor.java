@@ -123,7 +123,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			case UINT_INC:
 			case USIZE_INC:
 				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.id);
 					javaWriter.iinc(local.local);
 				} else {
 					modify(target, () -> {
@@ -136,7 +136,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			case UINT_DEC:
 			case USIZE_DEC:
 				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.id);
 					javaWriter.iinc(local.local, -1);
 				} else {
 					modify(target, () -> {
@@ -522,7 +522,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		expression.value.accept(original);
 		Label label = new Label();
 		javaWriter.label(label);
-		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.id);
 		tag.end = label;
 
 		javaWriter.store(tag.type, tag.local);

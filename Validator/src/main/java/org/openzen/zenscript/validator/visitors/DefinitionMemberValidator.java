@@ -11,9 +11,11 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
@@ -258,17 +260,17 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
-		if (member.body.thrownType != null)
+		if (member.body.getThrownType() != null)
 			validator.logError(member.position, CompileErrors.staticInitializerCannotThrow());
 		return null;
 	}
 
 	private void validateThrow(DefinitionMember member, FunctionHeader header, Statement body) {
-		if (body.thrownType != null) {
+		if (body.getThrownType() != null) {
 			if (header.thrownType == null)
 				validator.logError(member.position, CompileErrors.cannotThrowWithoutThrows());
-			else if (!body.thrownType.equals(header.thrownType))
-				validator.logError(member.position, CompileErrors.invalidThrownType(header.thrownType, body.thrownType));
+			else if (!body.getThrownType().equals(header.thrownType))
+				validator.logError(member.position, CompileErrors.invalidThrownType(header.thrownType, body.getThrownType()));
 		}
 	}
 
@@ -356,7 +358,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		}
 
 		@Override
-		public boolean isLocalVariableInitialized(VarStatement variable) {
+		public boolean isLocalVariableInitialized(VariableID variable) {
 			return true; // TODO
 		}
 
@@ -503,7 +505,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		}
 
 		@Override
-		public boolean isLocalVariableInitialized(VarStatement variable) {
+		public boolean isLocalVariableInitialized(VariableID variable) {
 			return false;
 		}
 

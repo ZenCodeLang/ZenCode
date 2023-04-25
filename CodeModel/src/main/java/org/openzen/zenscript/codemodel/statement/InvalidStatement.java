@@ -1,7 +1,9 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.*;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 
 import java.util.function.Consumer;
 
@@ -35,11 +37,11 @@ public class InvalidStatement extends Statement {
 
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return this;
+		return new InvalidStatement(position, error);
 	}
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return this;
+		return new InvalidStatement(position, error);
 	}
 }

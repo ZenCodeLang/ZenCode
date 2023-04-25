@@ -1,0 +1,7 @@
+#output: int
+
+function test() {
+	return 1;
+}
+
+println(typeof(test()));

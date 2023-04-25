@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -54,7 +55,7 @@ public class MatchExpression extends Expression {
 	}
 
 	public SwitchedMatch convertToSwitch(String tempVariable) {
-		VarStatement result = new VarStatement(position, new VariableID(), tempVariable, type, null, false);
+		VariableDefinition result = new VariableDefinition(new VariableID(), tempVariable, type, true);
 		SwitchStatement switchStatement = new SwitchStatement(position, null, value);
 		boolean hasDefault = false;
 		for (MatchExpression.Case matchCase : cases) {
@@ -84,10 +85,10 @@ public class MatchExpression extends Expression {
 	}
 
 	public static class SwitchedMatch {
-		public final VarStatement result;
+		public final VariableDefinition result;
 		public final SwitchStatement switchStatement;
 
-		public SwitchedMatch(VarStatement temp, SwitchStatement switchStatement) {
+		public SwitchedMatch(VariableDefinition temp, SwitchStatement switchStatement) {
 			this.result = temp;
 			this.switchStatement = switchStatement;
 		}

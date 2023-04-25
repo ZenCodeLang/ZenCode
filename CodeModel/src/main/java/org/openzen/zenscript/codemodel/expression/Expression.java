@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;

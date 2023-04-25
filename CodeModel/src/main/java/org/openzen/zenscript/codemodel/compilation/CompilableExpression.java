@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public interface CompilableExpression {
@@ -29,8 +31,8 @@ public interface CompilableExpression {
 		return compile(compiler);
 	}
 
-	default SwitchValue asSwitchValue(TypeID valueType, ExpressionCompiler compiler) {
-		return new ErrorSwitchValue(getPosition(), CompileErrors.invalidSwitchCaseExpression());
+	default CompilingSwitchValue compileSwitchValue(ExpressionCompiler compiler) {
+		return type -> new ErrorSwitchValue(getPosition(), CompileErrors.invalidSwitchCaseExpression());
 	}
 
 	/**

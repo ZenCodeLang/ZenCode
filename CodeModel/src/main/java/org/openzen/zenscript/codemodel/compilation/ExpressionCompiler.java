@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -32,7 +33,7 @@ public interface ExpressionCompiler extends TypeResolver {
 
 	Optional<TypeID> union(TypeID left, TypeID right);
 
-	ExpressionCompiler withLocalVariables(List<VarStatement> variables);
+	ExpressionCompiler withLocalVariables(List<CompilingVariable> variables);
 
 	StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header);
 }

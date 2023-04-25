@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
@@ -107,6 +109,16 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			} else {
 				return cast.of(eval());
 			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			// TODO - SSA doesn't yet go past lambda boundaries
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			// TODO - SSA doesn't yet go past lambda boundaries
 		}
 	}
 }

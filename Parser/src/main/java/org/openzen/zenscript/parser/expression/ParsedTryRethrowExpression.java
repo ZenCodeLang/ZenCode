@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.ResultTypeSymbol;
@@ -48,6 +50,16 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				CastedExpression original = value.cast(cast(result));
 				return cast.of(original.level, compiler.at(position).tryRethrowAsResult(original.value, result.typeArguments[0]));
 			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 
 		@Override

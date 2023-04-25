@@ -5,7 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.MatchExpression;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -24,21 +25,21 @@ public class ParsedMatchExpression extends ParsedExpression {
 
 	@Override
 	public CompilingExpression compile(ExpressionCompiler compiler) {
-		Expression value = this.value.compile(compiler).eval();
+		CompilingExpression value = this.value.compile(compiler);
 		CompilingCase[] cCases = new CompilingCase[cases.size()];
 		for (int i = 0; i < cases.size(); i++) {
 			Case matchCase = cases.get(i);
-			cCases[i] = matchCase.compile(value.type, compiler);
+			cCases[i] = matchCase.compile(compiler);
 		}
 
 		return new Compiling(compiler, position, value, cCases);
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {
-		private final Expression value;
+		private final CompilingExpression value;
 		private final CompilingCase[] cases;
 
-		public Compiling(ExpressionCompiler compiler, CodePosition position, Expression value, CompilingCase[] cases) {
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, CompilingCase[] cases) {
 			super(compiler, position);
 
 			this.value = value;
@@ -50,6 +51,7 @@ public class ParsedMatchExpression extends ParsedExpression {
 			if (cases.length == 0)
 				return compiler.at(position).invalid(CompileErrors.noMatchValuesForInference());
 
+			Expression value = this.value.eval();
 			Expression[] values = new Expression[cases.length];
 			values[0] = cases[0].value.eval();
 			TypeID type = values[0].type;
@@ -74,29 +76,47 @@ public class ParsedMatchExpression extends ParsedExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
+			Expression value = this.value.eval();
+
 			MatchExpression.Case[] cases = new MatchExpression.Case[this.cases.length];
 			for (int i = 0; i < cases.length; i++)
-				cases[i] = this.cases[i].cast(cast);
+				cases[i] = this.cases[i].cast(value.type, cast);
 
 			return cast.of(compiler.at(position).match(value, cast.type, cases));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+			for (CompilingCase case_ : cases) {
+				case_.value.collect(collector);
+			}
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
+			for (CompilingCase case_ : cases) {
+				case_.value.linkVariables(linker);
+			}
 		}
 	}
 
 	private static class CompilingCase {
-		public final SwitchValue name;
+		public final CompilingSwitchValue name;
 		public final CompilingExpression value;
 
-		public CompilingCase(SwitchValue name, CompilingExpression value) {
+		public CompilingCase(CompilingSwitchValue name, CompilingExpression value) {
 			this.name = name;
 			this.value = value;
 		}
 
-		public MatchExpression.Case eval() {
-			return new MatchExpression.Case(name, value.eval());
+		public MatchExpression.Case eval(TypeID valueType) {
+			return new MatchExpression.Case(name.as(valueType), value.eval());
 		}
 
-		public MatchExpression.Case cast(CastedEval cast) {
-			return new MatchExpression.Case(name, value.cast(cast).value);
+		public MatchExpression.Case cast(TypeID valueType, CastedEval cast) {
+			return new MatchExpression.Case(name.as(valueType), value.cast(cast).value);
 		}
 	}
 
@@ -109,11 +129,11 @@ public class ParsedMatchExpression extends ParsedExpression {
 			this.value = body;
 		}
 
-		public CompilingCase compile(TypeID valueType, ExpressionCompiler compiler) {
+		public CompilingCase compile(ExpressionCompiler compiler) {
 			if (name == null)
 				return new CompilingCase(null, value.compile(compiler));
 
-			SwitchValue switchValue = name.asSwitchValue(valueType, compiler);
+			CompilingSwitchValue switchValue = name.compileSwitchValue(compiler);
 			ExpressionCompiler inner = compiler.withLocalVariables(switchValue.getBindings());
 			return new CompilingCase(switchValue, value.compile(inner));
 		}

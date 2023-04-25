@@ -1,28 +1,20 @@
 package org.openzen.zenscript.scriptingexample.tests.runner;
 
-import org.junit.jupiter.api.Assertions;
 import org.openzen.scriptingenginetester.TestOutput;
 import org.openzen.scriptingenginetester.TestableScriptingEngine;
 import org.openzen.scriptingenginetester.cases.TestCase;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.java.module.JavaNativeModule;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
-import org.openzen.zenscript.codemodel.globals.IGlobal;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.scriptingexample.tests.SharedGlobals;
-import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTestLogger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class JavaTestingEngineTest implements TestableScriptingEngine {
 	public TestOutput run(TestCase test) {

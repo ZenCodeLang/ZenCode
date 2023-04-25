@@ -5,6 +5,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -127,6 +129,20 @@ public class EscapableBracketParser implements BracketExpressionParser {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			for (CompilingExpression part : parts) {
+				part.collect(collector);
+			}
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			for (CompilingExpression part : parts) {
+				part.linkVariables(linker);
+			}
 		}
 	}
 }

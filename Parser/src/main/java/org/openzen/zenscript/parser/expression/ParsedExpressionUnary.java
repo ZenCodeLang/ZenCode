@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionUnary extends ParsedExpression {
@@ -50,6 +52,16 @@ public class ParsedExpressionUnary extends ParsedExpression {
 			return resolvedType.findOperator(operator)
 					.map(operator -> cast.of(value.level, operator.call(compiler, position, value.value, TypeID.NONE)))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.value.type, operator)));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

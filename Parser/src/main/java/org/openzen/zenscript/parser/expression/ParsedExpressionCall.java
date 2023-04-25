@@ -6,8 +6,12 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class ParsedExpressionCall extends ParsedExpression {
@@ -49,31 +53,48 @@ public class ParsedExpressionCall extends ParsedExpression {
 					.map(call -> call.casted(position, cast, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.cannotCall()));
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			receiver.collect(collector);
+			for (CompilingExpression argument : arguments)
+				argument.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			receiver.linkVariables(linker);
+			for (CompilingExpression argument : arguments)
+				argument.linkVariables(linker);
+		}
 	}
 
 	@Override
-	public SwitchValue asSwitchValue(TypeID type, ExpressionCompiler compiler) {
-		if (!(receiver instanceof ParsedExpressionVariable))
-			return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
-
-		String name = ((ParsedExpressionVariable) receiver).name;
-		ResolvedType resolved = compiler.resolve(type);
-		Optional<ResolvedType.SwitchMember> maybeSwitchMember = resolved.findSwitchMember(name);
-		if (maybeSwitchMember.isPresent()) {
-			String[] values = new String[arguments.arguments.size()];
-			for (int i = 0; i < values.length; i++) {
-				CompilableExpression argument = arguments.arguments.get(i);
-				Optional<CompilableLambdaHeader.Parameter> lambdaHeader = argument.asLambdaHeaderParameter();
-				if (lambdaHeader.isPresent()) {
-					values[i] = lambdaHeader.get().getName();
-				} else {
-					return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
-				}
-			}
-
-			return maybeSwitchMember.get().toSwitchValue(values);
-		} else {
-			return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
+	public CompilingSwitchValue compileSwitchValue(ExpressionCompiler compiler) {
+		if (!(receiver instanceof ParsedExpressionVariable)) {
+			return type -> new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
 		}
+
+		return type -> {
+			String name = ((ParsedExpressionVariable) receiver).name;
+			ResolvedType resolved = compiler.resolve(type);
+			Optional<ResolvedType.SwitchMember> maybeSwitchMember = resolved.findSwitchMember(name);
+			if (maybeSwitchMember.isPresent()) {
+				String[] values = new String[arguments.arguments.size()];
+				for (int i = 0; i < values.length; i++) {
+					CompilableExpression argument = arguments.arguments.get(i);
+					Optional<CompilableLambdaHeader.Parameter> lambdaHeader = argument.asLambdaHeaderParameter();
+					if (lambdaHeader.isPresent()) {
+						values[i] = lambdaHeader.get().getName();
+					} else {
+						return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
+					}
+				}
+
+				return maybeSwitchMember.get().toSwitchValue(values);
+			} else {
+				return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
+			}
+		};
 	}
 }

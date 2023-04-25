@@ -14,6 +14,8 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaNativeField;
@@ -196,6 +198,16 @@ public class JavaNativeTypeTemplate {
 		@Override
 		public Expression eval() {
 			return compiler.at(CodePosition.UNKNOWN).getStaticField(new FieldInstance(field));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

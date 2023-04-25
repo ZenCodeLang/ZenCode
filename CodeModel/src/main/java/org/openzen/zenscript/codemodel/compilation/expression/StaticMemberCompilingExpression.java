@@ -4,6 +4,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -59,6 +61,12 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 				.orElseGet(() -> compiler.invalid(position, CompileErrors.noMemberInType(type, name.name)));
 	}
 
+	@Override
+	public void collect(SSAVariableCollector collector) {}
+
+	@Override
+	public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
+
 	private static class CompilingSet extends AbstractCompilingExpression {
 		private final StaticCallable setter;
 		private final CompilingExpression value;
@@ -78,6 +86,16 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

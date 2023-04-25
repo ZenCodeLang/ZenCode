@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -52,6 +54,16 @@ public class ParsedTypeExpression extends ParsedExpression {
 				return new Compiling(compiler, position, compiler.types().definitionOf(maybeInnerType.get(), name.arguments));
 
 			return new StaticMemberCompilingExpression(compiler, position, type, name);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

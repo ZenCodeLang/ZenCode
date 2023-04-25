@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -45,4 +47,15 @@ public class TypeCompilingExpression implements CompilingExpression {
 	public CompilingExpression assign(CompilingExpression value) {
 		return new InvalidCompilingExpression(compiler, position, CompileErrors.cannotUseTypeAsValue());
 	}
+
+	@Override
+	public Expression as(TypeID type) {
+		return compiler.at(position).invalid(CompileErrors.cannotUseTypeAsValue(), type);
+	}
+
+	@Override
+	public void collect(SSAVariableCollector collector) {}
+
+	@Override
+	public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 }

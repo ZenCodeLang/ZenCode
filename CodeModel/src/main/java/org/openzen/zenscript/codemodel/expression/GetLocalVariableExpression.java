@@ -1,12 +1,12 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 
 public class GetLocalVariableExpression extends Expression {
-	public final VarStatement variable;
+	public final VariableDefinition variable;
 
-	public GetLocalVariableExpression(CodePosition position, VarStatement variable) {
+	public GetLocalVariableExpression(CodePosition position, VariableDefinition variable) {
 		super(position, variable.type, null);
 
 		this.variable = variable;

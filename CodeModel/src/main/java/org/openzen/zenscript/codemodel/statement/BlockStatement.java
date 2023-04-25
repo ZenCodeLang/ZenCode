@@ -24,7 +24,7 @@ public class BlockStatement extends Statement {
 	private static TypeID getThrownType(Statement[] statements) {
 		TypeID result = null;
 		for (Statement statement : statements)
-			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
+			result = Expression.binaryThrow(statement.position, result, statement.getThrownType());
 		return result;
 	}
 

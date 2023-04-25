@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -55,6 +57,16 @@ public class TypeofGlobal implements IGlobal {
 		@Override
 		public Optional<CompilingCallable> call() {
 			return Optional.of(this);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 
 		@Override

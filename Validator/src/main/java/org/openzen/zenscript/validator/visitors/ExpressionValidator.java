@@ -311,7 +311,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		if (!scope.isLocalVariableInitialized(expression.variable)) {
+		if (!scope.isLocalVariableInitialized(expression.variable.id)) {
 			validator.logError(expression.position, CompileErrors.localVariableNotYetInitialized(expression.variable.name));
 		}
 		return null;

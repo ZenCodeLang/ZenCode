@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.StaticCompilingCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -43,6 +45,16 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		@Override
 		public CompilingExpression getMember(CodePosition position, GenericName name) {
 			return new CompilingMember(compiler, position, localType.getThisType(), superType, name);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 
 		@Override
@@ -103,6 +115,16 @@ public class ParsedExpressionSuper extends ParsedExpression {
 
 			return new CompilingSetMember(compiler, position, thisType, superType, name, value);
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
+		}
 	}
 
 	private static class CompilingSetMember extends AbstractCompilingExpression {
@@ -138,6 +160,16 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

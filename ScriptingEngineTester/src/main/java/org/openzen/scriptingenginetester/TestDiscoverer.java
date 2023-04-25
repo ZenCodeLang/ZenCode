@@ -1,5 +1,6 @@
 package org.openzen.scriptingenginetester;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -13,6 +14,10 @@ public class TestDiscoverer implements AutoCloseable{
 
 
 	public Path findTestRoot() {
+		File source = new File("../ScriptingEngineTester/src/main/resources/zencode-tests");
+		if (source.exists()) // makes "Jump to source" to go the source file rather than the built file
+			return source.toPath();
+
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		return Optional.ofNullable(classLoader.getResource("zencode-tests"))
 				.flatMap(TestDiscoverer::urlToUri)

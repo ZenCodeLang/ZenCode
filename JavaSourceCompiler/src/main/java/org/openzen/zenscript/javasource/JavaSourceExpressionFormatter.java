@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.ssa.SSAValue;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.*;
@@ -838,9 +839,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	private Expression hoist(Expression value) {
-		VarStatement temp = new VarStatement(value.position, new VariableID(), scope.createTempVariable(), value.type, value, true);
+		VariableID variable = new VariableID();
+		VarStatement temp = new VarStatement(value.position, variable, scope.createTempVariable(), value.type, value, true);
 		new JavaSourceStatementFormatter(scope).formatVar(target, temp);
-		return new GetLocalVariableExpression(value.position, temp);
+		return new GetLocalVariableExpression(value.position, temp, new SSAValue(variable, value));
 	}
 
 	public ExpressionString hoist(ExpressionString value, String type) {

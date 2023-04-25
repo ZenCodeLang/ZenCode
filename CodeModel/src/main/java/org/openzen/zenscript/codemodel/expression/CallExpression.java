@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 import java.util.Optional;
 

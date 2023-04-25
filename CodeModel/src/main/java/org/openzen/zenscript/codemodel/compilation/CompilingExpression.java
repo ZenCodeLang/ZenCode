@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -49,6 +51,23 @@ public interface CompilingExpression {
 	 * @return compiled expression
 	 */
 	CompilingExpression assign(CompilingExpression value);
+
+	/**
+	 * Compiles this expression to the given type. Attempts an implicit cast.
+	 *
+	 * @param type target type
+	 * @return compiled expression
+	 */
+	Expression as(TypeID type);
+
+	/**
+	 * Collects all usages and assignments of variables for SSA analysis.
+	 *
+	 * @param collector variable collector
+	 */
+	void collect(SSAVariableCollector collector);
+
+	void linkVariables(CodeBlockStatement.VariableLinker linker);
 
 	/**
 	 * Compiles this expression as an identifier. (implemented on string literals and identifiers)

@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedExpressionConditional extends ParsedExpression {
@@ -65,6 +67,20 @@ public class ParsedExpressionConditional extends ParsedExpression {
 			CastedExpression ifElse = this.ifElse.cast(cast);
 			CastedExpression.Level level = ifThen.level.max(ifElse.level);
 			return cast.of(level, compiler.at(position).ternary(condition, ifThen.value, ifElse.value));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			condition.collect(collector);
+			ifThen.collect(collector.conditional());
+			ifElse.collect(collector.conditional());
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			condition.linkVariables(linker);
+			ifThen.linkVariables(linker);
+			ifElse.linkVariables(linker);
 		}
 	}
 }

@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -29,7 +31,11 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		TypeID[] typeArguments = IParsedType.compileTypes(this.typeArguments, compiler.types());
 
 		Optional<CompilingExpression> resolved = compiler.resolve(position, new GenericName(name, typeArguments));
-		return new Compiling(compiler, position, name, resolved.orElse(null));
+		if (resolved.isPresent()) {
+			return new CompilingResolved(compiler, position, name, resolved.get());
+		} else {
+			return new CompilingUnresolved(compiler, position, name);
+		}
 	}
 
 	@Override
@@ -57,13 +63,19 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			return cast.of(eval());
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 	}
 
-	private static class Compiling extends AbstractCompilingExpression implements CompilingCallable {
+	private static class CompilingResolved extends AbstractCompilingExpression {
 		private final String name;
 		private final CompilingExpression resolved; // can be null
 
-		public Compiling(ExpressionCompiler compiler, CodePosition position, String name, CompilingExpression resolved) {
+		public CompilingResolved(ExpressionCompiler compiler, CodePosition position, String name, CompilingExpression resolved) {
 			super(compiler, position);
 			this.name = name;
 			this.resolved = resolved;
@@ -71,50 +83,86 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			if (resolved != null) {
-				return resolved.eval();
-			} else {
-				return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
-			}
+			return resolved.eval();
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			TypeID type = cast.type.simplified();
-			if (resolved != null) {
-				return resolved.cast(cast);
-			} else {
-				return compiler.resolve(type).getContextMember(name)
-						.map(member -> member.compile(compiler).cast(cast))
-						.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
-			}
+			return resolved.cast(cast);
 		}
 
 		@Override
 		public Optional<CompilingCallable> call() {
-			if (resolved == null) {
-				return Optional.of(this);
-			} else {
-				return resolved.call();
-			}
+			return resolved.call();
 		}
 
 		@Override
 		public CompilingExpression assign(CompilingExpression value) {
-			if (resolved != null) {
-				return resolved.assign(value);
-			} else {
-				return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, name));
-			}
+			return resolved.assign(value);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			resolved.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			resolved.linkVariables(linker);
 		}
 
 		@Override
 		public CompilingExpression getMember(CodePosition position, GenericName name) {
-			if (resolved != null) {
-				return resolved.getMember(position, name);
-			} else {
-				return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, this.name));
-			}
+			return resolved.getMember(position, name);
+		}
+
+		@Override
+		public Optional<String> asStringKey() {
+			return Optional.of(name);
+		}
+	}
+
+	private static class CompilingUnresolved extends AbstractCompilingExpression implements CompilingCallable {
+		private final String name;
+
+		public CompilingUnresolved(ExpressionCompiler compiler, CodePosition position, String name) {
+			super(compiler, position);
+			this.name = name;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			TypeID type = cast.type.simplified();
+			return compiler.resolve(type).getContextMember(name)
+						.map(member -> member.compile(compiler).cast(cast))
+						.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
+		}
+
+		@Override
+		public Optional<CompilingCallable> call() {
+			return Optional.of(this);
+		}
+
+		@Override
+		public CompilingExpression assign(CompilingExpression value) {
+			return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, name));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
+
+		@Override
+		public CompilingExpression getMember(CodePosition position, GenericName name) {
+			return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, this.name));
 		}
 
 		@Override
@@ -124,7 +172,6 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 		// ###########################################
 		// ###  CompilingCallable implementation   ###
-		// ### (only used on unresolved variables) ###
 		// ###########################################
 
 		@Override
@@ -145,14 +192,24 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	}
 
 	@Override
-	public SwitchValue asSwitchValue(TypeID type, ExpressionCompiler compiler) {
-		ResolvedType resolved = compiler.resolve(type);
-		Optional<ResolvedType.SwitchMember> switchMember = resolved.findSwitchMember(name);
-		if (switchMember.isPresent()) {
-			return switchMember.get().toSwitchValue(new String[0]);
-		} else {
-			return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
-		}
+	public CompilingSwitchValue compileSwitchValue(ExpressionCompiler compiler) {
+		return new CompilingSwitchValue() {
+			@Override
+			public SwitchValue as(TypeID type) {
+				ResolvedType resolved = compiler.resolve(type);
+				Optional<ResolvedType.SwitchMember> switchMember = resolved.findSwitchMember(name);
+				if (switchMember.isPresent()) {
+					return switchMember.get().toSwitchValue(new String[0]);
+				} else {
+					return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
+				}
+			}
+
+			@Override
+			public List<CompilingVariable> getBindings() {
+				return Collections.emptyList();
+			}
+		};
 	}
 
 	@Override

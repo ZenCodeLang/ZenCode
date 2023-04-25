@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 import java.util.List;
@@ -61,6 +63,19 @@ public class ParsedExpressionBracket extends ParsedExpression {
 				return cast.invalid(CompileErrors.bracketMultipleExpressions());
 			} else {
 				return compiling[0].cast(cast);
+			}
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			for (CompilingExpression compiling : this.compiling)
+				compiling.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			for (CompilingExpression compiling : this.compiling) {
+				compiling.linkVariables(linker);
 			}
 		}
 	}

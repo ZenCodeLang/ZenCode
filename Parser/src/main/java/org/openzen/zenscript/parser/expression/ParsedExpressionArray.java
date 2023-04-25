@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -96,6 +98,20 @@ public class ParsedExpressionArray extends ParsedExpression {
 				level = level.max(casted.level);
 			}
 			return cast.of(level, compiler.at(position).newArray(maybeArray.get(), elements));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			for (CompilingExpression element : elements) {
+				element.collect(collector);
+			}
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			for (CompilingExpression element : elements) {
+				element.linkVariables(linker);
+			}
 		}
 	}
 }

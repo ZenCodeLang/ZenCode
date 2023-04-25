@@ -4,12 +4,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompilingVariable;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalParameterExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalVariableExpression;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +23,9 @@ public class LocalSymbols {
 	private final LocalSymbols parent;
 	private final LambdaClosure closure;
 	private final String[] loopName;
-	private final LoopStatement loop;
+	private final CompilingLoopStatement loop;
 	private final FunctionHeader header;
-	private final Map<String, VarStatement> localVariables = new HashMap<>();
+	private final Map<String, CompilingVariable> localVariables = new HashMap<>();
 	private final CompilableExpression dollar;
 
 	public LocalSymbols(FunctionHeader header) {
@@ -46,7 +46,7 @@ public class LocalSymbols {
 		this.dollar = null;
 	}
 
-	private LocalSymbols(LocalSymbols parent, LoopStatement loop, String... loopName) {
+	private LocalSymbols(LocalSymbols parent, CompilingLoopStatement loop, String... loopName) {
 		this.parent = parent;
 		this.closure = null;
 		this.loop = loop;
@@ -54,7 +54,7 @@ public class LocalSymbols {
 		this.header = null;
 		this.dollar = null;
 
-		for (VarStatement loopVariable : loop.getLoopVariables())
+		for (CompilingVariable loopVariable : loop.getLoopVariables())
 			localVariables.put(loopVariable.name, loopVariable);
 	}
 
@@ -66,13 +66,13 @@ public class LocalSymbols {
 		return new LocalSymbols(this, header, closure);
 	}
 
-	public LocalSymbols forLoop(LoopStatement loop, String... loopName) {
+	public LocalSymbols forLoop(CompilingLoopStatement loop, String... loopName) {
 		return new LocalSymbols(this, loop, loopName);
 	}
 
-	public Optional<LoopStatement> findLoop(String name) {
+	public Optional<CompilingLoopStatement> findLoop(String name) {
 		if (loop != null) {
-			if (name == null || (loop.label != null && loop.label.equals(name)))
+			if (name == null || (loop.getLabels().contains(name)))
 				return Optional.of(loop);
 			if (loopName != null) {
 				for (String s : loopName) {
@@ -89,7 +89,7 @@ public class LocalSymbols {
 		}
 	}
 
-	public void add(VarStatement localVariable) {
+	public void add(CompilingVariable localVariable) {
 		localVariables.put(localVariable.name, localVariable);
 	}
 

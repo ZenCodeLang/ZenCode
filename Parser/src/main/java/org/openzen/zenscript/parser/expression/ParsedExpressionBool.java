@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 public class ParsedExpressionBool extends ParsedExpression {
 	private final boolean value;
@@ -37,5 +39,14 @@ public class ParsedExpressionBool extends ParsedExpression {
 			return cast.of(eval());
 		}
 
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
+		}
 	}
 }

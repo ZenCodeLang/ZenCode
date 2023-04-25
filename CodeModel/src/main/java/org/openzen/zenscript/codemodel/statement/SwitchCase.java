@@ -17,7 +17,8 @@ public class SwitchCase {
 		Statement[] tStatements = new Statement[statements.length];
 		int i = 0;
 		for (Statement statement : statements) {
-			tStatements[i++] = statement.transform(transformer, modified);
+			Statement transformed = statement.transform(transformer, modified);
+			tStatements[i++] = transformed;
 		}
 		return new SwitchCase(value, tStatements);
 	}
@@ -26,7 +27,8 @@ public class SwitchCase {
 		Statement[] tStatements = new Statement[statements.length];
 		int i = 0;
 		for (Statement statement : statements) {
-			tStatements[i++] = statement.transform(transformer, modified);
+			Statement transformed = statement.transform(transformer, modified);
+			tStatements[i++] = transformed;
 		}
 		return new SwitchCase(value, tStatements);
 	}

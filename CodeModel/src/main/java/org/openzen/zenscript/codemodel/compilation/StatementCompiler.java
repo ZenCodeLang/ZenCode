@@ -1,11 +1,8 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.statement.ForeachStatement;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -18,25 +15,19 @@ public interface StatementCompiler {
 
 	ExpressionCompiler expressions();
 
-	SwitchValue compileSwitchValue(CompilableExpression expression, TypeID type);
-
 	TypeBuilder types();
 
 	ResolvedType resolve(TypeID type);
 
 	StatementCompiler forBlock();
 
-	StatementCompiler forLoop(LoopStatement loop);
+	StatementCompiler forLoop(CompilingLoopStatement loop);
 
-	StatementCompiler forForeach(ForeachStatement statement);
+	StatementCompiler forCatch(CompilingVariable exceptionVariable);
 
-	StatementCompiler forSwitch(SwitchStatement statement);
-
-	StatementCompiler forCatch(VarStatement exceptionVariable);
-
-	Optional<LoopStatement> getLoop(String name);
+	Optional<CompilingLoopStatement> getLoop(String name);
 
 	Optional<FunctionHeader> getFunctionHeader();
 
-	void addLocalVariable(VarStatement variable);
+	void addLocalVariable(CompilingVariable variable);
 }

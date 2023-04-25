@@ -86,7 +86,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	public Void visitForeach(ForeachStatement statement) {
 		statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 
-		validateInnerBlock(statement.content);
+		validateInnerBlock(statement.getContent());
 
 		firstStatement = false;
 		return null;
@@ -258,7 +258,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 		}
 
 		@Override
-		public boolean isLocalVariableInitialized(VarStatement variable) {
+		public boolean isLocalVariableInitialized(VariableID variable) {
 			return true; // TODO
 		}
 

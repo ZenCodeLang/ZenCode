@@ -46,7 +46,7 @@ public class JavaForeachWriter {
 		javaWriter.loadInt(z);
 		javaWriter.ifICmpLE(endLabel);
 
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 		javaWriter.iinc(z);
 	}
 
@@ -74,7 +74,7 @@ public class JavaForeachWriter {
 		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		javaWriter.store(variable.type, variable.local);
 
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
@@ -103,7 +103,7 @@ public class JavaForeachWriter {
 			javaWriter.arrayLoad(arrayTypeInfo.type);
 		}
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 		javaWriter.iinc(z);
 	}
 
@@ -121,7 +121,7 @@ public class JavaForeachWriter {
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 	}
 
 	public void visitAssocKeyIterator() {
@@ -139,7 +139,7 @@ public class JavaForeachWriter {
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 	}
 
 	public void visitAssocKeyValueIterator() {
@@ -167,7 +167,7 @@ public class JavaForeachWriter {
 		this.downCast(1, valueVariable.type);
 		javaWriter.store(valueVariable.type, valueVariable.local);
 
-		statement.content.accept(statementVisitor);
+		statement.getContent().accept(statementVisitor);
 	}
 
 	private void downCast(int typeNumber, Type t) {

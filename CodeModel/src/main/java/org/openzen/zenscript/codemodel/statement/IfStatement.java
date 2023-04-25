@@ -22,9 +22,9 @@ public class IfStatement extends Statement {
 	}
 
 	private static TypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
-		TypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
+		TypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.getThrownType());
 		if (onElse != null)
-			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
+			result = Expression.binaryThrow(onElse.position, result, onElse.getThrownType());
 		return result;
 	}
 
@@ -51,9 +51,7 @@ public class IfStatement extends Statement {
 		Expression tCondition = condition.transform(transformer);
 		Statement tOnThen = onThen.transform(transformer, modified);
 		Statement tOnElse = onElse == null ? null : onElse.transform(transformer, modified);
-		return tCondition == condition && onThen == tOnThen && onElse == tOnElse
-				? this
-				: new IfStatement(position, tCondition, tOnThen, tOnElse);
+		return new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
 
 	@Override
@@ -61,9 +59,7 @@ public class IfStatement extends Statement {
 		Expression tCondition = condition.transform(transformer);
 		Statement tOnThen = onThen.transform(transformer, modified);
 		Statement tOnElse = onElse == null ? null : onElse.transform(transformer, modified);
-		return tCondition == condition && onThen == tOnThen && onElse == tOnElse
-				? this
-				: new IfStatement(position, tCondition, tOnThen, tOnElse);
+		return new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
 
 	@Override

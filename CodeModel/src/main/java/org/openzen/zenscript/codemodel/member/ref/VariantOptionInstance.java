@@ -10,6 +10,8 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -66,6 +68,12 @@ public class VariantOptionInstance implements CompilableExpression, ResolvedType
 			public Optional<CompilingCallable> call() {
 				return Optional.of(new OptionCallable(compiler, variant, VariantOptionInstance.this));
 			}
+
+			@Override
+			public void collect(SSAVariableCollector collector) {}
+
+			@Override
+			public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 		};
 	}
 

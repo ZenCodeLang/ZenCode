@@ -5,9 +5,11 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
+import org.openzen.zenscript.codemodel.compilation.statement.InvalidCompilingStatement;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -24,16 +26,39 @@ public class ParsedStatementReturn extends ParsedStatement {
 	}
 
 	@Override
-	public Statement compile(StatementCompiler compiler) {
+	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
 		Optional<FunctionHeader> maybeFunctionHeader = compiler.getFunctionHeader();
 		if (!maybeFunctionHeader.isPresent())
-			return new InvalidStatement(position, CompileErrors.returnOutsideFunction());
+			return new InvalidCompilingStatement(position, lastBlock, CompileErrors.returnOutsideFunction());
 
-		if (expression == null)
-			return new ReturnStatement(position, null);
+		return new Compiling(
+				compiler,
+				expression == null ? null : expression.compile(compiler.expressions()),
+				maybeFunctionHeader.get(),
+				lastBlock);
+	}
 
-		FunctionHeader functionHeader = maybeFunctionHeader.get();
-		Expression value = compiler.compile(expression, functionHeader.getReturnType());
-		return result(new ReturnStatement(position, value), compiler);
+	private class Compiling implements CompilingStatement {
+		private final StatementCompiler compiler;
+		private final CompilingExpression value;
+		private final FunctionHeader functionHeader;
+		private final CodeBlock block;
+
+		public Compiling(StatementCompiler compiler, CompilingExpression value, FunctionHeader functionHeader, CodeBlock block) {
+			this.compiler = compiler;
+			this.value = value;
+			this.functionHeader = functionHeader;
+			this.block = block;
+		}
+
+		@Override
+		public Statement complete() {
+			return result(new ReturnStatement(position, value == null ? null : value.as(functionHeader.getReturnType())), compiler);
+		}
+
+		@Override
+		public CodeBlock getTail() {
+			return block;
+		}
 	}
 }

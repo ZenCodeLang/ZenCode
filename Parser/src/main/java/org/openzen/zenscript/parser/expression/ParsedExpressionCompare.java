@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedExpressionCompare extends ParsedExpression {
@@ -57,6 +59,18 @@ public class ParsedExpressionCompare extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval eval) {
 			return eval.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			left.collect(collector);
+			right.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			left.linkVariables(linker);
+			right.linkVariables(linker);
 		}
 	}
 }

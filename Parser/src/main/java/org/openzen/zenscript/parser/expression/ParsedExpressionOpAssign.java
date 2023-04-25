@@ -5,6 +5,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionOpAssign extends ParsedExpression {
@@ -62,6 +64,18 @@ public class ParsedExpressionOpAssign extends ParsedExpression {
 			return resolvedType.findOperator(operator.assignOperatorFor)
 					.map(method -> method.cast(compiler, position, cast, left.value, TypeID.NONE, right))
 					.orElseGet(() -> this.left.assign(new ParsedExpressionBinary.Compiling(compiler, position, this.left, right, operator)).cast(cast));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			left.collect(collector);
+			right.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			left.linkVariables(linker);
+			right.linkVariables(linker);
 		}
 	}
 }

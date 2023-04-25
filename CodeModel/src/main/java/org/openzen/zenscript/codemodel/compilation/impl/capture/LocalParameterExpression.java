@@ -10,6 +10,8 @@ import org.openzen.zenscript.codemodel.expression.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 import java.util.Optional;
 
@@ -52,6 +54,12 @@ public class LocalParameterExpression implements LocalExpression {
 		public CompilingExpression assign(CompilingExpression value) {
 			return new SetParameterCompiling(compiler, position, parameter, value);
 		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 	}
 
 	private static class SetParameterCompiling extends AbstractCompilingExpression {
@@ -68,6 +76,16 @@ public class LocalParameterExpression implements LocalExpression {
 		@Override
 		public Expression eval() {
 			return compiler.at(position).setFunctionParameter(parameter, value.cast(cast(parameter.type)).value);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
 		}
 	}
 }

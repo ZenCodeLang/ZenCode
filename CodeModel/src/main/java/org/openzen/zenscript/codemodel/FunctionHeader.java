@@ -89,6 +89,10 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 
+	public FunctionHeader withThrownType(TypeID thrownType) {
+		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+	}
+
 	private static int getMinParameters(FunctionParameter[] parameters) {
 		for (int i = 0; i < parameters.length; i++)
 			if (parameters[i].defaultValue != null || parameters[i].variadic)

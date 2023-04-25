@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -23,7 +24,7 @@ public class FunctionExpression extends Expression {
 			LambdaClosure closure,
 			FunctionHeader header,
 			Statement body) {
-		super(position, new FunctionTypeID(header), body.thrownType);
+		super(position, new FunctionTypeID(header), body.getThrownType());
 
 		this.header = header;
 		this.closure = closure;

@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.expression.StaticCompilingCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 import java.util.Optional;
 
@@ -42,6 +44,16 @@ public class ParsedExpressionThis extends ParsedExpression {
 		@Override
 		public Optional<CompilingCallable> call() {
 			return Optional.of(new StaticCompilingCallable(compiler, type.thisCall()));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class AndAndExpression extends Expression {

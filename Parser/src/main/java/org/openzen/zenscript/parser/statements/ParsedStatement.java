@@ -1,6 +1,6 @@
 package org.openzen.zenscript.parser.statements;
 
-import org.openzen.zenscript.codemodel.compilation.CompilableStatement;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilableStatement;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
@@ -299,16 +299,6 @@ public abstract class ParsedStatement implements CompilableStatement {
 		WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
 
 		ParsedStatementExpression result = new ParsedStatementExpression(position, annotations, whitespace, expression);
-		return result;
-	}
-
-	public static List<Statement> compile(List<ParsedStatement> statements, StatementCompiler compiler) {
-		if (statements == null) // no body
-			return null;
-
-		List<Statement> result = new ArrayList<>();
-		for (ParsedStatement statement : statements)
-			result.add(statement.compile(compiler));
 		return result;
 	}
 

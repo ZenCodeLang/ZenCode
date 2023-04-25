@@ -49,6 +49,11 @@ public abstract class AbstractCompilingExpression implements CompilingExpression
 		return compiler.invalid(position, CompileErrors.invalidLValue());
 	}
 
+	@Override
+	public Expression as(TypeID type) {
+		return cast(CastedEval.implicit(compiler, position, type)).value;
+	}
+
 	protected CastedEval cast(TypeID returnType) {
 		return CastedEval.implicit(compiler, position, returnType);
 	}

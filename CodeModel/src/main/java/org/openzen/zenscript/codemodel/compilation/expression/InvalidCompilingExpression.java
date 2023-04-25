@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
 import java.util.Optional;
 
@@ -40,6 +42,12 @@ public class InvalidCompilingExpression extends AbstractCompilingExpression impl
 	public CompilingExpression assign(CompilingExpression value) {
 		return compiler.invalid(position, CompileErrors.invalidLValue());
 	}
+
+	@Override
+	public void collect(SSAVariableCollector collector) {}
+
+	@Override
+	public void linkVariables(CodeBlockStatement.VariableLinker linker) {}
 
 	@Override
 	public Expression call(CodePosition position, CompilingExpression[] arguments) {

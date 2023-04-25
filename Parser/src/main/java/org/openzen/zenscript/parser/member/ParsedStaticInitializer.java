@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
@@ -59,7 +60,7 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 		@Override
 		public void compile(List<CompileException> errors) {
 			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
-			compiled.body = body.compile(compiler.forMethod(new FunctionHeader(BasicTypeID.VOID)));
+			compiled.body = body.compile(compiler.forMethod(new FunctionHeader(BasicTypeID.VOID)), new CodeBlock()).complete();
 		}
 	}
 }

@@ -1,12 +1,12 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 
 public class CapturedLocalVariableExpression extends CapturedExpression {
-	public final VarStatement variable;
+	public final VariableDefinition variable;
 
-	public CapturedLocalVariableExpression(CodePosition position, VarStatement variable, LambdaClosure closure) {
+	public CapturedLocalVariableExpression(CodePosition position, VariableDefinition variable, LambdaClosure closure) {
 		super(position, variable.type, closure);
 
 		this.variable = variable;

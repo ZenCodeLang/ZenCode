@@ -12,7 +12,6 @@ import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Collections;
@@ -128,9 +127,9 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	}
 
 	@Override
-	public ExpressionCompiler withLocalVariables(List<VarStatement> variables) {
+	public ExpressionCompiler withLocalVariables(List<CompilingVariable> variables) {
 		LocalSymbols newLocals = locals.forBlock();
-		for (VarStatement variable : variables) {
+		for (CompilingVariable variable : variables) {
 			newLocals.add(variable);
 		}
 		return new ExpressionCompilerImpl(context, localType, types, thrownType, newLocals, header);
@@ -225,7 +224,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Expression getLocalVariable(VarStatement variable) {
+		public Expression getLocalVariable(VariableDefinition variable) {
 			return new GetLocalVariableExpression(position, variable);
 		}
 
@@ -305,7 +304,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Expression setLocalVariable(VarStatement variable, Expression value) {
+		public Expression setLocalVariable(VariableDefinition variable, Expression value) {
 			return new SetLocalVariableExpression(position, variable, value);
 		}
 

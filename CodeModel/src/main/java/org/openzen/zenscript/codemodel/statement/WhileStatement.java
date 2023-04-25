@@ -13,9 +13,13 @@ public class WhileStatement extends LoopStatement {
 	public Statement content;
 
 	public WhileStatement(CodePosition position, String label, Expression condition) {
-		super(position, label, null); // TODO: thrown type
-
+		super(position, label, null);
 		this.condition = condition;
+	}
+
+	public void setContent(Statement content) {
+		setThrownType(content.getThrownType());
+		this.content = content;
 	}
 
 	@Override
@@ -37,10 +41,6 @@ public class WhileStatement extends LoopStatement {
 	@Override
 	public WhileStatement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (condition == tCondition && content == tContent)
-			return this;
-
 		WhileStatement result = new WhileStatement(position, label, tCondition);
 		result.content = content.transform(transformer, modified.concat(this, result));
 		return result;
@@ -49,10 +49,6 @@ public class WhileStatement extends LoopStatement {
 	@Override
 	public WhileStatement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (condition == tCondition && content == tContent)
-			return this;
-
 		WhileStatement result = new WhileStatement(position, label, tCondition);
 		result.content = content.transform(transformer, modified.concat(this, result));
 		return result;
@@ -61,10 +57,5 @@ public class WhileStatement extends LoopStatement {
 	@Override
 	public TypeID getReturnType() {
 		return content.getReturnType();
-	}
-
-	@Override
-	public VarStatement[] getLoopVariables() {
-		return VarStatement.NONE;
 	}
 }

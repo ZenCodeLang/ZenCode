@@ -568,7 +568,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
 			@Override
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
-				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.variable);
+				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.id);
 				if (localVariable != null) {
 					final Label label = new Label();
 					localVariable.end = label;
@@ -635,7 +635,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		final Label label = new Label();
-		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.id);
 
 		tag.end = label;
 		javaWriter.load(tag.type, tag.local);
@@ -932,7 +932,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				case UINT_INC:
 				case USIZE_INC:
 					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
 						javaWriter.load(local);
 						javaWriter.iinc(local.local);
 					} else {
@@ -946,7 +946,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				case UINT_DEC:
 				case USIZE_DEC:
 					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
 						javaWriter.load(local);
 						javaWriter.iinc(local.local, -1);
 					} else {
@@ -1061,7 +1061,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		Label label = new Label();
 		javaWriter.label(label);
-		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.id);
 		tag.end = label;
 
 		javaWriter.dup(context.getType(expression.value.type));

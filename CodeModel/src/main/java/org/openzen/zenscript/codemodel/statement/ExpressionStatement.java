@@ -40,7 +40,6 @@ public class ExpressionStatement extends Statement {
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		Expression tExpression = expression.transform(transformer);
-		return tExpression == expression ? this : new ExpressionStatement(position, tExpression);
+		return new ExpressionStatement(position, expression.transform(transformer));
 	}
 }

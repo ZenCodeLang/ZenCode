@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionBinary extends ParsedExpression {
@@ -28,19 +30,20 @@ public class ParsedExpressionBinary extends ParsedExpression {
 	}
 
 	public static class Compiling extends AbstractCompilingExpression {
-		private final Expression leftValue;
+		private final CompilingExpression left;
 		private final CompilingExpression right;
 		private final OperatorType operator;
 
 		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression left, CompilingExpression right, OperatorType operator) {
 			super(compiler, position);
-			this.leftValue = left.eval();
+			this.left = left;
 			this.right = right;
 			this.operator = operator;
 		}
 
 		@Override
 		public Expression eval() {
+			Expression leftValue = this.left.eval();
 			ResolvedType resolved = compiler.resolve(leftValue.type);
 			return resolved.findOperator(operator)
 					.map(operator -> operator.call(compiler, position, leftValue, TypeID.NONE, right))
@@ -49,10 +52,23 @@ public class ParsedExpressionBinary extends ParsedExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
+			Expression leftValue = this.left.eval();
 			ResolvedType resolved = compiler.resolve(leftValue.type);
 			return resolved.findOperator(operator)
 					.map(operator -> operator.cast(compiler, position, cast, leftValue, TypeID.NONE, right))
 					.orElse(cast.invalid(CompileErrors.noOperatorInType(leftValue.type, operator)));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			left.collect(collector);
+			right.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			left.linkVariables(linker);
+			right.linkVariables(linker);
 		}
 	}
 }

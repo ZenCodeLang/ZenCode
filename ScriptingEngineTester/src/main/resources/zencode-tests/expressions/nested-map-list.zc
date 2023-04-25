@@ -1,0 +1,10 @@
+var nestedMap = {
+    "fruits" : ["apple", "banana", "pear", "lemon"],
+    "vegetables" : ["cabbage", "lettuce", "carrot", "broccoli"],
+    "meat" : ["chicken", "pork", "beef", "lamb"],
+    "fish" : ["sardine", "tuna", "salmon"]
+} as string[][string];
+
+for word in nestedMap["fish"]  {
+    print(word);
+}

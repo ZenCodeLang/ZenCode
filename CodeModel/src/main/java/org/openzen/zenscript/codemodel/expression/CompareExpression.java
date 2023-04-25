@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**

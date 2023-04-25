@@ -6,7 +6,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -149,6 +150,16 @@ public class ParsedExpressionInt extends ParsedExpression {
 			return cast.of(eval());
 		}
 
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
+		}
+
 		private CastedExpression asInt(CastedEval cast, BasicTypeID type) {
 			long signed = negative ? -value : value;
 			switch (type) {
@@ -196,10 +207,10 @@ public class ParsedExpressionInt extends ParsedExpression {
 	}
 
 	@Override
-	public SwitchValue asSwitchValue(TypeID type, ExpressionCompiler compiler) {
+	public CompilingSwitchValue compileSwitchValue(ExpressionCompiler compiler) {
 		if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)
-			return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
+			return type -> new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
 
-		return new IntSwitchValue((int) value);
+		return type -> new IntSwitchValue((int) value);
 	}
 }

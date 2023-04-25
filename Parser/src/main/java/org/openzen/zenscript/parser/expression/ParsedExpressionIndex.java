@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
@@ -31,17 +33,18 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {
-		private final Expression value;
+		private final CompilingExpression value;
 		private final CompilingExpression[] indexes;
 
 		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, CompilingExpression[] indexes) {
 			super(compiler, position);
-			this.value = value.eval();
+			this.value = value;
 			this.indexes = indexes;
 		}
 
 		@Override
 		public Expression eval() {
+			Expression value = this.value.eval();
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
 					.map(method -> method.call(compiler, position, value, TypeID.NONE, indexes))
@@ -49,27 +52,38 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public CompilingExpression assign(CompilingExpression value) {
-			return new CompilingSet(compiler, position, this.value, indexes, value);
-		}
-
-		@Override
 		public CastedExpression cast(CastedEval cast) {
+			Expression value = this.value.eval();
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
 					.map(method -> method.cast(compiler, position, cast, value, TypeID.NONE, indexes))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.type, OperatorType.INDEXGET)));
 		}
+
+		@Override
+		public CompilingExpression assign(CompilingExpression assignedValue) {
+			return new CompilingSet(compiler, position, value, indexes, assignedValue);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
+		}
 	}
 
 	private static class CompilingSet extends AbstractCompilingExpression {
-		private final Expression instance;
+		private final CompilingExpression instance;
 		private final CompilingExpression[] arguments;
 
 		public CompilingSet(
 				ExpressionCompiler compiler,
 				CodePosition position,
-				Expression instance,
+				CompilingExpression instance,
 				CompilingExpression[] indexes,
 				CompilingExpression value
 		) {
@@ -82,6 +96,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
+			Expression instance = this.instance.eval();
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
 					.map(operator -> operator.call(compiler, position, instance, TypeID.NONE, arguments))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
@@ -89,9 +104,25 @@ public class ParsedExpressionIndex extends ParsedExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
+			Expression instance = this.instance.eval();
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
 					.map(operator -> operator.cast(compiler, position, cast, instance, TypeID.NONE, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			instance.collect(collector);
+			for (CompilingExpression argument : arguments) {
+				argument.collect(collector);
+			}
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			instance.linkVariables(linker);
+			for (CompilingExpression argument : arguments)
+				argument.linkVariables(linker);
 		}
 	}
 }

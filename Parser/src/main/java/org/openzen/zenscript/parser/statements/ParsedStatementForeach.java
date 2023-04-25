@@ -2,17 +2,22 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
-import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingExpressionCodeStatement;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ParsedStatementForeach extends ParsedStatement {
 	private final String[] varnames;
@@ -28,22 +33,93 @@ public class ParsedStatementForeach extends ParsedStatement {
 	}
 
 	@Override
-	public Statement compile(StatementCompiler compiler) {
-		Expression list = compiler.compile(this.list);
+	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
+		CodeBlock iterate = new CodeBlock();
+		CodeBlock content = new CodeBlock();
+		CodeBlock tail = new CodeBlock();
 
-		ResolvedType listType = compiler.resolve(list.type);
-		Optional<IteratorInstance> maybeIterator = listType.findIterator(varnames.length);
-		if (!maybeIterator.isPresent())
-			return new InvalidStatement(position, CompileErrors.noSuchIterator(list.type, varnames.length));
+		lastBlock.addSuccessor(iterate);
+		iterate.addSuccessor(content);
+		iterate.addSuccessor(tail);
 
-		IteratorInstance iterator = maybeIterator.get();
-		TypeID[] loopTypes = iterator.getLoopVariableTypes();
-		VarStatement[] variables = new VarStatement[varnames.length];
-		for (int i = 0; i < variables.length; i++)
-			variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);
+		List<CompilingVariable> variables = new ArrayList<>();
+		for (String varname : varnames)
+			variables.add(new CompilingVariable(new VariableID(), varname, null, true));
 
-		ForeachStatement statement = new ForeachStatement(position, variables, iterator, list);
-		statement.content = this.body.compile(compiler.forForeach(statement));
-		return result(statement, compiler);
+		CompilingExpression list = this.list.compile(compiler.expressions());
+		lastBlock.add(new CompilingExpressionCodeStatement(list));
+		Compiling compiling = new Compiling(compiler, list, iterate, variables, tail);
+		compiling.content = this.body.compile(compiler.forLoop(compiling), content);
+		compiling.content.getTail().addSuccessor(iterate);
+		return compiling;
+	}
+
+	private class Compiling implements CompilingStatement, CompilingLoopStatement {
+		private final StatementCompiler compiler;
+		private final CompilingExpression list;
+		private final CodeBlock iterate;
+		private final List<CompilingVariable> variables;
+		private final CodeBlock tail;
+
+		private CompilingStatement content;
+		private ForeachStatement compiled;
+
+		Compiling(StatementCompiler compiler, CompilingExpression list, CodeBlock iterate, List<CompilingVariable> variables, CodeBlock tail) {
+			this.compiler = compiler;
+			this.list = list;
+			this.iterate = iterate;
+			this.variables = variables;
+			this.tail = tail;
+		}
+
+		@Override
+		public List<String> getLabels() {
+			return Arrays.stream(varnames).collect(Collectors.toList());
+		}
+
+		@Override
+		public List<CompilingVariable> getLoopVariables() {
+			return variables;
+		}
+
+		@Override
+		public CodeBlock getContinueTarget() {
+			return iterate;
+		}
+
+		@Override
+		public CodeBlock getBreakTarget() {
+			return tail;
+		}
+
+		@Override
+		public LoopStatement getCompiled() {
+			return compiled;
+		}
+
+		@Override
+		public Statement complete() {
+			Expression list = this.list.eval();
+
+			ResolvedType listType = compiler.resolve(list.type);
+			Optional<IteratorInstance> maybeIterator = listType.findIterator(varnames.length);
+			if (!maybeIterator.isPresent())
+				return new InvalidStatement(position, CompileErrors.noSuchIterator(list.type, varnames.length));
+
+			IteratorInstance iterator = maybeIterator.get();
+			TypeID[] loopTypes = iterator.getLoopVariableTypes();
+			VarStatement[] variables = new VarStatement[varnames.length];
+			for (int i = 0; i < variables.length; i++)
+				variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);
+
+			compiled = new ForeachStatement(position, variables, iterator, list);
+			compiled.setContent(content.complete());
+			return result(compiled, compiler);
+		}
+
+		@Override
+		public CodeBlock getTail() {
+			return tail;
+		}
 	}
 }

@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -13,9 +14,14 @@ public class DoWhileStatement extends LoopStatement {
 	public Statement content;
 
 	public DoWhileStatement(CodePosition position, String label, Expression condition) {
-		super(position, label, null); // TODO: thrown type
+		super(position, label, null);
 
 		this.condition = condition;
+	}
+
+	public void setContent(Statement content) {
+		setThrownType(content.getThrownType());
+		this.content = content;
 	}
 
 	@Override
@@ -37,34 +43,21 @@ public class DoWhileStatement extends LoopStatement {
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (tCondition == condition && tContent == content)
-			return this;
-
-		DoWhileStatement result = new DoWhileStatement(position, label, condition);
-		result.content = content.transform(transformer, modified.concat(this, result));
+		DoWhileStatement result = new DoWhileStatement(position, label, tCondition);
+		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
 
 	@Override
-	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+	public Statement transform(ExpressionTransformer transformer,ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		Statement tContent = content.transform(transformer, modified);
-		if (tCondition == condition && tContent == content)
-			return this;
-
 		DoWhileStatement result = new DoWhileStatement(position, label, tCondition);
-		result.content = content.transform(transformer, modified.concat(this, result));
+		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
 
 	@Override
 	public TypeID getReturnType() {
 		return content.getReturnType();
-	}
-
-	@Override
-	public VarStatement[] getLoopVariables() {
-		return VarStatement.NONE;
 	}
 }

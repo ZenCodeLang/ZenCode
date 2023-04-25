@@ -19,6 +19,4 @@ public abstract class LoopStatement extends Statement implements EqualsComparabl
 	public boolean equals_(LoopStatement other) {
 		return this == other;
 	}
-
-	public abstract VarStatement[] getLoopVariables();
 }

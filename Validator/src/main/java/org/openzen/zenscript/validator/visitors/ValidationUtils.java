@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.TypeContext;
@@ -213,7 +214,7 @@ public class ValidationUtils {
 		}
 
 		@Override
-		public boolean isLocalVariableInitialized(VarStatement variable) {
+		public boolean isLocalVariableInitialized(VariableID variable) {
 			return false;
 		}
 

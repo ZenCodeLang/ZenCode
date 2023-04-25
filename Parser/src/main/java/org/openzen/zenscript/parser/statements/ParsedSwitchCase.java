@@ -1,8 +1,11 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompilingSwitchValue;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchCase;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -18,13 +21,33 @@ public class ParsedSwitchCase {
 		this.value = value;
 	}
 
-	public SwitchCase compile(TypeID type, StatementCompiler compiler) {
-		SwitchValue cValue = value == null ? null : compiler.compileSwitchValue(value, type);
-		Statement[] cStatements = new Statement[statements.size()];
-		int i = 0;
+	public Compiling compile(StatementCompiler compiler, CodeBlock lastBlock) {
+		Compiling result = new Compiling(value.compileSwitchValue(compiler.expressions()));
 		for (ParsedStatement statement : statements) {
-			cStatements[i++] = statement.compile(compiler);
+			CompilingStatement compilingStatement = statement.compile(compiler, lastBlock);
+			result.statements.add(compilingStatement);
+			lastBlock = compilingStatement.getTail();
 		}
-		return new SwitchCase(cValue, cStatements);
+		return result;
+	}
+
+	public static class Compiling {
+		private final CompilingSwitchValue value;
+		private final List<CompilingStatement> statements = new ArrayList<>();
+
+		Compiling(CompilingSwitchValue value) {
+			this.value = value;
+		}
+
+		SwitchCase complete(TypeID type) {
+			SwitchValue cValue = value == null ? null : value.as(type);
+			Statement[] cStatements = new Statement[statements.size()];
+			int i = 0;
+			for (CompilingStatement statement : statements) {
+				Statement cStatement = statement.complete();
+				cStatements[i++] = cStatement;
+			}
+			return new SwitchCase(cValue, cStatements);
+		}
 	}
 }
