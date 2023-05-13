@@ -155,7 +155,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 					try {
 						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionInt(position, negative, value, "")));
 						CallArguments arguments = parsedArguments.compileCall(position, scope, TypeID.NONE, method.getHeader());
-						method.callStatic(position, hint, method.getHeader(), arguments, scope);
+						return method.callStatic(position, hint, method.getHeader(), arguments, scope);
 					} catch (CompileException ex) {
 						return new InvalidExpression(hint, ex);
 					}
