@@ -46,7 +46,6 @@ import java.util.function.Function;
 public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
 	public final ZSPackage root = ZSPackage.createRoot();
-	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	private final ModuleSpace space;
 	private final JavaNativeModuleSpace nativeSpace = new JavaNativeModuleSpace();
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
