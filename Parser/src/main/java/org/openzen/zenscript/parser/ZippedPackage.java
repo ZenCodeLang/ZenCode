@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ZippedPackage {
+public class ZippedPackage implements ModuleLoader {
 	private Map<String, List<SourceFile>> files = new HashMap<>();
 
 	public ZippedPackage(InputStream input) throws IOException {
