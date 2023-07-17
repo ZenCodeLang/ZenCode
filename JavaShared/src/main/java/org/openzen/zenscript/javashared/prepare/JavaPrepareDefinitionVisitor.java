@@ -273,6 +273,14 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 
 			 nativeClasses.put("math::Functions", mathFunctions);
 		 }
+
+		{
+			final JavaClass uuid = new JavaClass("java.util", "UUID", JavaClass.Kind.CLASS);
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "UUID", JavaClass.Kind.CLASS));
+			cls.addMethod("random", JavaMethod.getNativeStatic(uuid, "randomUUID", "()Ljava/util/UUID;"));
+			cls.addInstanceMethod("toString", "toString", "()Ljava/lang/String;");
+			nativeClasses.put("uuid::uuid", cls);
+		}
 	}
 
 	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass) {

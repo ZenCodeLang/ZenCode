@@ -70,6 +70,7 @@ public class ScriptingEngine {
 			registerModule("stdlib", stdlib, stdlibs);
 			registerModule("math", root.getOrCreatePackage("math"), stdlibs);
 			registerModule("collections", root.getOrCreatePackage("collections"), stdlibs);
+			registerModule("uuid", root.getOrCreatePackage("uuid"), stdlibs);
 		} catch (CompileException | ParseException | IOException ex) {
             throw new RuntimeException(ex);
         }
