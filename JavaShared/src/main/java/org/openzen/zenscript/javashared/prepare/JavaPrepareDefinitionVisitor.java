@@ -20,6 +20,7 @@ import org.openzen.zenscript.javashared.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Hoofdgebruiker
@@ -33,6 +34,24 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	private final JavaCompiledModule module;
 
 	{
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "Set", JavaClass.Kind.INTERFACE));
+			cls.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
+			cls.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
+			cls.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
+			cls.addMethod("toArray", new JavaMethod((expression, translator) -> translator.setToArray((CastExpression) expression)));
+			cls.addInstanceMethod("length", "size", "()I");
+			cls.addInstanceMethod("isEmpty", "isEmpty", "()Z");
+			cls.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
+			nativeClasses.put("collections::Set", cls);
+		}
+
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "HashSet", JavaClass.Kind.INTERFACE));
+			cls.addConstructor("constructor", "()V");
+			nativeClasses.put("collections::HashSet", cls);
+		}
+
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "StringBuilder", JavaClass.Kind.CLASS));
 			cls.addConstructor("constructor", "()V");

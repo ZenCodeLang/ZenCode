@@ -69,6 +69,7 @@ public class ScriptingEngine {
             ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
 			registerModule("stdlib", stdlib, stdlibs);
 			registerModule("math", root.getOrCreatePackage("math"), stdlibs);
+			registerModule("collections", root.getOrCreatePackage("collections"), stdlibs);
 		} catch (CompileException | ParseException | IOException ex) {
             throw new RuntimeException(ex);
         }

@@ -17,6 +17,8 @@ public interface JavaNativeTranslator<T> {
 
 	T listToArray(CastExpression value);
 
+	T setToArray(CastExpression value);
+
 	T containsAsIndexOf(Expression target, Expression value);
 
 	T sorted(Expression value);

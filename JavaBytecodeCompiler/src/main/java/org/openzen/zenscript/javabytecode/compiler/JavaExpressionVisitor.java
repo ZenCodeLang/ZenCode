@@ -3514,6 +3514,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
+	public Void setToArray(CastExpression value) {
+		//value.target.accept(this);
+		javaWriter.iConst0();
+		final Type type = context.getType(((ArrayTypeID) value.type).elementType);
+		javaWriter.newArray(type);
+		final JavaMethod toArray = new JavaMethod(JavaClass.COLLECTION, JavaMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
+		javaWriter.invokeInterface(toArray);
+		javaWriter.checkCast(context.getType(value.type));
+		return null;
+	}
+
+	@Override
 	public Void containsAsIndexOf(Expression target, Expression value) {
 		executeMethodInfo(BasicTypeID.STRING, value, CHARACTER_TO_STRING);
 		executeMethodInfo(BasicTypeID.BOOL, null, JavaMethod.getNativeVirtual(JavaClass.STRING, "contains", "(Ljava/lang/CharSequence;)Z"));
