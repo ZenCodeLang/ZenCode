@@ -41,7 +41,9 @@ public class ZippedPackage implements ModuleLoader {
 					while (read < data.length)
 						read += zipInput.read(data, read, data.length - read);
 
-					files.get(moduleName).add(new LiteralSourceFile(filename, new String(data, StandardCharsets.UTF_8)));
+					if(filename.endsWith(".zs")){
+						files.get(moduleName).add(new LiteralSourceFile(filename, new String(data, StandardCharsets.UTF_8)));
+					}
 				}
 
 				zipInput.closeEntry();
