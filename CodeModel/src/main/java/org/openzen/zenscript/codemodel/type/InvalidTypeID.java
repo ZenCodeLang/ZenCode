@@ -61,5 +61,6 @@ public class InvalidTypeID implements TypeID {
 	@Override
 	public String toString() {
 		return "invalid";
+		//return error.description;
 	}
 }

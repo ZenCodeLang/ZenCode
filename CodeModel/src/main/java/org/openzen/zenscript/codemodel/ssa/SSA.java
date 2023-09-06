@@ -51,19 +51,17 @@ public final class SSA {
 
 		for (VariableID variable : definitions.keySet()) {
 			Queue<Node> w = definitions.get(variable).stream().map(n -> n.node).collect(Collectors.toCollection(LinkedList::new));
-			Set<Node> visited = new HashSet<>();
 			while (!w.isEmpty()) {
 				Node node = w.poll();
 				for (Node y : node.dominanceFrontier) {
-					if (!visited.contains(y)) {
-						visited.add(y);
+					VariableInitialInstance current = y.getInitial(variable);
+					boolean changed = false;
+					for (CodeBlock predecessorBlock : node.block.getPredecessors()) {
+						Node predecessor = blocks.get(predecessorBlock);
+						changed |= current.predecessors.add(predecessor.getVariable(variable));
+					}
 
-						VariableInitialInstance current = y.getInitial(variable);
-						for (CodeBlock predecessorBlock : node.block.getPredecessors()) {
-							Node predecessor = blocks.get(predecessorBlock);
-							current.predecessors.add(predecessor.getVariable(variable));
-						}
-
+					if (changed) {
 						w.add(y);
 					}
 				}
@@ -85,7 +83,9 @@ public final class SSA {
 			for (Map.Entry<VariableID, List<VariableInstance>> variableEntry : node.instances.entrySet()) {
 				VariableID variable = variableEntry.getKey();
 				for (VariableInstance instance : variableEntry.getValue()) {
-					// ... what did I want to do with this again? ...
+					for (SSAVariableUsage usage : instance.usages) {
+						usage.set(localVariableLinker.get(variable));
+					}
 				}
 			}
 		}
@@ -235,7 +235,7 @@ public final class SSA {
 	}
 
 	private static class VariableInitialInstance extends VariableInstance {
-		private final List<VariableInstance> predecessors = new ArrayList<>();
+		private final Set<VariableInstance> predecessors = new HashSet<>();
 
 		public VariableInitialInstance(VariableID variable) {
 			super(variable);
