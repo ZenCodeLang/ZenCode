@@ -272,7 +272,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			getJavaWriter().checkCast(context.getInternalName(new OptionalTypeID(actual)));
 			actual.accept(actual, unboxingTypeVisitor);
 		} else {
-			getJavaWriter().checkCast(context.getInternalName(actual));
+			Type asmType = Type.getType(context.getType(actual).getDescriptor());
+			getJavaWriter().checkCast(asmType);
 		}
 	}
 
