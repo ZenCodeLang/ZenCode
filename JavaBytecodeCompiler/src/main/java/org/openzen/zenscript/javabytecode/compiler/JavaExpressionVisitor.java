@@ -2174,7 +2174,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		} else {
 			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 		}
-
+		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		javaWriter.newObject(className);
 		javaWriter.dup();
 
