@@ -528,7 +528,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			JavaCompilingMethod actualCompiling = new JavaCompilingMethod(lambdaClass, methodInfo, signature);
 			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
 		}
-
+		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		javaWriter.newObject(className);
 		javaWriter.dup();
 
