@@ -212,10 +212,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
 			TypeID type = definition.header.getReturnType();
-			if (CompilerUtils.isPrimitive(type))
-				writer.iConst0();
-			else if (type != BasicTypeID.VOID)
-				writer.aConstNull();
+			if (type != BasicTypeID.VOID) {
+				if (CompilerUtils.isPrimitive(type))
+					writer.iConst0();
+				else
+					writer.aConstNull();
+			}
 			writer.returnType(context.getType(type));
 		}
 
