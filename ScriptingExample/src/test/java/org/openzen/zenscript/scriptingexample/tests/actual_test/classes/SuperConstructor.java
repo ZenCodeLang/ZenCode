@@ -48,7 +48,29 @@ public class SuperConstructor extends ZenCodeTest {
 	}
 
 	@Test
-	public void explicitlyCallSuperConstructor() {
+	public void explicitlyCallSuperConstructor_AsMethodBody() {
+		ScriptBuilder.create()
+				.add("public abstract virtual class MySuperClass {")
+				.add("    public this(someInput as string){}")
+				.add("    public abstract print() as void;")
+				.add("}")
+				.add("")
+				.add("public class MyChildClass : MySuperClass {")
+				.add("    public this() {super('');}")
+				.add("    public print() as void {")
+				.add("        println('Hello from MyChildClass');")
+				.add("    }")
+				.add("}")
+				.add("")
+				.add("new MyChildClass().print();")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "Hello from MyChildClass");
+	}
+
+	@Test
+	public void explicitlyCallSuperConstructor_AsArrowBody() {
 		ScriptBuilder.create()
 				.add("public abstract virtual class MySuperClass {")
 				.add("    public this(someInput as string){}")
