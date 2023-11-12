@@ -17,7 +17,7 @@ public class AddingClasses extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("public class SomeClass {")
 				.add("    public var x as string;")
-				.add("    public this(){x = 'Hello World';}")
+				.add("    public this(){this.x = 'Hello World';}") // ToDo: Does ZC mandate `this.` prefix?
 				.add("}")
 				.add("")
 				.add("println(new SomeClass().x);")
