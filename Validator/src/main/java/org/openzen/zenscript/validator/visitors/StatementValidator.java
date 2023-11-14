@@ -222,7 +222,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	private void validateInnerBlock(final Statement[] statements) {
 		final StatementValidator innerValidator = new StatementValidator(this.validator, this.scope);
-		Arrays.stream(statements).forEach(it -> it.accept(this));
+		Arrays.stream(statements).forEach(it -> it.accept(innerValidator));
 		this.constructorForwarded |= innerValidator.constructorForwarded;
 	}
 
