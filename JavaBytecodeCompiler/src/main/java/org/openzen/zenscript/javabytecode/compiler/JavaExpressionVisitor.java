@@ -2139,7 +2139,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		//Bridge method!!!
 		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
-			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
+			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "Ljava/lang/Override;");
 			bridgeWriter.start();
 
 			//This.name(parameters, casted)
@@ -2172,7 +2172,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			//No @Override
 			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, signature, null);
 		} else {
-			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, methodInfo, null, signature, null, "Ljava/lang/Override;");
 		}
 		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		javaWriter.newObject(className);
@@ -3313,7 +3313,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//The actual method
 		{
-			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, implementationMethod, null, methodDescriptor, null, "java/lang/Override");
+			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, implementationMethod, null, methodDescriptor, null, "Ljava/lang/Override;");
 			functionWriter.start();
 
 			//this.wrapped

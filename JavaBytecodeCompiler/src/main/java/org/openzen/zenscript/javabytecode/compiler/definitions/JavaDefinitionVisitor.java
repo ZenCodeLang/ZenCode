@@ -307,7 +307,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			//Denominator for switch-cases
 			JavaMethod denominator = JavaMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
-			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, denominator, null, null, null, "java/lang/Override");
+			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, denominator, variant, null, null, "Ljava/lang/Override;");
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
 			getDenominator.returnInt();
