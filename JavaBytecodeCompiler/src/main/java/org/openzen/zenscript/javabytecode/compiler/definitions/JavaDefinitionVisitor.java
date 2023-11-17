@@ -296,7 +296,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 					for (final TypeID type : option.types)
 						if (type instanceof GenericTypeID) {
 							final GenericTypeID genericTypeID = (GenericTypeID) type;
-							if (genericParameter == genericTypeID.parameter) {
+							if (genericParameter.equals(genericTypeID.parameter)) {
 								builder.append("T").append(genericParameter.name).append(";");
 								t = false;
 							}
