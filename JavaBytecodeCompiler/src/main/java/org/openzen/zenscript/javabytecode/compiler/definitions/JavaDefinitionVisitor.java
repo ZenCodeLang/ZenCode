@@ -263,7 +263,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final String ss = "<" + javaTypeGenericVisitor.getGenericSignature(variant.typeParameters) + ">Ljava/lang/Object;";
 		JavaClassWriter.registerSuperClass(variantName, "java/lang/Object");
 
-		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, class_.getInternalName(), ss, "java/lang/Object", null);
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, class_.getInternalName(), ss, "java/lang/Object", null);
 		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
 
 		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, variant);
@@ -276,8 +276,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final String optionClassName = variantName + "$" + option.name;
 			JavaClassWriter.registerSuperClass(optionClassName, variantName);
 
-			writer.visitInnerClass(optionTag.variantOptionClass.internalName, optionTag.variantClass.internalName, option.name, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL);
-
+			writer.visitInnerClass(optionTag.variantOptionClass.internalName, optionTag.variantClass.internalName, option.name, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL);
 			//Generic option signature
 			final String signature;
 			{
@@ -308,7 +307,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				signature = builder.append(">;").toString();
 			}
 
-			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, optionTag.variantOptionClass.internalName, signature, optionTag.variantClass.internalName, null);
+			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL, optionTag.variantOptionClass.internalName, signature, optionTag.variantClass.internalName, null);
 			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
 			final StringBuilder optionInitSignatureBuilder = new StringBuilder("(");
 
