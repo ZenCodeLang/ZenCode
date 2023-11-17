@@ -55,7 +55,8 @@ public class MatchExpression extends Expression {
 	}
 
 	public SwitchedMatch convertToSwitch(String tempVariable) {
-		VariableDefinition result = new VariableDefinition(new VariableID(), tempVariable, type, true);
+		VariableID variableID = new VariableID();
+		VariableDefinition result = new VariableDefinition(variableID, tempVariable, type, true, () -> variableID);
 		SwitchStatement switchStatement = new SwitchStatement(position, null, value);
 		boolean hasDefault = false;
 		for (MatchExpression.Case matchCase : cases) {

@@ -33,8 +33,8 @@ public class ParsedStatementVar extends ParsedStatement {
 	@Override
 	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
 		CompilingExpression initializer = this.initializer == null ? null : this.initializer.compile(compiler.expressions());
-		lastBlock.add(new VarBlockStatement(initializer));
 		CompilingVariable compilingVariable = new CompilingVariable(new VariableID(), name, type == null ? null : type.compile(compiler.types()), isFinal);
+		lastBlock.add(new VarBlockStatement(initializer, compilingVariable));
 		compiler.addLocalVariable(compilingVariable);
 		return new Compiling(compiler, compilingVariable, initializer, lastBlock);
 	}
@@ -62,9 +62,11 @@ public class ParsedStatementVar extends ParsedStatement {
 
 				initializer = this.initializer.eval();
 				ctype = initializer.type;
+				compilingVariable.type = initializer.type;
 			} else {
 				ctype = type.compile(compiler.types());
 				initializer = this.initializer == null ? null : this.initializer.as(ctype);
+				compilingVariable.type = ctype;
 			}
 			VarStatement result = new VarStatement(position, compilingVariable.id, compilingVariable.name, ctype, initializer, isFinal);
 			return result(result, compiler);

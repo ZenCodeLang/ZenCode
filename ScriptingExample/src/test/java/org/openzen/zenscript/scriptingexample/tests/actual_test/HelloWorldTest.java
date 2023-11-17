@@ -15,4 +15,37 @@ public class HelloWorldTest extends ZenCodeTest {
 		logger.assertPrintOutputSize(1);
 		logger.assertPrintOutput(0, "hello world");
 	}
+
+	@Test
+	public void helloVariables() {
+		addScript("var x = 'hello'; println(x);");
+		executeEngine();
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "hello");
+	}
+
+	@Test
+	public void helloVariables2() {
+		addScript("var x = 'hello'; println(x + ' world');");
+		executeEngine();
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "hello world");
+	}
+
+	@Test
+	public void helloVariables3() {
+		addScript("var x = 'hello'; x += ' world'; println(x);");
+		executeEngine();
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "hello world");
+	}
 }

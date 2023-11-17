@@ -23,7 +23,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 	@Override
 	public LocalExpression capture(LambdaClosure closure) {
-		CapturedExpression value = new CapturedLocalVariableExpression(position, variable.complete(null /* TODO */), closure);
+		CapturedExpression value = new CapturedLocalVariableExpression(position, variable.eval(), closure);
 		return new LocalCapturedExpression(value);
 	}
 
@@ -34,7 +34,6 @@ public class LocalVariableExpression implements LocalExpression {
 
 	private static class LocalVariableCompiling extends AbstractCompilingExpression implements SSAVariableUsage {
 		private final CompilingVariable variable;
-		private SSACompilingVariable ssaVariable;
 
 		public LocalVariableCompiling(ExpressionCompiler compiler, CodePosition position, CompilingVariable variable) {
 			super(compiler, position);
@@ -43,20 +42,15 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public Expression eval() {
-			if (ssaVariable == null)
-				throw new IllegalStateException("SSA variable not set");
 			if (variable.type == null)
-				return compiler.at(position).invalid(CompileErrors.localVaribaleTypeUnknown(variable.name));
+				return compiler.at(position).invalid(CompileErrors.localVariableTypeUnknown(variable.name));
 
-			return compiler.at(position).getLocalVariable(variable.complete(ssaVariable.as(variable.type)));
+			return compiler.at(position).getLocalVariable(variable.eval());
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			if (ssaVariable == null)
-				throw new IllegalStateException("SSA variable not set");
-
-			return cast.of(compiler.at(position).getLocalVariable(variable.complete(ssaVariable.as(cast.type))));
+			return cast.of(compiler.at(position).getLocalVariable(variable.asType(cast.type)));
 		}
 
 		@Override
@@ -76,19 +70,18 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-			ssaVariable = linker.get(variable.id);
+
 		}
 
 		@Override
 		public void set(SSACompilingVariable variable) {
-			this.ssaVariable = variable;
+
 		}
 	}
 
 	private static class LocalVariableCompilingAssignment extends AbstractCompilingExpression implements SSAVariableAssignment {
 		private final CompilingVariable variable;
 		private final CompilingExpression value;
-		private SSACompilingVariable ssaVariable;
 
 		public LocalVariableCompilingAssignment(
 				ExpressionCompiler compiler,
@@ -103,19 +96,19 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public Expression eval() {
-			if (ssaVariable == null)
-				throw new IllegalStateException("SSA variable not set!");
-
-			CastedEval cast = CastedEval.implicit(compiler, position, variable.type);
-			return compiler.at(position).setLocalVariable(variable.complete(ssaVariable.as(variable.type)), value.cast(cast).value);
+			Expression value;
+			if (variable.type == null) {
+				value = this.value.eval();
+			} else {
+				CastedEval cast = CastedEval.implicit(compiler, position, variable.type);
+				value = this.value.cast(cast).value;
+			}
+			return compiler.at(position).setLocalVariable(variable.asType(value.type), value);
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			if (ssaVariable == null)
-				throw new IllegalStateException("SSA variable not set!");
-
-			return cast.of(compiler.at(position).setLocalVariable(variable.complete(ssaVariable.as(cast.type)), value.cast(cast).value));
+			return cast.of(compiler.at(position).setLocalVariable(variable.asType(cast.type), value.cast(cast).value));
 		}
 
 		@Override
@@ -130,7 +123,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-			ssaVariable = linker.get(variable.id);
+
 		}
 
 		@Override

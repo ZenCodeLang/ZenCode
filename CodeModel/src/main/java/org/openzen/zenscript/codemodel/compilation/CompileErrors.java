@@ -397,7 +397,7 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.LOCAL_VARIABLE_NOT_YET_INITIALIZED,  "Local variable not yet initialized: " + name);
 	}
 
-	public static CompileError localVaribaleTypeUnknown(String name) {
+	public static CompileError localVariableTypeUnknown(String name) {
 		return new CompileError(CompileExceptionCode.LOCAL_VARIABLE_TYPE_UNKNOWN, "Could not determine type of local variable " + name);
 	}
 
