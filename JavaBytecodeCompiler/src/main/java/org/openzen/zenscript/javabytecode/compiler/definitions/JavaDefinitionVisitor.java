@@ -231,6 +231,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		JavaCompilingClass class_ = module.getClass(definition);
 
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+		writer.visitSource(definition.position.getFilename(), null);
 		final JavaClass expansionClassInfo = context.getJavaModule(definition.module).getExpansionClassInfo(definition);
 		final String internalName = expansionClassInfo.internalName;
 
@@ -256,7 +257,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitVariant(VariantDefinition variant) {
 		JavaCompilingClass class_ = module.getClass(variant);
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-
+		writer.visitSource(variant.position.getFilename(), null);
 		final String variantName = variant.name;
 
 
