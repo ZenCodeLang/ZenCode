@@ -1196,7 +1196,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			}
 			case FUNCTION_CALL:
-				javaWriter.invokeInterface(context.getFunctionalInterface(expression.target.type));
+				FunctionTypeID expressionType = (FunctionTypeID) expression.target.type;
+				JavaMethod functionalInterface = context.getFunctionalInterface(expressionType);
+				javaWriter.invokeInterface(functionalInterface);
+				handleReturnValue(context.getFunction(expressionType).getHeader().getReturnType(), expression.instancedHeader.getReturnType());
 				break;
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
