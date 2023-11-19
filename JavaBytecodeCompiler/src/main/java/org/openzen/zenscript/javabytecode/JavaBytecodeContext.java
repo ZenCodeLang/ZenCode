@@ -69,9 +69,10 @@ public class JavaBytecodeContext extends JavaContext {
 	}
 
 	private JavaMethod createLambdaInterface(JavaSynthesizedFunction function) {
+		String signature = "<" + new JavaTypeGenericVisitor(this).getGenericSignature(function.typeParameters) + ">Ljava/lang/Object;";
 		ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		ifaceWriter.visitAnnotation("java/lang/FunctionalInterface", true).visitEnd();
-		ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, function.cls.internalName, null, "java/lang/Object", null);
+		ifaceWriter.visitAnnotation("Ljava/lang/FunctionalInterface;", true).visitEnd();
+		ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, function.cls.internalName, signature, "java/lang/Object", null);
 
 		ifaceWriter
 				.visitMethod(
