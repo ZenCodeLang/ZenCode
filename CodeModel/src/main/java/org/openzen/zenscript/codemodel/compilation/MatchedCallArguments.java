@@ -15,6 +15,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MatchedCallArguments<T extends AnyMethod> {
+
+	private static final CastedExpression.Level[] candidateLevelsInOrderOfPriority = {CastedExpression.Level.EXACT, CastedExpression.Level.IMPLICIT};
+
 	public static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
 			CodePosition position,
@@ -23,49 +26,34 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
 	) {
-		MatchedCallArguments<T> result = null;
-		List<FunctionHeader> candidates = new ArrayList<>();
-		boolean implicit = false;
-		boolean ambiguous = false;
 
-		for (T method : overloads) {
-			if (method.getHeader().accepts(arguments.length)) {
-				CallArguments matched = match(compiler, position, method, asType, typeArguments, arguments);
+		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = overloads.stream()
+				.map(method -> new MatchedCallArguments<>(method, match(compiler, position, method, asType, typeArguments, arguments)))
+				.collect(Collectors.groupingBy(matched -> matched.arguments.level, Collectors.toList()));
 
-				if (matched.level == CastedExpression.Level.EXACT) {
-					if (result == null || implicit) {
-						if (implicit) {
-							candidates = new ArrayList<>();
-							ambiguous = false;
-						}
 
-						result = new MatchedCallArguments<>(method, matched);
-						implicit = false;
-					} else {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				} else if (matched.level == CastedExpression.Level.IMPLICIT) {
-					if (result == null) {
-						result = new MatchedCallArguments<>(method, matched);
-						implicit = true;
-					} else if (implicit) {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				}
+		for (final CastedExpression.Level level : candidateLevelsInOrderOfPriority) {
+			final List<MatchedCallArguments<T>> matchingMethods = methodsGroupedByMatchLevel.getOrDefault(level, Collections.emptyList());
+
+			switch (matchingMethods.size()) {
+				case 0: continue;
+				case 1: return matchingMethods.get(0);
+				default: return ambiguousCall(methodsGroupedByMatchLevel);
 			}
 		}
 
-		if (ambiguous) {
-			return new MatchedCallArguments<>(CompileErrors.ambiguousCall(candidates));
-		} else if (result == null) {
-			return new MatchedCallArguments<>(CompileErrors.noMethodMatched(overloads.stream()
-					.map(AnyMethod::getHeader)
-					.collect(Collectors.toList())));
-		} else {
-			return result;
-		}
+		return new MatchedCallArguments<>(CompileErrors.noMethodMatched(overloads.stream()
+				.map(AnyMethod::getHeader)
+				.collect(Collectors.toList())));
+	}
+
+	private static <T extends AnyMethod> MatchedCallArguments<T> ambiguousCall(Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel) {
+		List<FunctionHeader> candidates = Arrays.stream(candidateLevelsInOrderOfPriority)
+				.flatMap(level -> methodsGroupedByMatchLevel.getOrDefault(level, Collections.emptyList()).stream())
+				.map(pair -> pair.method.getHeader())
+				.collect(Collectors.toList());
+
+		return new MatchedCallArguments<>(CompileErrors.ambiguousCall(candidates));
 	}
 
 	private final T method;
@@ -113,7 +101,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		Expression eval(ExpressionBuilder builder, T method, CallArguments arguments);
 	}
 
-	public static CallArguments match(
+	private static CallArguments match(
 			ExpressionCompiler compiler,
 			CodePosition position,
 			AnyMethod method,
