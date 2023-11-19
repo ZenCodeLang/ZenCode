@@ -49,7 +49,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					if (result == null) {
 						result = new MatchedCallArguments<>(method, matched);
 						implicit = true;
-					} else {
+					} else if (implicit) {
 						ambiguous = true;
 					}
 					candidates.add(method.getHeader());
