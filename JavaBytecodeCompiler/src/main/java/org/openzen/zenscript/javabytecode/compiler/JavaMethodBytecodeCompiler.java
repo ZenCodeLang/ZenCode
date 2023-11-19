@@ -558,6 +558,13 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		}
 
 		switch (method) {
+			case FUNCTION_CALL: // ToDo: Was added from dev->refactor branch during rebase, is this still needed?
+				FunctionTypeID expressionType = (FunctionTypeID) arguments[0].type;
+				JavaNativeMethod functionalInterface = context.getFunctionalInterface(expressionType);
+				javaWriter.invokeInterface(functionalInterface);
+				expressionVisitor.handleReturnValue(context.getFunction(expressionType).getHeader().getReturnType(), method.getHeader().instanceForCall(args).getReturnType());
+				break;
+
 			/* Casts */
 			case BOOL_TO_STRING:
 				if (arguments[0].type.isOptional()) {
