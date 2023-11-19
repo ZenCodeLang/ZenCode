@@ -279,6 +279,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "UUID", JavaClass.Kind.CLASS));
 			cls.addMethod("random", JavaMethod.getNativeStatic(uuid, "randomUUID", "()Ljava/util/UUID;"));
 			cls.addInstanceMethod("toString", "toString", "()Ljava/lang/String;");
+			cls.addMethod("parse", JavaMethod.getNativeStatic(uuid, "fromString", "(Ljava/lang/String;)Ljava/util/UUID;"));
 			nativeClasses.put("uuid::uuid", cls);
 		}
 	}
