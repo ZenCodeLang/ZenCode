@@ -221,6 +221,9 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		statement.value.accept(expressionVisitor);
 		if (statement.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
+		if (statement.value.type.isEnum()) {
+			javaWriter.invokeVirtual(JavaExpressionVisitor.ENUM_ORDINAL);
+		}
 		boolean out = false;
 
 		final boolean hasNoDefault = hasNoDefault(statement);
