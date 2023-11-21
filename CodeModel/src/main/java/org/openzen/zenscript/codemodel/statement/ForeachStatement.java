@@ -11,13 +11,14 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.function.Consumer;
 
 public class ForeachStatement extends LoopStatement {
+	private static int labelCounter = 0;
 	public final VarStatement[] loopVariables;
 	public final Expression list;
 	public final IteratorMemberRef iterator;
 	public Statement content;
 
 	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorMemberRef iterator, Expression list) {
-		super(position, loopVariables[0].name, null); // TODO: thrown type
+		super(position, loopVariables[0].name + labelCounter++, null); // TODO: thrown type
 
 		this.loopVariables = loopVariables;
 		this.list = list;
