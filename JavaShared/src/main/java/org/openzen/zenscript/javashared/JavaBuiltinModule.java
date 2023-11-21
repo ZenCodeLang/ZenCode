@@ -83,7 +83,7 @@ public class JavaBuiltinModule {
 	private static final JavaNativeMethod STRING_GET_BYTES = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "getBytes", "(Ljava/nio/charset/Charset;)[B");
 	public static final JavaNativeMethod ENUM_COMPARETO = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "compareTo", "(Ljava/lang/Enum;)I");
 	private static final JavaNativeMethod ENUM_NAME = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
-	private static final JavaNativeMethod ENUM_ORDINAL = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
+	public static final JavaNativeMethod ENUM_ORDINAL = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
 	private static final JavaNativeMethod HASHMAP_INIT = JavaNativeMethod.getNativeConstructor(JavaClass.HASHMAP, "()V");
 	private static final JavaNativeMethod MAP_GET = JavaNativeMethod.getInterface(JavaClass.MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;", true);
 	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", true);
@@ -250,8 +250,7 @@ public class JavaBuiltinModule {
 		result.setMethodInfo(BuiltinMethodSymbol.ENUM_TO_STRING, enumName);
 		result.setMethodInfo(BuiltinMethodSymbol.ENUM_COMPARE, ENUM_COMPARETO);
 
-		JavaNativeMethod enumOrdinal = JavaNativeMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
-		result.setMethodInfo(BuiltinMethodSymbol.ENUM_ORDINAL, enumOrdinal);
+		result.setMethodInfo(BuiltinMethodSymbol.ENUM_ORDINAL, ENUM_ORDINAL);
 
 		result.setMethodInfo(BuiltinMethodSymbol.OBJECT_HASHCODE, OBJECT_HASHCODE);
 

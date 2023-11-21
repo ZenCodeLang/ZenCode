@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javashared.JavaBuiltinModule;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 import java.util.Arrays;
@@ -221,6 +222,9 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		statement.value.accept(expressionVisitor);
 		if (statement.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(JavaMethodBytecodeCompiler.OBJECT_HASHCODE);
+		if (statement.value.type.isEnum()) {
+			javaWriter.invokeVirtual(JavaBuiltinModule.ENUM_ORDINAL);
+		}
 		boolean out = false;
 
 		final boolean hasNoDefault = hasNoDefault(statement);
