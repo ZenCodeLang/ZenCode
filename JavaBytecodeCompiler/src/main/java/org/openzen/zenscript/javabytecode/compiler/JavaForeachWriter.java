@@ -5,7 +5,9 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -171,8 +173,10 @@ public class JavaForeachWriter {
 	}
 
 	private void downCast(int typeNumber, Type t) {
-		if (CompilerUtils.isPrimitive(statement.loopVariables[typeNumber].type)) {
-			statement.loopVariables[typeNumber].type.accept(statement.loopVariables[typeNumber].type, unboxingTypeVisitor);
+		TypeID type = statement.loopVariables[typeNumber].type;
+		if (CompilerUtils.isPrimitive(type)) {
+			javaWriter.checkCast(statementVisitor.context.getInternalName(new OptionalTypeID(null, type)));
+			type.accept(type, unboxingTypeVisitor);
 		} else {
 			javaWriter.checkCast(t);
 		}
