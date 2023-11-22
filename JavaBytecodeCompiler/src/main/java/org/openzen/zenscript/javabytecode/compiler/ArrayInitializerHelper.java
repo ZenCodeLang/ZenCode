@@ -54,8 +54,8 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType The current type of the array, reduced during the recursions of the functions
 	 * @param defaultLocation  The location of the default value. Needs to be of or assignable to elementType!
 	 */
-	void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, ArrayTypeID arrayType, int defaultLocation) {
-		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, arrayType, (elementType, counterLocations) -> javaWriter.load(elementType, defaultLocation));
+	void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, ArrayHelperType currentArrayType, ArrayTypeID arrayType, int defaultLocation) {
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, arrayType, (elementType, counterLocations) -> javaWriter.load(elementType.getASMType(), defaultLocation));
 	}
 
 	/**
@@ -71,14 +71,14 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType  The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, ArrayTypeID arrayType, InnermostFunction innermostFunction) {
+	void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, ArrayHelperType currentArrayType, ArrayTypeID arrayType, InnermostFunction innermostFunction) {
 		final Label begin = new Label();
 		final Label end = new Label();
 		javaWriter.label(begin);
 
 		final int currentArraySizeLocation = sizeLocations[sizeLocations.length - dim];
 
-		final Type elementType = Type.getType(currentArrayType.getDescriptor().substring(1));
+		final ArrayHelperType elementType = currentArrayType.getWithOneDimensionLess();
 		if (arrayType.elementType.isGeneric()) {
 			arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
 			javaWriter.loadInt(currentArraySizeLocation);
@@ -86,7 +86,7 @@ class ArrayInitializerHelper {
 			javaWriter.checkCast(context.getInternalName(arrayType));
 		} else {
 			javaWriter.loadInt(currentArraySizeLocation);
-			javaWriter.newArray(elementType);
+			elementType.newArray(javaWriter);
 		}
 		//javaWriter.dup();
 
@@ -113,7 +113,7 @@ class ArrayInitializerHelper {
 		} else {
 			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, arrayType, innermostFunction);
 		}
-		javaWriter.arrayStore(elementType);
+		javaWriter.arrayStore(elementType.getASMType());
 
 		//Return to the start
 		javaWriter.iinc(forLoopCounter);
@@ -133,7 +133,7 @@ class ArrayInitializerHelper {
 
 	@FunctionalInterface
 	public interface InnermostFunction {
-		void apply(Type elementType, int[] counterLocations);
+		void apply(ArrayHelperType elementType, int[] counterLocations);
 	}
 }
 
