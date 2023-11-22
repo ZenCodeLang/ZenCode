@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -257,8 +258,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		JavaCompiledModule javaCompiledModule = context.getJavaModule(module);
 		JavaMethod method = javaCompiledModule.getMethodInfo(expression.method.method);
 		method.compileVirtual(methodCompiler, expression.type, expression.target, expression.arguments);
-		return null;
-	}
+		if (expression.method.getHeader().getReturnType().isGeneric())
+				javaWriter.checkCast(context.getType(expression.type));
+
+			return null;
+		}
 
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
@@ -280,7 +284,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	private void handleReturnValue(TypeID original, TypeID actual) {
+	void handleReturnValue(TypeID original, TypeID actual) {
 		if (original.isGeneric()) {
 			handleGenericReturnValue(actual);
 		}

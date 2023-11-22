@@ -644,4 +644,8 @@ public abstract class JavaContext {
 
 		return getMethodSignature(javaHeader, true, true);
 	}
+
+	public boolean isGenericOrContainsGenericParameters(TypeID typeID) {
+		return typeID.accept(new JavaTypeCheckIfGenericVisitor());
+	}
 }

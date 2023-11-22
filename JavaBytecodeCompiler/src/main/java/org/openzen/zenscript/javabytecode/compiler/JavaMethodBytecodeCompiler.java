@@ -266,7 +266,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
 				ArrayTypeID arrayType = (ArrayTypeID) type;
 
-				final Type ASMType = context.getType(type);
 				final Type ASMElementType = context.getType(arrayType.elementType);
 
 				final Label begin = new Label();
@@ -286,7 +285,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(arrayType.dimension, arguments, expressionVisitor);
-				new ArrayInitializerHelper(context).visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, arrayType.dimension, ASMType, arrayType, defaultValueLocation);
+				new ArrayInitializerHelper(context).visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, arrayType.dimension, new ArrayHelperType(arrayType, context), arrayType, defaultValueLocation);
 
 				javaWriter.label(end);
 				return null;
@@ -299,10 +298,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				final Label end = new Label();
 				javaWriter.label(begin);
 
-				final Type ASMElementType = context.getType(type);
 				final int dimension = ((ArrayTypeID) type).dimension;
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, arguments, expressionVisitor);
-				new ArrayInitializerHelper(context).visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, arrayType, (elementType, counterLocations) -> {
+				new ArrayInitializerHelper(context).visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, new ArrayHelperType(arrayType, context), arrayType, (elementType, counterLocations) -> {
 					arguments[dimension].accept(expressionVisitor);
 					for (int counterLocation : counterLocations) {
 						javaWriter.loadInt(counterLocation);
