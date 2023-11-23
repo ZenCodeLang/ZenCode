@@ -55,7 +55,7 @@ class ArrayInitializerHelper {
 	 * @param defaultLocation  The location of the default value. Needs to be of or assignable to elementType!
 	 */
 	void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, ArrayHelperType currentArrayType, ArrayTypeID arrayType, int defaultLocation) {
-		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, arrayType, (elementType, counterLocations) -> javaWriter.load(elementType.getASMType(), defaultLocation));
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, arrayType, (elementType, counterLocations) -> javaWriter.load(elementType.getASMElementType(), defaultLocation));
 	}
 
 	/**
@@ -113,7 +113,7 @@ class ArrayInitializerHelper {
 		} else {
 			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, arrayType, innermostFunction);
 		}
-		javaWriter.arrayStore(elementType.getASMType());
+		javaWriter.arrayStore(elementType.getASMElementType());
 
 		//Return to the start
 		javaWriter.iinc(forLoopCounter);
