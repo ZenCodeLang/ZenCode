@@ -6,7 +6,6 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 
 public class ArrayHelperType {
@@ -38,10 +37,7 @@ public class ArrayHelperType {
 		}
 	}
 
-	public Type getASMType() {
-		if(CompilerUtils.isPrimitive(elementType)) {
-			return context.getType(elementType);
-		}
-		return Type.getType("[" + context.getDescriptor(elementType));
+	public Type getASMElementType() {
+		return context.getType(elementType);
 	}
 }
