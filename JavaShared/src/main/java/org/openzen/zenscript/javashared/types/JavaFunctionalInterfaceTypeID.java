@@ -68,7 +68,6 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	}
 
 	private JavaFunctionalInterfaceTypeID internalizeHeaderChange(GlobalTypeRegistry registry, FunctionHeader header) {
-		JavaFunctionalInterfaceTypeID normalizedTypeId = new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
-		return registry.internalize(JavaFunctionalInterfaceTypeID.class, normalizedTypeId);
+		return registry.internalize(JavaFunctionalInterfaceTypeID.class, header, functionHeader -> new JavaFunctionalInterfaceTypeID(registry, functionHeader, functionalInterfaceMethod, method));
 	}
 }
