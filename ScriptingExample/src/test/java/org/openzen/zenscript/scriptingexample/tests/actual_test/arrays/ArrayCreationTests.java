@@ -91,6 +91,30 @@ public class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
+	public void projection() {
+		ScriptBuilder.create()
+				.add("var x = [9, 8, 7] as int[];")
+				.add("var y = new int[]<int>(x, (xVal => 10 * xVal) as function(xVal as int) as int);")
+				.add("println(y[0]);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "90");
+	}
+
+	@Test
+	public void projectionWithIndex() {
+		ScriptBuilder.create()
+				.add("var x = [9, 8, 7] as int[];")
+				.add("var y = new int[]<int>(x, ((index, xVal) => 10 * xVal) as function(index as usize, xVal as int) as int);")
+				.add("println(y[0]);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "90");
+	}
+
+	@Test
 	public void varargCreationShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass(createChildClass(), createChildClass());")
