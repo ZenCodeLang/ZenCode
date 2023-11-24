@@ -86,7 +86,7 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType    The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction   The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	static void visitProjected(JavaWriter javaWriter, int[] sizeLocations, int dim, int originArrayLocation, Type originArrayType, Type currentArrayType, InnermostFunction innermostFunction) {
+	static void visitProjected(JavaWriter javaWriter, int[] sizeLocations, int dim, int originArrayLocation, Type originArrayType, ArrayHelperType currentArrayType, InnermostFunction innermostFunction) {
 
 		visitMultiDimArray(javaWriter, sizeLocations, dim, currentArrayType, (elementType, counterLocations) -> {
 			//Load origin array
@@ -115,8 +115,8 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType The current type of the array, reduced during the recursions of the functions
 	 * @param defaultLocation  The location of the default value. Needs to be of or assignable to elementType!
 	 */
-	static void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, int defaultLocation) {
-		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, (elementType, counterLocations) -> javaWriter.load(elementType, defaultLocation));
+	static void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, ArrayHelperType currentArrayType, int defaultLocation) {
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, (elementType, counterLocations) -> javaWriter.load(elementType.getASMElementType(), defaultLocation));
 	}
 
 	/**
@@ -131,7 +131,7 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType  The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	private static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
+	private static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int dim, ArrayHelperType currentArrayType, InnermostFunction innermostFunction) {
 		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, innermostFunction);
 	}
 
@@ -158,15 +158,15 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType  The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
+	static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, ArrayHelperType currentArrayType, InnermostFunction innermostFunction) {
 		final Label begin = new Label();
 		final Label end = new Label();
 		javaWriter.label(begin);
 
 		final int currentArraySizeLocation = sizeLocations[sizeLocations.length - dim];
 		javaWriter.loadInt(currentArraySizeLocation);
-		final Type elementType = Type.getType(currentArrayType.getDescriptor().substring(1));
-		javaWriter.newArray(elementType);
+		final ArrayHelperType elementType = currentArrayType.getWithOneDimensionLess();
+		elementType.newArray(javaWriter);
 		//javaWriter.dup();
 
 		final int forLoopCounter = javaWriter.local(int.class);
@@ -192,7 +192,7 @@ class ArrayInitializerHelper {
 		} else {
 			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, innermostFunction);
 		}
-		javaWriter.arrayStore(elementType);
+		javaWriter.arrayStore(elementType.getASMElementType());
 
 		//Return to the start
 		javaWriter.iinc(forLoopCounter);
@@ -212,7 +212,7 @@ class ArrayInitializerHelper {
 
 	@FunctionalInterface
 	public interface InnermostFunction {
-		void apply(Type elementType, int[] counterLocations);
+		void apply(ArrayHelperType elementType, int[] counterLocations);
 	}
 }
 

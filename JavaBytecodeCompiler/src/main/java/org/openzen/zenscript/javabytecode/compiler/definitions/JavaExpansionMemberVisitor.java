@@ -130,8 +130,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 
 			final int index = methodSignature1.lastIndexOf('(') + 1;
-			methodSignature = methodSignature1.substring(0, index) + expandedClassSignature + typeParamSigBuilder.toString() + methodSignature1.substring(index);
-			methodDescriptor = "(" + expandedClassDescriptor + typeParamDescBuilder.toString() + context.getMethodDescriptor(member.header).substring(1);
+			methodSignature = methodSignature1.substring(0, index) + expandedClassSignature + typeParamSigBuilder + methodSignature1.substring(index);
+			methodDescriptor = "(" + expandedClassDescriptor + typeParamDescBuilder + context.getMethodDescriptor(member.header).substring(1);
 		} else {
 			methodSignature = context.getMethodSignature(member.header);
 			methodDescriptor = context.getMethodDescriptor(member.header);
