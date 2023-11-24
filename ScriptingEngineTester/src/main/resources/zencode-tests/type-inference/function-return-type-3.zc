@@ -1,5 +1,5 @@
 #output: string
 
-function test() -> "hello";
+function test() => "hello";
 
 println(typeof(test()));

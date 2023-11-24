@@ -1,8 +1,8 @@
 #output: 2
 #output: 100
 
-function test1(): string? -> "ok";
-function test2(): string? -> null;
+function test1(): string? => "ok";
+function test2(): string? => null;
 
 println(test1()?.length ?? 100);
 println(test2()?.length ?? 100);

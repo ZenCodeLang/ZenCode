@@ -3,7 +3,7 @@
 #output: string
 #output: 1
 
-function test(): string? -> "x";
+function test(): string? => "x";
 
 val a = test();
 if a != null {
