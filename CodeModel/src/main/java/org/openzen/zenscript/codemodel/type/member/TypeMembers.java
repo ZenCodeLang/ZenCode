@@ -559,19 +559,19 @@ public final class TypeMembers {
 		if (type.isOptional() && type.withoutOptional() == toType)
 			return new CheckNullExpression(position, value);
 
-		// TODO What order should these be in?
-		// To me (Jared), it makes sense that it goes superType -> implementations -> casters, why cast to a supertype if it extends the type?
 		if (extendsOrImplements(toType))
 			return new SupertypeCastExpression(position, value, toType);
+
+		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
+			if (implementation.member.implementsType.getNormalized() == toType)
+				return new InterfaceCastExpression(position, value, implementation.member);
+		}
 
 		for (TypeMember<CasterMemberRef> caster : casters) {
 			if (caster.member.isImplicit() && caster.member.toType == toType)
 				return caster.member.cast(position, value, implicit);
 		}
-		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.getNormalized() == toType)
-				return new InterfaceCastExpression(position, value, implementation.member);
-		}
+
 
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + this + " to " + toType);
 	}
