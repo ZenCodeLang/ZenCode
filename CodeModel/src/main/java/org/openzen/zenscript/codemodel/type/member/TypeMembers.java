@@ -559,16 +559,19 @@ public final class TypeMembers {
 		if (type.isOptional() && type.withoutOptional() == toType)
 			return new CheckNullExpression(position, value);
 
-		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (caster.member.isImplicit() && caster.member.toType == toType)
-				return caster.member.cast(position, value, implicit);
-		}
+		if (extendsOrImplements(toType))
+			return new SupertypeCastExpression(position, value, toType);
+
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
 			if (implementation.member.implementsType.getNormalized() == toType)
 				return new InterfaceCastExpression(position, value, implementation.member);
 		}
-		if (extendsOrImplements(toType))
-			return new SupertypeCastExpression(position, value, toType);
+
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			if (caster.member.isImplicit() && caster.member.toType == toType)
+				return caster.member.cast(position, value, implicit);
+		}
+
 
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + this + " to " + toType);
 	}

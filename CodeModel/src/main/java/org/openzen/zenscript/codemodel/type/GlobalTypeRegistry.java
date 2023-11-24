@@ -8,11 +8,12 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class GlobalTypeRegistry {
 	public final ZSPackage stdlib;
 	// Allows for internalizing any TypeID not defined here.
-	private final Map<Class<? extends TypeID>, Map<? extends TypeID, ? extends TypeID>> identityMaps = new HashMap<>();
+	private final Map<Class<?>, Map<?, ? extends TypeID>> identityMaps = new HashMap<>();
 
 	private final Map<ArrayTypeID, ArrayTypeID> arrayTypes = new HashMap<>();
 	private final Map<AssocTypeID, AssocTypeID> assocTypes = new HashMap<>();
@@ -121,6 +122,18 @@ public class GlobalTypeRegistry {
 		} else {
 			identityMap.put(id, id);
 			return id;
+		}
+	}
+
+	public <ID, TYPE extends TypeID> TYPE internalize(Class<TYPE> typeClass, ID id, Function<ID, TYPE> generator) {
+
+		Map<ID, TYPE> identityMap = (Map<ID, TYPE>) identityMaps.computeIfAbsent(typeClass, aClass -> new HashMap<>());
+		if (identityMap.containsKey(id)) {
+			return identityMap.get(id);
+		} else {
+			TYPE value = generator.apply(id);
+			identityMap.put(id, value);
+			return value;
 		}
 	}
 

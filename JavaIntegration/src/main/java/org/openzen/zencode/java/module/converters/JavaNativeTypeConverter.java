@@ -318,7 +318,7 @@ public class JavaNativeTypeConverter {
 				getMethodDescriptor(functionalInterfaceMethod),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().isGeneric());
-		return new JavaFunctionalInterfaceTypeID(typeConversionContext.registry, header, functionalInterfaceMethod, method);
+		return typeConversionContext.registry.internalize(JavaFunctionalInterfaceTypeID.class, header, functionHeader -> new JavaFunctionalInterfaceTypeID(typeConversionContext.registry, functionHeader, functionalInterfaceMethod, method));
 	}
 
 	@SuppressWarnings("DuplicatedCode")
