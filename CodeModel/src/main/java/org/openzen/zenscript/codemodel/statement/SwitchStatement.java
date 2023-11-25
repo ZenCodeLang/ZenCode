@@ -17,8 +17,8 @@ public class SwitchStatement extends LoopStatement {
 	public final Expression value;
 	public final List<SwitchCase> cases = new ArrayList<>();
 
-	public SwitchStatement(CodePosition position, String label, Expression value) {
-		super(position, label, null); // TODO: thrown type
+	public SwitchStatement(CodePosition position, String label, Expression value, ObjectId objectId) {
+		super(position, label, null, objectId); // TODO: thrown type
 
 		this.value = value;
 	}
@@ -49,7 +49,7 @@ public class SwitchStatement extends LoopStatement {
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tValue = value.transform(transformer);
-		SwitchStatement result = new SwitchStatement(position, label, tValue);
+		SwitchStatement result = new SwitchStatement(position, label, tValue, objectId);
 		ConcatMap<LoopStatement, LoopStatement> tModified = modified.concat(this, result);
 		for (SwitchCase case_ : cases) {
 			result.cases.add(case_.transform(transformer, tModified));
@@ -60,7 +60,7 @@ public class SwitchStatement extends LoopStatement {
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tValue = value.transform(transformer);
-		SwitchStatement result = new SwitchStatement(position, label, tValue);
+		SwitchStatement result = new SwitchStatement(position, label, tValue, objectId);
 		ConcatMap<LoopStatement, LoopStatement> tModified = modified.concat(this, result);
 		for (SwitchCase case_ : cases) {
 			result.cases.add(case_.transform(transformer, tModified));

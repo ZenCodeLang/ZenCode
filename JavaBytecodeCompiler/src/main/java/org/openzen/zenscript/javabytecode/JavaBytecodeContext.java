@@ -13,11 +13,15 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Hoofdgebruiker
@@ -28,6 +32,7 @@ public class JavaBytecodeContext extends JavaContext {
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;
 	private int lambdaCounter = 0;
+	private final Map<LoopStatement.ObjectId, BytecodeLoopLabels> bytecodeLoopLabels = new HashMap<>();
 
 	public JavaBytecodeContext(JavaBytecodeModule target, JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
 		super(space, modulePackage, basePackage, logger);
@@ -116,7 +121,15 @@ public class JavaBytecodeContext extends JavaContext {
 		return ++lambdaCounter;
 	}
 
-	private class TypeGenerator implements JavaSyntheticClassGenerator {
+	public BytecodeLoopLabels getLoopLabels(LoopStatement loopStatement) {
+		return bytecodeLoopLabels.get(loopStatement.objectId);
+	}
+
+	public void setLoopLabels(LoopStatement loopStatement, BytecodeLoopLabels bytecodeLoopLabels) {
+		this.bytecodeLoopLabels.put(loopStatement.objectId, bytecodeLoopLabels);
+	}
+
+    private class TypeGenerator implements JavaSyntheticClassGenerator {
 
 		@Override
 		public void synthesizeFunction(JavaSynthesizedFunction function) {

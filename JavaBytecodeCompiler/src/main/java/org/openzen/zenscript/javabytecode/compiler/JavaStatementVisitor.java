@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
@@ -50,14 +51,20 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitBreak(BreakStatement statement) {
 		javaWriter.position(statement.position.fromLine);
-		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_end"));
+
+		Label endLabel = context.getLoopLabels(statement.target).loopEnd;
+		javaWriter.goTo(endLabel);
+
 		return false;
 	}
 
 	@Override
 	public Boolean visitContinue(ContinueStatement statement) {
 		javaWriter.position(statement.position.fromLine);
-		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_start"));
+
+		Label startLabel = context.getLoopLabels(statement.target).loopStart;
+		javaWriter.goTo(startLabel);
+
 		return false;
 	}
 
@@ -66,10 +73,9 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		javaWriter.position(statement.position.fromLine);
 		Label start = new Label();
 		Label end = new Label();
-		if (statement.label == null)
-			statement.label = javaWriter.createLabelName() + "DoWhile";
-		javaWriter.putNamedLabel(start, statement.label + "_start");
-		javaWriter.putNamedLabel(end, statement.label + "_end");
+
+		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
+
 		javaWriter.label(start);
 		statement.content.accept(this);
 
@@ -100,11 +106,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		//Create Labels
 		Label start = new Label();
 		Label end = new Label();
-		if (statement.label == null) {
-			statement.label = javaWriter.createLabelName() + "ForEach";
-		}
-		javaWriter.putNamedLabel(start, statement.label + "_start");
-		javaWriter.putNamedLabel(end, statement.label + "_end");
+		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
 
 
 		//Compile Array/Collection
@@ -213,13 +215,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		final Label start = new Label();
 		final Label end = new Label();
-
-		if (statement.label == null)
-			statement.label = javaWriter.createLabelName() + "Switch";
-
-		javaWriter.putNamedLabel(start, statement.label + "_start");
-		javaWriter.putNamedLabel(end, statement.label + "_end");
-
+		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
@@ -356,12 +352,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		javaWriter.position(statement.position.fromLine);
 		Label start = new Label();
 		Label end = new Label();
-
-		if (statement.label == null) {
-			statement.label = javaWriter.createLabelName() + "WhileDo";
-		}
-		javaWriter.putNamedLabel(start, statement.label + "_start");
-		javaWriter.putNamedLabel(end, statement.label + "_end");
+		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
 
 		javaWriter.label(start);
 		statement.condition.accept(expressionVisitor);

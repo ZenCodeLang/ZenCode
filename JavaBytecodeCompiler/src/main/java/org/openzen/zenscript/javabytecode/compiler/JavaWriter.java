@@ -1180,26 +1180,8 @@ public class JavaWriter {
 		return labelNames.get(lbl);
 	}
 
-	public String createLabelName() {
-		return "L" + labelIndex++;
-	}
-
-	public void putNamedLabel(Label lbl, String name) {
-		if (labelNames == null)
-			labelNames = new HashMap<>();
-		labelNames.put(lbl, name);
-	}
-
 	public void stringAdd() {
 		invokeVirtual(STRING_CONCAT);
-	}
-
-	public Label getNamedLabel(String label) {
-		for (Map.Entry<Label, String> entry : labelNames.entrySet()) {
-			if (entry.getValue().matches(label))
-				return entry.getKey();
-		}
-		throw new RuntimeException("Label " + label + " not found!");
 	}
 
 	public void tryCatch(Label start, Label end, Label handler, String type) {

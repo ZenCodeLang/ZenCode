@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 
@@ -99,7 +98,7 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 		@Override
 		public Statement complete() {
 			Expression condition = this.condition.as(BasicTypeID.BOOL);
-			compiled = new DoWhileStatement(position, label, condition);
+			compiled = new DoWhileStatement(position, label, condition, new LoopStatement.ObjectId());
 			compiled.content = this.content.complete();
 			return result(compiled, compiler);
 		}

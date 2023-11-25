@@ -8,8 +8,10 @@ public abstract class LoopStatement extends Statement implements EqualsComparabl
 	public static final LoopStatement[] NONE = new LoopStatement[0];
 
 	public String label;
+	public ObjectId objectId;
 
-	public LoopStatement(CodePosition position, String label, TypeID thrownType) {
+
+	public LoopStatement(CodePosition position, String label, TypeID thrownType, ObjectId objectId) {
 		super(position, thrownType);
 
 		this.label = label;
@@ -19,4 +21,7 @@ public abstract class LoopStatement extends Statement implements EqualsComparabl
 	public boolean equals_(LoopStatement other) {
 		return this == other;
 	}
+
+
+	public static final class ObjectId{}
 }
