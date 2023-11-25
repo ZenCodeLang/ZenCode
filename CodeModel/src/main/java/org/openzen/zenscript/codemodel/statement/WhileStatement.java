@@ -12,8 +12,8 @@ public class WhileStatement extends LoopStatement {
 	public final Expression condition;
 	public Statement content;
 
-	public WhileStatement(CodePosition position, String label, Expression condition) {
-		super(position, label, null);
+	public WhileStatement(CodePosition position, String label, Expression condition, ObjectId objectId) {
+		super(position, label, null, objectId);
 		this.condition = condition;
 	}
 
@@ -41,7 +41,7 @@ public class WhileStatement extends LoopStatement {
 	@Override
 	public WhileStatement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		WhileStatement result = new WhileStatement(position, label, tCondition);
+		WhileStatement result = new WhileStatement(position, label, tCondition, objectId);
 		result.content = content.transform(transformer, modified.concat(this, result));
 		return result;
 	}
@@ -49,7 +49,7 @@ public class WhileStatement extends LoopStatement {
 	@Override
 	public WhileStatement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		WhileStatement result = new WhileStatement(position, label, tCondition);
+		WhileStatement result = new WhileStatement(position, label, tCondition, objectId);
 		result.content = content.transform(transformer, modified.concat(this, result));
 		return result;
 	}

@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -13,8 +12,8 @@ public class DoWhileStatement extends LoopStatement {
 	public final Expression condition;
 	public Statement content;
 
-	public DoWhileStatement(CodePosition position, String label, Expression condition) {
-		super(position, label, null);
+	public DoWhileStatement(CodePosition position, String label, Expression condition, ObjectId objectId) {
+		super(position, label, null, objectId);
 
 		this.condition = condition;
 	}
@@ -43,7 +42,7 @@ public class DoWhileStatement extends LoopStatement {
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		DoWhileStatement result = new DoWhileStatement(position, label, tCondition);
+		DoWhileStatement result = new DoWhileStatement(position, label, tCondition, objectId);
 		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
@@ -51,7 +50,7 @@ public class DoWhileStatement extends LoopStatement {
 	@Override
 	public Statement transform(ExpressionTransformer transformer,ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tCondition = condition.transform(transformer);
-		DoWhileStatement result = new DoWhileStatement(position, label, tCondition);
+		DoWhileStatement result = new DoWhileStatement(position, label, tCondition, objectId);
 		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}

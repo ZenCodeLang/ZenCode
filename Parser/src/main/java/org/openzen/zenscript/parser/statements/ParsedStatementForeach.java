@@ -112,7 +112,7 @@ public class ParsedStatementForeach extends ParsedStatement {
 			for (int i = 0; i < variables.length; i++)
 				variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);
 
-			compiled = new ForeachStatement(position, variables, iterator, list);
+			compiled = new ForeachStatement(position, variables, iterator, list, new LoopStatement.ObjectId());
 			compiled.setContent(content.complete());
 			return result(compiled, compiler);
 		}

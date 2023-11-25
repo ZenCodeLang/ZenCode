@@ -94,7 +94,7 @@ public class ParsedStatementSwitch extends ParsedStatement {
 
 		@Override
 		public Statement complete() {
-			compiled = new SwitchStatement(position, name, value.eval());
+			compiled = new SwitchStatement(position, name, value.eval(), new LoopStatement.ObjectId());
 
 			for (ParsedSwitchCase.Compiling switchCase : cases) {
 				compiled.cases.add(switchCase.complete(compiled.value.type));

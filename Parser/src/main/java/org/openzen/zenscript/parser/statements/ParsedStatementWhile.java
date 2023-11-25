@@ -93,7 +93,7 @@ public class ParsedStatementWhile extends ParsedStatement {
 		@Override
 		public Statement complete() {
 			Expression condition = this.condition.as(BasicTypeID.BOOL);
-			compiled = new WhileStatement(position, label, condition);
+			compiled = new WhileStatement(position, label, condition, new LoopStatement.ObjectId());
 			compiled.setContent(content.complete());
 			return result(compiled, compiler);
 		}

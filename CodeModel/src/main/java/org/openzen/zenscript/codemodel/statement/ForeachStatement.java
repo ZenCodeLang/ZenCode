@@ -15,8 +15,8 @@ public class ForeachStatement extends LoopStatement {
 	public final IteratorInstance iterator;
 	protected Statement content;
 
-	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorInstance iterator, Expression list) {
-		super(position, loopVariables[0].name, null);
+	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorInstance iterator, Expression list, ObjectId objectId) {
+		super(position, loopVariables[0].name, null, objectId);
 
 		this.loopVariables = loopVariables;
 		this.list = list;
@@ -51,7 +51,7 @@ public class ForeachStatement extends LoopStatement {
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tList = list.transform(transformer);
-		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList);
+		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList, objectId);
 		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
@@ -59,7 +59,7 @@ public class ForeachStatement extends LoopStatement {
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tList = list.transform(transformer);
-		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList);
+		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList, objectId);
 		result.setContent(content.transform(transformer, modified.concat(this, result)));
 		return result;
 	}
