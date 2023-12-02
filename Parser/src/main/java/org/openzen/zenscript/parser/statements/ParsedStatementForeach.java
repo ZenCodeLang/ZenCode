@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlock;
+import org.openzen.zenscript.codemodel.ssa.IterateStatement;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -48,6 +49,8 @@ public class ParsedStatementForeach extends ParsedStatement {
 
 		CompilingExpression list = this.list.compile(compiler.expressions());
 		lastBlock.add(new CompilingExpressionCodeStatement(list));
+		lastBlock.add(new IterateStatement(position, compiler, variables, list));
+
 		Compiling compiling = new Compiling(compiler, list, iterate, variables, tail);
 		compiling.content = this.body.compile(compiler.forLoop(compiling), content);
 		compiling.content.getTail().addSuccessor(iterate);
@@ -110,7 +113,7 @@ public class ParsedStatementForeach extends ParsedStatement {
 			TypeID[] loopTypes = iterator.getLoopVariableTypes();
 			VarStatement[] variables = new VarStatement[varnames.length];
 			for (int i = 0; i < variables.length; i++)
-				variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);
+				variables[i] = new VarStatement(position, this.variables.get(i).id, varnames[i], loopTypes[i], null, true);
 
 			compiled = new ForeachStatement(position, variables, iterator, list, new LoopStatement.ObjectId());
 			compiled.setContent(content.complete());

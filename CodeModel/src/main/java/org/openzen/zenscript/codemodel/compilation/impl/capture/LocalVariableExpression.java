@@ -42,7 +42,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public Expression eval() {
-			if (variable.type == null)
+			if (variable.getActualType() == null)
 				return compiler.at(position).invalid(CompileErrors.localVariableTypeUnknown(variable.name));
 
 			return compiler.at(position).getLocalVariable(variable.eval());
@@ -97,10 +97,10 @@ public class LocalVariableExpression implements LocalExpression {
 		@Override
 		public Expression eval() {
 			Expression value;
-			if (variable.type == null) {
+			if (variable.getActualType() == null) {
 				value = this.value.eval();
 			} else {
-				CastedEval cast = CastedEval.implicit(compiler, position, variable.type);
+				CastedEval cast = CastedEval.implicit(compiler, position, variable.getActualType());
 				value = this.value.cast(cast).value;
 			}
 			return compiler.at(position).setLocalVariable(variable.asType(value.type), value);

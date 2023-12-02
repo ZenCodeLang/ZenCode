@@ -62,11 +62,11 @@ public class ParsedStatementVar extends ParsedStatement {
 
 				initializer = this.initializer.eval();
 				ctype = initializer.type;
-				compilingVariable.type = initializer.type;
+				compilingVariable.inferredType = initializer.type;
 			} else {
 				ctype = type.compile(compiler.types());
 				initializer = this.initializer == null ? null : this.initializer.as(ctype);
-				compilingVariable.type = ctype;
+				compilingVariable.inferredType = ctype;
 			}
 			VarStatement result = new VarStatement(position, compilingVariable.id, compilingVariable.name, ctype, initializer, isFinal);
 			return result(result, compiler);

@@ -1,50 +1,69 @@
 package org.openzen.zenscript.codemodel.ssa;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InvalidCompilingExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitorWithContext;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 public class IterateStatement implements CodeBlockStatement {
 	private final CodePosition position;
-	private final VarStatement[] loopVariables;
+	private final StatementCompiler compiler;
+	private final List<CompilingVariable> loopVariables;
+	private final CompilingExpression list;
 
-	public IterateStatement(CodePosition position, VarStatement[] loopVariables) {
+	public IterateStatement(
+			CodePosition position,
+			StatementCompiler compiler,
+			List<CompilingVariable> loopVariables,
+			CompilingExpression list) {
 		this.position = position;
+		this.compiler = compiler;
 		this.loopVariables = loopVariables;
+		this.list = list;
 	}
 
 	@Override
 	public void collect(SSAVariableCollector collector) {
-		for (VarStatement loopVariable : loopVariables)
-			collector.assign(loopVariable.variable, IterationValue::new);
+		for (int i = 0; i < loopVariables.size(); i++) {
+			final int finali = i;
+			CompilingVariable loopVariable = loopVariables.get(i);
+			collector.assign(loopVariable.id, () -> new IterationValue(finali));
+		}
 	}
 
 	@Override
 	public void linkVariables(VariableLinker linker) {
-
+		for (CompilingVariable loopVariable : loopVariables)
+			loopVariable.ssaCompilingVariable = linker.get(loopVariable.id);
 	}
 
-	private static class IterationValue implements CompilingExpression {
+	private class IterationValue implements CompilingExpression {
+		private final int index;
+
+		public IterationValue(int index) {
+			this.index = index;
+		}
 
 		@Override
 		public Expression eval() {
-			throw new UnsupportedOperationException();
+			Expression value = list.eval();
+			return compiler.resolve(value.type).findIterator(loopVariables.size())
+					.<Expression>map(iterator -> new DummyExpression(iterator.getLoopVariableTypes()[index]))
+					.orElse(new InvalidExpression(BasicTypeID.UNDETERMINED, new CompileException(position, CompileErrors.noSuchIterator(value.type, loopVariables.size()))));
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			throw new UnsupportedOperationException();
+			return cast.of(eval());
 		}
 
 		@Override
@@ -64,7 +83,7 @@ public class IterateStatement implements CodeBlockStatement {
 
 		@Override
 		public Expression as(TypeID type) {
-			throw new UnsupportedOperationException();
+			return new DummyExpression(type);
 		}
 
 		@Override

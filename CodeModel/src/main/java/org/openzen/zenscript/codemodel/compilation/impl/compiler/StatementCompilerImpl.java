@@ -73,7 +73,7 @@ public class StatementCompilerImpl implements StatementCompiler {
 	public StatementCompiler forCatch(CompilingVariable exceptionVariable) {
 		LocalSymbols locals = this.locals.forBlock();
 		locals.add(exceptionVariable);
-		return new StatementCompilerImpl(context, localType, types, functionHeader.withThrownType(exceptionVariable.type), locals);
+		return new StatementCompilerImpl(context, localType, types, functionHeader.withThrownType(exceptionVariable.getActualType()), locals);
 	}
 
 	@Override
