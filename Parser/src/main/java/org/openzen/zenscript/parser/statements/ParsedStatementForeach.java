@@ -112,8 +112,10 @@ public class ParsedStatementForeach extends ParsedStatement {
 			IteratorInstance iterator = maybeIterator.get();
 			TypeID[] loopTypes = iterator.getLoopVariableTypes();
 			VarStatement[] variables = new VarStatement[varnames.length];
-			for (int i = 0; i < variables.length; i++)
+			for (int i = 0; i < variables.length; i++) {
 				variables[i] = new VarStatement(position, this.variables.get(i).id, varnames[i], loopTypes[i], null, true);
+				this.variables.get(i).inferredType = loopTypes[i];
+			}
 
 			compiled = new ForeachStatement(position, variables, iterator, list, new LoopStatement.ObjectId());
 			compiled.setContent(content.complete());

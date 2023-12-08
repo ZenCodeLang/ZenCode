@@ -3,9 +3,9 @@
 function test1(): string? => "hello";
 function test2(): string? => null;
 
-if test1() {
+if test1() != null {
 	println("ok");
 }
-if test2() {
+if test2() != null {
 	println("nok");
 }

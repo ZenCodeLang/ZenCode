@@ -9,6 +9,9 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.Optional;
 
 public class ParsedExpressionCompare extends ParsedExpression {
 	private final CompilableExpression left;
@@ -49,7 +52,21 @@ public class ParsedExpressionCompare extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression left = this.left.eval();
-			return compiler.resolve(left.type).compare()
+			ResolvedType resolved = compiler.resolve(left.type);
+
+			if (type == CompareType.EQ) {
+				Optional<InstanceCallable> equals = resolved.findOperator(OperatorType.EQUALS);
+				if (equals.isPresent()) {
+					return equals.get().call(compiler, position, left, TypeID.NONE, right);
+				}
+			} else if (type == CompareType.NE) {
+				Optional<InstanceCallable> notEquals = resolved.findOperator(OperatorType.NOTEQUALS);
+				if (notEquals.isPresent()) {
+					return notEquals.get().call(compiler, position, left, TypeID.NONE, right);
+				}
+			}
+
+			return resolved.compare()
 					.map(comparator -> comparator.compare(compiler, position, left, right, this.type))
 					.orElseGet(() -> compiler.at(position).invalid(
 							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE),

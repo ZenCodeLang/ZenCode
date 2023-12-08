@@ -1250,23 +1250,31 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				}
 				break;
 			}
+			case OPTIONAL_IS_NULL:
 			case OBJECT_SAME:
 			case ASSOC_SAME:
 			case ARRAY_SAME: {
 				Label exit = new Label();
-				javaWriter.iConst0();
-				javaWriter.ifACmpNe(exit);
+				Label isFalse = new Label();
+				javaWriter.ifACmpNe(isFalse);
 				javaWriter.iConst1();
+				javaWriter.goTo(exit);
+				javaWriter.label(isFalse);
+				javaWriter.iConst0();
 				javaWriter.label(exit);
 				break;
 			}
+			case OPTIONAL_IS_NOT_NULL:
 			case OBJECT_NOTSAME:
 			case ASSOC_NOTSAME:
 			case ARRAY_NOTSAME: {
 				Label exit = new Label();
-				javaWriter.iConst0();
-				javaWriter.ifACmpEq(exit);
+				Label isFalse = new Label();
+				javaWriter.ifACmpEq(isFalse);
 				javaWriter.iConst1();
+				javaWriter.goTo(exit);
+				javaWriter.label(isFalse);
+				javaWriter.iConst0();
 				javaWriter.label(exit);
 				break;
 			}

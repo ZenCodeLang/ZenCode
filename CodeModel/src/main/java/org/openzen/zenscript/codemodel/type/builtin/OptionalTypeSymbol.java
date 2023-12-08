@@ -1,11 +1,15 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -58,9 +62,18 @@ public class OptionalTypeSymbol implements TypeSymbol {
 
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
+		TypeID type = new OptionalTypeID(typeArguments[0]);
+
 		MemberSet.Builder optionalMembers = MemberSet.create();
-		optionalMembers.method(new MethodInstance(BuiltinMethodSymbol.OPTIONAL_IS_NULL));
-		return null;
+		optionalMembers.method(new MethodInstance(
+				BuiltinMethodSymbol.OPTIONAL_IS_NULL,
+				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
+				type));
+		optionalMembers.method(new MethodInstance(
+				BuiltinMethodSymbol.OPTIONAL_IS_NOT_NULL,
+				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
+				type));
+		return optionalMembers.build();
 	}
 
 	@Override
