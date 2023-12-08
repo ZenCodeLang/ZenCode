@@ -133,7 +133,7 @@ public final class SSA {
 		if (a.ancestor != null) {
 			Node b = ancestorWithLowestSemi(a);
 			v.ancestor = a.ancestor;
-			if (b.samedom.dfnum <= v.best.semi.dfnum)
+			if (b.samedom != null && b.samedom.dfnum <= v.best.semi.dfnum)
 				v.best = b;
 		}
 

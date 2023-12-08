@@ -40,6 +40,10 @@ public class ParsedStatementIf extends ParsedStatement {
 		if (this.onElse != null) {
 			CodeBlock elseBlock = new CodeBlock();
 			onElse = this.onElse.compile(compiler, elseBlock);
+			onElse.getTail().addSuccessor(tail);
+			lastBlock.addSuccessor(elseBlock);
+		} else {
+			lastBlock.addSuccessor(tail);
 		}
 		return new Compiling(compiler, condition, onThen, onElse, tail);
 	}
