@@ -67,6 +67,11 @@ public class IterateStatement implements CodeBlockStatement {
 		}
 
 		@Override
+		public boolean canConstructAs(TypeID type) {
+			return false;
+		}
+
+		@Override
 		public Optional<CompilingCallable> call() {
 			return Optional.empty();
 		}

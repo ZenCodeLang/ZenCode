@@ -18,6 +18,10 @@ public class ZenCodeTestLoggerOutput {
 		assertSize(0);
 	}
 
+	public void assertNotEmpty() {
+		Assertions.assertNotEquals(0, lines.size());
+	}
+
 	public void assertSize(int size) {
 		Assertions.assertEquals(size, lines.size());
 	}

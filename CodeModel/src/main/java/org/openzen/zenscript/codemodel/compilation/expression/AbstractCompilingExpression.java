@@ -57,4 +57,9 @@ public abstract class AbstractCompilingExpression implements CompilingExpression
 	protected CastedEval cast(TypeID returnType) {
 		return CastedEval.implicit(compiler, position, returnType);
 	}
+
+	@Override
+	public boolean canConstructAs(TypeID type) {
+		return eval().type.equals(type);
+	}
 }

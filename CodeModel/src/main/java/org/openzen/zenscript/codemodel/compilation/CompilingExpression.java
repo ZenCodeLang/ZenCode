@@ -28,6 +28,15 @@ public interface CompilingExpression {
 	CastedExpression cast(CastedEval cast);
 
 	/**
+	 * Checks if this expression can be compiled to be of the given type. Either because it's the correct kind
+	 * of constant or because there was an implicit constructor.
+	 *
+	 * @param type type to check for
+	 * @return
+	 */
+	boolean canConstructAs(TypeID type);
+
+	/**
 	 * Attempts to make this expression callable.
 	 *
 	 * @return callable

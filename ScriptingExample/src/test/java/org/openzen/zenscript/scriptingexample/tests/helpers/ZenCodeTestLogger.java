@@ -84,6 +84,10 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger implements Pr
 		errors().assertEmpty();
 	}
 
+	public void assertHasErrors() {
+		errors().assertNotEmpty();
+	}
+
 	public void assertNoWarnings() {
 		warnings().assertEmpty();
 	}

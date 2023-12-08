@@ -50,7 +50,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			return cast.of(compiler.at(position).getLocalVariable(variable.asType(cast.type)));
+			return cast.of(compiler.at(position).getLocalVariable(variable.eval()));
 		}
 
 		@Override
@@ -70,12 +70,12 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-
+			variable.ssaCompilingVariable = linker.get(variable.id);
 		}
 
 		@Override
 		public void set(SSACompilingVariable variable) {
-
+			this.variable.ssaCompilingVariable = variable;
 		}
 	}
 

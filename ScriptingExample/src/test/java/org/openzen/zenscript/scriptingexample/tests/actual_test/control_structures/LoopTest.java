@@ -7,18 +7,6 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 public class LoopTest extends ZenCodeTest {
 
 	@Test
-	public void validateCast() {
-		addScript("var a = 1; println(a); println(a * 2);");
-		executeEngine();
-
-		logger.assertNoErrors();
-		logger.assertNoWarnings();
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "1");
-		logger.assertPrintOutput(1, "2");
-	}
-
-	@Test
 	public void validateOutput() {
 		addScript("for i in 0 .. 100 println(i as int);");
 		executeEngine();

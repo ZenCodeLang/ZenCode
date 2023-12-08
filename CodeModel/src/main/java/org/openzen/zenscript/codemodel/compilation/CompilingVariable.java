@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.compilation.expression.SSACompilingVariable;
 import org.openzen.zenscript.codemodel.statement.VariableID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class CompilingVariable {
@@ -29,13 +30,6 @@ public class CompilingVariable {
 	}
 
 	public VariableDefinition asType(TypeID type) {
-		if (this.definedType == null) {
-			if (this.inferredType != null && !this.inferredType.equals(type))
-				throw new IllegalStateException("Variable type must be unambiguous");
-
-			this.inferredType = type;
-		}
-
 		TypeID actualType = getActualType();
 		return new VariableDefinition(id, name, actualType, isFinal, ssaCompilingVariable.as(actualType));
 	}

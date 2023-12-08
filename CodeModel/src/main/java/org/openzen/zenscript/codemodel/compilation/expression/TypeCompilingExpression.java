@@ -33,6 +33,11 @@ public class TypeCompilingExpression implements CompilingExpression {
 	}
 
 	@Override
+	public boolean canConstructAs(TypeID type) {
+		return false;
+	}
+
+	@Override
 	public Optional<CompilingCallable> call() {
 		return compiler.resolve(type).findStaticOperator(OperatorType.CALL)
 				.map(operator -> new StaticCompilingCallable(compiler, operator));
