@@ -1,0 +1,6 @@
+#output:Hello world
+
+var a = "Hello world";
+do {
+	println(a);
+} while false;

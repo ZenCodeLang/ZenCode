@@ -35,7 +35,7 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 
 	@Override
 	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
-		CodeBlock check = lastBlock.createNext();
+		CodeBlock check = new CodeBlock();
 		CodeBlock content = new CodeBlock();
 		CodeBlock tail = new CodeBlock();
 

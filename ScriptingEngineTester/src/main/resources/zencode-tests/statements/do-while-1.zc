@@ -1,0 +1,5 @@
+#output:Hello world
+
+do {
+	println("Hello world");
+} while false;
