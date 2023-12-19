@@ -40,7 +40,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public CompilingExpression compileKey(ExpressionCompiler compiler) {
-		if (!typeArguments.isEmpty())
+		if (typeArguments != null && !typeArguments.isEmpty())
 			return compiler.invalid(position, CompileErrors.associativeKeyCannotHaveTypeParameters());
 
 		return new CompilingKey(compiler, position, name);
