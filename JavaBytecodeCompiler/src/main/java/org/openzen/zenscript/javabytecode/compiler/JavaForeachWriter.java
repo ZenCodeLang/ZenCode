@@ -90,6 +90,8 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.loadInt(z);
 
+		// ToDo: atm, statement.list.type can also be Optional[ArrayTypeId]
+		//   Does this need to be handled here or should the call already be wrapped in an unwrapOptional expression?
 		ArrayTypeID listType = (ArrayTypeID) statement.list.type;
 		if (listType.elementType == BasicTypeID.BYTE) {
 			javaWriter.arrayLoad(Type.BYTE_TYPE);
