@@ -7,11 +7,11 @@ enum MyEnum: int {
 }
 
 var x as int = MyEnum.B;
-print(x);
+println(x);
 
 var y as MyEnum = 2;
-print(y);
+println(y);
 
 # value enums are not exhaustive, and this operation is allowed
 var z as MyEnum = 10;
-print(z);
+println(z);
