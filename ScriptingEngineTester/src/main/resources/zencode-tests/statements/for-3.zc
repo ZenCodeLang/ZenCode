@@ -1,0 +1,12 @@
+#output: x-a
+#output: y-b
+#output: z-c
+
+val a: string[string] = {
+  x: "a",
+  y: "b",
+  z: "c"
+};
+
+for key in a
+	println(key + "-" + a[key]);

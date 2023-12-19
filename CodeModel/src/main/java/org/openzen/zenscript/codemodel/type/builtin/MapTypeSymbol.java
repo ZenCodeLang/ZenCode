@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
@@ -71,7 +72,7 @@ public class MapTypeSymbol implements TypeSymbol {
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
-		TypeID type = new AssocTypeID(typeArguments[0], typeArguments[1]);
+		AssocTypeID type = new AssocTypeID(typeArguments[0], typeArguments[1]);
 
 		MemberSet.Builder members = MemberSet.create();
 
@@ -87,8 +88,16 @@ public class MapTypeSymbol implements TypeSymbol {
 		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_VALUES));
 		members.method(new MethodInstance(BuiltinMethodSymbol.ASSOC_HASHCODE));
 
-		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEYS));
-		members.method(mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEY_VALUES));
+		members.iterator(new IteratorInstance(
+				type,
+				new TypeID[]{type.keyType},
+				mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEYS)
+		));
+		members.iterator(new IteratorInstance(
+				type,
+				new TypeID[]{type.keyType, type.valueType},
+				mapper.map(type, BuiltinMethodSymbol.ITERATOR_ASSOC_KEY_VALUES)
+		));
 
 		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_EQUALS));
 		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_NOTEQUALS));
