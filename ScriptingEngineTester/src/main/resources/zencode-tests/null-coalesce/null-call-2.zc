@@ -2,7 +2,7 @@
 #output: hello
 
 function test(): string? => null;
-function test2(): string? => "hello";
+function test2(): string? => "hELLo";
 
 println(test()?.toLowerCase());
 println(test2()?.toLowerCase());
