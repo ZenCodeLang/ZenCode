@@ -11,10 +11,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Optional;
 
 public class InstanceMemberCompilingExpression extends AbstractCompilingExpression {
-	private final Expression instance;
+	private final CompilingExpression instance;
 	private final GenericName name;
 
-	public InstanceMemberCompilingExpression(ExpressionCompiler compiler, CodePosition position, Expression instance, GenericName name) {
+	public InstanceMemberCompilingExpression(ExpressionCompiler compiler, CodePosition position, CompilingExpression instance, GenericName name) {
 		super(compiler, position);
 
 		this.instance = instance;
@@ -26,6 +26,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 		if (name.hasArguments())
 			return compiler.at(position).invalid(CompileErrors.typeArgumentsNotAllowedHere());
 
+		Expression instance = this.instance.eval();
 		return compiler.resolve(instance.type)
 				.findGetter(name.name)
 				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE))
@@ -39,6 +40,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 	@Override
 	public Optional<CompilingCallable> call() {
+		Expression instance = this.instance.eval();
 		return Optional.of(compiler.resolve(instance.type)
 				.findMethod(name.name)
 				.map(method -> method.bind(compiler, instance, name.arguments))
@@ -50,6 +52,7 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 		if (name.hasArguments())
 			return compiler.invalid(position, CompileErrors.typeArgumentsNotAllowedHere());
 
+		Expression instance = this.instance.eval();
 		return compiler.resolve(instance.type)
 				.findSetter(name.name)
 				.<CompilingExpression>map(setter -> new Setter(compiler, position, instance, setter, value))

@@ -41,7 +41,7 @@ public abstract class AbstractCompilingExpression implements CompilingExpression
 
 	@Override
 	public CompilingExpression getMember(CodePosition position, GenericName name) {
-		return new InstanceMemberCompilingExpression(compiler, position, eval(), name);
+		return new InstanceMemberCompilingExpression(compiler, position, this, name);
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public CompilingExpression getMember(CodePosition position, GenericName name) {
-			return new InstanceMemberCompilingExpression(compiler, position, eval(), name);
+			return new InstanceMemberCompilingExpression(compiler, position, this, name);
 		}
 
 		@Override
@@ -113,7 +113,7 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public CompilingExpression getMember(CodePosition position, GenericName name) {
-			return new InstanceMemberCompilingExpression(compiler, position, eval(), name);
+			return new InstanceMemberCompilingExpression(compiler, position, this, name);
 		}
 
 		@Override

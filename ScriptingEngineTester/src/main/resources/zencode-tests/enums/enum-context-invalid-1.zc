@@ -9,6 +9,6 @@ public enum MyEnum {
 
 val x: MyEnum = B;
 val y: MyEnum;
-y = C;
+y = G;
 println(x.name);
 println(y.name);
