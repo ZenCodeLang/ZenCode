@@ -1,0 +1,16 @@
+public class Test {
+  private val callback as function(num as int) as int;
+
+  public this(cb as function(num as int) as int) {
+    this.callback = cb;
+  }
+
+  public print() as void {
+    var a = this.callback(2);
+    println(typeof(a));
+    //println("" + a);
+  }
+}
+
+
+new Test((n) => n + 1).print();

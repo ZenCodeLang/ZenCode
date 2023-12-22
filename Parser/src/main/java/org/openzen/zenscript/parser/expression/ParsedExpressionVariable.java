@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.expression.CompilingThisExpression;
+import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -34,6 +36,16 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		if (resolved.isPresent()) {
 			return new CompilingResolved(compiler, position, name, resolved.get());
 		} else {
+			if (compiler.getThisType().isPresent()) {
+				Optional<ResolvedType.Field> field = compiler.resolve(compiler.getThisType().get()).findField(name);
+				if (field.isPresent()) {
+					return new InstanceMemberCompilingExpression(
+							compiler,
+							position,
+							new CompilingThisExpression(compiler, position, compiler.getThisType().get()),
+							new GenericName(name, typeArguments));
+				}
+			}
 			return new CompilingUnresolved(compiler, position, name);
 		}
 	}
