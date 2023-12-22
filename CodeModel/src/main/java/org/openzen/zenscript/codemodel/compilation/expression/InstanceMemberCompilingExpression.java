@@ -53,10 +53,16 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 			return compiler.invalid(position, CompileErrors.typeArgumentsNotAllowedHere());
 
 		Expression instance = this.instance.eval();
-		return compiler.resolve(instance.type)
+		ResolvedType resolvedType = compiler.resolve(instance.type);
+		Optional<CompilingExpression> result = resolvedType
 				.findSetter(name.name)
-				.<CompilingExpression>map(setter -> new Setter(compiler, position, instance, setter, value))
-				.orElseGet(() -> compiler.invalid(position, CompileErrors.noSetterInType(instance.type, name.name)));
+				.map(setter -> new Setter(compiler, position, instance, setter, value));
+		if (!result.isPresent()) {
+			result = resolvedType.findField(name.name)
+					.map(field -> new FieldSetter(compiler, position, instance, field, value));
+		}
+
+		return result.orElseGet(() -> compiler.invalid(position, CompileErrors.noSetterInType(instance.type, name.name)));
 	}
 
 	@Override
@@ -91,6 +97,48 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 		@Override
 		public Expression eval() {
 			return setter.call(compiler, position, instance, TypeID.NONE, value);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			// TODO
+			//instance.collect(collector);
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
+		}
+	}
+
+	private static class FieldSetter extends AbstractCompilingExpression {
+		private final Expression instance;
+		private final ResolvedType.Field field;
+		private final CompilingExpression value;
+
+		public FieldSetter(
+				ExpressionCompiler compiler,
+				CodePosition position,
+				Expression instance,
+				ResolvedType.Field field,
+				CompilingExpression value
+		) {
+			super(compiler, position);
+
+			this.instance = instance;
+			this.field = field;
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return field.set(compiler.at(position), instance, value.eval());
 		}
 
 		@Override
