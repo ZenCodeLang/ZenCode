@@ -9,7 +9,7 @@ package org.openzen.zenscript.javashared;
  * @author Hoofdgebruiker
  */
 public interface JavaSyntheticClassGenerator {
-	void synthesizeFunction(JavaSynthesizedFunction function);
+	JavaMethod synthesizeFunction(JavaSynthesizedFunction function);
 
 	void synthesizeRange(JavaSynthesizedRange range);
 }

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
-	private final FunctionTypeSymbol type;
+	public final FunctionTypeSymbol type;
 
 	public FunctionTypeID(FunctionHeader header) {
 		this.header = header;

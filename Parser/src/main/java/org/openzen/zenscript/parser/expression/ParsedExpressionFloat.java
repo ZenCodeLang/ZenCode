@@ -61,8 +61,11 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			TypeID actualType = cast.type.simplified();
 
-			if (actualType == BasicTypeID.FLOAT || actualType == BasicTypeID.DOUBLE)
-				return cast.of(eval());
+			if (actualType == BasicTypeID.FLOAT) {
+				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant((float) value));
+			} else if (actualType == BasicTypeID.DOUBLE) {
+				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant(value));
+			}
 
 			ResolvedType resolvedType = compiler.resolve(actualType);
 			if (suffix.isEmpty()) {

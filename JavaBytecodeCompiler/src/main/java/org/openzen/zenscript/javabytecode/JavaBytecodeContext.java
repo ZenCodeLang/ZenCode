@@ -42,6 +42,8 @@ public class JavaBytecodeContext extends JavaContext {
 		typeGenerator = new TypeGenerator();
 		internalNameVisitor = new JavaTypeInternalNameVisitor(this);
 		descriptorVisitor = new JavaTypeDescriptorVisitor(this);
+
+		init();
 	}
 
 	@Override
@@ -66,7 +68,7 @@ public class JavaBytecodeContext extends JavaContext {
 		target.addClass(name, bytecode);
 	}
 
-	private void createLambdaInterface(JavaSynthesizedFunction function) {
+	private JavaMethod createLambdaInterface(JavaSynthesizedFunction function) {
 		ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		ifaceWriter.visitAnnotation("java/lang/FunctionalInterface", true).visitEnd();
 		ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, function.cls.internalName, null, "java/lang/Object", null);
@@ -81,6 +83,16 @@ public class JavaBytecodeContext extends JavaContext {
 				.visitEnd();
 
 		register(function.cls.internalName, ifaceWriter.toByteArray());
+
+
+		return new JavaNativeMethod(
+				function.cls,
+				JavaNativeMethod.Kind.INTERFACE,
+				function.method,
+				false,
+				getMethodDescriptor(function.header),
+				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
+				function.header.getReturnType().isGeneric());
 	}
 
 	private void createRangeClass(JavaSynthesizedRange range) {
@@ -132,8 +144,8 @@ public class JavaBytecodeContext extends JavaContext {
     private class TypeGenerator implements JavaSyntheticClassGenerator {
 
 		@Override
-		public void synthesizeFunction(JavaSynthesizedFunction function) {
-			createLambdaInterface(function);
+		public JavaMethod synthesizeFunction(JavaSynthesizedFunction function) {
+			return createLambdaInterface(function);
 		}
 
 		@Override

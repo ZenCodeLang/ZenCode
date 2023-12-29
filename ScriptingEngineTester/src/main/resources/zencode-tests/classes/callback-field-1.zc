@@ -1,3 +1,5 @@
+#output: 3
+
 public class Test {
   private val callback as function(num as int) as int;
 
@@ -7,8 +9,7 @@ public class Test {
 
   public print() as void {
     var a = this.callback(2);
-    println(typeof(a));
-    //println("" + a);
+    println("" + a);
   }
 }
 

@@ -1,0 +1,5 @@
+#output: 5.0
+
+val callback as function(a as float, b as float, c as float) as float = (a, b, c) => a * b + c;
+val a = callback(1.0, 2.0, 3.0);
+println(a);

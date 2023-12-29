@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
-public class ParsedExpressionInt extends ParsedExpression {
+public class 	ParsedExpressionInt extends ParsedExpression {
 	public final boolean negative;
 	public final long value;
 	public final String suffix;

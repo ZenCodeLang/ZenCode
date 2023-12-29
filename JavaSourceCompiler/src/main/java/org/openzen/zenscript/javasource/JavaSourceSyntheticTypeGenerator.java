@@ -6,10 +6,7 @@
 package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaSynthesizedFunction;
-import org.openzen.zenscript.javashared.JavaSynthesizedRange;
-import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
+import org.openzen.zenscript.javashared.*;
 
 /**
  * @author Hoofdgebruiker
@@ -26,7 +23,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	}
 
 	@Override
-	public void synthesizeFunction(JavaSynthesizedFunction function) {
+	public JavaMethod synthesizeFunction(JavaSynthesizedFunction function) {
 		JavaSourceImporter importer = new JavaSourceImporter(context, function.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 
@@ -57,6 +54,15 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append("}\n");
 
 		writeFile(function.cls, importer, contents);
+
+		return new JavaNativeMethod(
+				function.cls,
+				JavaNativeMethod.Kind.INSTANCE,
+				function.method,
+				false,
+				function.header.getDescriptor(),
+				JavaModifiers.PUBLIC,
+				function.header.getReturnType().isGeneric());
 	}
 
 	@Override

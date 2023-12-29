@@ -23,6 +23,8 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinFunctionValueCall;
+import org.openzen.zenscript.codemodel.type.builtin.FunctionTypeSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.RangeTypeSymbol;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
@@ -58,9 +60,11 @@ public abstract class JavaContext {
 		JavaCompiledModule compiledGeneratedClassesModule = new JavaCompiledModule(generatedClassesModule, FunctionParameter.NONE);
 		this.generatedClassesModule = new JavaCompilingModule(this, compiledGeneratedClassesModule);
 
-		addDefaultFunctions();
-
 		modules.put(ModuleSymbol.BUILTIN, JavaBuiltinModule.generate());
+	}
+
+	public void init() {
+		addDefaultFunctions();
 	}
 
 	private void addDefaultFunctions() {
@@ -125,12 +129,24 @@ public abstract class JavaContext {
 	}
 
 	private void registerFunction(String id, Class<?> clazz, String methodName, TypeParameter[] typeParameters, TypeID returnType, TypeID... parameterTypes) {
+		FunctionHeader functionHeader = new FunctionHeader(returnType, parameterTypes);
+		JavaClass javaClass = new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE);
 
 		functions.put(id, new JavaSynthesizedFunction(
-				new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
+				javaClass,
 				typeParameters,
-				new FunctionHeader(returnType, parameterTypes),
+				functionHeader,
 				methodName));
+
+		FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
+		modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), new JavaNativeMethod(
+				javaClass,
+				JavaNativeMethod.Kind.INTERFACE,
+				methodName,
+				false,
+				getMethodDescriptor(functionHeader),
+				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
+				functionHeader.getReturnType().isGeneric()));
 	}
 
 	private void registerFunction(Function<String, TypeParameter> paramConverter, Class<?> clazz) {
@@ -159,11 +175,22 @@ public abstract class JavaContext {
 				throw new IllegalArgumentException(String.format("Function '%s' already registered!", idBuilder));
 			}
 
+			FunctionHeader functionHeader = new FunctionHeader(convertTypeToTypeID(parameterMapping, genericReturnType), parameterTypes);
 			functions.put(idBuilder.toString(), new JavaSynthesizedFunction(
 					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
 					parameters,
-					new FunctionHeader(convertTypeToTypeID(parameterMapping, genericReturnType), parameterTypes),
+					functionHeader,
 					method.getName()));
+
+			FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
+			modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), new JavaNativeMethod(
+					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
+					JavaNativeMethod.Kind.INTERFACE,
+					method.getName(),
+					false,
+					getMethodDescriptor(functionHeader),
+					JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
+					functionHeader.getReturnType().isGeneric()));
 		} else {
 			throw new IllegalArgumentException(String.format("Unable to find any applicable methods in class: '%s'", clazz.getName()));
 		}
@@ -433,7 +460,9 @@ public abstract class JavaContext {
 					"invoke");
 
 			functions.put(id, function);
-			getTypeGenerator().synthesizeFunction(function);
+			JavaMethod javaMethod = getTypeGenerator().synthesizeFunction(function);
+
+			modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type.type), javaMethod);
 		} else {
 			function = functions.get(id);
 		}

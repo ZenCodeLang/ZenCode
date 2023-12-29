@@ -27,6 +27,8 @@ public class JavaSourceContext extends JavaContext {
 		typeDescriptorVisitor = new JavaTypeDescriptorVisitor(this);
 		this.generator = new JavaSourceSyntheticTypeGenerator(helpers, settings, this);
 		helperGenerator = new JavaSourceSyntheticHelperGenerator(helpers, this, settings);
+
+		init();
 	}
 
 	@Override

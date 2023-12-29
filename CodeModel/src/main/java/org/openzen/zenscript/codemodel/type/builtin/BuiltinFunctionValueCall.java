@@ -52,4 +52,21 @@ public class BuiltinFunctionValueCall implements MethodSymbol {
 	public Optional<MethodInstance> getOverrides() {
 		return Optional.empty();
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof BuiltinFunctionValueCall)
+			return equals((BuiltinFunctionValueCall) other);
+
+		return false;
+	}
+
+	private boolean equals(BuiltinFunctionValueCall other) {
+		return type.header.equals(other.type.header);
+	}
+
+	@Override
+	public int hashCode() {
+		return type.header.hashCode();
+	}
 }

@@ -1,0 +1,5 @@
+#output: 3
+
+val callback as function(num as int) as int = n => n + 1;
+val a = callback(2);
+println(a);
