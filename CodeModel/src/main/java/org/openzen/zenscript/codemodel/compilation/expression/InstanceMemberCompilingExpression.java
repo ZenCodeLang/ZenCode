@@ -1,9 +1,11 @@
 package org.openzen.zenscript.codemodel.compilation.expression;
 
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -41,10 +43,27 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 	@Override
 	public Optional<CompilingCallable> call() {
 		Expression instance = this.instance.eval();
-		return Optional.of(compiler.resolve(instance.type)
+		ResolvedType resolvedType = compiler.resolve(instance.type);
+		Optional<CompilingCallable> result = resolvedType
 				.findMethod(name.name)
-				.map(method -> method.bind(compiler, instance, name.arguments))
-				.orElseGet(() -> new InvalidCompilingExpression(compiler, position, CompileErrors.noMemberInType(instance.type, name.name))));
+				.map(method -> method.bind(compiler, instance, name.arguments));
+		if (!result.isPresent()) {
+			result = resolvedType.findGetter(name.name)
+					.flatMap(getter -> {
+						Expression value = getter.call(compiler, position, instance, TypeID.NONE);
+						return compiler.resolve(value.type)
+								.findOperator(OperatorType.CALL)
+								.map(method -> method.bind(compiler, value, name.arguments));
+					});
+		}
+		if (!result.isPresent()) {
+			result = resolvedType.findField(name.name)
+					.flatMap(field -> compiler.resolve(field.getType())
+							.findOperator(OperatorType.CALL)
+							.map(method -> method.bind(compiler, field.get(compiler.at(position), instance), name.arguments)));
+		}
+
+		return Optional.of(result.orElseGet(() -> new InvalidCompilingExpression(compiler, position, CompileErrors.noMemberInType(instance.type, name.name))));
 	}
 
 	@Override

@@ -1,0 +1,5 @@
+#output: 1
+
+val a: int[string] = {};
+a["foo"] = 1;
+println(a["foo"]);

@@ -599,6 +599,18 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				}
 				break;
 			}
+			case ASSOC_INDEXSET: {
+				AssocTypeID type = (AssocTypeID) arguments[0].type;
+
+				arguments[0].accept(expressionVisitor);
+				arguments[1].accept(expressionVisitor);
+				type.keyType.accept(type.keyType, boxingTypeVisitor);
+				arguments[2].accept(expressionVisitor);
+				type.valueType.accept(type.valueType, boxingTypeVisitor);
+				javaWriter.invokeInterface(MAP_PUT);
+				javaWriter.pop();
+				return null;
+			}
 		}
 
 		for (Expression argument : arguments) {
@@ -1243,11 +1255,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				AssocTypeID type = (AssocTypeID) arguments[0].type;
 				type.keyType.accept(type.keyType, boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_GET);
-
-				type.valueType.accept(type.valueType, unboxingTypeVisitor);
-				if (!CompilerUtils.isPrimitive(type.valueType)) {
-					javaWriter.checkCast(context.getType(type.valueType));
-				}
+				javaWriter.checkCast(context.getType(new OptionalTypeID(type.valueType)));
 				break;
 			}
 			case OPTIONAL_IS_NULL:
