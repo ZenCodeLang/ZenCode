@@ -115,6 +115,13 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					typeArguments,
 					Expression.NONE);
 
+		if(method.getHeader().getNumberOfTypeParameters() != typeArguments.length) {
+			return new CallArguments(
+					CastedExpression.Level.INVALID,
+					typeArguments,
+					Expression.NONE);
+		}
+
 		if ((typeArguments == null || typeArguments.length == 0) && method.getHeader().typeParameters.length > 0) {
 			// attempt to infer type arguments from the return type
 			final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();

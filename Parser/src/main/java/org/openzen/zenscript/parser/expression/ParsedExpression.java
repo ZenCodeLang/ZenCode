@@ -511,11 +511,12 @@ public abstract class ParsedExpression implements CompilableExpression {
 			case K_NEW: {
 				parser.next();
 				IParsedType type = IParsedType.parse(parser);
+				List<IParsedType> typeArguments = IParsedType.parseTypeArgumentsForCall(parser);
 				ParsedCallArguments newArguments = ParsedCallArguments.NONE;
-				if (parser.isNext(ZSTokenType.T_BROPEN) || parser.isNext(ZSTokenType.T_LESS))
+				if (parser.isNext(ZSTokenType.T_BROPEN))
 					newArguments = ParsedCallArguments.parse(parser);
 
-				return new ParsedNewExpression(position, type, newArguments);
+				return new ParsedNewExpression(position, type, newArguments, typeArguments);
 			}
 			case K_THROW: {
 				parser.next();
