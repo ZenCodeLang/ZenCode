@@ -1299,6 +1299,16 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.label(exit);
 				break;
 			}
+			case ARRAY_INDEXGET: {
+				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
+				javaWriter.arrayLoad(context.getType(type.elementType));
+				break;
+			}
+			case ARRAY_INDEXSET: {
+				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
+				javaWriter.arrayStore(context.getType(type.elementType));
+				break;
+			}
 			case ENUM_VALUES: {
 				DefinitionTypeID type = returnType.asArray().get().elementType.asDefinition().get();
 				JavaClass cls = context.getJavaClass(type.definition);

@@ -1,0 +1,9 @@
+#output: 9
+#output: 3
+#output: 0
+
+var array = [9, 3, 0];
+
+println(array[0]);
+println(array[1]);
+println(array[2]);
