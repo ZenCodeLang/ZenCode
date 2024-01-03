@@ -62,7 +62,10 @@ public class JavaCompiler {
 		JavaCompilingModule compiling = new JavaCompilingModule(context, target);
 		context.addModule(module.module, target);
 
-		for (HighLevelDefinition definition : module.definitions.getAll()) {
+		List<HighLevelDefinition> allDefinitions = new ArrayList<>(module.definitions.getAll());
+		allDefinitions.addAll(module.expansions);
+
+		for (HighLevelDefinition definition : allDefinitions) {
 			final String className = getClassName(getFilename(definition));
 			final String filename;
 			if (definition instanceof FunctionDefinition) {
@@ -75,13 +78,13 @@ public class JavaCompiler {
 		}
 
 		// TODO: topological sort!
-		for (HighLevelDefinition definition : module.definitions.getAll()) {
+		for (HighLevelDefinition definition : allDefinitions) {
 			JavaCompilingClass class_ = compiling.getClass(definition);
 			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(class_);
 			definition.accept(memberPreparer);
 		}
 
-		for (HighLevelDefinition definition : module.definitions.getAll()) {
+		for (HighLevelDefinition definition : allDefinitions) {
 			final String internalName;
 			final JavaScriptFile scriptFile;
 			if (definition instanceof FunctionDefinition) {

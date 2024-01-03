@@ -16,8 +16,8 @@ public class LocalTypeImpl implements LocalType {
 	private final ResolvedType resolvedThis;
 	private ResolvedType resolvedSuper;
 
-	public LocalTypeImpl(TypeSymbol definition, TypeResolver resolver) {
-		thisType = DefinitionTypeID.createThis(definition);
+	public LocalTypeImpl(TypeID type, TypeResolver resolver) {
+		thisType = type;
 		resolvedThis = resolver.resolve(thisType);
 	}
 

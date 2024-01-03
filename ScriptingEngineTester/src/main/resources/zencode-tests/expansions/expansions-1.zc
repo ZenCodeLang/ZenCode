@@ -1,0 +1,13 @@
+#output: I'm a Foo
+
+class Foo {
+	this() {}
+}
+
+expand Foo {
+	printMe(): void {
+		println("I'm a Foo");
+	}
+}
+
+new Foo().printMe();

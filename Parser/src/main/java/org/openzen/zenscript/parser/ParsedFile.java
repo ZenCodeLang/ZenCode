@@ -77,11 +77,25 @@ public class ParsedFile {
 			definitionCompilers.put(file, fileCompiler);
 
 			for (ParsedDefinition definition : file.definitions) {
-				definition.registerCompiling(definitions, expansions, fileCompiler);
+				if (!definition.isExpansion()) {
+					definition.registerCompiling(definitions, expansions, fileCompiler);
+				}
 			}
 		}
 
+		for (CompilingDefinition definition : definitions) {
+			pkg.addType(definition.getName(), definition);
+		}
+
 		ZSPackage rootPackage = registry.collectPackages();
+
+		for (ParsedFile file : files) {
+			for (ParsedDefinition definition : file.definitions) {
+				if (definition.isExpansion()) {
+					definition.registerCompiling(definitions, expansions, definitionCompilers.get(file));
+				}
+			}
+		}
 
 		definitions = sortTopologically(definitions);
 
@@ -98,9 +112,6 @@ public class ParsedFile {
 			}
 		}
 
-		for (CompilingDefinition definition : definitions) {
-			pkg.addType(definition.getName(), definition);
-		}
 		for (CompilingExpansion expansion : expansions) {
 			context.addExpansion(expansion.getCompiling());
 		}

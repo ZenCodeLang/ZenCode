@@ -49,4 +49,8 @@ public abstract class ParsedDefinition implements CompilableType {
 	public final Modifiers getModifiers() {
 		return modifiers;
 	}
+
+	public boolean isExpansion() {
+		return false;
+	}
 }

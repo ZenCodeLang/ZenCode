@@ -52,8 +52,13 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 	}
 
 	@Override
-	public MemberCompiler forMembers(TypeSymbol compiled) {
-		return new MemberCompilerImpl(context, this, compiled, localTypeBuilder.withGeneric(compiled.getTypeParameters()));
+	public MemberCompiler forMembers(TypeSymbol definition) {
+		TypeID compiled = DefinitionTypeID.createThis(definition);
+		return new MemberCompilerImpl(context, this, compiled, localTypeBuilder.withGeneric(definition.getTypeParameters()));
+	}
+	@Override
+	public MemberCompiler forExpansionMembers(TypeID extended, TypeSymbol expansion) {
+		return new MemberCompilerImpl(context, this, extended, localTypeBuilder.withGeneric(expansion.getTypeParameters()));
 	}
 
 	@Override

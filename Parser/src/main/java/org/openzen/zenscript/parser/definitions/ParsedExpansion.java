@@ -61,7 +61,8 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		ExpansionDefinition compiled = new ExpansionDefinition(position, pkg.module, pkg.getPackage(), modifiers);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 
-		Compiling compiling = new Compiling(compiler, compiled);
+		TypeID expandedType = target.compile(compiler.types());
+		Compiling compiling = new Compiling(compiler, compiled, expandedType);
 		expansions.add(compiling);
 		compiling.registerCompiling(definitions);
 	}
@@ -71,19 +72,24 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public boolean isExpansion() {
+		return true;
+	}
+
 	private class Compiling implements CompilingExpansion {
 		private final DefinitionCompiler compiler;
 		private final ExpansionDefinition compiled;
 		private final CompilingMember[] members;
 		private final Map<String, CompilingDefinition> innerDefinitions = new HashMap<>();
 
-		public Compiling(DefinitionCompiler compiler, ExpansionDefinition compiled) {
+		public Compiling(DefinitionCompiler compiler, ExpansionDefinition compiled, TypeID expanding) {
 			this.compiler = compiler;
 
 			this.compiled = compiled;
 			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 
-			MemberCompiler memberCompiler = compiler.forMembers(compiled);
+			MemberCompiler memberCompiler = compiler.forExpansionMembers(expanding, compiled);
 			members = ParsedExpansion.this.members.stream()
 					.map(member -> member.compile(compiled, null, memberCompiler))
 					.toArray(CompilingMember[]::new);
@@ -112,6 +118,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 			for (CompilingMember member : members) {
 				member.linkTypes();
+				compiled.addMember(member.getCompiled());
 			}
 		}
 

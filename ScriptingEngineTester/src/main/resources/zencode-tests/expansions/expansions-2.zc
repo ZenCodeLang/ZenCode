@@ -1,0 +1,9 @@
+#output: Some Static String
+
+public expand string {
+    printHelloWorld() as void {
+        println('Some Static String');
+    }
+}
+
+"ignored".printHelloWorld();

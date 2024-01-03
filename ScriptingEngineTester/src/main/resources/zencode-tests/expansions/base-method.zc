@@ -1,0 +1,10 @@
+#output: Hello World
+
+public expand string {
+    printMe() as void {
+        println(this);
+    }
+}
+
+var x = "Hello World";
+x.printMe();

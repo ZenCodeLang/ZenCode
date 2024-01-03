@@ -11,7 +11,7 @@ public class MemberCompilerImpl implements MemberCompiler {
 	private final TypeBuilder types;
 	private final DefinitionCompiler definitionCompiler;
 
-	public MemberCompilerImpl(CompileContext context, DefinitionCompiler definitionCompiler, TypeSymbol forType, TypeBuilder types) {
+	public MemberCompilerImpl(CompileContext context, DefinitionCompiler definitionCompiler, TypeID forType, TypeBuilder types) {
 		this.context = context;
 		this.definitionCompiler = definitionCompiler;
 		this.localType = new LocalTypeImpl(forType, definitionCompiler);

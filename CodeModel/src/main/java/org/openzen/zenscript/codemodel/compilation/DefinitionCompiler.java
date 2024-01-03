@@ -12,5 +12,7 @@ public interface DefinitionCompiler extends TypeResolver {
 
     MemberCompiler forMembers(TypeSymbol compiled);
 
+	MemberCompiler forExpansionMembers(TypeID extended, TypeSymbol expansion);
+
     StatementCompiler forScripts(FunctionHeader scriptHeader);
 }

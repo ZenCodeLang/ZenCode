@@ -1,0 +1,10 @@
+#output: hello
+
+class Foo {
+	this() {}
+	print() {
+		println("hello");
+	}
+}
+
+new Foo().print();
