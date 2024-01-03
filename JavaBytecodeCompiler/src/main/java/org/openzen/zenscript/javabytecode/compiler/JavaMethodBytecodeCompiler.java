@@ -10,7 +10,6 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.*;
 
-import javax.print.DocFlavor;
 import java.util.Collections;
 
 public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
@@ -190,8 +189,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
 		//Fixes an issue for List#add() returning void in ZC but Z in Java.
-		if (returnType == BasicTypeID.VOID && !method.descriptor.equals("") && !method.descriptor.endsWith(")V")) {
-			final boolean isLarge = method.descriptor.endsWith(")D") && method.descriptor.endsWith(")J");
+		if (returnType == BasicTypeID.VOID && !method.descriptor.isEmpty() && !method.descriptor.endsWith(")V")) {
+			final boolean isLarge = method.descriptor.endsWith(")D") || method.descriptor.endsWith(")J");
 			javaWriter.pop(isLarge);
 		}
 
