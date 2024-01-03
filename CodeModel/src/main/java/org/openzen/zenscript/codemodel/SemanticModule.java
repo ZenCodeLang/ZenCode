@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class SemanticModule {
 
@@ -73,9 +74,11 @@ public class SemanticModule {
 		for (ScriptBlock block : scripts)
 			processedScripts.add(annotationProcessor.process(block));
 
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			annotationProcessor.process(definition);
-		}
+		Stream.concat(
+				definitions.getAll().stream(),
+				expansions.stream()
+		).forEach(annotationProcessor::process);
+
 
 		return new SemanticModule(
 				module,
