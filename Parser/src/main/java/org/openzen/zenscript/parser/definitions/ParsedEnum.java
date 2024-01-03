@@ -89,7 +89,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		private final List<ParsedEnumConstant.Compiling> enumValues;
 
 		public Compiling(DefinitionCompiler compiler, EnumDefinition compiled, boolean inner) {
-			super(ParsedEnum.this, compiler, name, compiled, inner);
+			super(ParsedEnum.this, compiler, name, compiled, inner, annotations);
 
 			enumValues = ParsedEnum.this.enumValues.stream()
 					.map(value -> value.compile(compiled))

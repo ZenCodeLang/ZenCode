@@ -100,7 +100,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 
 	private class Compiling extends BaseCompilingDefinition<VariantDefinition> {
 		private Compiling(DefinitionCompiler compiler, VariantDefinition compiled, boolean inner) {
-			super(ParsedVariant.this, compiler, name, compiled, inner);
+			super(ParsedVariant.this, compiler, name, compiled, inner, annotations);
 		}
 
 		@Override

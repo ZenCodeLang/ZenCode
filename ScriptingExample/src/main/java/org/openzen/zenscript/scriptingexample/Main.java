@@ -28,6 +28,7 @@ public class Main {
 	public static void main(String[] args) throws CompileException, ParseException, IOException, NoSuchMethodException {
 		ScriptingEngine scriptingEngine = new ScriptingEngine(new ScriptingEngineStreamLogger());
 		scriptingEngine.debug = true;
+		scriptingEngine.addAnnotation(TestAnnotationDefinition.INSTANCE);
 
 		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
 		example.addGlobals(Globals.class);

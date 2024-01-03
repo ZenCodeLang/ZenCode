@@ -110,6 +110,8 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 		@Override
 		public void linkTypes() {
+			compiled.annotations = ParsedAnnotation.compileForDefinition(annotations, compiled, compiler);
+
 			TypeBuilder typeBuilder = compiler.types().withGeneric(compiled.typeParameters);
 			ParsedTypeParameter.compile(typeBuilder, compiled.typeParameters, ParsedExpansion.this.parameters);
 			compiled.target = ParsedExpansion.this.target.compile(typeBuilder);

@@ -12,6 +12,7 @@ import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -89,6 +90,10 @@ public class ScriptingEngine {
 		stdlibModule = Validator.validate(stdlibModule, logger);
 		space.addModule(name, stdlibModule);
 		registerCompiled(stdlibModule);
+	}
+
+	public void addAnnotation(AnnotationDefinition definition) {
+		space.addAnnotation(definition);
 	}
 
 	public JavaNativeModule createNativeModule(String name, String basePackage) {

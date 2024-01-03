@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.scriptingexample.TestAnnotationDefinition;
 import org.openzen.zenscript.scriptingexample.tests.SharedGlobals;
 
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 				test.getRequiredStdLibModules().toArray(new String[0])
 		);
 		engine.debug = true;
+		engine.addAnnotation(TestAnnotationDefinition.INSTANCE);
+
 		JavaNativeModule testModule = engine.createNativeModule("testsupport", "org.openzen.zenscript.scripting_tests");
 		SharedGlobals.currentlyActiveLogger = logger;
 
@@ -33,6 +36,7 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 			testModule.addClass(requiredClass);
 		});
 		testModule.addGlobal("typeof", TypeofGlobal.INSTANCE);
+		testModule.addGlobal("testAnnotationValue", TestAnnotationValueGlobal.INSTANCE);
 
 		try {
 			engine.registerNativeProvided(testModule);

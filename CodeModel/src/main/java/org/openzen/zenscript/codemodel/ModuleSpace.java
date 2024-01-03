@@ -67,4 +67,8 @@ public final class ModuleSpace {
 	public List<AnnotationDefinition> getAnnotations() {
 		return annotations;
 	}
+
+	public void addAnnotation(AnnotationDefinition definition) {
+		annotations.add(definition);
+	}
 }

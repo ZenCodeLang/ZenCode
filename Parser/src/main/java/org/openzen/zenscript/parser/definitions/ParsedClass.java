@@ -75,7 +75,7 @@ public class ParsedClass extends BaseParsedDefinition {
 
 	private class Compiling extends BaseCompilingDefinition<ClassDefinition> {
 		public Compiling(DefinitionCompiler compiler, ClassDefinition compiled, boolean inner) {
-			super(ParsedClass.this, compiler, name, compiled, inner);
+			super(ParsedClass.this, compiler, name, compiled, inner, annotations);
 
 			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 		}

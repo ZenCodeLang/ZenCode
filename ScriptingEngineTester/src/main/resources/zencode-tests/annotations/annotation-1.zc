@@ -1,0 +1,13 @@
+#output: Name
+
+[Test("Name")]
+class Foo {
+	this() {}
+
+	printMe(): void {
+		//println(this.test);
+	}
+}
+
+var foo = new Foo();
+foo.printMe();

@@ -89,7 +89,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 	private class Compiling extends BaseCompilingDefinition<InterfaceDefinition> {
 
 		public Compiling(DefinitionCompiler compiler, InterfaceDefinition compiled, boolean inner) {
-			super(ParsedInterface.this, compiler, name, compiled, inner);
+			super(ParsedInterface.this, compiler, name, compiled, inner, annotations);
 
 			compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 		}

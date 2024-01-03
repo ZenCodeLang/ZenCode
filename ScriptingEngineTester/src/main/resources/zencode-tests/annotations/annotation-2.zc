@@ -1,0 +1,13 @@
+class Foo {
+	static val VALUE = "Something";
+
+	this() {}
+}
+
+[Test(Foo.VALUE)]
+class Bar {
+	this() {}
+}
+
+var bar = new Bar();
+println(testAnnotationValue(bar));

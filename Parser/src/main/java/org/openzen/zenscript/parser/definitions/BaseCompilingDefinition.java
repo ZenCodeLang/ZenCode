@@ -2,11 +2,13 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 
 import java.util.*;
 
@@ -17,18 +19,21 @@ public class BaseCompilingDefinition<T extends HighLevelDefinition> implements C
 	protected final T compiled;
 	private final boolean inner;
 	private final Map<String, CompilingDefinition> innerDefinitions = new HashMap<>();
+	private final ParsedAnnotation[] annotations;
 
 	public BaseCompilingDefinition(
 			BaseParsedDefinition parsedDefinition,
 			DefinitionCompiler compiler,
 			String name,
 			T compiled,
-			boolean isInner
+			boolean isInner,
+			ParsedAnnotation[] annotations
 	) {
 		this.compiler = compiler;
 		this.name = name;
 		this.compiled = compiled;
 		this.inner = isInner;
+		this.annotations = annotations;
 
 		MemberCompiler memberCompiler = compiler.forMembers(compiled);
 		members = parsedDefinition.members.stream()
@@ -61,6 +66,8 @@ public class BaseCompilingDefinition<T extends HighLevelDefinition> implements C
 
 	@Override
 	public void linkTypes() {
+		compiled.annotations = ParsedAnnotation.compileForDefinition(this.annotations, compiled, compiler);
+
 		for (CompilingMember member : members) {
 			member.linkTypes();
 			compiled.addMember(member.getCompiled());

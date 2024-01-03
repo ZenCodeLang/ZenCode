@@ -1,0 +1,9 @@
+#error: 3:UNKNOWN_ANNOTATION
+
+[Unknown("Name")]
+class Foo {
+	this() {}
+}
+
+var foo = new Foo();
+println(testAnnotationValue(foo));
