@@ -25,6 +25,6 @@ public class ExpansionDefinition extends HighLevelDefinition {
 
 	@Override
 	public String getName() {
-		return null;
+		return "(expansion of " + target + ")";
 	}
 }
