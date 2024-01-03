@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel;
 
+import java.util.StringJoiner;
+
 public class Modifiers {
 	public static final int FLAG_PUBLIC = 1;
 	public static final int FLAG_INTERNAL = 2;
@@ -195,6 +197,10 @@ public class Modifiers {
 		return (value & FLAG_OVERRIDE) > 0;
 	}
 
+	public static boolean isOverride(int modifiers) {
+		return (modifiers & FLAG_OVERRIDE) > 0;
+	}
+	
 	public boolean hasAccessModifiers() {
 		return (value & (FLAG_PRIVATE | FLAG_PUBLIC | FLAG_PROTECTED | FLAG_INTERNAL)) > 0;
 	}
@@ -203,23 +209,53 @@ public class Modifiers {
 		return (modifiers & (FLAG_PRIVATE | FLAG_PUBLIC | FLAG_PROTECTED | FLAG_INTERNAL)) > 0;
 	}
 
+	@Override
+	public String toString() {
+		return describe(value);
+	}
+
 	public static String describe(int modifiers) {
-		StringBuilder builder = new StringBuilder();
-		if (isPublic(modifiers)) {
-			builder.append("public");
-		} else if (isPrivate(modifiers)) {
-			builder.append("private");
-		} else if (isProtected(modifiers)) {
-			builder.append("protected");
+		StringJoiner joiner = new StringJoiner(" ");
+		if(isPublic(modifiers)) {
+			joiner.add("public");
 		}
-		if (isAbstract(modifiers)) {
-			builder.append(" abstract");
-		} else if (isFinal(modifiers)) {
-			builder.append(" final");
-		} else if (isStatic(modifiers)) {
-			builder.append(" static");
+		if(isInternal(modifiers)) {
+			joiner.add("internal");
 		}
-		return builder.toString();
+		if(isProtected(modifiers)) {
+			joiner.add("protected");
+		}
+		if(isPrivate(modifiers)) {
+			joiner.add("private");
+		}
+		if(isAbstract(modifiers)) {
+			joiner.add("abstract");
+		}
+		if(isFinal(modifiers)) {
+			joiner.add("final");
+		}
+		if(isConst(modifiers)) {
+			joiner.add("const");
+		}
+		if(isConstOptional(modifiers)) {
+			joiner.add("constOptional");
+		}
+		if(isStatic(modifiers)) {
+			joiner.add("static");
+		}
+		if(isImplicit(modifiers)) {
+			joiner.add("implicit");
+		}
+		if(isVirtual(modifiers)) {
+			joiner.add("virtual");
+		}
+		if(isExtern(modifiers)) {
+			joiner.add("extern");
+		}
+		if(isOverride(modifiers)) {
+			joiner.add("override");
+		}
+		return joiner.toString();
 	}
 
 }
