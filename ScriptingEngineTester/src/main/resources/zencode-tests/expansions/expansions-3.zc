@@ -1,0 +1,10 @@
+#output: 3
+
+public expand <X> X[] {
+    printSize(): void {
+        println(this.length);
+    }
+}
+
+var array = [0,0,0];
+array.printSize();
