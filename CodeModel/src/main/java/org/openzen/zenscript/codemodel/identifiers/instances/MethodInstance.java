@@ -64,6 +64,6 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 
 	@Override
 	public boolean isImplicit() {
-		return false;
+		return method.getModifiers().isImplicit();
 	}
 }
