@@ -148,7 +148,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	private JavaNativeMethod.Kind getKind(DefinitionMember member) {
 		if (member instanceof ConstructorMember)
-			return JavaNativeMethod.Kind.CONSTRUCTOR;
+			return member.isImplicit() ? JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR : JavaNativeMethod.Kind.CONSTRUCTOR;
 
 		return member.isStatic() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.INSTANCE;
 	}
@@ -266,19 +266,33 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					signature);
 		} else if (method == null) {
 			if (member instanceof ConstructorMember) {
-				final String signature = context.getMethodSignatureConstructor(member);
+                if(member.isImplicit()) {
+					final String signature = context.getMethodSignature(header, true);
+					method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+							class_.compiled,
+							getKind(member),
+							"of",
+							true,
+							context.getMethodDescriptor(header),
+							(JavaModifiers.getJavaModifiers(member.getEffectiveModifiers())),
+							false,
+							header.useTypeParameters()),
+							signature);
+				} else {
+					final String signature = context.getMethodSignatureConstructor(member);
+					method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+							class_.compiled,
+							getKind(member),
+                            name,
+							true,
+							context.getMethodDescriptorConstructor(member),
+							// In Java, the .ctor is NOT static!
+							(modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers().withoutStatic())),
+							false,
+							header.useTypeParameters()),
+							signature);
+				}
 
-				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
-						class_.compiled,
-						getKind(member),
-						name,
-						true,
-						context.getMethodDescriptorConstructor(member),
-						// In Java, the .ctor is NOT static!
-						(modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers().withoutStatic())),
-						false,
-						header.useTypeParameters()),
-						signature);
 			} else {
 				final String signature = context.getMethodSignature(header);
 				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(

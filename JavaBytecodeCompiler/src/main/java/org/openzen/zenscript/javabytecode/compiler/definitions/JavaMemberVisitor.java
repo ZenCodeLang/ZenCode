@@ -79,7 +79,12 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label constructorEnd = new Label();
 		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition);
 		constructorWriter.label(constructorStart);
-		CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
+
+		if(method.compiled.kind == JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
+			CompilerUtils.tagMethodParameters(context, javaModule, member.header, true, Arrays.asList(this.definition.typeParameters));
+		} else {
+			CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
+		}
 		if (isEnum) {
 			constructorWriter.nameParameter(0, "name");
 			constructorWriter.nameParameter(0, "index");
@@ -115,6 +120,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.loadObject(1);
 				constructorWriter.loadInt(2);
 				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
+			} else if (method.compiled.kind == JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
+				context.logger.trace("Writing implicit constructor");
 			} else if (definition.getSuperType() == null) {
 				context.logger.trace("Writing regular constructor");
 				constructorWriter.loadObject(0);
@@ -126,30 +133,32 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			}
 		}
 
-		for (IDefinitionMember membersOfSameType : member.definition.members) {
-			if (membersOfSameType instanceof FieldMember) {
-				final FieldMember fieldMember = ((FieldMember) membersOfSameType);
-				if(fieldMember.isStatic()){
-					continue;
-				}
-				final Expression initializer = fieldMember.initializer;
-				if (initializer != null) {
-					constructorWriter.loadObject(0);
-					initializer.accept(statementVisitor.expressionVisitor);
-					constructorWriter.putField(class_.getField(fieldMember));
+		if (method.compiled.kind != JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
+			for (IDefinitionMember membersOfSameType : member.definition.members) {
+				if (membersOfSameType instanceof FieldMember) {
+					final FieldMember fieldMember = ((FieldMember) membersOfSameType);
+					if (fieldMember.isStatic()) {
+						continue;
+					}
+					final Expression initializer = fieldMember.initializer;
+					if (initializer != null) {
+						constructorWriter.loadObject(0);
+						initializer.accept(statementVisitor.expressionVisitor);
+						constructorWriter.putField(class_.getField(fieldMember));
+					}
 				}
 			}
-		}
 
-		for (TypeParameter typeParameter : definition.typeParameters) {
-			final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
-			final JavaNativeField field = typeParameterInfo.field;
+			for (TypeParameter typeParameter : definition.typeParameters) {
+				final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
+				final JavaNativeField field = typeParameterInfo.field;
 
-			//Init from Constructor
-			final int parameterIndex = typeParameterInfo.parameterIndex;
-			constructorWriter.loadObject(0);
-			constructorWriter.loadObject(parameterIndex);
-			constructorWriter.putField(field);
+				//Init from Constructor
+				final int parameterIndex = typeParameterInfo.parameterIndex;
+				constructorWriter.loadObject(0);
+				constructorWriter.loadObject(parameterIndex);
+				constructorWriter.putField(field);
+			}
 		}
 
 		if (member.body != null) {

@@ -1,102 +1,117 @@
-#output: {"hello": ["world", 123, {"great": true}]}
+#output: {"hello": ["world", 123, {"great": true, "greater": "yes"}]}
 
-function enquote(input: string): string { return '"' + input + '"'; }
+// Of course, this would need to also escape the " symbol in the string,
+//   but should be enough for here
+function enquote(input: string): string => '"' + input + '"';
 
 
 interface JsonData {
 
-    public implicit this(data: JsonData[]) => new JsonArray(data);
-    public implicit this(data: JsonData[string]) => new JsonObject(data);
-    public implicit this(data: string)  => new JsonString(data);
-    public implicit this(data: bool) => new JsonBool(data);
+	public implicit this(data: JsonData[]) => new JsonArray(data);
+	public implicit this(data: JsonData[string]) => new JsonObject(data);
+	public implicit this(data: string)  => new JsonString(data);
+	public implicit this(data: int)  => new JsonNumber(data);
+	public implicit this(data: bool) => new JsonBool(data);
 
-    // ToDo: this the proper way?
-    public implicit this(data: null) => new JsonNull();
+	// ToDo: this the proper way?
+	//public implicit this(data: null) => new JsonNull();
 
-    public as string;
+	public as string;
 }
 
 class JsonArray {
 
-    var data as JsonData[] : get, protected set;
-    public this(data: JsonData[]){ this.data = data; }
+	var data as JsonData[] : get, protected set;
+	public this(data: JsonData[]){ this.data = data; }
 
-    implements JsonData{
-        public as string {
-            var build = "{";
-            var first = true;
+	 implements JsonData{
+		public as string {
+			var build = "[";
+			var first = true;
 
-            for key, value in this.data {
-                if first {
-                    first = false;
-                } else {
-                    build += ",\n";
-                }
+			for value in this.data {
+				if first {
+					first = false;
+				} else {
+					build += ", ";
+				}
 
+				build += (value as string);
+			}
 
-				build += enquote(key);
-				build += ':';
-                build += (value as string);
-            }
-
-            return build + '}';
-        }
-    }
+			return build + ']';
+		}
+	}
 }
 
 class JsonObject {
 
-    var data as JsonData[string] : get, protected set;
-    public this(data: JsonData[string]){ this.data = data; }
+	var data as JsonData[string] : get, protected set;
+	public this(data: JsonData[string]){ this.data = data; }
 
-     implements JsonData{
-            public as string {
-                var build = "[";
-                var first = true;
+	implements JsonData{
+		public as string {
+			var build = "{";
+			var first = true;
 
-                for value in this.data {
-                    if first {
-                        first = false;
-                    } else {
-                        build += ", ";
-                    }
+			for key, value in this.data {
+				if first {
+					first = false;
+				} else {
+					build += ", ";
+				}
 
-                    build += (value as string);
-                }
 
-                return build + ']';
-            }
-        }
+				build += enquote(key);
+				build += ': ';
+				build += (value as string);
+			}
+
+			return build + '}';
+		}
+	}
 }
 
 class JsonString {
 
-    var data as string : get, protected set;
-    public this(data: string) { this.data = data; }
+	var data as string : get, protected set;
+	public this(data: string) { this.data = data; }
 
-    implements JsonData{
-        public as string => enquote(this.data);
-    }
+	implements JsonData{
+		public as string => enquote(this.data);
+	}
+}
+
+class JsonNumber {
+
+	var data as int : get, protected set;
+	public this(data: int) { this.data = data; }
+
+	implements JsonData{
+		public as string => this.data as string;
+	}
 }
 
 class JsonBool {
 
-    var data as bool : get, protected set;
-    public this(data: bool){ this.data = data; }
+	var data as bool : get, protected set;
+	public this(data: bool){ this.data = data; }
 
-    implements JsonData{
-        public as string => (this.data as string);
-    }
+	implements JsonData{
+		public as string => (this.data as string);
+	}
 }
 
 class JsonNull {
-    public this(){}
+	public this(){}
 
-    implements JsonData{
-            public as string => 'null';
-        }
+	implements JsonData {
+		public as string => 'null';
+	}
 }
 
 var x: JsonData = {
-    "hello": ["world", 123, {"great": true}]
+	"hello": ["world", 123, {"great": true, "greater": "yes"}]
 };
+
+println(x as string);
