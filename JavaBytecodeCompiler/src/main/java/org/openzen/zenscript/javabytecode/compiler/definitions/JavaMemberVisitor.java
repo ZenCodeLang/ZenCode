@@ -298,10 +298,12 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			methodWriter.nameParameter(0, name);
 		}
 
-		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
-		javaStatementVisitor.start();
-		member.body.accept(javaStatementVisitor);
-		javaStatementVisitor.end();
+		if(member.body != null) {
+			final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+			javaStatementVisitor.start();
+			member.body.accept(javaStatementVisitor);
+			javaStatementVisitor.end();
+		}
 		methodWriter.label(methodEnd);
 		return null;
 	}
