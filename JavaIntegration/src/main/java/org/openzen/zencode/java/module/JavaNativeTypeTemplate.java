@@ -2,6 +2,7 @@ package org.openzen.zencode.java.module;
 
 import org.objectweb.asm.Type;
 import org.openzen.zencode.java.TypeVariableContext;
+import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.shared.CodePosition;
@@ -93,6 +94,12 @@ public class JavaNativeTypeTemplate {
 				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
 				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
 				fields.put(name, new JavaRuntimeField(class_, name, nativeField, type, field));
+			} else if (field.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(field.getModifiers())) {
+				ZenCodeGlobals.Global fieldAnnotation = field.getAnnotation(ZenCodeGlobals.Global.class);
+				String name = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
+				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
+				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
+				fields.put(name, new JavaRuntimeField(class_, name, nativeField, type, field));
 			} else if (field.isEnumConstant()) {
 				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
 				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
@@ -138,6 +145,10 @@ public class JavaNativeTypeTemplate {
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				id = MethodID.staticMethod(name);
 				isStaticExpansion = true;
+			} else if(method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
+				ZenCodeGlobals.Global methodAnnotation = method.getAnnotation(ZenCodeGlobals.Global.class);
+				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
+				id = MethodID.staticMethod(name);
 			}
 			if (id == null)
 				continue;

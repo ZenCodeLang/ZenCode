@@ -15,7 +15,7 @@ public class Overloads extends ZenCodeTest {
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		final List<Class<?>> requiredClasses = super.getRequiredClasses();
-		requiredClasses.add(GlobalEnumUser.class);
+		requiredClasses.add(GlobalPrinter.class);
 		return requiredClasses;
 	}
 
@@ -32,7 +32,7 @@ public class Overloads extends ZenCodeTest {
 	}
 
 	@ZenCodeType.Name("test_module.GlobalPrinter")
-	public static final class GlobalEnumUser {
+	public static final class GlobalPrinter {
 		@ZenCodeGlobals.Global
 		public static void printArray(int[] numbers) {
 			SharedGlobals.println("Numbers: " + Arrays.toString(numbers));
