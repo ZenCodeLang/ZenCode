@@ -26,6 +26,10 @@ public class GenericMapper {
 	}
 
 	public static GenericMapper create(TypeParameter[] typeParameters, TypeID[] typeArguments) {
+		if(typeArguments == null) {
+			typeArguments = TypeID.NONE;
+		}
+
 		if (typeParameters.length != typeArguments.length)
 			throw new IllegalArgumentException("Number of type parameters is different from number of type arguments");
 
