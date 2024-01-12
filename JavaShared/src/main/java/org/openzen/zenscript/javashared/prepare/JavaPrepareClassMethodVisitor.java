@@ -148,7 +148,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	private JavaNativeMethod.Kind getKind(DefinitionMember member) {
 		if (member instanceof ConstructorMember)
-			return member.isImplicit() ? JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR : JavaNativeMethod.Kind.CONSTRUCTOR;
+			return member.isImplicit() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.CONSTRUCTOR;
 
 		return member.isStatic() ? JavaNativeMethod.Kind.STATIC : JavaNativeMethod.Kind.INSTANCE;
 	}
