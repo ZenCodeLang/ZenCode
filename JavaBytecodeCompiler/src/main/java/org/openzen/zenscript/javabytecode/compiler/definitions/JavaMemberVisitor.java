@@ -80,7 +80,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition);
 		constructorWriter.label(constructorStart);
 
-		if(method.compiled.kind == JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
+		if(method.compiled.kind == JavaNativeMethod.Kind.STATIC) {
 			CompilerUtils.tagMethodParameters(context, javaModule, member.header, true, Arrays.asList(this.definition.typeParameters));
 		} else {
 			CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
@@ -113,53 +113,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter);
 		statementVisitor.start();
 
-		if (!member.isConstructorForwarded()) {
-			if (isEnum) {
-				context.logger.trace("Writing enum constructor");
-				constructorWriter.loadObject(0);
-				constructorWriter.loadObject(1);
-				constructorWriter.loadInt(2);
-				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
-			} else if (method.compiled.kind == JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
-				context.logger.trace("Writing implicit constructor");
-			} else if (definition.getSuperType() == null) {
-				context.logger.trace("Writing regular constructor");
-				constructorWriter.loadObject(0);
-				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
-			} else {
-				final TypeSymbol superType = ((DefinitionTypeID) definition.getSuperType()).definition;
-				constructorWriter.loadObject(0);
-				constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
-			}
-		}
-
-		if (method.compiled.kind != JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
-			for (IDefinitionMember membersOfSameType : member.definition.members) {
-				if (membersOfSameType instanceof FieldMember) {
-					final FieldMember fieldMember = ((FieldMember) membersOfSameType);
-					if (fieldMember.isStatic()) {
-						continue;
-					}
-					final Expression initializer = fieldMember.initializer;
-					if (initializer != null) {
-						constructorWriter.loadObject(0);
-						initializer.accept(statementVisitor.expressionVisitor);
-						constructorWriter.putField(class_.getField(fieldMember));
-					}
-				}
-			}
-
-			for (TypeParameter typeParameter : definition.typeParameters) {
-				final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
-				final JavaNativeField field = typeParameterInfo.field;
-
-				//Init from Constructor
-				final int parameterIndex = typeParameterInfo.parameterIndex;
-				constructorWriter.loadObject(0);
-				constructorWriter.loadObject(parameterIndex);
-				constructorWriter.putField(field);
-			}
-		}
+		forwardToSuperConstructorIfNecessary(member, isEnum, constructorWriter, method);
+		initializeFieldsInConstructor(member, method, constructorWriter, statementVisitor);
 
 		if (member.body != null) {
 			member.body.accept(statementVisitor);
@@ -168,6 +123,64 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		constructorWriter.label(constructorEnd);
 		statementVisitor.end();
 		return null;
+	}
+
+	private void forwardToSuperConstructorIfNecessary(ConstructorMember member, boolean isEnum, JavaWriter constructorWriter, JavaCompilingMethod method) {
+		if (member.isConstructorForwarded()) {
+			return;
+		}
+
+		if (isEnum) {
+			context.logger.trace("Writing enum constructor");
+			constructorWriter.loadObject(0);
+			constructorWriter.loadObject(1);
+			constructorWriter.loadInt(2);
+			constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
+		} else if (method.compiled.kind == JavaNativeMethod.Kind.STATIC) {
+			context.logger.trace("Writing implicit constructor");
+		} else if (definition.getSuperType() == null) {
+			context.logger.trace("Writing regular constructor");
+			constructorWriter.loadObject(0);
+			constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
+		} else {
+			final TypeSymbol superType = ((DefinitionTypeID) definition.getSuperType()).definition;
+			constructorWriter.loadObject(0);
+			constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
+		}
+	}
+
+	private void initializeFieldsInConstructor(ConstructorMember member, JavaCompilingMethod method, JavaWriter constructorWriter, JavaStatementVisitor statementVisitor) {
+		if (method.compiled.kind == JavaNativeMethod.Kind.STATIC) {
+			// used by implicit constructors; these will forward to the actual constructor instead
+			// of initializing fields
+			return;
+		}
+
+		for (IDefinitionMember membersOfSameType : member.definition.members) {
+			if (membersOfSameType instanceof FieldMember) {
+				final FieldMember fieldMember = ((FieldMember) membersOfSameType);
+				if (fieldMember.isStatic()) {
+					continue;
+				}
+				final Expression initializer = fieldMember.initializer;
+				if (initializer != null) {
+					constructorWriter.loadObject(0);
+					initializer.accept(statementVisitor.expressionVisitor);
+					constructorWriter.putField(class_.getField(fieldMember));
+				}
+			}
+		}
+
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
+			final JavaNativeField field = typeParameterInfo.field;
+
+			//Init from Constructor
+			final int parameterIndex = typeParameterInfo.parameterIndex;
+			constructorWriter.loadObject(0);
+			constructorWriter.loadObject(parameterIndex);
+			constructorWriter.putField(field);
+		}
 	}
 
 	@Override

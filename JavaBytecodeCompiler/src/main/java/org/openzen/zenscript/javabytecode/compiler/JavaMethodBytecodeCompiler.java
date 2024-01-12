@@ -172,7 +172,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			handleTypeArguments(method, arguments);
 		}
 
-		if (method.kind == JavaNativeMethod.Kind.STATIC || method.kind == JavaNativeMethod.Kind.IMPLICIT_CONSTRUCTOR) {
+		if (method.kind == JavaNativeMethod.Kind.STATIC) {
 			javaWriter.invokeStatic(method);
 		} else if (method.kind == JavaNativeMethod.Kind.INTERFACE) {
 			javaWriter.invokeInterface(method);

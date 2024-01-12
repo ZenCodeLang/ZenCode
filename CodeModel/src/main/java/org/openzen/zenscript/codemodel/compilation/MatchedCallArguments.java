@@ -156,6 +156,8 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 
 			typeArguments = typeArguments2;
+		} else if (typeArguments == null && method.getHeader().typeParameters.length == 0) {
+			typeArguments = TypeID.NONE;
 		}
 
 		FunctionHeader header = method

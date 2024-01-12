@@ -103,7 +103,7 @@ public class JavaNativeMethod implements JavaMethod {
 
 	@Override
 	public <T> T compileConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
-		if(this.kind == Kind.IMPLICIT_CONSTRUCTOR) {
+		if(this.kind == Kind.STATIC) {
 			return compiler.nativeStaticMethod(this, type, arguments);
 		}
 
@@ -127,7 +127,6 @@ public class JavaNativeMethod implements JavaMethod {
 		INTERFACE,
 		EXPANSION,
 		CONSTRUCTOR,
-		IMPLICIT_CONSTRUCTOR,
 		COMPILED
 	}
 }
