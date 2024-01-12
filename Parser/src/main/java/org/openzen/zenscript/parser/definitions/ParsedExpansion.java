@@ -61,7 +61,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		ExpansionDefinition compiled = new ExpansionDefinition(position, pkg.module, pkg.getPackage(), modifiers);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 
-		TypeID expandedType = target.compile(compiler.types());
+		TypeID expandedType = target.compile(compiler.types().withGeneric(compiled.typeParameters));
 		Compiling compiling = new Compiling(compiler, compiled, expandedType);
 		expansions.add(compiling);
 		compiling.registerCompiling(definitions);
