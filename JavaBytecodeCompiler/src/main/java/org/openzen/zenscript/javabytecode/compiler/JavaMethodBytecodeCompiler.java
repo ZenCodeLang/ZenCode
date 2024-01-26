@@ -923,6 +923,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case ULONG_TO_DOUBLE:
 				javaWriter.l2d(); // TODO: this is incorrect
+				break;
 			case ULONG_TO_CHAR:
 				javaWriter.l2i();
 				javaWriter.i2s();
