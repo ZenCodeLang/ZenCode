@@ -63,8 +63,8 @@ public class AdditionsAndSubtractionTests extends ZenCodeTest {
 	@MethodSource("numberTypes")
 	public void subtractionWorksWithDifferentTypes(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
-				.add("var left   = 29 as " + typeRight + ";")
-				.add("var right  = 13 as " + typeLeft + ";")
+				.add("var left   = 29 as " + typeLeft + ";")
+				.add("var right  = 13 as " + typeRight + ";")
 				.add("var result = left - right;")
 				.add("println(result);")
 				.execute(this);
