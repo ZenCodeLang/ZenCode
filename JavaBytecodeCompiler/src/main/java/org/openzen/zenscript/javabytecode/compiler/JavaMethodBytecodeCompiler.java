@@ -412,7 +412,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				arguments[0].accept(expressionVisitor);
 				javaWriter.invokeStatic(SHORT_TO_STRING);
 				arguments[1].accept(expressionVisitor);
-				javaWriter.invokeStatic(STRING_CONCAT);
+				javaWriter.invokeVirtual(STRING_CONCAT);
 				return null;
 			case USHORT_ADD_STRING:
 			case USHORT_CAT_STRING:
@@ -740,28 +740,29 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case USHORT_TO_LONG:
 			case USHORT_TO_ULONG:
-				javaWriter.constant(0xFFFFL);
+				javaWriter.constant(0xFFFF);
 				javaWriter.iAnd();
+				javaWriter.i2l();
 				break;
 			case USHORT_TO_FLOAT:
-				javaWriter.constant(0xFFFFL);
+				javaWriter.constant(0xFFFF);
 				javaWriter.iAnd();
 				javaWriter.i2f();
 				break;
 			case USHORT_TO_DOUBLE:
-				javaWriter.constant(0xFFFFL);
+				javaWriter.constant(0xFFFF);
 				javaWriter.iAnd();
 				javaWriter.i2d();
 				break;
 			case USHORT_TO_CHAR:
-				javaWriter.constant(0xFFFFL);
+				javaWriter.constant(0xFFFF);
 				javaWriter.iAnd();
 				break;
 			case USHORT_TO_STRING:
 				if (arguments[0].type.isOptional()) {
 					javaWriter.invokeStatic(OBJECTS_TOSTRING);
 				} else {
-					javaWriter.constant(0xFFFFL);
+					javaWriter.constant(0xFFFF);
 					javaWriter.iAnd();
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}
@@ -1176,6 +1177,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case DOUBLE_MOD_DOUBLE:
 				javaWriter.dRem();
+				break;
+			case INT_ADD_USIZE:
+				javaWriter.iAdd();
 				break;
 			case STRING_ADD_STRING:
 				javaWriter.invokeVirtual(STRING_CONCAT);
