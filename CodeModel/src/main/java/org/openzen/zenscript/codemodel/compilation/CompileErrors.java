@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -255,13 +256,17 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.CALL_AMBIGUOUS, message.toString());
     }
 
-	public static CompileError noMethodMatched(List<FunctionHeader> candidates) {
+	public static CompileError noMethodMatched(List<FunctionHeader> candidates, List<TypeID> argumentTypes) {
+		FunctionHeader expectedHeader = new FunctionHeader(BasicTypeID.UNDETERMINED, argumentTypes.toArray(TypeID.NONE));
+
 		StringBuilder message = new StringBuilder("Method invocation invalid, none of these overloads match:");
 		for (FunctionHeader header : candidates) {
-			message.append("\n").append(header.toString());
-			// for (FunctionHeader candidate : candidateFunctions)
-			//   explanation.append(candidate.explainWhyIncompatible(scope, arguments)).append("\n");
+			message.append("\n - ").append(header.toString());
 		}
+		message.append("\nTarget overload should be compatible with header ").append(expectedHeader);
+		// TODO("Reimplement this once we are in a better place for it")
+		// for (FunctionHeader candidate : candidateFunctions)
+		//   explanation.append(candidate.explainWhyIncompatible(scope, arguments)).append("\n");
 		return new CompileError(CompileExceptionCode.CALL_NO_VALID_METHOD, message.toString());
 	}
 

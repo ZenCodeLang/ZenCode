@@ -48,7 +48,7 @@ public class FunctionHeader {
 		this.thrownType = null;
 
 		for (int i = 0; i < parameterTypes.length; i++)
-			parameters[i] = new FunctionParameter(parameterTypes[i], null);
+			parameters[i] = new FunctionParameter(parameterTypes[i], "param" + i);
 
 		minParameters = parameterTypes.length;
 		maxParameters = parameterTypes.length;

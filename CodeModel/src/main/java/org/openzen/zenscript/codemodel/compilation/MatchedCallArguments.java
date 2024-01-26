@@ -42,9 +42,9 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 		}
 
-		return new MatchedCallArguments<>(CompileErrors.noMethodMatched(overloads.stream()
-				.map(AnyMethod::getHeader)
-				.collect(Collectors.toList())));
+		List<FunctionHeader> headers = overloads.stream().map(AnyMethod::getHeader).collect(Collectors.toList());
+		List<TypeID> types = Arrays.stream(arguments).map(CompilingExpression::eval).map(it -> it.type).collect(Collectors.toList());
+		return new MatchedCallArguments<>(CompileErrors.noMethodMatched(headers, types));
 	}
 
 	private static <T extends AnyMethod> MatchedCallArguments<T> ambiguousCall(Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel) {
