@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
@@ -261,7 +262,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					true,
 					context.getMethodDescriptor(header),
 					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType() instanceof GenericTypeID,
+					context.isGenericReturn(header.getReturnType()),
 					header.useTypeParameters()),
 					signature);
 		} else if (method == null) {
@@ -302,7 +303,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						true,
 						context.getMethodDescriptor(header),
 						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-						header.getReturnType() instanceof GenericTypeID,
+						context.isGenericReturn(header.getReturnType()),
 						header.useTypeParameters()),
 						signature);
 			}

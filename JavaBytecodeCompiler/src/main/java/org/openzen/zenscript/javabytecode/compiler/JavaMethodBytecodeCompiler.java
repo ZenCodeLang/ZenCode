@@ -202,6 +202,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		if (arguments.typeArguments.length != method.typeParameterArguments.length)
 			throw new IllegalArgumentException("Number of type parameters doesn't match");
 
+		for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
+			arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
+		}
 		for (int i = 0; i < arguments.typeArguments.length; i++) {
 			if (method.typeParameterArguments[i])
 				arguments.typeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);

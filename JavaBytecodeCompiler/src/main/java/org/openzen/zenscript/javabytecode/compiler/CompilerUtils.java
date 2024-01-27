@@ -36,6 +36,10 @@ public class CompilerUtils {
 		return type == BasicTypeID.DOUBLE || type == BasicTypeID.LONG || type == BasicTypeID.ULONG;
 	}
 
+	private boolean isGenericReturn(TypeID type) {
+		return type.isGeneric() || type.asArray().map(array -> isGenericReturn(type)).orElse(false);
+	}
+
 	public static int calcAccess(Modifiers modifiers) {
 		int out = 0;
 		if (modifiers.isStatic())

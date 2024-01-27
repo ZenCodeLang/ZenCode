@@ -17,17 +17,27 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	public final MethodSymbol method;
 	private final FunctionHeader header;
 	private final TypeID target;
+	private final TypeID[] expansionTypeArguments;
 
 	public MethodInstance(MethodSymbol method) {
 		this.method = method;
 		this.header = method.getHeader();
 		this.target = method.getTargetType();
+		this.expansionTypeArguments = TypeID.NONE;
 	}
 
 	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target) {
 		this.method = method;
 		this.header = header;
 		this.target = target;
+		this.expansionTypeArguments = TypeID.NONE;
+	}
+
+	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target, TypeID[] expansionTypeArguments) {
+		this.method = method;
+		this.header = header;
+		this.target = target;
+		this.expansionTypeArguments = expansionTypeArguments;
 	}
 
 	public TypeID getTarget() {
@@ -65,5 +75,9 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	@Override
 	public boolean isImplicit() {
 		return method.getModifiers().isImplicit();
+	}
+
+	public TypeID[] getExpansionTypeArguments() {
+		return expansionTypeArguments;
 	}
 }

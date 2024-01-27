@@ -23,6 +23,7 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -31,6 +32,7 @@ import static org.openzen.zenscript.javabytecode.compiler.JavaMethodBytecodeComp
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final JavaNativeMethod ARRAY_NEWINSTANCE = JavaNativeMethod.getNativeStatic(JavaClass.ARRAY, "newInstance", "(Ljava/lang/Class;I)Ljava/lang/Object;");
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 
 	final JavaWriter javaWriter;
@@ -108,9 +110,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitArray(ArrayExpression expression) {
-		javaWriter.constant(expression.expressions.length);
-		Type type = context.getType(((ArrayTypeID) expression.type).elementType);
-		javaWriter.newArray(type);
+		Type type = context.getType(expression.arrayType.elementType);
+		if (expression.arrayType.elementType.isGeneric()) {
+
+			expression.arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
+			javaWriter.constant(expression.expressions.length);
+			javaWriter.invokeStatic(ARRAY_NEWINSTANCE);
+			javaWriter.checkCast(context.getInternalName(expression.arrayType));
+		} else {
+			javaWriter.constant(expression.expressions.length);
+			javaWriter.newArray(type);
+		}
 		for (int i = 0; i < expression.expressions.length; i++) {
 			javaWriter.dup();
 			javaWriter.constant(i);

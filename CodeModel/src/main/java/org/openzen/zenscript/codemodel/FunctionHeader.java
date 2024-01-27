@@ -328,7 +328,7 @@ public class FunctionHeader {
 	public FunctionHeader instanceForCall(CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
 			Map<TypeParameter, TypeID> typeParameters = TypeID.getMapping(this.typeParameters, arguments.typeArguments);
-			return instance(new GenericMapper(typeParameters));
+			return instance(new GenericMapper(typeParameters, arguments.expansionTypeArguments));
 		} else {
 			return this;
 		}

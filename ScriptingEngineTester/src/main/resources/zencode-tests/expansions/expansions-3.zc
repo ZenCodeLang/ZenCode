@@ -6,5 +6,5 @@ public expand <X> X[] {
     }
 }
 
-var array = [0,0,0];
+var array = ["a", "b", "c"];
 array.printSize();

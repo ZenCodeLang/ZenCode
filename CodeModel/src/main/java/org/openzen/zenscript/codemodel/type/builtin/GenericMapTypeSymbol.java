@@ -82,7 +82,7 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 		Map<TypeParameter, TypeID> parameterFilled = new HashMap<>();
 		parameterFilled.put(PARAMETER, typeArguments[0]);
 		parameterFilled.put(VALUE, value);
-		GenericMapper mapper = new GenericMapper(parameterFilled);
+		GenericMapper mapper = new GenericMapper(parameterFilled, TypeID.NONE);
 
 		TypeID valueType = mapper.map(value);
 

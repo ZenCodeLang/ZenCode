@@ -140,7 +140,7 @@ public class JavaCompilingClass {
 					true,
 					descriptor,
 					JavaModifiers.getJavaModifiers(method.getModifiers()),
-					method.getHeader().getReturnType() instanceof GenericTypeID,
+					getContext().isGenericReturn(method.getHeader().getReturnType()),
 					method.getHeader().useTypeParameters());
 			addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
 		}

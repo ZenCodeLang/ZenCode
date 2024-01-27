@@ -1,0 +1,15 @@
+#output: hello
+
+public expand <X> X {
+	getMe(): X {
+		return this;
+	}
+
+	twice(): X[] {
+		return [this, this];
+	}
+}
+
+var value = "hello";
+var twice = value.twice();
+println(twice[1]);

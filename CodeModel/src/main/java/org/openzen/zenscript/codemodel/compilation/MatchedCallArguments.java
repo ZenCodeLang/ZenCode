@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -109,9 +110,12 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
 	) {
+		TypeID[] expansionTypeArguments = method.asMethod().map(MethodInstance::getExpansionTypeArguments).orElse(TypeID.NONE);
+
 		if (!method.getHeader().accepts(arguments.length))
 			return new CallArguments(
 					CastedExpression.Level.INVALID,
+					expansionTypeArguments,
 					typeArguments,
 					Expression.NONE);
 
@@ -124,7 +128,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 			// create a mapping with everything found so far
 			// NOTE - this means that inference is sensitive to order of parameters
-			GenericMapper mapper = new GenericMapper(typeArgumentMap);
+			GenericMapper mapper = new GenericMapper(typeArgumentMap, expansionTypeArguments);
 
 			// now try to infer type arguments from the arguments
 			for (int i = 0; i < arguments.length; i++) {
@@ -152,7 +156,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 			if (hasUnknowns) {
 				// TODO: improve type inference
-				return new CallArguments(CastedExpression.Level.INVALID, typeArguments, Expression.NONE);
+				return new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE);
 			}
 
 			typeArguments = typeArguments2;
@@ -195,6 +199,6 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			cArguments[cArguments.length - 1] = compiler.at(position).newArray(new ArrayTypeID(variadicType), varargArguments.toArray(Expression.NONE));
 			levelNormalCall = levelVarargCall;
 		}
-		return new CallArguments(levelNormalCall, typeArguments, cArguments);
+		return new CallArguments(levelNormalCall, expansionTypeArguments, typeArguments, cArguments);
 	}
 }

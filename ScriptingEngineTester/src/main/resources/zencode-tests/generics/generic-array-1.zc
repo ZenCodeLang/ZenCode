@@ -1,0 +1,11 @@
+#output: 0
+
+class ArrayFactory<T> {
+	public newInstance(length: int): T[] {
+		return new T[length];
+	}
+}
+
+var a = new ArrayFactory<int>();
+var b = a.newInstance(10);
+println(b[1]);

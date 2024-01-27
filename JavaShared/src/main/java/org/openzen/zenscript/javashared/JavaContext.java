@@ -382,6 +382,10 @@ public abstract class JavaContext {
 		return getMethodDescriptor(header, false, "");
 	}
 
+	public boolean isGenericReturn(TypeID type) {
+		return type.isGeneric() || type.asArray().map(array -> isGenericReturn(array.elementType)).orElse(false);
+	}
+
 	public String getMethodDescriptorExpansion(FunctionHeader header, TypeID expandedType) {
 		StringBuilder startBuilder = new StringBuilder(getDescriptor(expandedType));
 		final List<TypeParameter> typeParameters = new ArrayList<>();
@@ -579,7 +583,11 @@ public abstract class JavaContext {
 			descBuilder.append(getDescriptor(parameter.type));
 		}
 		descBuilder.append(")");
-		descBuilder.append(getDescriptor(header.getReturnType()));
+		if (isGenericReturn(header.getReturnType())) {
+			descBuilder.append("Ljava/lang/Object;");
+		} else {
+			descBuilder.append(getDescriptor(header.getReturnType()));
+		}
 		return descBuilder.toString();
 	}
 

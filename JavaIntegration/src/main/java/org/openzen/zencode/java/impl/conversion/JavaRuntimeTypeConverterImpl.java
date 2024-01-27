@@ -144,7 +144,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 				map.put(typeParameter, codeParameters[i]);
 			}
 
-			return rawTypeId.instance(new GenericMapper(map));
+			return rawTypeId.instance(new GenericMapper(map, TypeID.NONE));
 		}
 		return this.loadType(context, JavaAnnotatedType.of(type), unsigned);
 	}
@@ -302,7 +302,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false));
 		}
 
-		header = header.withGenericArguments(new GenericMapper(mapping));
+		header = header.withGenericArguments(new GenericMapper(mapping, TypeID.NONE));
 		JavaNativeMethod method = new JavaNativeMethod(
 				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
 				JavaNativeMethod.Kind.INTERFACE,

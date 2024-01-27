@@ -425,6 +425,10 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public CallArguments deserializeArguments(StatementSerializationContext context) {
+		TypeID[] expansionTypeArguments = new TypeID[readUInt()];
+		for (int i = 0; i < expansionTypeArguments.length; i++)
+			expansionTypeArguments[i] = deserializeType(context.types());
+
 		TypeID[] typeArguments = new TypeID[readUInt()];
 		for (int i = 0; i < typeArguments.length; i++)
 			typeArguments[i] = deserializeType(context.types());
@@ -433,7 +437,7 @@ public class CodeReader implements CodeSerializationInput {
 		for (int i = 0; i < arguments.length; i++)
 			arguments[i] = deserializeExpression(context);
 
-		return new CallArguments(typeArguments, arguments);
+		return new CallArguments(expansionTypeArguments, typeArguments, arguments);
 	}
 
 	@Override

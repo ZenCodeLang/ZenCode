@@ -94,7 +94,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
-		return "[" + array.elementType.accept(this);
+		return "[" + array.elementType.accept(new JavaTypeDescriptorVisitor(context));
 	}
 
 	@Override

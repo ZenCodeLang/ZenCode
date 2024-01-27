@@ -14,15 +14,17 @@ import java.util.Map;
 
 public class GenericMapper {
 
-	public static final GenericMapper EMPTY = new GenericMapper(Collections.emptyMap());
+	public static final GenericMapper EMPTY = new GenericMapper(Collections.emptyMap(), TypeID.NONE);
 
 	private final Map<TypeParameter, TypeID> mapping;
+	private final TypeID[] expansionTypeArguments;
 
-	public GenericMapper(Map<TypeParameter, TypeID> mapping) {
+	public GenericMapper(Map<TypeParameter, TypeID> mapping, TypeID[] expansionTypeArguments) {
 		if (mapping == null)
 			throw new IllegalArgumentException();
 
 		this.mapping = mapping;
+		this.expansionTypeArguments = expansionTypeArguments;
 	}
 
 	public static GenericMapper create(TypeParameter[] typeParameters, TypeID[] typeArguments) {
@@ -33,11 +35,11 @@ public class GenericMapper {
 		for (int i = 0; i < typeParameters.length; i++) {
 			mapping.put(typeParameters[i], typeArguments[i]);
 		}
-		return new GenericMapper(mapping);
+		return new GenericMapper(mapping, TypeID.NONE);
 	}
 
 	public static GenericMapper single(TypeParameter parameter, TypeID argument) {
-		return new GenericMapper(Collections.singletonMap(parameter, argument));
+		return new GenericMapper(Collections.singletonMap(parameter, argument), TypeID.NONE);
 	}
 
     public Map<TypeParameter, TypeID> getMapping() {
@@ -74,7 +76,7 @@ public class GenericMapper {
 	}
 
 	public MethodInstance map(TypeID target, MethodSymbol method) {
-		return new MethodInstance(method, map(method.getHeader()), target);
+		return new MethodInstance(method, map(method.getHeader()), target, expansionTypeArguments);
 	}
 
 	public GenericMapper getInner(Map<TypeParameter, TypeID> mapping) {
@@ -87,14 +89,14 @@ public class GenericMapper {
 			resultMap.put(typeParameter, type);
 		});
 
-		return new GenericMapper(resultMap);
+		return new GenericMapper(resultMap, expansionTypeArguments);
 	}
 
 	public GenericMapper getInner(TypeParameter[] parameters) {
 		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
 		for (TypeParameter parameter : parameters)
 			resultMap.put(parameter, new GenericTypeID(parameter));
-		return new GenericMapper(resultMap);
+		return new GenericMapper(resultMap, expansionTypeArguments);
 	}
 
 	@Override

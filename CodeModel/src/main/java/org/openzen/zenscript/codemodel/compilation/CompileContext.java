@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class CompileContext extends AbstractTypeBuilder implements TypeResolver {
 	private final ZSPackage rootPackage;
@@ -93,8 +94,9 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 			if (mapping == null)
 				continue;
 
+			TypeID[] expansionTypeArguments = Stream.of(expansion.typeParameters).map(mapping::get).toArray(TypeID[]::new);
 			MemberSet.Builder resolution = MemberSet.create();
-			GenericMapper mapper = new GenericMapper(mapping);
+			GenericMapper mapper = new GenericMapper(mapping, expansionTypeArguments);
 			for (IDefinitionMember member : expansion.members)
 				member.registerTo(type, resolution, mapper);
 
