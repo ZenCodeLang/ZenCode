@@ -1,0 +1,16 @@
+#output: Hello Collision!
+#output: Hello World!
+
+public class Collision {
+    public this() {}
+
+    public print_collision() as void {
+        println("Hello World!");
+    }
+    public static print_collision() as void {
+        println("Hello Collision!");
+    }
+}
+
+Collision.print_collision();
+new Collision().print_collision();
