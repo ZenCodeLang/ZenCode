@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 public class CastedExpression {
 	public enum Level {
 		EXACT,
+		WIDENING,
 		IMPLICIT,
 		EXPLICIT,
 		INVALID;

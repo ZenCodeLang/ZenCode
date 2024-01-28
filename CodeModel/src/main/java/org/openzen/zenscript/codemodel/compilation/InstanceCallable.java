@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -32,7 +33,14 @@ public final class InstanceCallable {
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
 		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, null, typeArguments, arguments);
-		return matched.eval(compiler.at(position), (buildr, method, args) -> method.call(buildr, instance, args));
+		if (matched.requiresWidenedInstance(instance.type)) {
+			Expression originalInstance = instance;
+			instance = compiler.resolve(instance.type).findCaster(matched.getWidenedInstanceType())
+					.map(caster -> caster.call(compiler.at(position), originalInstance, CallArguments.EMPTY))
+					.orElseThrow(() -> new IllegalStateException("No widening conversion found for " + originalInstance.type + " to " + matched.getWidenedInstanceType()));
+		}
+		Expression finalInstance = instance;
+		return matched.eval(compiler.at(position), (buildr, method, args) -> method.call(buildr, finalInstance, args));
 	}
 
 	public CastedExpression cast(ExpressionCompiler compiler, CodePosition position, CastedEval cast, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {

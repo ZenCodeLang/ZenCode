@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -24,7 +25,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	BOOL_AND(BOOL, AND, BOOL, BOOL, BOOL),
 	BOOL_OR(BOOL, OR, BOOL, BOOL, BOOL),
 	BOOL_XOR(BOOL, XOR, BOOL, BOOL, BOOL),
-	BOOL_ADD_STRING(BOOL, ADD, STRING, STRING),
+	BOOL_ADD_STRING(BOOL, ADD, false, STRING, STRING),
 	BOOL_CAT_STRING(BOOL, CAT, STRING, STRING),
 	BOOL_EQUALS(BOOL, EQUALS, BOOL, BOOL, BOOL),
 	BOOL_NOTEQUALS(BOOL, NOTEQUALS, BOOL, BOOL, BOOL),
@@ -35,7 +36,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	BYTE_INC(BYTE, INCREMENT, BYTE),
 	BYTE_DEC(BYTE, DECREMENT, BYTE),
 	BYTE_ADD_BYTE(BYTE, ADD, BYTE, BYTE),
-	BYTE_ADD_STRING(BYTE, ADD, STRING, STRING),
+	BYTE_ADD_STRING(BYTE, ADD, false, STRING, STRING),
 	BYTE_CAT_STRING(BYTE, CAT, STRING, STRING),
 	BYTE_SUB_BYTE(BYTE, SUB, BYTE, BYTE),
 	BYTE_MUL_BYTE(BYTE, MUL, BYTE, BYTE),
@@ -67,7 +68,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SBYTE_INC(SBYTE, INCREMENT, SBYTE),
 	SBYTE_DEC(SBYTE, DECREMENT, SBYTE),
 	SBYTE_ADD_SBYTE(SBYTE, ADD, SBYTE, SBYTE),
-	SBYTE_ADD_STRING(SBYTE, ADD, STRING, STRING),
+	SBYTE_ADD_STRING(SBYTE, ADD, false, STRING, STRING),
 	SBYTE_CAT_STRING(SBYTE, CAT, STRING, STRING),
 	SBYTE_SUB_SBYTE(SBYTE, SUB, SBYTE, SBYTE),
 	SBYTE_MUL_SBYTE(SBYTE, MUL, SBYTE, SBYTE),
@@ -100,7 +101,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	SHORT_INC(SHORT, INCREMENT, SHORT),
 	SHORT_DEC(SHORT, DECREMENT, SHORT),
 	SHORT_ADD_SHORT(SHORT, ADD, SHORT, SHORT),
-	SHORT_ADD_STRING(SHORT, ADD, STRING, STRING),
+	SHORT_ADD_STRING(SHORT, ADD, false, STRING, STRING),
 	SHORT_CAT_STRING(SHORT, CAT, STRING, STRING),
 	SHORT_SUB_SHORT(SHORT, SUB, SHORT, SHORT),
 	SHORT_MUL_SHORT(SHORT, MUL, SHORT, SHORT),
@@ -132,7 +133,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USHORT_INC(USHORT, INCREMENT, USHORT),
 	USHORT_DEC(USHORT, DECREMENT, USHORT),
 	USHORT_ADD_USHORT(USHORT, ADD, USHORT, USHORT),
-	USHORT_ADD_STRING(USHORT, ADD, STRING, STRING),
+	USHORT_ADD_STRING(USHORT, ADD, false, STRING, STRING),
 	USHORT_CAT_STRING(USHORT, CAT, STRING, STRING),
 	USHORT_SUB_USHORT(USHORT, SUB, USHORT, USHORT),
 	USHORT_MUL_USHORT(USHORT, MUL, USHORT, USHORT),
@@ -164,8 +165,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	INT_INC(INT, INCREMENT, INT),
 	INT_DEC(INT, DECREMENT, INT),
 	INT_ADD_INT(INT, ADD, INT, INT),
-	INT_ADD_USIZE(INT, ADD, USIZE, USIZE),
-	INT_ADD_STRING(INT, ADD, STRING, STRING),
+	//INT_ADD_USIZE(INT, ADD, USIZE, USIZE),
+	INT_ADD_STRING(INT, ADD, false, STRING, STRING),
 	INT_CAT_STRING(INT, CAT, STRING, STRING),
 	INT_SUB_INT(INT, SUB, INT, INT),
 	INT_MUL_INT(INT, MUL, INT, INT),
@@ -208,7 +209,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	UINT_INC(UINT, INCREMENT, UINT),
 	UINT_DEC(UINT, DECREMENT, UINT),
 	UINT_ADD_UINT(UINT, ADD, UINT, UINT),
-	UINT_ADD_STRING(UINT, ADD, STRING, STRING),
+	UINT_ADD_STRING(UINT, ADD, false, STRING, STRING),
 	UINT_CAT_STRING(UINT, CAT, STRING, STRING),
 	UINT_SUB_UINT(UINT, SUB, UINT, UINT),
 	UINT_MUL_UINT(UINT, MUL, UINT, UINT),
@@ -249,7 +250,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	LONG_INC(LONG, INCREMENT, LONG),
 	LONG_DEC(LONG, DECREMENT, LONG),
 	LONG_ADD_LONG(LONG, ADD, LONG, LONG),
-	LONG_ADD_STRING(LONG, ADD, STRING, STRING),
+	LONG_ADD_STRING(LONG, ADD, false, STRING, STRING),
 	LONG_CAT_STRING(LONG, CAT, STRING, STRING),
 	LONG_SUB_LONG(LONG, SUB, LONG, LONG),
 	LONG_MUL_LONG(LONG, MUL, LONG, LONG),
@@ -274,7 +275,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	LONG_TO_FLOAT(LONG, MethodID.caster(FLOAT), Modifiers.IMPLICIT, FLOAT),
 	LONG_TO_DOUBLE(LONG, MethodID.caster(DOUBLE), Modifiers.IMPLICIT, DOUBLE),
 	LONG_TO_CHAR(LONG, MethodID.caster(CHAR), Modifiers.NONE, CHAR),
-	LONG_TO_STRING(LONG, MethodID.caster(STRING), Modifiers.NONE, STRING),
+	LONG_TO_STRING(LONG, MethodID.caster(STRING), Modifiers.IMPLICIT, STRING),
 	LONG_PARSE(LONG, MethodID.staticMethod("parse"), LONG, STRING),
 	LONG_PARSE_WITH_BASE(LONG, MethodID.staticMethod("parse"), LONG, STRING, INT),
 	LONG_COUNT_LOW_ZEROES(LONG, MethodID.getter("countLowZeroes"), USIZE),
@@ -291,7 +292,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ULONG_INC(ULONG, INCREMENT, ULONG),
 	ULONG_DEC(ULONG, DECREMENT, ULONG),
 	ULONG_ADD_ULONG(ULONG, ADD, ULONG, ULONG),
-	ULONG_ADD_STRING(ULONG, ADD, STRING, STRING),
+	ULONG_ADD_STRING(ULONG, ADD, false, STRING, STRING),
 	ULONG_CAT_STRING(ULONG, CAT, STRING, STRING),
 	ULONG_SUB_ULONG(ULONG, SUB, ULONG, ULONG),
 	ULONG_MUL_ULONG(ULONG, MUL, ULONG, ULONG),
@@ -333,7 +334,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USIZE_INC(USIZE, INCREMENT, USIZE),
 	USIZE_DEC(USIZE, DECREMENT, USIZE),
 	USIZE_ADD_USIZE(USIZE, ADD, USIZE, USIZE),
-	USIZE_ADD_STRING(USIZE, ADD, STRING, STRING),
+	USIZE_ADD_STRING(USIZE, ADD, false, STRING, STRING),
 	USIZE_CAT_STRING(USIZE, CAT, STRING, STRING),
 	USIZE_SUB_USIZE(USIZE, SUB, USIZE, USIZE),
 	USIZE_MUL_USIZE(USIZE, MUL, USIZE, USIZE),
@@ -374,7 +375,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	FLOAT_INC(FLOAT, INCREMENT, FLOAT),
 	FLOAT_DEC(FLOAT, DECREMENT, FLOAT),
 	FLOAT_ADD_FLOAT(FLOAT, ADD, FLOAT, FLOAT),
-	FLOAT_ADD_STRING(FLOAT, ADD, STRING, STRING),
+	FLOAT_ADD_STRING(FLOAT, ADD, false, STRING, STRING),
 	FLOAT_CAT_STRING(FLOAT, CAT, STRING, STRING),
 	FLOAT_SUB_FLOAT(FLOAT, SUB, FLOAT, FLOAT),
 	FLOAT_MUL_FLOAT(FLOAT, MUL, FLOAT, FLOAT),
@@ -400,7 +401,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	DOUBLE_INC(DOUBLE, INCREMENT, DOUBLE),
 	DOUBLE_DEC(DOUBLE, DECREMENT, DOUBLE),
 	DOUBLE_ADD_DOUBLE(DOUBLE, ADD, DOUBLE, DOUBLE),
-	DOUBLE_ADD_STRING(DOUBLE, ADD, STRING, STRING),
+	DOUBLE_ADD_STRING(DOUBLE, ADD, false, STRING, STRING),
 	DOUBLE_CAT_STRING(DOUBLE, CAT, STRING, STRING),
 	DOUBLE_SUB_DOUBLE(DOUBLE, SUB, DOUBLE, DOUBLE),
 	DOUBLE_MUL_DOUBLE(DOUBLE, MUL, DOUBLE, DOUBLE),
@@ -590,18 +591,20 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	private final MethodID id;
 	private final FunctionHeader header;
 	private final Modifiers modifiers;
+	public final boolean useWideningConversions;
 
-	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, Modifiers additionalModifiers, FunctionHeader header) {
+	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, Modifiers additionalModifiers, FunctionHeader header, boolean useWideningConversions) {
 		this.definingType = definingType;
 		this.type = (definingType instanceof BasicTypeID) ? (BasicTypeID)definingType : DefinitionTypeID.createThis(definingType);
 		this.id = id;
 		this.header = header;
 
 		this.modifiers = additionalModifiers.with(id.isStatic() ? Modifiers.PUBLIC_STATIC : Modifiers.PUBLIC);
+		this.useWideningConversions = useWideningConversions;
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, FunctionHeader header) {
-		this(definingType, id, Modifiers.NONE, header);
+		this(definingType, id, Modifiers.NONE, header, false);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, TypeID result, TypeID... parameters) {
@@ -609,19 +612,31 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, MethodID id, Modifiers additionalModifiers, TypeID result, TypeID... parameters) {
-		this(definingType, id, additionalModifiers, new FunctionHeader(result, parameters));
+		this(definingType, id, additionalModifiers, new FunctionHeader(result, parameters), false);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
 		this(
 				definingType,
 				operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator),
-				header
+				Modifiers.NONE,
+				header,
+				operator.widening
 		);
 	}
 
 	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
 		this(definingType, operator, new FunctionHeader(result, parameters));
+	}
+
+	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, boolean widening, TypeID result, TypeID... parameters) {
+		this(
+				definingType,
+				operator == OperatorType.CONSTRUCTOR ? MethodID.staticOperator(operator) : MethodID.operator(operator),
+				Modifiers.NONE,
+				new FunctionHeader(result, parameters),
+				widening
+		);
 	}
 
 	@Override

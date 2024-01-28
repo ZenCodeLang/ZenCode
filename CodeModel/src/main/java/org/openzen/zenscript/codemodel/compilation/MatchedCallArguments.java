@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class MatchedCallArguments<T extends AnyMethod> {
 
-	private static final CastedExpression.Level[] candidateLevelsInOrderOfPriority = {CastedExpression.Level.EXACT, CastedExpression.Level.IMPLICIT};
+	private static final CastedExpression.Level[] candidateLevelsInOrderOfPriority = {CastedExpression.Level.EXACT, CastedExpression.Level.WIDENING, CastedExpression.Level.IMPLICIT};
 
 	public static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
@@ -71,6 +71,14 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		this.method = null;
 		this.arguments = null;
 		this.error = error;
+	}
+
+	public boolean requiresWidenedInstance(TypeID instanceType) {
+		return method != null && method.hasWideningConversions() && method.asMethod().map(method -> !method.getTarget().equals(instanceType)).orElse(false);
+	}
+
+	public TypeID getWidenedInstanceType() {
+		return method.asMethod().map(MethodInstance::getTarget).orElse(null);
 	}
 
 	public Expression eval(ExpressionBuilder builder, CallEvaluator<T> evaluator) {
@@ -192,6 +200,22 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				CastedExpression cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
 				cArguments[i] = cArgument.value;
 				levelNormalCall = levelNormalCall.max(cArgument.level);
+			}
+		}
+
+		 if (method.hasWideningConversions()) {
+			 if (levelNormalCall == CastedExpression.Level.EXACT)
+				 levelNormalCall = CastedExpression.Level.WIDENING;
+
+			FunctionHeader originalHeader = method.asMethod().map(instance -> instance.method.getHeader()).orElse(header);
+
+			for (int i = 0; i < originalHeader.parameters.length; i++) {
+				if (!cArguments[i].type.equals(originalHeader.parameters[i].type)) {
+					int finali = i;
+					cArguments[i] = compiler.resolve(cArguments[i].type).findCaster(originalHeader.parameters[i].type)
+							.map(caster -> caster.call(compiler.at(position), cArguments[finali], CallArguments.EMPTY))
+							.orElse(cArguments[i]);
+				}
 			}
 		}
 

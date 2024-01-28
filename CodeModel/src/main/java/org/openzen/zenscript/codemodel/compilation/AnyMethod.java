@@ -10,4 +10,8 @@ public interface AnyMethod {
 	FunctionHeader getHeader();
 
 	Optional<MethodInstance> asMethod();
+
+	default boolean hasWideningConversions() {
+		return false;
+	}
 }

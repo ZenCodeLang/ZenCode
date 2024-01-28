@@ -4,15 +4,15 @@ package org.openzen.zenscript.codemodel;
  * Enum used to indicate operator type.
  */
 public enum OperatorType {
-	ADD("+", "add"),
-	SUB("-", "subtract"),
-	MUL("*", "multiply"),
-	DIV("/", "divide"),
-	MOD("%", "modulo"),
+	ADD("+", "add", true),
+	SUB("-", "subtract", true),
+	MUL("*", "multiply", true),
+	DIV("/", "divide", true),
+	MOD("%", "modulo", true),
 	CAT("~", "concat"),
-	OR("|", "or"),
-	AND("&", "and"),
-	XOR("^", "xor"),
+	OR("|", "or", true),
+	AND("&", "and", true),
+	XOR("^", "xor", true),
 	NEG("-", "negate"),
 	INVERT("~", "invert"),
 	NOT("!", "not"),
@@ -56,16 +56,26 @@ public enum OperatorType {
 	public final OperatorType assignOperatorFor;
 	public final String operator;
 	public final String compiledName;
+	public final boolean widening;
 
 	OperatorType(String operator, String compiledName) {
 		this.operator = operator;
 		this.compiledName = compiledName;
 		assignOperatorFor = null;
+		this.widening = false;
+	}
+
+	OperatorType(String operator, String compiledName, boolean widening) {
+		this.operator = operator;
+		this.compiledName = compiledName;
+		assignOperatorFor = null;
+		this.widening = widening;
 	}
 
 	OperatorType(String operator, String compiledName, OperatorType assignOperatorFor) {
 		this.operator = operator;
 		this.compiledName = compiledName;
 		this.assignOperatorFor = assignOperatorFor;
+		this.widening = false;
 	}
 }

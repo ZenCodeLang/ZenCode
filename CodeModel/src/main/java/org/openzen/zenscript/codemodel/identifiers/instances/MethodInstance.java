@@ -18,12 +18,14 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	private final FunctionHeader header;
 	private final TypeID target;
 	private final TypeID[] expansionTypeArguments;
+	private final boolean hasWideningConversions;
 
 	public MethodInstance(MethodSymbol method) {
 		this.method = method;
 		this.header = method.getHeader();
 		this.target = method.getTargetType();
 		this.expansionTypeArguments = TypeID.NONE;
+		this.hasWideningConversions = false;
 	}
 
 	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target) {
@@ -31,6 +33,15 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 		this.header = header;
 		this.target = target;
 		this.expansionTypeArguments = TypeID.NONE;
+		this.hasWideningConversions = false;
+	}
+
+	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target, boolean hasWideningConversions) {
+		this.method = method;
+		this.header = header;
+		this.target = target;
+		this.expansionTypeArguments = TypeID.NONE;
+		this.hasWideningConversions = hasWideningConversions;
 	}
 
 	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target, TypeID[] expansionTypeArguments) {
@@ -38,6 +49,7 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 		this.header = header;
 		this.target = target;
 		this.expansionTypeArguments = expansionTypeArguments;
+		this.hasWideningConversions = false;
 	}
 
 	public TypeID getTarget() {
@@ -75,6 +87,11 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	@Override
 	public boolean isImplicit() {
 		return method.getModifiers().isImplicit();
+	}
+
+	@Override
+	public boolean hasWideningConversions() {
+		return hasWideningConversions;
 	}
 
 	public TypeID[] getExpansionTypeArguments() {

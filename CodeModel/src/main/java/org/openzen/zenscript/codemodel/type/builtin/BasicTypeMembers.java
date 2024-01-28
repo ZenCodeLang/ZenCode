@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CastedEval;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
@@ -7,6 +9,7 @@ import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 public class BasicTypeMembers {
@@ -552,6 +555,22 @@ public class BasicTypeMembers {
 			}*/
 			if (method.getDefiningType() == type) {
 				builder.method(new MethodInstance(method));
+				if (method.useWideningConversions) {
+					for (MethodInstance widened : getWideningMethodInstances(method)) {
+						builder.method(widened);
+					}
+				}
+			}
+			if (method.useWideningConversions) {
+				method.getDefiningType().asType().ifPresent(definingType -> {
+					BasicTypeID basicDefiningType = (BasicTypeID) definingType;
+					TypeID[] wideningSources = getWideningSources(basicDefiningType);
+					for (TypeID source : wideningSources) {
+						if (source == type) {
+							builder.method(new MethodInstance(method, method.getHeader(), basicDefiningType, true));
+						}
+					}
+				});
 			}
 		}
 
@@ -570,6 +589,50 @@ public class BasicTypeMembers {
 				right.cast(CastedEval.implicit(compiler, position, ofType)).value,
 				comparator,
 				type)));
+	}
+
+	private static MethodInstance[] getWideningMethodInstances(BuiltinMethodSymbol method) {
+		FunctionHeader original = method.getHeader();
+		if (original.parameters.length != 1)
+			throw new IllegalArgumentException("Not doing widening on multiple method arguments");
+
+		FunctionParameter originalParameter = original.parameters[0];
+		TypeID[] wideningSources = getWideningSources((BasicTypeID) originalParameter.type);
+		MethodInstance[] wideningMethodInstances = new MethodInstance[wideningSources.length];
+		for (int i = 0; i < wideningSources.length; i++) {
+			FunctionParameter parameter = new FunctionParameter(wideningSources[i], originalParameter.name, false);
+			FunctionHeader header = new FunctionHeader(original.typeParameters, original.getReturnType(), original.thrownType, parameter);
+			wideningMethodInstances[i] = new MethodInstance(method, header, method.getTargetType(), true);
+		}
+		return wideningMethodInstances;
+	}
+
+	private static TypeID[] getWideningSources(BasicTypeID type) {
+		switch (type) {
+			case BYTE:
+			case SBYTE:
+				return TypeID.NONE;
+			case SHORT:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.SBYTE};
+			case USHORT:
+				return new TypeID[]{BasicTypeID.BYTE};
+			case INT:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.SBYTE, BasicTypeID.SHORT, BasicTypeID.USHORT};
+			case UINT:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.USHORT};
+			case USIZE:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.USHORT, BasicTypeID.UINT};
+			case LONG:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.SBYTE, BasicTypeID.SHORT, BasicTypeID.USHORT, BasicTypeID.INT, BasicTypeID.USIZE};
+			case ULONG:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.USHORT, BasicTypeID.UINT, BasicTypeID.USIZE};
+			case FLOAT:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.SBYTE, BasicTypeID.SHORT, BasicTypeID.USHORT, BasicTypeID.INT, BasicTypeID.UINT, BasicTypeID.LONG, BasicTypeID.ULONG, BasicTypeID.USIZE};
+			case DOUBLE:
+				return new TypeID[]{BasicTypeID.BYTE, BasicTypeID.SBYTE, BasicTypeID.SHORT, BasicTypeID.USHORT, BasicTypeID.INT, BasicTypeID.UINT, BasicTypeID.LONG, BasicTypeID.ULONG, BasicTypeID.USIZE, BasicTypeID.FLOAT};
+			default:
+				return TypeID.NONE;
+		}
 	}
 
 	private BasicTypeMembers() {

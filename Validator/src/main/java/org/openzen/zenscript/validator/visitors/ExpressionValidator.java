@@ -91,7 +91,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.target.accept(this);
 		checkMemberAccess(expression.position, expression.method);
 
-		checkCallArguments(expression.position, expression.method.method.getHeader(), expression.method.getHeader(), expression.arguments);
+		FunctionHeader instancedHeader = expression.method.hasWideningConversions() ? expression.method.method.getHeader() : expression.method.getHeader();
+		checkCallArguments(expression.position, expression.method.method.getHeader(), instancedHeader, expression.arguments);
 		checkNotStatic(expression.position, expression.method);
 
 		MethodID id = expression.method.getID();

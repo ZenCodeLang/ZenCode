@@ -1182,9 +1182,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case DOUBLE_MOD_DOUBLE:
 				javaWriter.dRem();
 				break;
-			case INT_ADD_USIZE:
-				javaWriter.iAdd();
-				break;
+			//case INT_ADD_USIZE:
+			//	javaWriter.iAdd();
+			//	break;
 			case STRING_ADD_STRING:
 				javaWriter.invokeVirtual(STRING_CONCAT);
 				break;
