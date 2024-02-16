@@ -1,0 +1,19 @@
+#output: int
+#output: 4
+
+public class min {
+	private val min as int;
+
+	public this(a as int) {
+		this.min = a;
+	}
+
+	public min(min as int) as int {
+		println(typeof(this.min));
+		return min < this.min ? min : this.min;
+	}
+}
+
+val min = new min(5);
+println("" + min.min(4));
+

@@ -546,9 +546,9 @@ public class BasicTypeMembers {
 
 	private static void setup(MemberSet.Builder builder, BasicTypeID type) {
 		for (BuiltinMethodSymbol method : BuiltinMethodSymbol.values()) {
-			/*if (method.getID().equals(COMPARE)) {
+			if (method.getDefiningType().equals(type) && method.getID().equals(COMPARE)) {
 				comparator(builder, method, type);
-			} else if (method.getID().equals(CONSTRUCTOR)) {
+			}/* else if (method.getID().equals(CONSTRUCTOR)) {
 				builder.constructor(new MethodInstance(method));
 			} else if (method.getDefiningType() == type) {
 				builder.method(new MethodInstance(method));

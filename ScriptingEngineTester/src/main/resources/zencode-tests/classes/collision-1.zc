@@ -1,0 +1,17 @@
+#output: 3
+#output: 3
+
+public class Collision {
+	public static min(a as int, b as int) as int {
+		return a < b ? a : b;
+	}
+	public static min(a as double, b as double) as double {
+		return a < b ? a : b;
+	}
+	public static min(a as usize, b as usize) as usize {
+		return a < b ? a : b;
+	}
+}
+
+println("" + Collision.min(3, 5));
+println("" + Collision.min(5, 3));
