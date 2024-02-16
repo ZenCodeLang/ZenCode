@@ -117,7 +117,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Comparator> compare() {
+	public Optional<Comparator> compare(TypeID typeId) {
 		return Optional.empty();
 	}
 

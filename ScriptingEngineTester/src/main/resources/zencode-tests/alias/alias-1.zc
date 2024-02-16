@@ -1,0 +1,13 @@
+#output: Two is int
+
+alias Foo as int;
+
+val two : Foo = 2;
+
+if (two is Foo) {
+	print("Two is Foo");
+}
+
+if (two is int) {
+	print("Two is int");
+}

@@ -547,7 +547,7 @@ public class BasicTypeMembers {
 	private static void setup(MemberSet.Builder builder, BasicTypeID type) {
 		for (BuiltinMethodSymbol method : BuiltinMethodSymbol.values()) {
 			if (method.getDefiningType().equals(type) && method.getID().equals(COMPARE)) {
-				comparator(builder, method, type);
+				comparator(builder, method, method.getHeader().getParameterType(false, 0));
 			}/* else if (method.getID().equals(CONSTRUCTOR)) {
 				builder.constructor(new MethodInstance(method));
 			} else if (method.getDefiningType() == type) {
@@ -581,9 +581,9 @@ public class BasicTypeMembers {
 		}
 	}
 
-	private static void comparator(MemberSet.Builder builder, BuiltinMethodSymbol method, BasicTypeID ofType) {
+	private static void comparator(MemberSet.Builder builder, BuiltinMethodSymbol method, TypeID ofType) {
 		MethodInstance comparator = new MethodInstance(method);
-		builder.comparator(((compiler, position, left, right, type) -> new CompareExpression(
+		builder.comparator(ofType, ((compiler, position, left, right, type) -> new CompareExpression(
 				position,
 				left,
 				right.cast(CastedEval.implicit(compiler, position, ofType)).value,

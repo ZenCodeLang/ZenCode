@@ -26,7 +26,7 @@ public class MemberSet implements ResolvedType {
 	private final Map<String, SwitchMember> switchMembers = new HashMap<>();
 	private final Map<String, TypeSymbol> innerTypes = new HashMap<>();
 	private final List<IteratorInstance> iterators = new ArrayList<>();
-	private Comparator comparator;
+	private final Map<TypeID, Comparator> comparators = new HashMap<>();
 
 	@Override
 	public StaticCallable getConstructor() {
@@ -125,8 +125,8 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Comparator> compare() {
-		return Optional.ofNullable(comparator);
+	public Optional<Comparator> compare(TypeID typeId) {
+		return Optional.ofNullable(comparators.get(typeId));
 	}
 
 	@Override
@@ -200,8 +200,8 @@ public class MemberSet implements ResolvedType {
 			return this;
 		}
 
-		public Builder comparator(Comparator comparator) {
-			target.comparator = comparator;
+		public Builder comparator(TypeID typeId, Comparator comparator) {
+			target.comparators.put(typeId, comparator);
 			return this;
 		}
 

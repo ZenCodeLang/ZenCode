@@ -182,8 +182,8 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Comparator> compare() {
-		return base.compare();
+	public Optional<Comparator> compare(TypeID typeId) {
+		return base.compare(typeId);
 	}
 
 	@Override

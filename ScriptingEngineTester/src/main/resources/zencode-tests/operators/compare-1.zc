@@ -1,0 +1,13 @@
+#output: true
+#output: true
+#output: true
+#output: true
+#output: false
+
+println("" + ((3 < 5) ? "true" : "false"));
+println("" + ((3 < (5 as usize)) ? "true" : "false"));
+println("" + ((3 < 5.0) ? "true" : "false"));
+println("" + ((3 < 5.0f) ? "true" : "false"));
+println("" + (3 < 0x40 ? "true" : "false"));
+
+println("" + ((-5 < (3 as usize)) ? "true" : "false")); //What does this return?

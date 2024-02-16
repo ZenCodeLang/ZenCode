@@ -65,11 +65,10 @@ public class ParsedExpressionCompare extends ParsedExpression {
 					return notEquals.get().call(compiler, position, left, TypeID.NONE, right);
 				}
 			}
-
-			return resolved.compare()
+			return resolved.compare(right.eval().type)
 					.map(comparator -> comparator.compare(compiler, position, left, right, this.type))
 					.orElseGet(() -> compiler.at(position).invalid(
-							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE),
+							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE), //TODO Make error message more descriptive and include target type.
 							BasicTypeID.BOOL));
 		}
 

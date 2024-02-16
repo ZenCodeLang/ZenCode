@@ -66,7 +66,7 @@ public interface ResolvedType {
 
 	Optional<SwitchMember> findSwitchMember(String name);
 
-	Optional<Comparator> compare();
+	Optional<Comparator> compare(TypeID typeId);
 
     Optional<IteratorInstance> findIterator(int variables);
 
