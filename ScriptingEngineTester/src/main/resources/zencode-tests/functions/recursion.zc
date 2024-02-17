@@ -1,0 +1,8 @@
+#output: 55
+
+function fib(n as int) as int {
+	if (n < 2) return n;
+	return fib(n - 1) + fib(n - 2);
+}
+
+println("" + fib(10));

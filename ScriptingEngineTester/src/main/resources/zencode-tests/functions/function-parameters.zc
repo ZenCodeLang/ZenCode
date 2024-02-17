@@ -1,0 +1,7 @@
+#output: Hello
+
+function foo(func as function(a as string) as void) as void {
+	func("Hello");
+}
+
+foo(s => println(s));
