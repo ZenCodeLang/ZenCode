@@ -1,0 +1,8 @@
+#output: false
+#output: false
+#output: false
+
+val result = !true;
+println(result);
+println(!true);
+println((!true) as string);

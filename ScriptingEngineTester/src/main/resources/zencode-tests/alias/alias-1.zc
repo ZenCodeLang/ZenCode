@@ -1,3 +1,4 @@
+#output: Two is Foo
 #output: Two is int
 
 alias Foo as int;

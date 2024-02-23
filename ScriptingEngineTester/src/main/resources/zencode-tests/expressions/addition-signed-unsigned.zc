@@ -1,0 +1,27 @@
+
+val byteValue = 1 as byte;
+val sbyteValue = 2 as sbyte;
+val shortValue = 3 as short;
+val ushortValue = 4 as ushort;
+val intValue = 5 as int;
+val uintValue = 6 as uint;
+val longValue = 7 as long;
+val ulongValue = 8 as ulong;
+val usizeValue = 9 as usize;
+
+println(typeof(byteValue + sbyteValue));
+println(byteValue + sbyteValue);
+println(typeof(byteValue + shortValue));
+println(byteValue + shortValue);
+println(typeof(sbyteValue + ushortValue));
+println(byteValue + ushortValue);
+println(typeof(byteValue + intValue));
+println(byteValue + intValue);
+println(typeof(sbyteValue + uintValue));
+println(byteValue + uintValue);
+println(typeof(byteValue + longValue));
+println(byteValue + longValue);
+println(typeof(sbyteValue + ulongValue));
+println(byteValue + ulongValue);
+println(typeof(byteValue + usizeValue));
+println(byteValue + usizeValue);

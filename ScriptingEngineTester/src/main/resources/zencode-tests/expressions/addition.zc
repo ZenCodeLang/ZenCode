@@ -33,25 +33,25 @@ val usizeValue = 9 as usize;
 val floatValue = 10 as float;
 val doubleValue = 11 as double;
 
-println(typeof(byteValue + byteValue));
+/*println(typeof(byteValue + byteValue));
 println(byteValue + byteValue);
-/*println(typeof(byteValue + sbyteValue));
-println(byteValue + sbyteValue);
-println(typeof(byteValue + shortValue));
-println(byteValue + shortValue);
+println(typeof(sbyteValue + sbyteValue));
+println(sbyteValue + sbyteValue);
+println(typeof(sbyteValue + shortValue));
+println(sbyteValue + shortValue);
 println(typeof(byteValue + ushortValue));
 println(byteValue + ushortValue);
-println(typeof(byteValue + intValue));
-println(byteValue + intValue);
+println(typeof(sbyteValue + intValue));
+println(sbyteValue + intValue);
 println(typeof(byteValue + uintValue));
 println(byteValue + uintValue);
-println(typeof(byteValue + longValue));
-println(byteValue + longValue);
+println(typeof(sbyteValue + longValue));
+println(sbyteValue + longValue);
 println(typeof(byteValue + ulongValue));
 println(byteValue + ulongValue);
 println(typeof(byteValue + usizeValue));
 println(byteValue + usizeValue);
 println(typeof(byteValue + floatValue));
-println(byteValue + floatValue);
+println(byteValue + floatValue);*/
 println(typeof(byteValue + doubleValue));
-println(byteValue + doubleValue);*/
+println(byteValue + doubleValue);

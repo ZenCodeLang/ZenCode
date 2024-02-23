@@ -1,0 +1,3 @@
+#output: 254
+
+println(~(1 as byte));

@@ -1,6 +1,3 @@
-#output: Undetermined
-
-//Should this error?
 
 function println(a as string) {
 

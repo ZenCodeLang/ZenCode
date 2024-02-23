@@ -1,6 +1,5 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -346,7 +345,6 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	USIZE_SHL(USIZE, SHL, USIZE, USIZE),
 	USIZE_SHR(USIZE, SHR, USIZE, USIZE),
 	USIZE_COMPARE(USIZE, COMPARE, INT, USIZE),
-	USIZE_COMPARE_UINT(USIZE, COMPARE, INT, UINT),
 	USIZE_TO_BYTE(USIZE, MethodID.caster(BYTE), Modifiers.NONE, BYTE),
 	USIZE_TO_SBYTE(USIZE, MethodID.caster(SBYTE), Modifiers.NONE, SBYTE),
 	USIZE_TO_SHORT(USIZE, MethodID.caster(SHORT), Modifiers.NONE, SHORT),
