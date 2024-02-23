@@ -5,9 +5,9 @@
 #output: true
 #output: true
 
-println("" + ((3 < 5)));
-println("" + ((3 < (5 as usize))));
-println("" + ((3 < 5.0)));
-println("" + ((3 < 5.0f)));
-println("" + (3 < 0x40));
-println("" + ((-5 < (3 as usize)))); // interpreted as int
+println(3 < 5);
+println(3 < (5 as usize));
+println(3 < 5.0);
+println(3 < 5.0f);
+println(3 < 0x40);
+println(-5 < (3 as usize)); // interpreted as int
