@@ -24,6 +24,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.INFERENCE_AMBIGUOUS, "Type inference ambiguity, possible types: " + possibleTypes);
 	}
 
+	public static CompileError cannotCompare(TypeID a, TypeID b) {
+		return new CompileError(CompileExceptionCode.CANNOT_COMPARE, "Cannot compare " + a + " and " + b);
+	}
+
 	public static CompileError ambiguousComparison(TypeID a, TypeID b) {
 		return new CompileError(CompileExceptionCode.AMBIGUOUS_COMPARISON, "Ambiguous comparison, not sure to compare as " + a + " or " + b);
 	}

@@ -49,13 +49,16 @@ public class ParsedExpressionConditional extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			Expression condition = this.condition.cast(cast(BasicTypeID.BOOL)).value;
+			CastedExpression condition = this.condition.cast(cast(BasicTypeID.BOOL));
+			if (condition.isFailed())
+				return condition.value;
+
 			Expression ifThen = this.ifThen.eval();
 			Expression ifElse = this.ifElse.eval();
 			return compiler.union(ifThen.type, ifElse.type)
 					.map(t -> {
 						CastedEval cast = cast(t);
-						return compiler.at(position).ternary(condition, cast.of(ifThen).value, cast.of(ifElse).value);
+						return compiler.at(position).ternary(condition.value, cast.of(ifThen).value, cast.of(ifElse).value);
 					})
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noIntersectionBetweenTypes(ifThen.type, ifElse.type)));
 		}

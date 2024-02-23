@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CastedEval;
 import org.openzen.zenscript.codemodel.compilation.CastedExpression;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
@@ -13,6 +14,8 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class BasicTypeMembers {
 	private static final MemberSet NO_MEMBERS = new MemberSet();
@@ -549,7 +552,7 @@ public class BasicTypeMembers {
 	private static void setup(MemberSet.Builder builder, BasicTypeID type) {
 		for (BuiltinMethodSymbol method : BuiltinMethodSymbol.values()) {
 			if (method.getDefiningType().equals(type) && method.getID().equals(COMPARE)) {
-				comparator(builder, method, method.getHeader().getParameterType(false, 0));
+				comparator(builder);
 			}/* else if (method.getID().equals(CONSTRUCTOR)) {
 				builder.constructor(new MethodInstance(method));
 			} else if (method.getDefiningType() == type) {
@@ -583,21 +586,44 @@ public class BasicTypeMembers {
 		}
 	}
 
-	private static void comparator(MemberSet.Builder builder, BuiltinMethodSymbol method, TypeID ofType) {
-		MethodInstance comparator = new MethodInstance(method);
+	private static void comparator(MemberSet.Builder builder) {
 		builder.comparator(((compiler, position, left, right, type) -> {
-			CastedExpression casted = right.cast(CastedEval.implicit(compiler, position, ofType));
-			if (casted.isFailed())
-				return casted;
-
-			Expression value = new CompareExpression(
-					position,
-					left,
-					casted.value,
-					comparator,
-					type);
-			return new CastedExpression(casted.level, value);
+			Expression rightCompiled = right.eval();
+			Optional<TypeID> union = compiler.union(left.type, rightCompiled.type);
+			return union.map(typeID -> {
+				CastedEval cast = new CastedEval(compiler, left.position, typeID, false, false);
+				Expression castedLeft = cast.of(left).value;
+				Expression castedRight = cast.of(rightCompiled).value;
+				Expression value = new CompareExpression(
+						position,
+						castedLeft,
+						castedRight,
+						new MethodInstance(getComparator((BasicTypeID) typeID)),
+						type);
+				return new CastedExpression(CastedExpression.Level.EXACT, value);
+			}).orElseGet(() -> {
+				return new CastedExpression(CastedExpression.Level.INVALID, compiler.at(position).invalid(CompileErrors.cannotCompare(left.type, rightCompiled.type)));
+			});
 		}));
+	}
+
+	private static BuiltinMethodSymbol getComparator(BasicTypeID type) {
+		switch (type) {
+			case BYTE: return BuiltinMethodSymbol.BYTE_COMPARE;
+			case SBYTE: return BuiltinMethodSymbol.SBYTE_COMPARE;
+			case SHORT: return BuiltinMethodSymbol.SHORT_COMPARE;
+			case USHORT: return BuiltinMethodSymbol.USHORT_COMPARE;
+			case INT: return BuiltinMethodSymbol.INT_COMPARE;
+			case UINT: return BuiltinMethodSymbol.UINT_COMPARE;
+			case LONG: return BuiltinMethodSymbol.LONG_COMPARE;
+			case ULONG: return BuiltinMethodSymbol.ULONG_COMPARE;
+			case USIZE: return BuiltinMethodSymbol.USIZE_COMPARE;
+			case FLOAT: return BuiltinMethodSymbol.FLOAT_COMPARE;
+			case DOUBLE: return BuiltinMethodSymbol.DOUBLE_COMPARE;
+			case CHAR: return BuiltinMethodSymbol.CHAR_COMPARE;
+			case STRING: return BuiltinMethodSymbol.STRING_COMPARE;
+			default: throw new IllegalArgumentException("No comparator for " + type);
+		}
 	}
 
 	private static MethodInstance[] getWideningMethodInstances(BuiltinMethodSymbol method) {
