@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -117,8 +118,8 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Comparator> compare(TypeID typeId) {
-		return Optional.empty();
+	public List<Comparator> comparators() {
+		return Collections.emptyList();
 	}
 
 	@Override

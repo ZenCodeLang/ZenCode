@@ -4,7 +4,9 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CastedEval;
+import org.openzen.zenscript.codemodel.compilation.CastedExpression;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -583,12 +585,19 @@ public class BasicTypeMembers {
 
 	private static void comparator(MemberSet.Builder builder, BuiltinMethodSymbol method, TypeID ofType) {
 		MethodInstance comparator = new MethodInstance(method);
-		builder.comparator(ofType, ((compiler, position, left, right, type) -> new CompareExpression(
-				position,
-				left,
-				right.cast(CastedEval.implicit(compiler, position, ofType)).value,
-				comparator,
-				type)));
+		builder.comparator(((compiler, position, left, right, type) -> {
+			CastedExpression casted = right.cast(CastedEval.implicit(compiler, position, ofType));
+			if (casted.isFailed())
+				return casted;
+
+			Expression value = new CompareExpression(
+					position,
+					left,
+					casted.value,
+					comparator,
+					type);
+			return new CastedExpression(casted.level, value);
+		}));
 	}
 
 	private static MethodInstance[] getWideningMethodInstances(BuiltinMethodSymbol method) {

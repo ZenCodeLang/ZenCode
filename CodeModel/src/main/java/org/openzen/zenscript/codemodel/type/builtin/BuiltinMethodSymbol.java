@@ -21,10 +21,10 @@ import static org.openzen.zenscript.codemodel.OperatorType.*;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 
 public enum BuiltinMethodSymbol implements MethodSymbol {
-	BOOL_NOT(BOOL, NOT, BOOL, BOOL),
-	BOOL_AND(BOOL, AND, BOOL, BOOL, BOOL),
-	BOOL_OR(BOOL, OR, BOOL, BOOL, BOOL),
-	BOOL_XOR(BOOL, XOR, BOOL, BOOL, BOOL),
+	BOOL_NOT(BOOL, NOT, BOOL),
+	BOOL_AND(BOOL, AND, false, BOOL, BOOL),
+	BOOL_OR(BOOL, OR, false, BOOL, BOOL),
+	BOOL_XOR(BOOL, XOR, false, BOOL, BOOL),
 	BOOL_ADD_STRING(BOOL, ADD, false, STRING, STRING),
 	BOOL_CAT_STRING(BOOL, CAT, STRING, STRING),
 	BOOL_EQUALS(BOOL, EQUALS, BOOL, BOOL, BOOL),

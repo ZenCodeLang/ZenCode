@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ResolvedType {
@@ -66,7 +67,7 @@ public interface ResolvedType {
 
 	Optional<SwitchMember> findSwitchMember(String name);
 
-	Optional<Comparator> compare(TypeID typeId);
+	List<Comparator> comparators();
 
     Optional<IteratorInstance> findIterator(int variables);
 
@@ -100,7 +101,7 @@ public interface ResolvedType {
 
 	@FunctionalInterface
 	interface Comparator {
-		Expression compare(
+		CastedExpression compare(
 				ExpressionCompiler compiler,
 				CodePosition position,
 				Expression left,

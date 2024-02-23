@@ -1,5 +1,6 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
@@ -65,11 +66,25 @@ public class ParsedExpressionCompare extends ParsedExpression {
 					return notEquals.get().call(compiler, position, left, TypeID.NONE, right);
 				}
 			}
-			return resolved.compare(right.eval().type)
+			CastedExpression result = resolved.comparators()
+					.stream()
 					.map(comparator -> comparator.compare(compiler, position, left, right, this.type))
-					.orElseGet(() -> compiler.at(position).invalid(
+					.reduce((a, b) -> {
+						if (a.isFailed()) return b;
+						if (b.isFailed()) return a;
+
+						if (a.level.compareTo(b.level) == 0) {
+							return new CastedExpression(a.level, compiler.at(position).invalid(CompileErrors.ambiguousComparison(a.value.type, b.value.type)));
+						} else if (a.level.compareTo(b.level) > 0) {
+							return a;
+						} else {
+							return b;
+						}
+					})
+					.orElseGet(() -> CastedExpression.invalid(compiler.at(position).invalid(
 							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE), //TODO Make error message more descriptive and include target type.
-							BasicTypeID.BOOL));
+							BasicTypeID.BOOL)));
+			return result.value;
 		}
 
 		@Override

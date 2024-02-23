@@ -24,6 +24,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.INFERENCE_AMBIGUOUS, "Type inference ambiguity, possible types: " + possibleTypes);
 	}
 
+	public static CompileError ambiguousComparison(TypeID a, TypeID b) {
+		return new CompileError(CompileExceptionCode.AMBIGUOUS_COMPARISON, "Ambiguous comparison, not sure to compare as " + a + " or " + b);
+	}
+
 	public static CompileError noMemberInType(TypeID type, String name) {
 		return new CompileError(CompileExceptionCode.NO_SUCH_MEMBER, "No member " + name + " in type " + type);
 	}
