@@ -271,6 +271,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
+	@Override
+	public Void visitCallSuper(CallSuperExpression expression) {
+		ModuleSymbol module = expression.method.method.getDefiningType().getModule();
+		JavaCompiledModule javaCompiledModule = context.getJavaModule(module);
+		JavaMethod method = javaCompiledModule.getMethodInfo(expression.method.method);
+		method.compileSpecial(methodCompiler, expression.type, expression.target, expression.arguments);
+		return null;
+	}
+
 	private void handleReturnValue(TypeID original, TypeID actual) {
 		if (original.isGeneric()) {
 			handleGenericReturnValue(actual);

@@ -106,7 +106,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	}
 
 	@FunctionalInterface
-	interface CallEvaluator<T> {
+	public interface CallEvaluator<T> {
 		Expression eval(ExpressionBuilder builder, T method, CallArguments arguments);
 	}
 

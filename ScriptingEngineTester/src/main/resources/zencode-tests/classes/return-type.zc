@@ -1,8 +1,7 @@
-#output: hello
+#error: 4:TYPE_NOT_INFERRED
 
 class Foo {
-	this() {}
-	print(): void {
+	print() {
 		println("hello");
 	}
 }

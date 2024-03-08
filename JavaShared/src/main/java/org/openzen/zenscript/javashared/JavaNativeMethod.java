@@ -120,6 +120,11 @@ public class JavaNativeMethod implements JavaMethod {
 		return compiler.nativeStaticMethod(this, returnType, arguments);
 	}
 
+	@Override
+	public <T> T compileSpecial(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
+		return compiler.nativeSpecialMethod(this, returnType, target, arguments);
+	}
+
 	public enum Kind {
 		STATIC,
 		STATICINIT,

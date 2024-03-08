@@ -11,6 +11,8 @@ public interface ExpressionVisitor<T> {
 
 	T visitCallStatic(CallStaticExpression expression);
 
+	T visitCallSuper(CallSuperExpression expression);
+
 	T visitCapturedClosure(CapturedClosureExpression expression);
 
 	T visitCapturedLocalVariable(CapturedLocalVariableExpression expression);

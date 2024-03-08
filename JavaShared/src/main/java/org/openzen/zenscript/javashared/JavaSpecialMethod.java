@@ -34,6 +34,11 @@ public enum JavaSpecialMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileSpecial(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public String getMapping(JavaClass class_) {
 		return class_.internalName + "::special::" + name();
 	}

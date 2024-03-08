@@ -11,6 +11,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitCallStatic(C context, CallStaticExpression expression);
 
+	R visitCallSuper(C context, CallSuperExpression expression);
+
 	R visitCapturedClosure(C context, CapturedClosureExpression expression);
 
 	R visitCapturedLocalVariable(C context, CapturedLocalVariableExpression expression);

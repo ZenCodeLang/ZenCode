@@ -72,6 +72,8 @@ public class BaseCompilingDefinition<T extends HighLevelDefinition> implements C
 			member.linkTypes();
 			compiled.addMember(member.getCompiled());
 		}
+
+		compiled.addDefaultMembers();
 	}
 
 	@Override

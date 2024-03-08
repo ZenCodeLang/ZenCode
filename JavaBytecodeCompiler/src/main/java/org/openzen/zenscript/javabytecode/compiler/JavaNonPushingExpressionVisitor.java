@@ -219,6 +219,12 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
+	public Void visitCallSuper(CallSuperExpression expression) {
+		fallback(expression);
+		return null;
+	}
+
+	@Override
 	public Void visitCapturedClosure(CapturedClosureExpression expression) {
 		return expression.value.accept(this);
 	}
@@ -365,7 +371,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		javaWriter.invokeSpecial(
 				context.getInternalName(expression.constructor.getTarget()),
 				"<init>",
-				context.getMethodDescriptor(expression.constructor.getHeader()));
+				context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));
 
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
 		return null;

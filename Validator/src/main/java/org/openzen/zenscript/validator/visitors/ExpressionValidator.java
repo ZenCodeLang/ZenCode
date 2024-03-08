@@ -129,6 +129,28 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitCallSuper(CallSuperExpression expression) {
+		expression.target.accept(this);
+		checkMemberAccess(expression.position, expression.method);
+
+		FunctionHeader instancedHeader = expression.method.hasWideningConversions() ? expression.method.method.getHeader() : expression.method.getHeader();
+		checkCallArguments(expression.position, expression.method.method.getHeader(), instancedHeader, expression.arguments);
+		checkNotStatic(expression.position, expression.method);
+
+		MethodID id = expression.method.getID();
+		switch (id.getKind()) {
+			case INSTANCEMETHOD:
+			case OPERATOR:
+			case GETTER:
+			case SETTER:
+				return null;
+			default:
+				validator.logError(expression.position, CompileErrors.notInstanceCallableMethod(id));
+				return null;
+		}
+	}
+
+	@Override
 	public Void visitCapturedClosure(CapturedClosureExpression expression) {
 		return null;
 	}

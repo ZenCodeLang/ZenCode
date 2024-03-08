@@ -25,6 +25,8 @@ public interface ExpressionBuilder {
 
 	Expression callVirtual(MethodInstance method, Expression target, CallArguments arguments);
 
+	Expression callSuper(MethodInstance method, Expression target, CallArguments arguments);
+
 	Expression coalesce(Expression left, Expression right);
 
 	Expression constant(boolean value);

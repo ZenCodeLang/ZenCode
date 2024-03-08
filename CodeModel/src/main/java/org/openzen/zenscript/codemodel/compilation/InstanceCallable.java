@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class InstanceCallable {
-	private final List<InstanceCallableMethod> overloads;
+	public final List<InstanceCallableMethod> overloads;
 
 	public InstanceCallable(List<InstanceCallableMethod> overloads) {
 		this.overloads = overloads;

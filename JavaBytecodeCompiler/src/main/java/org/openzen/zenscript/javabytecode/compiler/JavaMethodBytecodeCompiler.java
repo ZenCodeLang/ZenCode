@@ -197,6 +197,19 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		return null;
 	}
 
+	@Override
+	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
+		target.accept(expressionVisitor);
+		for (Expression argument : arguments.arguments) {
+			argument.accept(expressionVisitor);
+		}
+		if (method.compile) {
+			handleTypeArguments(method, arguments);
+		}
+		javaWriter.invokeSpecial(method);
+		return null;
+	}
+
 	private void handleTypeArguments(JavaNativeMethod method, CallArguments arguments) {
 		final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
 		if (arguments.typeArguments.length != method.typeParameterArguments.length)

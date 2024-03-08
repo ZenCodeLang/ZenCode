@@ -1,0 +1,20 @@
+#output: hello thing
+#output: world
+
+virtual class Foo {
+  val name as string;
+
+  sayHello(): void {
+	println("hello " + this.name);
+  }
+}
+
+class Bar : Foo {
+  sayHello(): void {
+	super.sayHello();
+	println("world");
+  }
+}
+
+new Bar("thing").sayHello();
+

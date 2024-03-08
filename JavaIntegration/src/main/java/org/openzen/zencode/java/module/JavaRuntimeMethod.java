@@ -125,6 +125,11 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
+	public <T> T compileSpecial(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public String getMapping(JavaClass class_) {
 		return method.getMapping(class_);
 	}

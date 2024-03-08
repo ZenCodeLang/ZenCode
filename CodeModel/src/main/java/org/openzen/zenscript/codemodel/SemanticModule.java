@@ -79,7 +79,6 @@ public class SemanticModule {
 				expansions.stream()
 		).forEach(annotationProcessor::process);
 
-
 		return new SemanticModule(
 				module,
 				dependencies,

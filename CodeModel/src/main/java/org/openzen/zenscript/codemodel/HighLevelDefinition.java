@@ -64,6 +64,8 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		return typeParameters == null ? 0 : typeParameters.length;
 	}
 
+	public void addDefaultMembers() {}
+
 	public void setOuterDefinition(HighLevelDefinition outerDefinition) {
 		this.outerDefinition = outerDefinition;
 	}

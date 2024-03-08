@@ -89,4 +89,9 @@ public class ConstructorMember extends FunctionalMember {
 
 		return result;
 	}
+
+	@Override
+	public boolean isConstructor() {
+		return true;
+	}
 }

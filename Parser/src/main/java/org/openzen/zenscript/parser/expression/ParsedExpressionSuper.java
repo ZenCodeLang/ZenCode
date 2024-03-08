@@ -6,6 +6,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.StaticCompilingCallable;
+import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
+import org.openzen.zenscript.codemodel.compilation.impl.BoundSuperCallable;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
@@ -124,6 +126,13 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
 
+		}
+
+		@Override
+		public Optional<CompilingCallable> call() {
+			return compiler.resolve(superType)
+					.findMethod(name.name)
+					.map(method -> new BoundSuperCallable(compiler, method, compiler.at(position).getThis(thisType), TypeID.NONE));
 		}
 	}
 

@@ -64,6 +64,10 @@ public final class StaticCallable {
 		return overloads.size() == 1 ? Optional.of(overloads.get(0).getHeader()) : Optional.empty();
 	}
 
+	public Optional<StaticCallableMethod> getSingleOverload() {
+		return overloads.size() == 1 ? Optional.of(overloads.get(0)) : Optional.empty();
+	}
+
 	private Expression call(ExpressionBuilder builder, StaticCallableMethod method, CallArguments arguments) {
 		return method.call(builder, arguments);
 	}

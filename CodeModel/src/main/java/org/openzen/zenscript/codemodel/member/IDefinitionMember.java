@@ -34,5 +34,9 @@ public interface IDefinitionMember {
 
 	boolean isAbstract();
 
+	default boolean isConstructor() {
+		return false;
+	}
+
 	FunctionHeader getHeader();
 }

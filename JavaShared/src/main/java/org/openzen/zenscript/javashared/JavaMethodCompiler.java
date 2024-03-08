@@ -12,6 +12,8 @@ public interface JavaMethodCompiler<T> {
 
 	T nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments);
 
+	T nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments);
+
 	T builtinConstructor(BuiltinMethodSymbol method, TypeID type, CallArguments arguments);
 
 	T builtinVirtualMethod(BuiltinMethodSymbol method, Expression target, CallArguments arguments);

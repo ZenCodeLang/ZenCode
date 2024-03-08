@@ -79,6 +79,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	@Override
+	public Void visitCallSuper(CallSuperExpression expression) {
+		throw new UnsupportedOperationException("Invalid lvalue: super call");
+	}
+
+	@Override
 	public Void visitCapturedClosure(CapturedClosureExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: captured closure");
 	}

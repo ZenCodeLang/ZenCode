@@ -169,6 +169,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression callSuper(MethodInstance method, Expression target, CallArguments arguments) {
+			return new CallSuperExpression(position, target, method, arguments);
+		}
+
+		@Override
 		public Expression coalesce(Expression left, Expression right) {
 			return new CoalesceExpression(position, left, right);
 		}

@@ -390,6 +390,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.CANNOT_CALL, "Cannot call this method statically: " + id + "(" + id.getKind() + ")");
 	}
 
+	public static CompileError notSuperCallableMethod(MethodID id) {
+		return new CompileError(CompileExceptionCode.CANNOT_CALL, "Cannot call this method on super: " + id + "(" + id.getKind() + ")");
+	}
+
 	public static CompileError constructorForwardOutsideConstructor() {
 		return new CompileError(CompileExceptionCode.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, "Can only forward constructors inside constructors");
 	}
@@ -497,7 +501,7 @@ public class CompileErrors {
 	}
 
 	public static CompileError typeNotDetermined(String display) {
-		return new CompileError(CompileExceptionCode.INVALID_TYPE,  display + " could not be inferred");
+			return new CompileError(CompileExceptionCode.TYPE_NOT_INFERRED,  display + " could not be inferred");
 	}
 
 	public static CompileError invalidArrayDimension(int dimension) {
