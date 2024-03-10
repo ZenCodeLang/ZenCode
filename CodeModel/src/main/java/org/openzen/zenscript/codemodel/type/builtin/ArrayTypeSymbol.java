@@ -155,38 +155,6 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID, lambdaConstructorParameters);
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_LAMBDA, lambdaConstructorHeader, type));
 
-		{
-			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
-			GenericTypeID mappedConstructorParameterType = new GenericTypeID(mappedConstructorParameter);
-			FunctionHeader mappedConstructorHeaderWithoutIndex = new FunctionHeader(baseType, mappedConstructorParameterType);
-			FunctionHeader mappedConstructorFunctionWithoutIndex = new FunctionHeader(
-					new TypeParameter[]{mappedConstructorParameter},
-					VOID,
-					null,
-					new FunctionParameter(new ArrayTypeID(mappedConstructorParameterType, dimension), "original"),
-					new FunctionParameter(new FunctionTypeID(mappedConstructorHeaderWithoutIndex), "projection"));
-			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED, mappedConstructorFunctionWithoutIndex, type));
-		}
-
-		{
-			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
-			GenericTypeID mappedConstructorParameterType = new GenericTypeID(mappedConstructorParameter);
-
-			FunctionParameter[] projectionParameters = new FunctionParameter[dimension + 1];
-			for (int i = 0; i < dimension; i++)
-				projectionParameters[i] = new FunctionParameter(USIZE);
-			projectionParameters[dimension] = new FunctionParameter(mappedConstructorParameterType);
-
-			FunctionHeader mappedConstructorHeaderWithIndex = new FunctionHeader(baseType, projectionParameters);
-			FunctionHeader mappedConstructorFunctionWithIndex = new FunctionHeader(
-					new TypeParameter[]{mappedConstructorParameter},
-					VOID,
-					null,
-					new FunctionParameter(new ArrayTypeID(mappedConstructorParameterType, dimension), "original"),
-					new FunctionParameter(new FunctionTypeID(mappedConstructorHeaderWithIndex), "projection"));
-			members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex, type));
-		}
-
 		FunctionParameter[] indexSetParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
 			indexSetParameters[i] = new FunctionParameter(USIZE);
