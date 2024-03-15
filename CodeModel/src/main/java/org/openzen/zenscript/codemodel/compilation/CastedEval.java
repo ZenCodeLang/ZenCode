@@ -30,6 +30,8 @@ public class CastedEval {
 	public CastedExpression of(Expression value) {
 		if (value.type.equals(type) || type == BasicTypeID.UNDETERMINED)
 			return new CastedExpression(CastedExpression.Level.EXACT, value);
+		if (value.type.isInvalid())
+			return CastedExpression.invalid(value);
 
 		ResolvedType resolvedTargetType = compiler.resolve(type);
 

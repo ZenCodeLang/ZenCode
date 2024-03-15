@@ -8,6 +8,7 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -361,6 +362,16 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			module.addClass(definition, compiling);
 			module.context.setJavaExpansionClass(definition, cls);
 			module.context.setJavaNativeClass(definition, nativeClass);
+		}
+
+		for (int typeParameterIndex = 0; typeParameterIndex < definition.typeParameters.length; typeParameterIndex++) {
+			TypeParameter typeParameter = definition.typeParameters[typeParameterIndex];
+			final JavaNativeField field = new JavaNativeField(cls,
+					"typeOf" + typeParameter.name,
+					"Ljava/lang/Class;",
+					"Ljava/lang/Class<T" + typeParameter.name + ";>;"
+			);
+			module.module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(typeParameterIndex + 1, field));
 		}
 
 		if (definition.getSuperType() != null) {

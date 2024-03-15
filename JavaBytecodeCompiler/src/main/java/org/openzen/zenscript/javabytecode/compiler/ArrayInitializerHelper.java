@@ -4,10 +4,21 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 
 import java.util.ArrayList;
 
 class ArrayInitializerHelper {
+	private static final JavaNativeMethod ARRAY_NEWINSTANCE = JavaNativeMethod.getNativeStatic(JavaClass.ARRAY, "newInstance", "(Ljava/lang/Class;I)Ljava/lang/Object;");
+
+	private final JavaBytecodeContext context;
+
+	public ArrayInitializerHelper(JavaBytecodeContext context) {
+		this.context = context;
+	}
 
 	/**
 	 * Creates an int[] with the given array size locations and writes the code that gets them in the generated file
@@ -43,8 +54,8 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType The current type of the array, reduced during the recursions of the functions
 	 * @param defaultLocation  The location of the default value. Needs to be of or assignable to elementType!
 	 */
-	static void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, int defaultLocation) {
-		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, (elementType, counterLocations) -> javaWriter.load(elementType, defaultLocation));
+	void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, ArrayTypeID arrayType, int defaultLocation) {
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, arrayType, (elementType, counterLocations) -> javaWriter.load(elementType, defaultLocation));
 	}
 
 	/**
@@ -60,15 +71,23 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType  The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
+	void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, ArrayTypeID arrayType, InnermostFunction innermostFunction) {
 		final Label begin = new Label();
 		final Label end = new Label();
 		javaWriter.label(begin);
 
 		final int currentArraySizeLocation = sizeLocations[sizeLocations.length - dim];
-		javaWriter.loadInt(currentArraySizeLocation);
+
 		final Type elementType = Type.getType(currentArrayType.getDescriptor().substring(1));
-		javaWriter.newArray(elementType);
+		if (arrayType.elementType.isGeneric()) {
+			arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
+			javaWriter.loadInt(currentArraySizeLocation);
+			javaWriter.invokeStatic(ARRAY_NEWINSTANCE);
+			javaWriter.checkCast(context.getInternalName(arrayType));
+		} else {
+			javaWriter.loadInt(currentArraySizeLocation);
+			javaWriter.newArray(elementType);
+		}
 		//javaWriter.dup();
 
 		final int forLoopCounter = javaWriter.local(int.class);
@@ -92,7 +111,7 @@ class ArrayInitializerHelper {
 		if (dim == 1) {
 			innermostFunction.apply(elementType, counterLocations);
 		} else {
-			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, innermostFunction);
+			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, arrayType, innermostFunction);
 		}
 		javaWriter.arrayStore(elementType);
 

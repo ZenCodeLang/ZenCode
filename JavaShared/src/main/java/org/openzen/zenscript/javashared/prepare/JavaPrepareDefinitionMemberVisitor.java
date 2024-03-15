@@ -90,12 +90,9 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Voi
 	}
 
 	private void visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
-		for (TypeParameter typeParameter : definition.typeParameters) {
-			class_.module.module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(-1));
-		}
-
 		JavaNativeClass nativeClass = class_.getContext().getJavaNativeClass(definition);
 		JavaClass cls = class_.getContext().getJavaClass(definition);
+
 		if (nativeClass == null) {
 			visitClassMembers(definition, startsEmpty);
 		} else {

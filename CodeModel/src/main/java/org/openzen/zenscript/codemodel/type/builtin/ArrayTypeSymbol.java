@@ -135,7 +135,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		if (baseType.hasDefaultValue()) {
 			members.constructor(new MethodInstance(
 					BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_SIZED,
-					new FunctionHeader(VOID, indexGetParameters),
+					new FunctionHeader(type, indexGetParameters),
 					type));
 		}
 
@@ -143,7 +143,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		for (int i = 0; i < dimension; i++)
 			initialValueConstructorParameters[i] = new FunctionParameter(USIZE);
 		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
-		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID, initialValueConstructorParameters);
+		FunctionHeader initialValueConstructorHeader = new FunctionHeader(type, initialValueConstructorParameters);
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_INITIAL_VALUE, initialValueConstructorHeader, type));
 
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
@@ -152,7 +152,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
 		lambdaConstructorParameters[dimension] = new FunctionParameter(new FunctionTypeID(lambdaConstructorFunction));
-		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID, lambdaConstructorParameters);
+		FunctionHeader lambdaConstructorHeader = new FunctionHeader(type, lambdaConstructorParameters);
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_LAMBDA, lambdaConstructorHeader, type));
 
 		FunctionParameter[] indexSetParameters = new FunctionParameter[dimension + 1];

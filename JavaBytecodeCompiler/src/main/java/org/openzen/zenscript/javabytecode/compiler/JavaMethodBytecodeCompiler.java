@@ -286,12 +286,13 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(arrayType.dimension, arguments, expressionVisitor);
-				ArrayInitializerHelper.visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, arrayType.dimension, ASMType, defaultValueLocation);
+				new ArrayInitializerHelper(context).visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, arrayType.dimension, ASMType, arrayType, defaultValueLocation);
 
 				javaWriter.label(end);
 				return null;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
+				ArrayTypeID arrayType = (ArrayTypeID) type;
 
 				//Labels
 				final Label begin = new Label();
@@ -301,7 +302,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				final Type ASMElementType = context.getType(type);
 				final int dimension = ((ArrayTypeID) type).dimension;
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, arguments, expressionVisitor);
-				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
+				new ArrayInitializerHelper(context).visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, arrayType, (elementType, counterLocations) -> {
 					arguments[dimension].accept(expressionVisitor);
 					for (int counterLocation : counterLocations) {
 						javaWriter.loadInt(counterLocation);

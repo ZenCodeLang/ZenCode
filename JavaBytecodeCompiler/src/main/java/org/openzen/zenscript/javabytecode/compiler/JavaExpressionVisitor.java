@@ -112,7 +112,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitArray(ArrayExpression expression) {
 		Type type = context.getType(expression.arrayType.elementType);
 		if (expression.arrayType.elementType.isGeneric()) {
-
 			expression.arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
 			javaWriter.constant(expression.expressions.length);
 			javaWriter.invokeStatic(ARRAY_NEWINSTANCE);
