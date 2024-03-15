@@ -1,9 +1,15 @@
 #output: hello
 #output: void
 
-class Foo {
-	print() {
+virtual class Foo {
+	print(): void {
 		println("hello");
+	}
+}
+
+class Bar : Foo {
+	override print() {
+		println("world");
 	}
 }
 
