@@ -1,0 +1,12 @@
+#output: 1
+#output: test
+
+var item_values = {} as int[string];
+item_values["box"] = 1;
+item_values["test"] = 9;
+println(item_values["box"]);
+
+var value_items = {} as string[int];
+value_items[1] = "box";
+value_items[9] = "test";
+println(value_items[9]);

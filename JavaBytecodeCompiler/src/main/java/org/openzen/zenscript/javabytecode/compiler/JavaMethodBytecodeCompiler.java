@@ -11,12 +11,13 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.*;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod BOOLEAN_TO_STRING = JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/long/String;");
 
 	public static final JavaNativeMethod OBJECT_HASHCODE = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
-	public static final JavaNativeMethod OBJECT_EQUALS = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "equals", "(Ljava/lang/Object)Z");
+	public static final JavaNativeMethod OBJECT_EQUALS = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "equals", "(Ljava/lang/Object;)Z");
 	public static final JavaNativeMethod OBJECT_CLONE = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
 	private static final JavaNativeMethod OBJECTS_TOSTRING = JavaNativeMethod.getNativeStatic(new JavaClass("java.util", "Objects", JavaClass.Kind.CLASS), "toString", "(Ljava/lang/Object;)Ljava/lang/String;");
 	private static final JavaNativeMethod BYTE_PARSE = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;)B");
@@ -102,12 +103,12 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_FLOATS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([FII)[F");
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_DOUBLES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([DII)[D");
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_CHARS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([CII)[C");
-	private static final JavaNativeMethod ARRAYS_EQUALS_OBJECTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([Ljava/lang/Object[Ljava/lang/Object)Z");
+	private static final JavaNativeMethod ARRAYS_EQUALS_OBJECTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([Ljava/lang/Object;[Ljava/lang/Object;)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_BOOLS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([Z[Z)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_BYTES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([B[B)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_SHORTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([S[S)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_INTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([I[I)Z");
-	private static final JavaNativeMethod ARRAYS_EQUALS_LONGS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([L[L)Z");
+	private static final JavaNativeMethod ARRAYS_EQUALS_LONGS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([J[J)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_FLOATS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([F[F)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_DOUBLES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([D[D)Z");
 	private static final JavaNativeMethod ARRAYS_EQUALS_CHARS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "equals", "([C[C)Z");
@@ -116,7 +117,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod ARRAYS_HASHCODE_BYTES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([B)I");
 	private static final JavaNativeMethod ARRAYS_HASHCODE_SHORTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([S)I");
 	private static final JavaNativeMethod ARRAYS_HASHCODE_INTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([I)I");
-	private static final JavaNativeMethod ARRAYS_HASHCODE_LONGS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([L)I");
+	private static final JavaNativeMethod ARRAYS_HASHCODE_LONGS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([J)I");
 	private static final JavaNativeMethod ARRAYS_HASHCODE_FLOATS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([F)I");
 	private static final JavaNativeMethod ARRAYS_HASHCODE_DOUBLES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([D)I");
 	private static final JavaNativeMethod ARRAYS_HASHCODE_CHARS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "hashCode", "([C)I");
@@ -147,12 +148,17 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void nativeConstructor(JavaNativeMethod method, TypeID type, CallArguments arguments) {
 		javaWriter.newObject(method.cls);
 		javaWriter.dup();
-		for (Expression argument : arguments.arguments) {
-			argument.accept(expressionVisitor);
-		}
+		AtomicInteger typeArguments = new AtomicInteger(0);
 		if (method.compile) {
-			handleTypeArguments(method, arguments);
+			type.asDefinition().ifPresent(definitionType -> {
+				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+				typeArguments.set(definitionType.typeArguments.length);
+				for (TypeID typeParameter : definitionType.typeArguments) {
+					typeParameter.accept(javaWriter, javaTypeExpressionVisitor);
+				}
+			});
 		}
+		handleArguments(typeArguments.get(), method, arguments);
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
@@ -165,9 +171,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 	@Override
 	public Void nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
-		for (Expression argument : arguments.arguments) {
-			argument.accept(expressionVisitor);
-		}
+		handleArguments(arguments.typeArguments.length, method, arguments);
 		if (method.compile) {
 			handleTypeArguments(method, arguments);
 		}
@@ -200,14 +204,22 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	@Override
 	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		target.accept(expressionVisitor);
-		for (Expression argument : arguments.arguments) {
-			argument.accept(expressionVisitor);
-		}
+		handleArguments(arguments.typeArguments.length, method, arguments);
 		if (method.compile) {
 			handleTypeArguments(method, arguments);
 		}
 		javaWriter.invokeSpecial(method);
 		return null;
+	}
+
+	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments) {
+		for (int index = 0; index < arguments.arguments.length; index++) {
+			Expression argument = arguments.arguments[index];
+			argument.accept(expressionVisitor);
+			if (!method.primitiveArguments[typeArguments + index]) {
+				argument.type.accept(argument.type, boxingTypeVisitor);
+			}
+		}
 	}
 
 	private void handleTypeArguments(JavaNativeMethod method, CallArguments arguments) {

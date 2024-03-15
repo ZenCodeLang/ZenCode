@@ -9,6 +9,8 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Arrays;
+
 /**
  * @author Hoofdgebruiker
  */
@@ -21,6 +23,7 @@ public class JavaNativeMethod implements JavaMethod {
 	public final int modifiers; // these are Java modifiers!
 	public final boolean genericResult;
 	public final boolean[] typeParameterArguments;
+	public final boolean[] primitiveArguments;
 
 	public JavaNativeMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult) {
 		this(cls, kind, name, compile, descriptor, modifiers, genericResult, new boolean[0]);
@@ -41,6 +44,7 @@ public class JavaNativeMethod implements JavaMethod {
 		this.modifiers = modifiers;
 		this.genericResult = genericResult;
 		this.typeParameterArguments = typeParameterArguments;
+		this.primitiveArguments = determinePrimitiveArguments(descriptor);
 	}
 
 	public static JavaNativeMethod getConstructor(JavaClass cls, String descriptor, int modifiers) {
@@ -133,5 +137,36 @@ public class JavaNativeMethod implements JavaMethod {
 		EXPANSION,
 		CONSTRUCTOR,
 		COMPILED
+	}
+
+	private static boolean[] determinePrimitiveArguments(String descriptor) {
+		try {
+			boolean[] result = new boolean[descriptor.length()];
+			int index = 0;
+			for (int i = 1; i < descriptor.length(); i++) {
+				if (descriptor.charAt(i) == ')')
+					break;
+
+				char c = descriptor.charAt(i);
+				if (c == 'L') {
+					while (descriptor.charAt(i) != ';')
+						i++;
+					result[index++] = false;
+				} else if (c == '[') {
+					while (descriptor.charAt(i) == '[')
+						i++;
+					if (descriptor.charAt(i) == 'L') {
+						while (descriptor.charAt(i) != ';')
+							i++;
+					}
+					result[index++] = false;
+				} else {
+					result[index++] = true;
+				}
+			}
+			return Arrays.copyOf(result, index);
+		} catch (StringIndexOutOfBoundsException ex) {
+			throw new IllegalArgumentException("Invalid descriptor: " + descriptor, ex);
+		}
 	}
 }

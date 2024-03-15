@@ -1,0 +1,20 @@
+#output: Jimmy
+#output: 19
+
+public class Duad<A, B> {
+    public var a as A : get;
+    public var b as B : get;
+    public this(a as A, b as B) {
+        this.a = a;
+        this.b = b;
+    }
+}
+
+public function duadExample(name as string, age as int) as Duad<string, int> {
+    return new Duad<string, int>(name, age);
+}
+
+var jimmy = duadExample("Jimmy", 19);
+
+println(jimmy.a);
+println(jimmy.b);
