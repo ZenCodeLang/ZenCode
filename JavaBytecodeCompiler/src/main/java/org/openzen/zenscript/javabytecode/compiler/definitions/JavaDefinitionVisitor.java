@@ -24,6 +24,7 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
@@ -280,11 +281,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			{
 				StringBuilder builder = new StringBuilder();
 				//TODO check if this can be changed to what Stan was up to
-				builder.append("<");
-				for (final TypeID type : option.types) {
-					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type));
+				if (Stream.of(option.types).anyMatch(TypeID::isGeneric)) {
+					builder.append("<");
+					Stream.of(option.types).filter(TypeID::isGeneric)
+							.forEach(it -> builder.append(javaTypeGenericVisitor.getSignatureWithBound(it)));
+					builder.append(">");
 				}
-				builder.append(">");
 				builder.append("L").append(class_.getInternalName()).append("<");
 
 				for (final TypeParameter genericParameter : variant.typeParameters) {
@@ -299,9 +301,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 						}
 					if (t)
 						builder.append(javaTypeGenericVisitor.getGenericBounds(genericParameter.bounds));
-
 				}
-
 
 				signature = builder.append(">;").toString();
 			}
@@ -314,8 +314,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			for (int i = 0; i < types.length; ++i) {
 				final String descriptor = context.getDescriptor(types[i]);
 				optionInitDescBuilder.append(descriptor);
-				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i]).parameter.name).append(";");
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
+				optionInitSignatureBuilder.append(context.getSignature(types[i]));
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, context.getSignature(types[i]), null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
 			optionInitSignatureBuilder.append(")V");

@@ -9,10 +9,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Optional;
 
 public interface StatementCompiler {
-	Expression compile(CompilableExpression expression);
-
-	Expression compile(CompilableExpression expression, TypeID type);
-
 	ExpressionCompiler expressions();
 
 	TypeBuilder types();

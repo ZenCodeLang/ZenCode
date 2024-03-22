@@ -1,0 +1,16 @@
+#output: Expect called on empty value
+
+public variant OptionalString {
+    Present(string),
+    Empty;
+
+    public expect() as string {
+        return match this {
+            Present(value) => value,
+            Empty() => 'Expect called on empty value'
+        };
+    }
+}
+
+var opt as OptionalString = Empty;
+println(opt.expect());

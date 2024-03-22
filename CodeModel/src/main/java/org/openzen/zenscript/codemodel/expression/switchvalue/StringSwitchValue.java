@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.expression.switchvalue;
 
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
@@ -14,7 +15,7 @@ public class StringSwitchValue implements SwitchValue {
 	}
 
 	@Override
-	public List<VarStatement> getBindings() {
+	public List<VariableDefinition> getBindings() {
 		return Collections.emptyList();
 	}
 

@@ -9,11 +9,17 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 
 @Disabled("Required Stdlib")
 public class StdLibFunctions extends ZenCodeTest {
+	@Override
+	public List<String> getRequiredStdLibModules() {
+		return Collections.singletonList("stdlib");
+	}
 
 	@Test
 	public void fromAsciiBytes() {

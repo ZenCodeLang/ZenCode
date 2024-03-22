@@ -211,7 +211,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 				ResolvedType resolved = compiler.resolve(type);
 				Optional<ResolvedType.SwitchMember> switchMember = resolved.findSwitchMember(name);
 				if (switchMember.isPresent()) {
-					return switchMember.get().toSwitchValue(new String[0]);
+					return switchMember.get().toSwitchValue(Collections.emptyList());
 				} else {
 					return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
 				}

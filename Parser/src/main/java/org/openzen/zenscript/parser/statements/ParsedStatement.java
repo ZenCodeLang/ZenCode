@@ -48,12 +48,23 @@ public abstract class ParsedStatement implements CompilableStatement {
 	}
 
 	public static ParsedFunctionBody parseFunctionBody(ZSTokenParser tokens) throws ParseException {
-		if (tokens.optional(T_LAMBDA) != null)
-			return parseLambdaBody(tokens, false);
-		else if (tokens.optional(T_SEMICOLON) != null)
+		if (tokens.optional(T_LAMBDA) != null) {
+			try {
+				return parseLambdaBody(tokens, false);
+			} catch (ParseException ex) {
+				tokens.recoverUntilOnToken(T_SEMICOLON);
+				throw ex;
+			}
+		} else if (tokens.optional(T_SEMICOLON) != null) {
 			return new ParsedEmptyFunctionBody(tokens.getPosition());
-		else
-			return new ParsedStatementsFunctionBody(parseBlock(tokens, ParsedAnnotation.NONE, true));
+		} else {
+			try {
+				return new ParsedStatementsFunctionBody(parseBlock(tokens, ParsedAnnotation.NONE, true));
+			} catch (ParseException ex) {
+				tokens.recoverUntilOnToken(T_ACLOSE);
+				throw ex;
+			}
+		}
 	}
 
 	public static ParsedStatementBlock parseBlock(ZSTokenParser parser, ParsedAnnotation[] annotations, boolean isFirst) throws ParseException {

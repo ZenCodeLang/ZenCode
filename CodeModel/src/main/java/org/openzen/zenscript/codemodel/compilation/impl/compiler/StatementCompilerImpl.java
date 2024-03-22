@@ -32,19 +32,6 @@ public class StatementCompilerImpl implements StatementCompiler {
 	}
 
 	@Override
-	public Expression compile(CompilableExpression expression) {
-		return expression.compile(expressionCompiler).eval();
-	}
-
-	@Override
-	public Expression compile(CompilableExpression expression, TypeID type) {
-		return expression
-				.compile(expressionCompiler)
-				.cast(CastedEval.implicit(expressionCompiler, expression.getPosition(), type))
-				.value;
-	}
-
-	@Override
 	public ExpressionCompiler expressions() {
 		return expressionCompiler;
 	}

@@ -97,6 +97,9 @@ public class ParsedMatchExpression extends ParsedExpression {
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
 			value.linkVariables(linker);
 			for (CompilingCase case_ : cases) {
+				for (CompilingVariable variable : case_.name.getBindings()) {
+					variable.ssaCompilingVariable = linker.get(variable.id);
+				}
 				case_.value.linkVariables(linker);
 			}
 		}

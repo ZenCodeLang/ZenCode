@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -57,7 +58,7 @@ public class JavaSwitchKeyVariableVisitor implements SwitchValueVisitor<Void> {
 		javaWriter.checkCast(javaVariantOption.variantOptionClass.internalName);
 
 		int fieldNumber = 0;
-		for (VarStatement binding : key.getBindings()) {
+		for (VariableDefinition binding : key.getBindings()) {
 			javaWriter.dup();
 			javaWriter.getField(
 					javaVariantOption.variantOptionClass.internalName,
@@ -71,7 +72,7 @@ public class JavaSwitchKeyVariableVisitor implements SwitchValueVisitor<Void> {
 					binding.name,
 					caseEnd
 			);
-			javaWriter.setLocalVariable(binding.variable, javaLocalVariableInfo);
+			javaWriter.setLocalVariable(binding.id, javaLocalVariableInfo);
 			javaWriter.store(javaLocalVariableInfo);
 		}
 		return null;

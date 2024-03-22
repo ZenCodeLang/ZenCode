@@ -170,15 +170,20 @@ public abstract class ParsedDefinitionMember implements CompilableMember {
 			}
 			case K_IMPLEMENTS: {
 				tokens.next();
-				IParsedType type = IParsedType.parse(tokens);
-				ParsedImplementation implementation = new ParsedImplementation(start, modifiers, annotations, type);
-				if (tokens.optional(ZSTokenType.T_SEMICOLON) == null) {
-					tokens.required(ZSTokenType.T_AOPEN, "{ expected");
-					while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-						implementation.addMember(ParsedDefinitionMember.parse(tokens));
+				try {
+					IParsedType type = IParsedType.parse(tokens);
+					ParsedImplementation implementation = new ParsedImplementation(start, modifiers, annotations, type);
+					if (tokens.optional(ZSTokenType.T_SEMICOLON) == null) {
+						tokens.required(ZSTokenType.T_AOPEN, "{ expected");
+						while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+							implementation.addMember(ParsedDefinitionMember.parse(tokens));
+						}
 					}
+					return implementation;
+				} catch (ParseException ex) {
+					tokens.recoverUntilOnToken(T_ACLOSE);
+					throw ex;
 				}
-				return implementation;
 			}
 			case T_BROPEN: {
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);

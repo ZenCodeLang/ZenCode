@@ -1,0 +1,24 @@
+#output: true
+#output: false
+
+public variant Optional<T> {
+    Present(T),
+    Empty;
+
+    public expect() as T {
+        return match this {
+            Present(value) => value,
+            Empty() => panic('Expect called on empty value')
+        };
+    }
+
+    public get isPresent as bool => match(this) {
+		Present(value) => true,
+		Empty => false
+	};
+}
+
+var opt as Optional<string> = Present('Hello World');
+println(opt.isPresent);
+opt = Empty;
+println(opt.isPresent);

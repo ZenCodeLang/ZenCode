@@ -7,8 +7,10 @@ import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.compilation.statement.CompilingExpressionCodeStatement;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.compilation.statement.InvalidCompilingStatement;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -49,6 +51,10 @@ public class ParsedStatementReturn extends ParsedStatement {
 			this.value = value;
 			this.functionHeader = functionHeader;
 			this.block = block;
+
+			if (value != null) {
+				block.add(new CompilingExpressionCodeStatement(value));
+			}
 		}
 
 		@Override

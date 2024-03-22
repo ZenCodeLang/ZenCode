@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.expression.switchvalue;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionInstance;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -12,25 +13,16 @@ import java.util.List;
 public class VariantOptionSwitchValue implements SwitchValue {
 	public final VariantOptionInstance option;
 	public final String[] parameters;
-	private final List<VarStatement> bindings;
+	private final List<VariableDefinition> bindings;
 
-	public VariantOptionSwitchValue(VariantOptionInstance option, String[] parameters) {
+	public VariantOptionSwitchValue(VariantOptionInstance option, List<VariableDefinition> bindings) {
 		this.option = option;
-		this.parameters = parameters;
-		this.bindings = new ArrayList<>();
-		for (int i = 0; i < option.types.length; i++) {
-			bindings.add(new VarStatement(
-					CodePosition.UNKNOWN,
-					new VariableID(),
-					parameters[i],
-					option.types[i],
-					null,
-					true));
-		}
+		this.parameters = bindings.stream().map(p -> p.name).toArray(String[]::new);
+		this.bindings = bindings;
 	}
 
 	@Override
-	public List<VarStatement> getBindings() {
+	public List<VariableDefinition> getBindings() {
 		return bindings;
 	}
 
@@ -46,6 +38,5 @@ public class VariantOptionSwitchValue implements SwitchValue {
 
 	@Override
 	public void collect(SSAVariableCollector collector) {
-
 	}
 }

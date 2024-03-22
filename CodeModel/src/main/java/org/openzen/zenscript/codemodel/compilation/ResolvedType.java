@@ -74,7 +74,7 @@ public interface ResolvedType {
 	Optional<StaticCallable> findStaticOperator(OperatorType operator);
 
 	interface SwitchMember {
-		SwitchValue toSwitchValue(String[] bindingNames);
+		SwitchValue toSwitchValue(List<CompilingVariable> bindings);
 	}
 
 	interface Field {

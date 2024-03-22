@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Tag;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -14,7 +15,10 @@ import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class VariantOptionInstance implements CompilableExpression, ResolvedType.SwitchMember {
 	public final TypeID variant;
@@ -78,8 +82,13 @@ public class VariantOptionInstance implements CompilableExpression, ResolvedType
 	}
 
 	@Override
-	public SwitchValue toSwitchValue(String[] bindingNames) {
-		return new VariantOptionSwitchValue(this, bindingNames);
+	public SwitchValue toSwitchValue(List<CompilingVariable> variables) {
+		List<VariableDefinition> bindings = new ArrayList<>();
+		for (int i = 0; i < variables.size(); i++) {
+			variables.get(i).inferredType = types[i];
+			bindings.add(variables.get(i).asType(types[i]));
+		}
+		return new VariantOptionSwitchValue(this, bindings);
 	}
 
 	private static class OptionCallable implements CompilingCallable {
