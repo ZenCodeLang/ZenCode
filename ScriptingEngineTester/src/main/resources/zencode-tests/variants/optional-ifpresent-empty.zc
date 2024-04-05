@@ -1,4 +1,3 @@
-#output: Hello world
 
 public variant Optional<T> {
     Present(T),

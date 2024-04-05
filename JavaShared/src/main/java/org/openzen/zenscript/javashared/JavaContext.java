@@ -132,21 +132,24 @@ public abstract class JavaContext {
 		FunctionHeader functionHeader = new FunctionHeader(returnType, parameterTypes);
 		JavaClass javaClass = new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE);
 
-		functions.put(id, new JavaSynthesizedFunction(
-				javaClass,
-				typeParameters,
-				functionHeader,
-				methodName));
-
-		FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
-		modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), new JavaNativeMethod(
+		JavaMethod method = new JavaNativeMethod(
 				javaClass,
 				JavaNativeMethod.Kind.INTERFACE,
 				methodName,
 				false,
 				getMethodDescriptor(functionHeader),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
-				functionHeader.getReturnType().isGeneric()));
+				functionHeader.getReturnType().isGeneric());
+
+		functions.put(id, new JavaSynthesizedFunction(
+				javaClass,
+				typeParameters,
+				functionHeader,
+				methodName,
+				method));
+
+		FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
+		modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), method);
 	}
 
 	private void registerFunction(Function<String, TypeParameter> paramConverter, Class<?> clazz) {
@@ -176,21 +179,24 @@ public abstract class JavaContext {
 			}
 
 			FunctionHeader functionHeader = new FunctionHeader(convertTypeToTypeID(parameterMapping, genericReturnType), parameterTypes);
-			functions.put(idBuilder.toString(), new JavaSynthesizedFunction(
-					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
-					parameters,
-					functionHeader,
-					method.getName()));
-
-			FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
-			modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), new JavaNativeMethod(
+			JavaMethod javaMethod = new JavaNativeMethod(
 					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
 					JavaNativeMethod.Kind.INTERFACE,
 					method.getName(),
 					false,
 					getMethodDescriptor(functionHeader),
 					JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
-					functionHeader.getReturnType().isGeneric()));
+					functionHeader.getReturnType().isGeneric());
+
+			functions.put(idBuilder.toString(), new JavaSynthesizedFunction(
+					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
+					parameters,
+					functionHeader,
+					method.getName(),
+					javaMethod));
+
+			FunctionTypeSymbol type = new FunctionTypeSymbol(functionHeader);
+			modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type), javaMethod);
 		} else {
 			throw new IllegalArgumentException(String.format("Unable to find any applicable methods in class: '%s'", clazz.getName()));
 		}
@@ -420,6 +426,8 @@ public abstract class JavaContext {
 	public JavaSynthesizedFunctionInstance getFunction(FunctionTypeID type) {
 		String id = getFunctionId(type.header);
 		JavaSynthesizedFunction function;
+
+		JavaCompiledModule builtinModule = modules.get(ModuleSymbol.BUILTIN);
 		if (!functions.containsKey(id)) {
 			JavaClass cls = new JavaClass("zsynthetic", "Function" + id, JavaClass.Kind.INTERFACE);
 			List<TypeParameter> typeParameters = new ArrayList<>();
@@ -465,9 +473,15 @@ public abstract class JavaContext {
 
 			functions.put(id, function);
 			JavaMethod javaMethod = getTypeGenerator().synthesizeFunction(function);
+			function.javaMethod = javaMethod;
 
-			modules.get(ModuleSymbol.BUILTIN).setMethodInfo(new BuiltinFunctionValueCall(type.type), javaMethod);
+			builtinModule.setMethodInfo(new BuiltinFunctionValueCall(type.type), javaMethod);
 		} else {
+			BuiltinFunctionValueCall call = new BuiltinFunctionValueCall(type.type);
+			if (builtinModule.optMethodInfo(call) == null) { // because we might be using a concrete usage of a generic functional interface
+				JavaMethod javaMethod = functions.get(id).javaMethod;
+				builtinModule.setMethodInfo(call, javaMethod);
+			}
 			function = functions.get(id);
 		}
 

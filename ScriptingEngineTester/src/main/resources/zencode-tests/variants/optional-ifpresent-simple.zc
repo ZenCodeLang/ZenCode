@@ -14,7 +14,14 @@ public variant OptionalString {
         Present(value) => true,
         Empty => false
     };
+
+    public expect() as string {
+        return match this {
+            Present(value) => value,
+            Empty() => 'Expect called on empty value'
+        };
+    }
 }
 
-var opt as OptionalString = Present('Hello World');
+var opt as OptionalString = Present('Hello world');
 opt.ifPresent((value) => println(value));

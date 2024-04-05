@@ -16,11 +16,20 @@ public class JavaSynthesizedFunction {
 	public final TypeParameter[] typeParameters;
 	public final FunctionHeader header;
 	public final String method;
+	public JavaMethod javaMethod;
 
 	public JavaSynthesizedFunction(JavaClass cls, TypeParameter[] parameters, FunctionHeader header, String method) {
 		this.cls = cls;
 		this.typeParameters = parameters;
 		this.header = header;
 		this.method = method;
+	}
+
+	public JavaSynthesizedFunction(JavaClass cls, TypeParameter[] parameters, FunctionHeader header, String method, JavaMethod javaMethod) {
+		this.cls = cls;
+		this.typeParameters = parameters;
+		this.header = header;
+		this.method = method;
+		this.javaMethod = javaMethod;
 	}
 }

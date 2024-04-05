@@ -7,13 +7,12 @@ package org.openzen.zenscript.javashared.prepare;
 
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
@@ -29,6 +28,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private final JavaCompilingModule module;
 	private final JavaCompilingClass class_;
 	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
+	private final JavaPrepareTypeVisitor typePreparer;
 
 	public JavaPrepareClassMethodVisitor(
 			JavaCompilingClass class_,
@@ -38,6 +38,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		this.module = class_.module;
 		this.class_ = class_;
 		this.memberPreparer = memberPreparer;
+		this.typePreparer = new JavaPrepareTypeVisitor(context);
 
 		class_.empty = startsEmpty;
 	}
@@ -54,6 +55,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			visitSetter(member.autoSetter);
 			class_.module.module.setFieldInfo(member.autoSetter, field);
 		}
+		member.getType().accept(typePreparer);
 
 		return null;
 	}
@@ -246,6 +248,11 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			final String signature = context.getMethodSignature(header);
 			method = new JavaCompilingMethod(class_.compiled, (JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value), signature);
 		}
+
+		for (FunctionParameter parameter : header.parameters) {
+			parameter.type.accept(typePreparer);
+		}
+		header.getReturnType().accept(typePreparer);
 
 		int modifiers = class_.compiled.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
 		if (member.getOverrides().isPresent()) {

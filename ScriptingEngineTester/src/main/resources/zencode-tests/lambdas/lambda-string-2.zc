@@ -1,0 +1,4 @@
+#output: Hello
+
+var accept as function(value: string, x: int, y: int): void = (value, x, y) => println(value);
+accept("Hello", 0, 0);
