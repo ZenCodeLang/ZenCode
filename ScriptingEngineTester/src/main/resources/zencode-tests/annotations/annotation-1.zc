@@ -5,7 +5,7 @@ class Foo {
 	this() {}
 
 	printMe(): void {
-		//println(this.test);
+		println(this.test);
 	}
 }
 

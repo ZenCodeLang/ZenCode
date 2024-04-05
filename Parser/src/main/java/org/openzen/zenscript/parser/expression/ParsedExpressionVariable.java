@@ -5,6 +5,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.CompilingThisExpression;
+import org.openzen.zenscript.codemodel.compilation.expression.InstanceFieldCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
@@ -37,13 +38,27 @@ public class ParsedExpressionVariable extends ParsedExpression {
 			return new CompilingResolved(compiler, position, name, resolved.get());
 		} else {
 			if (compiler.getThisType().isPresent()) {
-				Optional<ResolvedType.Field> field = compiler.resolve(compiler.getThisType().get()).findField(name);
-				if (field.isPresent()) {
+				ResolvedType resolvedThis = compiler.resolve(compiler.getThisType().get());
+
+				Optional<InstanceCallable> getter = resolvedThis.findGetter(name);
+				if (getter.isPresent()) {
 					return new InstanceMemberCompilingExpression(
 							compiler,
 							position,
 							new CompilingThisExpression(compiler, position, compiler.getThisType().get()),
 							new GenericName(name, typeArguments));
+				}
+
+				Optional<ResolvedType.Field> field = resolvedThis.findField(name);
+				if (field.isPresent()) {
+					if (typeArguments.length > 0) {
+						return compiler.invalid(position, CompileErrors.typeArgumentsNotAllowedHere());
+					}
+					return new InstanceFieldCompilingExpression(
+							compiler,
+							position,
+							new CompilingThisExpression(compiler, position, compiler.getThisType().get()),
+							field.get());
 				}
 			}
 			return new CompilingUnresolved(compiler, position, name);

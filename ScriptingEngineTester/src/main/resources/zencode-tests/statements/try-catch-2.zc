@@ -1,0 +1,13 @@
+#output: TestException
+#output: test
+
+function break() as void throws TestException {
+	throw new TestException("test");
+}
+
+try {
+	break();
+} catch ex {
+	println(typeof(ex));
+	println(ex.message);
+}
