@@ -138,7 +138,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	@Override
 	public StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header) {
 		LocalSymbols newLocals = locals.forLambda(closure, header);
-		return new StatementCompilerImpl(context, localType, types, header, newLocals);
+		return new StatementCompilerImpl(context, localType, types, header, newLocals, null);
 	}
 
 	@Override

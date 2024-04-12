@@ -1,0 +1,16 @@
+#output: TestException
+#output: test
+
+try {
+	if true {
+		throw new TestException1("test");
+	} else {
+		throw new TestException2("test");
+	}
+} catch ex as TestException1 {
+	println(typeof(ex));
+	println(ex.message);
+} catch ex as TestException2 {
+	println(typeof(ex));
+	println(ex.message);
+}

@@ -63,7 +63,7 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 
 	@Override
 	public StatementCompiler forScripts(FunctionHeader scriptHeader) {
-		return new StatementCompilerImpl(context, null, localTypeBuilder, scriptHeader, new LocalSymbols(scriptHeader));
+		return new StatementCompilerImpl(context, null, localTypeBuilder, scriptHeader, new LocalSymbols(scriptHeader), null);
 	}
 
 	private class FileTypeBuilder extends AbstractTypeBuilder {

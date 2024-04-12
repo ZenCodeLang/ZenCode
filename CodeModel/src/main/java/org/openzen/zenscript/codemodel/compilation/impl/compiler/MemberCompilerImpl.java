@@ -35,7 +35,7 @@ public class MemberCompilerImpl implements MemberCompiler {
 
 	@Override
 	public StatementCompiler forMethod(FunctionHeader header) {
-		return new StatementCompilerImpl(context, localType, types, header, new LocalSymbols(header));
+		return new StatementCompilerImpl(context, localType, types, header, new LocalSymbols(header), null);
 	}
 
 	@Override

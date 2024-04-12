@@ -25,5 +25,7 @@ public interface StatementCompiler {
 
 	Optional<FunctionHeader> getFunctionHeader();
 
+	Optional<TypeID> getThrownType();
+
 	void addLocalVariable(CompilingVariable variable);
 }

@@ -29,10 +29,10 @@ public class ParsedStatementThrow extends ParsedStatement {
 	@Override
 	public CompilingStatement compile(StatementCompiler compiler, CodeBlock lastBlock) {
 		Optional<FunctionHeader> maybeHeader = compiler.getFunctionHeader();
-		if (!maybeHeader.isPresent())
+		if (!compiler.getThrownType().isPresent())
 			return new InvalidCompilingStatement(position, lastBlock, CompileErrors.cannotThrowHere());
 
-		FunctionHeader header = maybeHeader.get();
+		FunctionHeader header = maybeHeader.orElse(null);
 		return new Compiling(compiler, expression.compile(compiler.expressions()), lastBlock, header);
 	}
 

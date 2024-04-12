@@ -20,14 +20,16 @@ public class StatementCompilerImpl implements StatementCompiler {
 	private final LocalType localType;
 	private final LocalSymbols locals;
 	private final FunctionHeader functionHeader;
+	private final TypeID thrownType;
 	private final TypeBuilder types;
 
-	public StatementCompilerImpl(CompileContext context, LocalType localType, TypeBuilder types, FunctionHeader functionHeader, LocalSymbols locals) {
+	public StatementCompilerImpl(CompileContext context, LocalType localType, TypeBuilder types, FunctionHeader functionHeader, LocalSymbols locals, TypeID thrownType) {
 		this.context = context;
 		this.localType = localType;
 		this.functionHeader = functionHeader;
 		this.locals = locals;
 		this.types = types.withGeneric(functionHeader.typeParameters);
+		this.thrownType = thrownType;
 		expressionCompiler = new ExpressionCompilerImpl(context, localType, this.types, functionHeader.thrownType, locals, functionHeader);
 	}
 
@@ -48,19 +50,19 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public StatementCompiler forBlock() {
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forBlock());
+		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forBlock(), thrownType);
 	}
 
 	@Override
 	public StatementCompiler forLoop(CompilingLoopStatement loop) {
-		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forLoop(loop, loop.getLabels().toArray(new String[0])));
+		return new StatementCompilerImpl(context, localType, types, functionHeader, locals.forLoop(loop, loop.getLabels().toArray(new String[0])), thrownType);
 	}
 
 	@Override
 	public StatementCompiler forCatch(CompilingVariable exceptionVariable) {
 		LocalSymbols locals = this.locals.forBlock();
 		locals.add(exceptionVariable);
-		return new StatementCompilerImpl(context, localType, types, functionHeader.withThrownType(exceptionVariable.getActualType()), locals);
+		return new StatementCompilerImpl(context, localType, types, functionHeader.withThrownType(exceptionVariable.getActualType()), locals, null);
 	}
 
 	@Override
@@ -71,6 +73,11 @@ public class StatementCompilerImpl implements StatementCompiler {
 	@Override
 	public Optional<FunctionHeader> getFunctionHeader() {
 		return Optional.ofNullable(functionHeader);
+	}
+
+	@Override
+	public Optional<TypeID> getThrownType() {
+		return thrownType == null ? Optional.ofNullable(functionHeader).map(header -> header.thrownType) : Optional.of(thrownType);
 	}
 
 	@Override
