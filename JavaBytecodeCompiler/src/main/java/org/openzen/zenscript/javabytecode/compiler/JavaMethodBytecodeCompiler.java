@@ -165,6 +165,12 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 	@Override
 	public Void nativeVirtualMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
+		if (arguments.expansionTypeArguments.length > 0) {
+			final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+			for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
+				arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
+			}
+		}
 		target.accept(expressionVisitor);
 		return nativeStaticMethod(method, returnType, arguments);
 	}
@@ -172,9 +178,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	@Override
 	public Void nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
 		handleArguments(arguments.typeArguments.length, method, arguments);
-		if (method.compile) {
-			handleTypeArguments(method, arguments);
-		}
 
 		if (method.kind == JavaNativeMethod.Kind.STATIC) {
 			javaWriter.invokeStatic(method);
@@ -205,14 +208,14 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		target.accept(expressionVisitor);
 		handleArguments(arguments.typeArguments.length, method, arguments);
-		if (method.compile) {
-			handleTypeArguments(method, arguments);
-		}
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
 
 	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments) {
+		if (method.compile) {
+			handleTypeArguments(method, arguments);
+		}
 		for (int index = 0; index < arguments.arguments.length; index++) {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
@@ -227,9 +230,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		if (arguments.typeArguments.length != method.typeParameterArguments.length)
 			throw new IllegalArgumentException("Number of type parameters doesn't match");
 
-		for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
-			arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
-		}
 		for (int i = 0; i < arguments.typeArguments.length; i++) {
 			if (method.typeParameterArguments[i])
 				arguments.typeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);

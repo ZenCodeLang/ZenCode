@@ -1,26 +1,16 @@
-#output: 2
-#output: 4
-#output: 6
+#output: a1
+#output: a2
+#output: a3
 
 public expand <T> T[] {
 	public map<U>(projection as function(value as T) as U) as U[] {
-		var values = new U[](length);
-		for i, value in this
-			values[i] = projection(value);
-		return values;
-	}
-
-	[Native("mapKeyValues")]
-	public map<U>(projection as function(index as usize, value as T) as U) as U[] {
-		var values = new U[](length);
-		for i, value in this
-			values[i] = projection(i, value);
-		return values;
+		return new U[](length, index => projection(this[index]));
 	}
 }
 
-var a = [1, 2, 3];
-var b = a.map<int>(x => x * 2);
-for item in b {
+var a = ["1", "2", "3"];
+var b = a.map<string>(x => "a" + x);
+println(typeof(b));
+/*for item in b {
 	println(item);
-}
+}*/

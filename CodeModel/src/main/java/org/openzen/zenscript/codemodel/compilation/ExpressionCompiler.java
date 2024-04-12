@@ -4,9 +4,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.VariableDefinition;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -18,6 +17,8 @@ public interface ExpressionCompiler extends TypeResolver {
 	CompilingExpression invalid(CodePosition position, CompileError error);
 
 	Optional<TypeID> getThisType();
+
+	Optional<CompilingExpression> getThis(CodePosition position);
 
 	Optional<LocalType> getLocalType();
 

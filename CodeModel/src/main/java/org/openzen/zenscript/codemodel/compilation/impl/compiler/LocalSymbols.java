@@ -5,11 +5,10 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompilingVariable;
-import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
-import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalParameterExpression;
-import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalVariableExpression;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.*;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,6 +109,15 @@ public class LocalSymbols {
 			return parent.findLocalVariable(position, name).map(var -> var.capture(closure));
 		else
 			return parent.findLocalVariable(position, name);
+	}
+
+	public LocalExpression capture(CodePosition position, LocalExpression local) {
+		if (this.parent == null)
+			return local;
+		else if (closure != null)
+			return local.capture(closure);
+		else
+			return parent.capture(position, local);
 	}
 
 	public Optional<CompilableExpression> getDollar() {
