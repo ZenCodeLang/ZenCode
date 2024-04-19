@@ -95,7 +95,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 			for (TypeParameter typeParameter : typeParameters) {
 				methodWriter.nameParameter(0, "typeOf" + typeParameter.name);
-				methodWriter.nameVariable(javaModule.getTypeParameterInfo(typeParameter).parameterIndex - 1, "typeOf" + typeParameter.name, methodStart, methodEnd, Type.getType(Class.class));
+				methodWriter.nameVariable(javaModule.getTypeParameterInfo(typeParameter).parameterIndex, "typeOf" + typeParameter.name, methodStart, methodEnd, Type.getType(Class.class));
 			}
 
 			methodWriter.nameVariable(typeParameters.size(), "expandedObj", methodStart, methodEnd, context.getType(expandedClass));

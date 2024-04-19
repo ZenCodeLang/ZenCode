@@ -58,12 +58,14 @@ public class CompilerUtils {
 	}
 
 	public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic, List<TypeParameter> baseTypeTypeParameters) {
-		int index = isStatic ? 0 : 1;
+		int index = 0;
 
 		for (TypeParameter baseTypeTypeParameter : baseTypeTypeParameters) {
 			module.setTypeParameterInfo(baseTypeTypeParameter, new JavaTypeParameterInfo(index));
 			index++;
 		}
+
+		if (!isStatic) index++;
 
 		for (int i = 0; i < header.typeParameters.length; i++) {
 			TypeParameter parameter = header.typeParameters[i];
