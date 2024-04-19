@@ -393,12 +393,13 @@ public abstract class JavaContext {
 	}
 
 	public String getMethodDescriptorExpansion(FunctionHeader header, TypeID expandedType) {
-		StringBuilder startBuilder = new StringBuilder(getDescriptor(expandedType));
+		StringBuilder startBuilder = new StringBuilder();
 		final List<TypeParameter> typeParameters = new ArrayList<>();
 		expandedType.extractTypeParameters(typeParameters);
-		for (TypeParameter typeParameter : typeParameters) {
+		for (TypeParameter ignored : typeParameters) {
 			startBuilder.append("Ljava/lang/Class;");
 		}
+		startBuilder.append(getDescriptor(expandedType));
 
 		return getMethodDescriptor(header, false, startBuilder.toString());
 	}
