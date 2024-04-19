@@ -182,7 +182,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final JavaCompilingMethod javaCompilingMethod = new JavaCompilingMethod(class_.compiled, valueOfMethod, valueOfMethodDescriptorAndAlsoSignature);
 			JavaWriter valueOfWriter = new JavaWriter(context.logger, CodePosition.BUILTIN, writer, javaCompilingMethod, definition);
 			valueOfWriter.start();
-			valueOfWriter.constantClass(class_.compiled);
+			valueOfWriter.constant(class_.compiled);
 			valueOfWriter.loadObject(0);
 			valueOfWriter.invokeStatic(ENUM_VALUEOF);
 			valueOfWriter.checkCast(class_.getInternalName());

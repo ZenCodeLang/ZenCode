@@ -419,7 +419,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitConstantShort(ConstantShortExpression expression) {
-		getJavaWriter().siPush(expression.value);
+		getJavaWriter().constant(expression.value);
 		return null;
 	}
 

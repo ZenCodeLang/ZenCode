@@ -335,7 +335,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTE_ADD_STRING:
 			case BYTE_CAT_STRING:
 				arguments[0].accept(expressionVisitor);
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.invokeStatic(INTEGER_TO_STRING);
 				arguments[1].accept(expressionVisitor);
@@ -570,7 +570,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.i2b();
 				break;
 			case BYTE_TO_SHORT:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2s();
 				break;
@@ -578,34 +578,34 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTE_TO_INT:
 			case BYTE_TO_UINT:
 			case BYTE_TO_USIZE:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				break;
 			case BYTE_TO_LONG:
 			case BYTE_TO_ULONG:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2l();
 				break;
 			case BYTE_TO_FLOAT:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2f();
 				break;
 			case BYTE_TO_DOUBLE:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2d();
 				break;
 			case BYTE_TO_CHAR:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				break;
 			case BYTE_TO_STRING:
 				if (arguments[0].type.isOptional()) {
 					javaWriter.invokeStatic(OBJECTS_TOSTRING);
 				} else {
-					javaWriter.siPush((short) 0xFF);
+					javaWriter.constant(0xFF);
 					javaWriter.iAnd();
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}

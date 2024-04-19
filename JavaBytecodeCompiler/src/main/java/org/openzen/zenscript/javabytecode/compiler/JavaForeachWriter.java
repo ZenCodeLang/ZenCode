@@ -98,7 +98,7 @@ public class JavaForeachWriter {
 		ArrayTypeID listType = (ArrayTypeID) statement.list.type.withoutOptional();
  		if (listType.elementType == BasicTypeID.BYTE) {
 			javaWriter.arrayLoad(Type.BYTE_TYPE);
-			javaWriter.siPush((short) 255);
+			javaWriter.constant(0xFF);
 			javaWriter.iAnd();
 		} else if (listType.elementType == BasicTypeID.USHORT) {
 			javaWriter.arrayLoad(Type.SHORT_TYPE);
