@@ -3565,7 +3565,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.dup();
 
 		// Todo: Primitive method overloads if primitive Array!
-		final JavaMethod sort = JavaMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+		final JavaMethod sort = JavaMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)V");
 		javaWriter.invokeStatic(sort);
 		return null;
 	}
