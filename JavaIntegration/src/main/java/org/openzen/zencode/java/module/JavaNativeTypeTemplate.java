@@ -3,6 +3,7 @@ package org.openzen.zencode.java.module;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.impl.conversion.ConversionUtils;
 import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -17,6 +18,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaNativeField;
 
@@ -35,6 +37,7 @@ public class JavaNativeTypeTemplate {
 	private List<MethodSymbol> constructors;
 	private Map<String, JavaRuntimeField> fields;
 	private Map<MethodID, List<MethodSymbol>> methods;
+	private Map<String, JavaRuntimeClass> innerTypes;
 
 	public List<MethodSymbol> getConstructors() {
 		if (constructors == null) {
@@ -72,6 +75,14 @@ public class JavaNativeTypeTemplate {
 			}
 		}
 		return Optional.ofNullable(fields.get(name));
+	}
+
+	public Optional<JavaRuntimeClass> getInnerType(String name) {
+		if (innerTypes == null) {
+			loadInnerTypes();
+		}
+
+		return Optional.ofNullable(innerTypes.get(name));
 	}
 
 	public Optional<CompilableExpression> getContextMember(String name) {
@@ -150,6 +161,18 @@ public class JavaNativeTypeTemplate {
 			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header);
 			methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
 			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+		}
+	}
+
+	private void loadInnerTypes() {
+		innerTypes = new HashMap<>();
+
+		for (Class<?> cls : class_.cls.getDeclaredClasses()) {
+			ZenCodeType.Inner innerType = cls.getAnnotation(ZenCodeType.Inner.class);
+			String name = innerType.value().isEmpty() ? cls.getSimpleName() : innerType.value();
+			JavaClass.Kind kind = ConversionUtils.getKindFromAnnotations(cls);
+			JavaRuntimeClass innerClass = new JavaRuntimeClass(class_.module, cls, name, null, kind);
+			innerTypes.put(name, innerClass);
 		}
 	}
 

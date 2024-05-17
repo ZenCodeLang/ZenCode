@@ -29,8 +29,8 @@ public class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
 	@Test
 	public void testInnerClassesCanBeAddedViaJava_Inner() {
 		ScriptBuilder.create()
-				.add("import test_module.Outer.Inner;")
-				.add("println(Inner.getName());")
+				.add("import test_module.Outer;")
+				.add("println(Outer.Inner.getName());")
 				.execute(this);
 
 		this.logger.assertPrintOutputSize(1);
@@ -41,7 +41,6 @@ public class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> requiredClasses = super.getRequiredClasses();
 		requiredClasses.add(Outer.class);
-		requiredClasses.add(Outer.Inner.class);
 		return requiredClasses;
 	}
 
@@ -53,7 +52,7 @@ public class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
 			return "Outer";
 		}
 
-		@ZenCodeType.Name("test_module.Outer.Inner")
+		@ZenCodeType.Inner
 		public static class Inner {
 			@ZenCodeType.Method
 			public static String getName() {

@@ -65,6 +65,12 @@ public interface ZenCodeType {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
+	@interface Inner {
+		String value() default "";
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.TYPE)
 	@interface Struct {
 	}
 

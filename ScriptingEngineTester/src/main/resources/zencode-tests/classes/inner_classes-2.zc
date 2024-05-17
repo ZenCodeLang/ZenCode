@@ -1,0 +1,12 @@
+#output: Inner
+
+public class Outer {
+
+    public static class Inner {
+        public static getName(): string {
+			return "Inner";
+		}
+    }
+}
+
+println(Outer.Inner.getName());

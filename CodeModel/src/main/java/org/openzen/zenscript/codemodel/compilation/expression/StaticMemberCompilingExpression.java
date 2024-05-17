@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class StaticMemberCompilingExpression extends AbstractCompilingExpression {
 	private final TypeID type;
@@ -27,12 +28,29 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 			return compiler.at(position).invalid(CompileErrors.typeArgumentsNotAllowedHere());
 
 		ResolvedType resolved = compiler.resolve(type);
-		return resolved.findStaticGetter(name.name)
-				.map(getter -> getter.call(compiler, position, TypeID.NONE))
-				.orElseGet(() ->
-						resolved.getContextMember(name.name)
-								.map(member -> member.compile(compiler).eval())
-								.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(type, name.name))));
+
+		/*Optional<Expression> asGetter = resolved.findStaticGetter(name.name)
+			.map(getter -> getter.call(compiler, position, TypeID.NONE));
+		if (asGetter.isPresent()) {
+			return asGetter.get();
+		}*/
+
+		Optional<StaticCallable> staticGetter = resolved.findStaticGetter(name.name);
+		if(staticGetter.isPresent()){
+			return staticGetter.get().call(compiler, position, TypeID.NONE);
+		}
+		Optional<CompilableExpression> contextMember = resolved.getContextMember(name.name);
+		if(contextMember.isPresent()){
+			return contextMember.get().compile(compiler).eval();
+		}
+		return compiler.at(position).invalid(CompileErrors.noMemberInType(type, name.name));
+
+//		return resolved.findStaticGetter(name.name)
+//				.map(getter -> getter.call(compiler, position, TypeID.NONE))
+//				.orElseGet(() ->
+//						resolved.getContextMember(name.name)
+//								.map(member -> member.compile(compiler).eval())
+//								.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(type, name.name))));
 	}
 
 	@Override

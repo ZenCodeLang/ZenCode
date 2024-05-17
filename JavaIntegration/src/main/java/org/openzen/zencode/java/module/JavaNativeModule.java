@@ -10,6 +10,7 @@ import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.impl.JavaNativeModuleSpace;
+import org.openzen.zencode.java.impl.conversion.ConversionUtils;
 import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.java.impl.conversion.JavaRuntimeTypeConverterImpl;
 import org.openzen.zencode.shared.logging.IZSLogger;
@@ -97,22 +98,17 @@ public class JavaNativeModule {
 			return classes.get(cls);
 		}
 
-		JavaClass.Kind kind;
+		JavaClass.Kind kind = ConversionUtils.getKindFromAnnotations(cls);
 		TypeID target = null;
-		if (cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			kind = JavaClass.Kind.EXPANSION;
+		if (kind == JavaClass.Kind.EXPANSION) {
 			ZenCodeType.Expansion expansion = cls.getAnnotation(ZenCodeType.Expansion.class);
 			target = typeConverter.parseType(expansion.value());
-		} else if (cls.isInterface()) {
-			kind = JavaClass.Kind.INTERFACE;
-		} else if (cls.isEnum()) {
-			kind = JavaClass.Kind.ENUM;
-		} else {
-			kind = JavaClass.Kind.CLASS;
 		}
 
-		JavaRuntimeClass class_ = new JavaRuntimeClass(this, cls, target, kind);
+		ParsedName name = getClassName(packageInfo.getPkg(), cls);
+		JavaRuntimeClass class_ = new JavaRuntimeClass(this, cls, name.name, target, kind);
 		classes.put(cls, class_);
+		name.pkg.register(class_);
 		return class_;
 	}
 
@@ -193,5 +189,56 @@ public class JavaNativeModule {
 
 	public JavaNativeHeaderConverter getHeaderConverter() {
 		return headerConverter;
+	}
+
+	private ParsedName getClassName(ZSPackage pkg, Class<?> cls) {
+		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
+		final String specifiedName = getNameForScripts(cls);
+
+		ZSPackage classPkg;
+		boolean hasAnnotation = cls.isAnnotationPresent(ZenCodeType.Name.class);
+		String className = specifiedName.contains(".") ? specifiedName.substring(specifiedName.lastIndexOf('.') + 1) : specifiedName;
+		if (!hasAnnotation) {
+			if (!specifiedName.startsWith(packageInfo.getPkg().fullName)) {
+				classPkg = packageInfo.getPackage(className);
+			} else {
+				classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
+				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
+			}
+		} else {
+			if (specifiedName.startsWith(".")) {
+				classPkg = packageInfo.getPackage(specifiedName);
+				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
+			} else if (specifiedName.indexOf('.') >= 0) {
+				if (!specifiedName.startsWith(packageInfo.getPkg().fullName))
+					throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls
+							.toString() + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
+
+				classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
+				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
+			} else {
+				classPkg = packageInfo.getPackage(specifiedName);
+				className = specifiedName;
+			}
+		}
+
+		return new ParsedName(classPkg, className);
+	}
+
+	private static String getNameForScripts(Class<?> cls) {
+		if (cls.isAnnotationPresent(ZenCodeType.Name.class)) {
+			return cls.getAnnotation(ZenCodeType.Name.class).value();
+		}
+		return cls.getName();
+	}
+
+	private static class ParsedName {
+		private final ZSPackage pkg;
+		private final String name;
+
+		public ParsedName(ZSPackage pkg, String name) {
+			this.pkg = pkg;
+			this.name = name;
+		}
 	}
 }
