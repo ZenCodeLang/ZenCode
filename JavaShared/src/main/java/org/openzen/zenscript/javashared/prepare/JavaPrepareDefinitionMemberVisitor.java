@@ -88,7 +88,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return context.getJavaClass(definition);
 
 		JavaClass cls = context.getJavaClass(definition);
-		JavaMethod method = JavaMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		JavaMethod method = JavaMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers), definition.header.getReturnType().isGeneric());
 		module.setMethodInfo(definition.caller, method);
 		return cls;
 	}
