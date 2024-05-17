@@ -1330,7 +1330,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.dup();
 
 				// Todo: Primitive method overloads if primitive Array!
-				final JavaNativeMethod sort = JavaNativeMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+				final JavaNativeMethod sort = JavaNativeMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)V");
 				javaWriter.invokeStatic(sort);
 				break;
 			}
