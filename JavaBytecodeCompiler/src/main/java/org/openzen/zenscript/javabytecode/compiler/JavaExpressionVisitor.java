@@ -32,7 +32,7 @@ import java.util.*;
 import static org.openzen.zenscript.javabytecode.compiler.JavaMethodBytecodeCompiler.OBJECT_HASHCODE;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
-	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final JavaNativeMethod MAP_PUT = JavaNativeMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", true);
 	private static final JavaNativeMethod ARRAY_NEWINSTANCE = JavaNativeMethod.getNativeStatic(JavaClass.ARRAY, "newInstance", "(Ljava/lang/Class;I)Ljava/lang/Object;");
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 

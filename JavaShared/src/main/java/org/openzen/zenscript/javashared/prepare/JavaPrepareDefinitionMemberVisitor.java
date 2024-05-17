@@ -64,7 +64,8 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Voi
 				class_.compiled,
 				definition.name,
 				descriptor,
-				JavaModifiers.getJavaModifiers(definition.modifiers));
+				JavaModifiers.getJavaModifiers(definition.modifiers),
+				definition.header.getReturnType().isGeneric());
 		class_.addMethod(definition.caller, new JavaCompilingMethod(class_.compiled, method, signature));
 		return null;
 	}

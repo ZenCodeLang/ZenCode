@@ -60,7 +60,11 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	public static JavaNativeMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, false);
+		return getStatic(cls, name, descriptor, modifiers, false);
+	}
+
+	public static JavaNativeMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers, boolean genericResult) {
+		return new JavaNativeMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, genericResult);
 	}
 
 	public static JavaNativeMethod getNativeStatic(JavaClass cls, String name, String descriptor) {
@@ -68,7 +72,11 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	public static JavaNativeMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaNativeMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, false);
+		return getVirtual(cls, name, descriptor, modifiers, false);
+	}
+
+	public static JavaNativeMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers, boolean genericResult) {
+		return new JavaNativeMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, genericResult);
 	}
 
 	public static JavaNativeMethod getNativeVirtual(JavaClass cls, String name, String descriptor) {
@@ -76,7 +84,11 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	public static JavaNativeMethod getInterface(JavaClass cls, String name, String descriptor) {
-		return new JavaNativeMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+		return getInterface(cls, name, descriptor, false);
+	}
+
+	public static JavaNativeMethod getInterface(JavaClass cls, String name, String descriptor, boolean genericResult) {
+		return new JavaNativeMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, genericResult);
 	}
 
 	public static JavaNativeMethod getNativeExpansion(JavaClass cls, String name, String descriptor) {
