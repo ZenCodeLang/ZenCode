@@ -66,7 +66,11 @@ public class JavaMethod {
 	}
 
 	public static JavaMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, false);
+		return getStatic(cls, name, descriptor, modifiers, false);
+	}
+
+	public static JavaMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers, boolean genericResult) {
+		return new JavaMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, genericResult);
 	}
 
 	public static JavaMethod getNativeStatic(JavaClass cls, String name, String descriptor) {
@@ -74,7 +78,11 @@ public class JavaMethod {
 	}
 
 	public static JavaMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, false);
+		return getVirtual(cls, name, descriptor, modifiers, false);
+	}
+
+	public static JavaMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers, boolean genericResult) {
+		return new JavaMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, genericResult);
 	}
 
 	public static JavaMethod getNativeVirtual(JavaClass cls, String name, String descriptor) {
@@ -82,7 +90,11 @@ public class JavaMethod {
 	}
 
 	public static JavaMethod getInterface(JavaClass cls, String name, String descriptor) {
-		return new JavaMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+		return getInterface(cls, name, descriptor, false);
+	}
+
+	public static JavaMethod getInterface(JavaClass cls, String name, String descriptor, boolean genericResult) {
+		return new JavaMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, genericResult);
 	}
 
 	public static JavaMethod getNativeExpansion(JavaClass cls, String name, String descriptor) {
