@@ -738,6 +738,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	private void checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
 		ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
+		if (arguments.typeArguments.length != 0) {
+			instancedHeader = instancedHeader.instanceForCall(arguments);
+		}
 
 		boolean isVariadic = instancedHeader.isVariadicCall(arguments);
 		for (int i = 0; i < arguments.arguments.length; i++) {

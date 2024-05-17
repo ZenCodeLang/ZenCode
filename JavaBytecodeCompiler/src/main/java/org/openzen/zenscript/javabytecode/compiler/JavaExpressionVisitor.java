@@ -8,6 +8,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
@@ -311,7 +312,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCapturedThis(CapturedThisExpression expression) {
-		return expression.accept(capturedExpressionVisitor);
+		// TODO - does this cover all situations?
+		int thisLocal = 0;
+		if (javaWriter.forDefinition instanceof ExpansionDefinition) {
+			thisLocal = javaWriter.forDefinition.typeParameters.length;
+		}
+		javaWriter.load(context.getType(expression.type), thisLocal);
+		return null;
 	}
 
 	@Override
@@ -412,7 +419,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitConstantShort(ConstantShortExpression expression) {
-		getJavaWriter().siPush(expression.value);
+		getJavaWriter().constant(expression.value);
 		return null;
 	}
 
@@ -564,12 +571,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (CapturedExpression capture : expression.closure.captures) {
 			constructorWriter.dup();
 			Type type = context.getType(capture.type);
-			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, "captured" + ++i, type.getDescriptor(), null, null).visitEnd();
+			String name;
+			++i;
+			if (capture instanceof CapturedThisExpression) {
+				name = "capturedThis";
+			} else {
+				name = "captured" + i;
+			}
+			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, name, type.getDescriptor(), null, null).visitEnd();
 
 			capture.accept(this);
 
 			constructorWriter.load(type, i);
-			constructorWriter.putField(className, "captured" + i, type.getDescriptor());
+			constructorWriter.putField(className, name, type.getDescriptor());
 		}
 
 		constructorWriter.pop();
@@ -595,7 +609,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					return null;
 				}
 
-
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
 				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
@@ -607,6 +620,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
 				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.parameter.type));
+				return null;
+			}
+
+			@Override
+			public Void visitCapturedThis(CapturedThisExpression expression) {
+				functionWriter.loadObject(0);
+				functionWriter.getField(className, "capturedThis", context.getDescriptor(expression.type));
 				return null;
 			}
 		});
@@ -1243,7 +1263,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitThis(ThisExpression expression) {
-		javaWriter.load(context.getType(expression.type), 0);
+		int thisLocal = 0;
+		if (javaWriter.forDefinition instanceof ExpansionDefinition) {
+			thisLocal = javaWriter.forDefinition.typeParameters.length;
+		}
+		javaWriter.load(context.getType(expression.type), thisLocal);
 		return null;
 	}
 

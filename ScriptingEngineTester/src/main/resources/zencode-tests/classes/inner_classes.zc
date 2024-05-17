@@ -1,0 +1,17 @@
+#output: Outer
+#output: Inner
+#output: Innermost
+
+public class Outer {
+
+    public static class Inner {
+        public static class Innermost {
+
+        }
+    }
+}
+
+
+println(typeof(new Outer()));
+println(typeof(new Outer.Inner()));
+println(typeof(new Outer.Inner.Innermost()));

@@ -10,9 +10,6 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
 
-import java.util.Iterator;
-import java.util.Map;
-
 /**
  * @author Stan Hebben
  */
@@ -27,36 +24,36 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 	public Void visitBasic(JavaWriter writer, BasicTypeID basic) {
 		switch (basic) {
 			case BOOL:
-				writer.constantClass(JavaClass.BOOLEAN);
+				writer.constant(JavaClass.BOOLEAN);
 				return null;
 			case SBYTE:
-				writer.constantClass(JavaClass.BYTE);
+				writer.constant(JavaClass.BYTE);
 				return null;
 			case SHORT:
-				writer.constantClass(JavaClass.SHORT);
+				writer.constant(JavaClass.SHORT);
 				return null;
 			case BYTE:
 			case USHORT:
 			case INT:
 			case UINT:
 			case USIZE:
-				writer.constantClass(JavaClass.INTEGER);
+				writer.constant(JavaClass.INTEGER);
 				return null;
 			case LONG:
 			case ULONG:
-				writer.constantClass(JavaClass.LONG);
+				writer.constant(JavaClass.LONG);
 				return null;
 			case FLOAT:
-				writer.constantClass(JavaClass.FLOAT);
+				writer.constant(JavaClass.FLOAT);
 				return null;
 			case DOUBLE:
-				writer.constantClass(JavaClass.DOUBLE);
+				writer.constant(JavaClass.DOUBLE);
 				return null;
 			case CHAR:
-				writer.constantClass(JavaClass.CHARACTER);
+				writer.constant(JavaClass.CHARACTER);
 				return null;
 			case STRING:
-				writer.constantClass(JavaClass.STRING);
+				writer.constant(JavaClass.STRING);
 				return null;
 			default:
 				throw new IllegalArgumentException();
@@ -70,31 +67,31 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 
 	@Override
 	public Void visitAssoc(JavaWriter writer, AssocTypeID assoc) {
-		writer.constantClass(JavaClass.MAP);
+		writer.constant(JavaClass.MAP);
 		return null;
 	}
 
 	@Override
 	public Void visitGenericMap(JavaWriter writer, GenericMapTypeID map) {
-		writer.constantClass(JavaClass.MAP);
+		writer.constant(JavaClass.MAP);
 		return null;
 	}
 
 	@Override
 	public Void visitIterator(JavaWriter writer, IteratorTypeID iterator) {
-		writer.constantClass(JavaClass.ITERATOR);
+		writer.constant(JavaClass.ITERATOR);
 		return null;
 	}
 
 	@Override
 	public Void visitFunction(JavaWriter writer, FunctionTypeID function) {
-		writer.constantClass(context.getFunction(function).getCls());
+		writer.constant(context.getFunction(function).getCls());
 		return null;
 	}
 
 	@Override
 	public Void visitDefinition(JavaWriter writer, DefinitionTypeID definition) {
-		writer.constantClass(context.getJavaClass(definition.definition));
+		writer.constant(context.getJavaClass(definition.definition));
 		return null;
 	}
 
@@ -112,7 +109,7 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 
 	@Override
 	public Void visitRange(JavaWriter writer, RangeTypeID range) {
-		writer.constantClass(context.getRange(range).cls);
+		writer.constant(context.getRange(range).cls);
 		return null;
 	}
 

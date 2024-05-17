@@ -92,13 +92,14 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {
-			methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(expandedClass));
-			methodWriter.nameParameter(0, "expandedObj");
 
 			for (TypeParameter typeParameter : typeParameters) {
 				methodWriter.nameParameter(0, "typeOf" + typeParameter.name);
 				methodWriter.nameVariable(javaModule.getTypeParameterInfo(typeParameter).parameterIndex, "typeOf" + typeParameter.name, methodStart, methodEnd, Type.getType(Class.class));
 			}
+
+			methodWriter.nameVariable(typeParameters.size(), "expandedObj", methodStart, methodEnd, context.getType(expandedClass));
+			methodWriter.nameParameter(0, "expandedObj");
 		}
 
 		for (TypeParameter typeParameter : member.header.typeParameters) {

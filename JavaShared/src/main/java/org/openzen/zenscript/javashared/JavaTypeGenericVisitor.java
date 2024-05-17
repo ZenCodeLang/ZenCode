@@ -199,23 +199,27 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 		final StringBuilder stringBuilder = new StringBuilder();
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
-		for (TypeParameter typeParameter : header.typeParameters) {
-			if (!typeParameters.contains(typeParameter)) {
-				typeParameters.add(typeParameter);
-			}
-		}
 
-		if (typeParameters.size() != 0) {
+		if (typeParameters.size() != 0 || header.typeParameters.length != 0) {
 			stringBuilder.append("<");
 			for (TypeParameter typeParameter : typeParameters) {
+				stringBuilder.append(typeParameter.name);
+				stringBuilder.append(":Ljava/lang/Object;");
+			}
+			for (TypeParameter typeParameter : header.typeParameters) {
 				stringBuilder.append(typeParameter.name);
 				stringBuilder.append(":Ljava/lang/Object;");
 			}
 			stringBuilder.append(">");
 		}
 		stringBuilder.append("(");
-		stringBuilder.append(context.getSignature(expandedClass));
 		for (TypeParameter typeParameter : typeParameters) {
+			stringBuilder.append("Ljava/lang/Class<T");
+			stringBuilder.append(typeParameter.name);
+			stringBuilder.append(";>;");
+		}
+		stringBuilder.append(context.getSignature(expandedClass));
+		for (TypeParameter typeParameter : header.typeParameters) {
 			stringBuilder.append("Ljava/lang/Class<T");
 			stringBuilder.append(typeParameter.name);
 			stringBuilder.append(";>;");

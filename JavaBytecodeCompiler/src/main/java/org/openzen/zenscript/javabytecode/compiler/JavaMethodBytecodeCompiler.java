@@ -165,6 +165,12 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 	@Override
 	public Void nativeVirtualMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
+		if (arguments.expansionTypeArguments.length > 0) {
+			final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+			for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
+				arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
+			}
+		}
 		target.accept(expressionVisitor);
 		return nativeStaticMethod(method, returnType, arguments);
 	}
@@ -172,9 +178,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	@Override
 	public Void nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
 		handleArguments(arguments.typeArguments.length, method, arguments);
-		if (method.compile) {
-			handleTypeArguments(method, arguments);
-		}
 
 		if (method.kind == JavaNativeMethod.Kind.STATIC) {
 			javaWriter.invokeStatic(method);
@@ -205,14 +208,14 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		target.accept(expressionVisitor);
 		handleArguments(arguments.typeArguments.length, method, arguments);
-		if (method.compile) {
-			handleTypeArguments(method, arguments);
-		}
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
 
 	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments) {
+		if (method.compile) {
+			handleTypeArguments(method, arguments);
+		}
 		for (int index = 0; index < arguments.arguments.length; index++) {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
@@ -227,9 +230,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		if (arguments.typeArguments.length != method.typeParameterArguments.length)
 			throw new IllegalArgumentException("Number of type parameters doesn't match");
 
-		for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
-			arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
-		}
 		for (int i = 0; i < arguments.typeArguments.length; i++) {
 			if (method.typeParameterArguments[i])
 				arguments.typeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
@@ -335,7 +335,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTE_ADD_STRING:
 			case BYTE_CAT_STRING:
 				arguments[0].accept(expressionVisitor);
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.invokeStatic(INTEGER_TO_STRING);
 				arguments[1].accept(expressionVisitor);
@@ -570,7 +570,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.i2b();
 				break;
 			case BYTE_TO_SHORT:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2s();
 				break;
@@ -578,34 +578,34 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTE_TO_INT:
 			case BYTE_TO_UINT:
 			case BYTE_TO_USIZE:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				break;
 			case BYTE_TO_LONG:
 			case BYTE_TO_ULONG:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2l();
 				break;
 			case BYTE_TO_FLOAT:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2f();
 				break;
 			case BYTE_TO_DOUBLE:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				javaWriter.i2d();
 				break;
 			case BYTE_TO_CHAR:
-				javaWriter.siPush((short) 0xFF);
+				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				break;
 			case BYTE_TO_STRING:
 				if (arguments[0].type.isOptional()) {
 					javaWriter.invokeStatic(OBJECTS_TOSTRING);
 				} else {
-					javaWriter.siPush((short) 0xFF);
+					javaWriter.constant(0xFF);
 					javaWriter.iAnd();
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}

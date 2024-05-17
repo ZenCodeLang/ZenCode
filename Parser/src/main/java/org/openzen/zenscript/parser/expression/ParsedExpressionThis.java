@@ -33,7 +33,7 @@ public class ParsedExpressionThis extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			return compiler.at(position).getThis(this.type.getThisType());
+			return compiler.getThis(position).orElseThrow(() -> new AssertionError("what?")).eval();
 		}
 
 		@Override

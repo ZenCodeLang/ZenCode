@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
+import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalThisExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
@@ -54,6 +55,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	@Override
 	public Optional<TypeID> getThisType() {
 		return Optional.ofNullable(localType).map(LocalType::getThisType);
+	}
+
+	@Override
+	public Optional<CompilingExpression> getThis(CodePosition position) {
+		return getThisType().map(thisType -> locals.capture(position, new LocalThisExpression(position, thisType)).compile(this));
 	}
 
 	@Override

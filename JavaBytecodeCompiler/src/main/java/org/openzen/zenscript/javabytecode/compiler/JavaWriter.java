@@ -14,6 +14,7 @@ import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +138,10 @@ public class JavaWriter {
 		try {
 			visitor.visitMaxs(0, 0);
 		} catch (ArrayIndexOutOfBoundsException | NegativeArraySizeException ex) {
-			//ex.printStackTrace();
+			if (debug && (clazzVisitor instanceof ClassWriter)) {
+				// TODO Write to a file for debugging?
+				System.out.println(Arrays.toString(((ClassWriter) clazzVisitor).toByteArray()));
+			}
 			throw ex;
 		}
 
@@ -160,8 +164,15 @@ public class JavaWriter {
 		return visitor.newLocal(type);
 	}
 
-	public int local(Class cls) {
+	public int local(Class<?> cls) {
 		return visitor.newLocal(Type.getType(cls));
+	}
+
+	public void iConstM1() {
+		if (debug)
+			logger.debug("iconstm1");
+
+		visitor.visitInsn(ICONST_M1);
 	}
 
 	public void iConst0() {
@@ -176,6 +187,76 @@ public class JavaWriter {
 			logger.debug("iconst1");
 
 		visitor.visitInsn(ICONST_1);
+	}
+
+	public void iConst2() {
+		if (debug)
+			logger.debug("iconst2");
+
+		visitor.visitInsn(ICONST_2);
+	}
+
+	public void iConst3() {
+		if (debug)
+			logger.debug("iconst3");
+
+		visitor.visitInsn(ICONST_3);
+	}
+
+	public void iConst4() {
+		if (debug)
+			logger.debug("iconst4");
+
+		visitor.visitInsn(ICONST_4);
+	}
+
+	public void iConst5() {
+		if (debug)
+			logger.debug("iconst5");
+
+		visitor.visitInsn(ICONST_5);
+	}
+
+	public void lConst0() {
+		if (debug)
+			logger.debug("lconst0");
+
+		visitor.visitInsn(LCONST_0);
+	}
+
+	public void lConst1() {
+		if (debug)
+			logger.debug("lconst1");
+
+		visitor.visitInsn(LCONST_1);
+	}
+
+	public void fConst0() {
+		if (debug)
+			logger.debug("fconst0");
+
+		visitor.visitInsn(FCONST_0);
+	}
+
+	public void fConst1() {
+		if (debug)
+			logger.debug("fconst1");
+
+		visitor.visitInsn(FCONST_1);
+	}
+
+	public void dConst0() {
+		if (debug)
+			logger.debug("dconst0");
+
+		visitor.visitInsn(DCONST_0);
+	}
+
+	public void dConst1() {
+		if (debug)
+			logger.debug("dconst1");
+
+		visitor.visitInsn(DCONST_1);
 	}
 
 	public void biPush(byte value) {
@@ -199,7 +280,7 @@ public class JavaWriter {
 		visitor.visitInsn(ACONST_NULL);
 	}
 
-	public void constant(Object value) {
+	public void ldc(Object value) {
 		if (value == null)
 			throw new NullPointerException("Value cannot be null");
 
@@ -209,8 +290,90 @@ public class JavaWriter {
 		visitor.visitLdcInsn(value);
 	}
 
-	public void constantClass(JavaClass cls) {
-		visitor.visitLdcInsn(Type.getObjectType(cls.internalName));
+	public void constant(byte value) {
+		switch (value) {
+			case -1:
+				this.iConstM1();
+				break;
+			case 0:
+				this.iConst0();
+				break;
+			case 1:
+				this.iConst1();
+				break;
+			case 2:
+				this.iConst2();
+				break;
+			case 3:
+				this.iConst3();
+				break;
+			case 4:
+				this.iConst4();
+				break;
+			case 5:
+				this.iConst5();
+				break;
+			default:
+				this.biPush(value);
+		}
+	}
+
+	public void constant(short value) {
+		if (Byte.MIN_VALUE <= value && value <= Byte.MAX_VALUE) {
+			this.constant((byte) value);
+		} else {
+			this.siPush(value);
+		}
+	}
+
+	public void constant(int value) {
+		if (Short.MIN_VALUE <= value && value <= Short.MAX_VALUE) {
+			this.constant((short) value);
+		} else {
+			this.ldc(value);
+		}
+	}
+
+	public void constant(long value) {
+		if (value == 0L) {
+			this.lConst0();
+		} else if (value == 1L) {
+			this.lConst1();
+		} else {
+			this.ldc(value);
+		}
+	}
+
+	public void constant(float value) {
+		if (value == 0.0F) {
+			this.fConst0();
+		} else if (value == 1.0F) {
+			this.fConst1();
+		} else {
+			this.ldc(value);
+		}
+	}
+
+	public void constant(double value) {
+		if (value == 0.0D) {
+			this.dConst0();
+		} else if (value == 1.0D) {
+			this.dConst1();
+		} else {
+			this.ldc(value);
+		}
+	}
+
+	public void constant(String value) {
+		this.ldc(value);
+	}
+
+	public void constant(Class<?> clazz) {
+		this.ldc(Type.getType(clazz));
+	}
+
+	public void constant(JavaClass cls) {
+		this.ldc(Type.getObjectType(cls.internalName));
 	}
 
 	public void pop() {
@@ -225,10 +388,11 @@ public class JavaWriter {
 	}
 
 	public void pop(boolean large) {
-		if (debug)
-			logger.debug("pop");
-
-		visitor.visitInsn(large ? POP2 : POP);
+		if (large) {
+			this.pop2();
+		} else {
+			this.pop();
+		}
 	}
 
 	public void pop2() {
@@ -246,17 +410,15 @@ public class JavaWriter {
 	}
 
 	public void dup(Type type) {
-		if (debug)
-			logger.debug("dup");
-
-		visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
+		this.dup(type.getSize() == 2);
 	}
 
 	public void dup(boolean large) {
-		if (debug)
-			logger.debug("dup");
-
-		visitor.visitInsn(large ? DUP2 : DUP);
+		if (large) {
+			this.dup2();
+		} else {
+			this.dup();
+		}
 	}
 
 	public void dup2() {
@@ -274,13 +436,18 @@ public class JavaWriter {
 	}
 
 	public void dupX1(boolean tosLarge, boolean large) {
-		if (debug)
-			logger.debug("dupx1");
-
 		if (tosLarge) {
-			visitor.visitInsn(large ? DUP2_X2 : DUP_X2);
+			if (large) {
+				this.dup2X2();
+			} else {
+				this.dupX2();
+			}
 		} else {
-			visitor.visitInsn(large ? DUP2_X1 : DUP_X1);
+			if (large) {
+				this.dup2X1();
+			} else {
+				this.dupX1();
+			}
 		}
 	}
 
@@ -305,13 +472,6 @@ public class JavaWriter {
 		visitor.visitInsn(DUP2_X2);
 	}
 
-	public void store(Type type, int local) {
-		if (debug)
-			logger.debug("store " + local);
-
-		visitor.visitVarInsn(type.getOpcode(ISTORE), local);
-	}
-
 	public void load(Type type, int local) {
 		if (debug)
 			logger.debug("load " + local);
@@ -320,31 +480,26 @@ public class JavaWriter {
 	}
 
 	public void load(JavaParameterInfo parameter) {
-		if (debug)
-			logger.debug("load " + parameter.index);
-
-		visitor.visitVarInsn(Type.getType(parameter.typeDescriptor).getOpcode(ILOAD), parameter.index);
+		this.load(Type.getType(parameter.typeDescriptor), parameter.index);
 	}
 
 	public void load(JavaLocalVariableInfo localVariable) {
-		if (debug)
-			logger.debug("load " + localVariable.local);
+		this.load(localVariable.type, localVariable.local);
+	}
 
-		visitor.visitVarInsn(localVariable.type.getOpcode(ILOAD), localVariable.local);
+	public void store(Type type, int local) {
+		if (debug)
+			logger.debug("store " + local);
+
+		visitor.visitVarInsn(type.getOpcode(ISTORE), local);
 	}
 
 	public void store(JavaParameterInfo parameter) {
-		if (debug)
-			logger.debug("store " + parameter.index);
-
-		visitor.visitVarInsn(Type.getType(parameter.typeDescriptor).getOpcode(ISTORE), parameter.index);
+		this.store(Type.getType(parameter.typeDescriptor), parameter.index);
 	}
 
 	public void store(JavaLocalVariableInfo localVariable) {
-		if (debug)
-			logger.debug("store " + localVariable.local);
-
-		visitor.visitVarInsn(localVariable.type.getOpcode(ISTORE), localVariable.local);
+		this.store(localVariable.type, localVariable.local);
 	}
 
 	public void storeInt(int local) {
@@ -447,10 +602,7 @@ public class JavaWriter {
 	}
 
 	public void checkCast(Type type) {
-		if (debug)
-			logger.debug("checkCast " + type.getDescriptor());
-
-		visitor.visitTypeInsn(CHECKCAST, type.getInternalName());
+		this.checkCast(type.getInternalName());
 	}
 
 	public void iNeg() {
@@ -627,7 +779,7 @@ public class JavaWriter {
 		if (debug)
 			logger.debug("lNot");
 
-		constant((long) -1);
+		constant(-1L);
 		lXor();
 	}
 
@@ -878,10 +1030,7 @@ public class JavaWriter {
 	}
 
 	public void instanceOf(Type type) {
-		if (debug)
-			logger.debug("instanceOf " + type.getDescriptor());
-
-		visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
+		this.instanceOf(type.getDescriptor());
 	}
 
 	public void invokeStatic(JavaNativeMethod method) {
@@ -934,10 +1083,7 @@ public class JavaWriter {
 	}
 
 	public void newObject(JavaClass cls) {
-		if (debug)
-			logger.debug("newObject " + cls.internalName);
-
-		visitor.visitTypeInsn(NEW, cls.internalName);
+		this.newObject(cls.internalName);
 	}
 
 	public void goTo(Label lbl) {
@@ -1100,10 +1246,7 @@ public class JavaWriter {
 	}
 
 	public void getField(JavaNativeField field) {
-		if (debug)
-			logger.debug("getField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
-
-		visitor.visitFieldInsn(GETFIELD, field.cls.internalName, field.name, field.descriptor);
+		this.getField(field.cls.internalName, field.name, field.descriptor);
 	}
 
 	public void putField(String owner, String name, String descriptor) {
@@ -1114,10 +1257,7 @@ public class JavaWriter {
 	}
 
 	public void putField(JavaNativeField field) {
-		if (debug)
-			logger.debug("putField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
-
-		visitor.visitFieldInsn(PUTFIELD, field.cls.internalName, field.name, field.descriptor);
+		this.putField(field.cls.internalName, field.name, field.descriptor);
 	}
 
 	public void getStaticField(String owner, String name, String descriptor) {
@@ -1128,10 +1268,7 @@ public class JavaWriter {
 	}
 
 	public void getStaticField(JavaNativeField field) {
-		if (debug)
-			logger.debug("getStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
-
-		visitor.visitFieldInsn(GETSTATIC, field.cls.internalName, field.name, field.descriptor);
+		getStaticField(field.cls.internalName, field.name, field.descriptor);
 	}
 
 	public void putStaticField(String owner, String name, String descriptor) {
@@ -1142,10 +1279,7 @@ public class JavaWriter {
 	}
 
 	public void putStaticField(JavaNativeField field) {
-		if (debug)
-			logger.debug("putStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
-
-		visitor.visitFieldInsn(PUTSTATIC, field.cls.internalName, field.name, field.descriptor);
+		this.putStaticField(field.cls.internalName, field.name, field.descriptor);
 	}
 
 	public void aThrow() {

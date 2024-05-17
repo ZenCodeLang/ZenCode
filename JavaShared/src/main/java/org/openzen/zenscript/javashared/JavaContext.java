@@ -393,12 +393,13 @@ public abstract class JavaContext {
 	}
 
 	public String getMethodDescriptorExpansion(FunctionHeader header, TypeID expandedType) {
-		StringBuilder startBuilder = new StringBuilder(getDescriptor(expandedType));
+		StringBuilder startBuilder = new StringBuilder();
 		final List<TypeParameter> typeParameters = new ArrayList<>();
 		expandedType.extractTypeParameters(typeParameters);
-		for (TypeParameter typeParameter : typeParameters) {
+		for (TypeParameter ignored : typeParameters) {
 			startBuilder.append("Ljava/lang/Class;");
 		}
+		startBuilder.append(getDescriptor(expandedType));
 
 		return getMethodDescriptor(header, false, startBuilder.toString());
 	}
@@ -583,15 +584,14 @@ public abstract class JavaContext {
 	 */
 	public String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
 		StringBuilder descBuilder = new StringBuilder("(");
+		if (expandedType != null)
+			descBuilder.append(expandedType);
+
 		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
 			descBuilder.append("Ljava/lang/Class;");
 
 		if (isEnumConstructor)
 			descBuilder.append("Ljava/lang/String;I");
-
-		//TODO: Put this earlier? We'd need to agree on one...
-		if (expandedType != null)
-			descBuilder.append(expandedType);
 
 		for (FunctionParameter parameter : header.parameters) {
 			descBuilder.append(getDescriptor(parameter.type));
