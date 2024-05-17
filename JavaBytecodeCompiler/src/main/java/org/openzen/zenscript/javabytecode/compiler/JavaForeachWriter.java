@@ -69,7 +69,7 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
 		javaWriter.ifEQ(endLabel);
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(targetType);
 		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		javaWriter.store(variable.type, variable.local);
@@ -120,7 +120,7 @@ public class JavaForeachWriter {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
 		javaWriter.ifEQ(endLabel);
 		javaWriter.dup();
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
 		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		this.downCast(0, keyVariable.type);
@@ -138,7 +138,7 @@ public class JavaForeachWriter {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
 		javaWriter.ifEQ(endLabel);
 		javaWriter.dup();
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
 		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		this.downCast(0, keyVariable.type);
@@ -156,7 +156,7 @@ public class JavaForeachWriter {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
 		javaWriter.ifEQ(endLabel);
 		javaWriter.dup();
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(Type.getType(Map.Entry.class));
 		javaWriter.dup(false);
 
@@ -164,11 +164,11 @@ public class JavaForeachWriter {
 		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		final JavaLocalVariableInfo valueVariable = javaWriter.getLocalVariable(statement.loopVariables[1].variable);
 
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0, true));
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
-		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getValue", "()Ljava/lang/Object;", 0));
+		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getValue", "()Ljava/lang/Object;", 0, true));
 		this.downCast(1, valueVariable.type);
 		javaWriter.store(valueVariable.type, valueVariable.local);
 
