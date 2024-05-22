@@ -1,7 +1,6 @@
 package org.openzen.scriptingenginetester.cases;
 
 import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.support.descriptor.FileSource;
 import org.junit.platform.engine.support.descriptor.UriSource;
 import org.openzen.scriptingenginetester.TestOutput;
 import org.openzen.zencode.shared.PathSourceFile;
@@ -11,7 +10,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestCase {
 	private final TestSource source;
@@ -19,20 +22,17 @@ public class TestCase {
 	private final List<SourceFile> sourceFiles = new ArrayList<>();
 	private final TestAnnotations annotations;
 
-	public TestCase(Path path) throws IOException {
-		if(Files.isDirectory(path)) {
-			throw new IllegalArgumentException("Multi-file tests are not yet supported");
-		} else if(Files.isRegularFile(path)) {
-			this.source = UriSource.from(path.toUri());
-			String filename = path.getFileName().toString();
-			this.name = withoutExtension(filename);
-
-			PathSourceFile sourceFile = new PathSourceFile(filename, path);
-			this.sourceFiles.add(sourceFile);
-			annotations = TestAnnotations.extractFrom(sourceFile);
-		} else {
-			throw new IllegalArgumentException("Not a valid file or directory");
+	public TestCase(Path testGroupPath, Path testCasePath) throws IOException {
+		if (!testCasePath.startsWith(testGroupPath)) {
+			throw new IllegalStateException("Test case is not a part of its group");
 		}
+
+		this.source = UriSource.from(testCasePath.toUri());
+		this.name = withoutExtension(testCasePath);
+		this.sourceFiles.addAll(gatherSourceFiles(testGroupPath, testCasePath));
+		assert !this.sourceFiles.isEmpty();
+		// We guarantee that sourceFiles.get(0) always exists and that it is the main file
+		this.annotations = TestAnnotations.extractFrom(this.sourceFiles.get(0));
 	}
 
 	public String getName() {
@@ -55,7 +55,33 @@ public class TestCase {
 		return source;
 	}
 
-	private static String withoutExtension(String filename) {
+	private static List<SourceFile> gatherSourceFiles(Path testGroupPath, Path testCasePath) throws IOException {
+		if (Files.isDirectory(testCasePath)) {
+			Path main = testCasePath.resolve("main.zc");
+			if (Files.notExists(main)) {
+				throw new IllegalStateException("Main file does not exist in " + testCasePath);
+			}
+
+			Stream<Path> contents = Files.walk(testCasePath).filter(it -> !it.equals(testCasePath) && !it.equals(main));
+			return Stream.concat(Stream.of(main), Stream.of(contents).flatMap(Function.identity()))
+					.map(it -> new PathSourceFile(getFileName(testGroupPath, it, false), it))
+					.collect(Collectors.toList());
+		} else if (Files.isRegularFile(testCasePath)) {
+			return Collections.singletonList(new PathSourceFile(getFileName(testGroupPath, testCasePath, true), testCasePath));
+		} else {
+			throw new IllegalArgumentException("Unknown file format for " + testCasePath);
+		}
+	}
+
+	private static String getFileName(Path testGroupPath, Path testCasePath, boolean single) {
+		// TODO Make every file test case in its own package?
+		Path groupName = testGroupPath.getFileName();
+		Path caseName = testGroupPath.relativize(testCasePath);
+		return groupName.resolve(caseName).toString();
+	}
+
+	private static String withoutExtension(Path testCasePath) {
+		String filename = testCasePath.getFileName().toString();
 		int index = filename.lastIndexOf('.');
 		return index <= 0 ? filename : filename.substring(0, index);
 	}

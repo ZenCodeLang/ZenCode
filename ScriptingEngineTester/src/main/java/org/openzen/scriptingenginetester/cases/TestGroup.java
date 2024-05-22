@@ -19,10 +19,10 @@ public final class TestGroup {
 	public TestGroup(Path dir) {
 		this.directory = UriSource.from(dir.toUri());
 		this.name = dir.getFileName().toString();
-		try (Stream<Path> paths = Files.list(dir)){
+		try (Stream<Path> paths = Files.list(dir)) {
 			for(Iterator<Path> iterator = paths.iterator(); iterator.hasNext(); ) {
 				final Path next = iterator.next();
-				cases.add(new TestCase(next));
+				cases.add(new TestCase(dir, next));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
