@@ -178,7 +178,8 @@ public class JavaCompiler {
 					.substring(0, filename.lastIndexOf('.')) //remove the .zs part
 					.replaceAll(specialCharRegex, "_")
 					.replace('[', '_')
-					.replace(File.separatorChar, '/');
+					.replace(File.separatorChar, '/')
+					.concat("$");
 		}
 	}
 
