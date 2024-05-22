@@ -14,12 +14,12 @@ public class TestDiscoverer implements AutoCloseable{
 
 
 	public Path findTestRoot() {
-		File source = new File("../ScriptingEngineTester/src/main/resources/zencode-tests");
+		File source = new File("../ScriptingEngineTester/src/main/resources/zencode_tests");
 		if (source.exists()) // makes "Jump to source" to go the source file rather than the built file
 			return source.toPath();
 
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		return Optional.ofNullable(classLoader.getResource("zencode-tests"))
+		return Optional.ofNullable(classLoader.getResource("zencode_tests"))
 				.flatMap(TestDiscoverer::urlToUri)
 				.map(this::initializeFileSystem)
 				.orElseThrow(() -> new IllegalStateException("Could not get zencode-tests root"));
