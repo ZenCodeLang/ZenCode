@@ -1,0 +1,9 @@
+#output: prints
+
+class class_with_same_name_as_script {
+	print(): void {
+		println("prints");
+	}
+}
+
+(new class_with_same_name_as_script()).print();

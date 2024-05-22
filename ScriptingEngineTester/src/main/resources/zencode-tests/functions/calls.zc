@@ -1,0 +1,11 @@
+#output: 9
+
+function a(a: int): int {
+	return b(a, a);
+}
+
+function b(a: int, b: int): int {
+	return a * 2 + b;
+}
+
+println(a(3));
