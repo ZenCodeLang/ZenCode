@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -38,8 +38,8 @@ import java.util.stream.Stream;
 public class JavaCompiler {
 
 	private final IZSLogger logger;
-	private int generatedScriptBlockCounter = 0;
-	private int expansionCounter = 0;
+	private final Map<String, Integer> expansionCounters = new HashMap<>();
+	private final Map<Class<?>, Integer> generatedCounters = new HashMap<>();
 
 	public JavaCompiler(IZSLogger logger) {
 		this.logger = logger;
@@ -52,7 +52,7 @@ public class JavaCompiler {
 		module.scripts.sort(Comparator.<ScriptBlock>comparingInt(a -> a.file.getOrder()).reversed());
 		module.scripts.forEach(script -> {
 			final String className = getClassName(script.file == null ? null : script.file.getFilename());
-			getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 		});
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
 
@@ -70,8 +70,11 @@ public class JavaCompiler {
 			final String filename;
 			if (definition instanceof FunctionDefinition) {
 				filename = className;
+			} else if (definition instanceof ExpansionDefinition) {
+				final String expansionTarget = getFriendlyExpansionTargetName(((ExpansionDefinition) definition).target);
+				filename = className + "$expansion$" + expansionTarget + '$' + getCounter(expansionCounters, expansionTarget);
 			} else {
-				filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
+				filename = className + "$generated$" + definition.name + '$' + getCounter(generatedCounters, definition.getClass());
 			}
 			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(compiling, filename, null, filename);
 			definition.accept(definitionPreparer);
@@ -89,7 +92,7 @@ public class JavaCompiler {
 			final JavaScriptFile scriptFile;
 			if (definition instanceof FunctionDefinition) {
 				internalName = getClassName(getFilename(definition));
-				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + "/" + internalName);
+				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + '/' + internalName);
 				scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			} else {
 				JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
@@ -114,7 +117,7 @@ public class JavaCompiler {
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
-			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 			scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			if (sourceFile != null) {
 				scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
@@ -163,7 +166,8 @@ public class JavaCompiler {
 
 	private String getClassName(String filename) {
 		if (filename == null) {
-			return "generatedBlock" + (generatedScriptBlockCounter++);
+			class GeneratedBlock {}
+			return "generatedBlock" + getCounter(generatedCounters, GeneratedBlock.class);
 		} else {
 			// TODO: find all special characters
 			final String specialCharRegex = Stream.of('/', '\\', '.', ';')
@@ -180,6 +184,27 @@ public class JavaCompiler {
 		}
 	}
 
+	private String getFriendlyExpansionTargetName(final TypeID expansionTarget) {
+		if (expansionTarget instanceof BasicTypeID) {
+			return ((BasicTypeID) expansionTarget).name;
+		} else if (expansionTarget instanceof DefinitionTypeID) {
+			String defName = ((DefinitionTypeID) expansionTarget).definition.getName();
+			int simpleNameBegin = defName.lastIndexOf('.');
+			return simpleNameBegin < 0? defName : defName.substring(simpleNameBegin + 1);
+		} else if (expansionTarget instanceof AssocTypeID) {
+			TypeID key = ((AssocTypeID) expansionTarget).keyType;
+			TypeID value = ((AssocTypeID) expansionTarget).valueType;
+			return "associative_" + getFriendlyExpansionTargetName(key) + "_2_" + getFriendlyExpansionTargetName(value);
+		} else if (expansionTarget instanceof GenericTypeID) {
+			return "generic";
+		} else if (expansionTarget instanceof ArrayTypeID) {
+			return "array_" + getFriendlyExpansionTargetName(((ArrayTypeID) expansionTarget).elementType);
+		} else if (expansionTarget instanceof OptionalTypeID) {
+			return "optional_" + getFriendlyExpansionTargetName(expansionTarget.withoutOptional());
+		}
+		return "unknown";
+	}
+
 	private JavaScriptFile getScriptFile(Map<String, JavaScriptFile> scriptBlocks, String className) {
 		if (!scriptBlocks.containsKey(className)) {
 			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -188,5 +213,9 @@ public class JavaCompiler {
 		}
 
 		return scriptBlocks.get(className);
+	}
+
+	private <K> int getCounter(Map<K, Integer> counter, K key) {
+		return counter.compute(key, (k, v) -> v == null? 0 : ++v);
 	}
 }
