@@ -11,7 +11,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class AdditionsAndSubtractionTests extends ZenCodeTest {
+public class ArithmeticTests extends ZenCodeTest {
 
 	@ParameterizedTest(name = "{0} + {1}")
 	@CsvSource({"0,0", "0,1", "10,10", "-1,1", "815,4711"})
@@ -70,6 +70,32 @@ public class AdditionsAndSubtractionTests extends ZenCodeTest {
 				.execute(this);
 
 		logger.assertPrintOutput(0, isResultFloatingPoint(typeLeft, typeRight) ? "16.0" : "16");
+	}
+
+	@ParameterizedTest
+	@MethodSource("numberTypes")
+	public void multiplicationWorksWithDifferentTypes(String typeLeft, String typeRight) {
+		ScriptBuilder.create()
+				.add("var left   = 3 as " + typeLeft + ";")
+				.add("var right  = 7 as " + typeRight + ";")
+				.add("var result = left * right;")
+				.add("println(result);")
+				.execute(this);
+
+		logger.assertPrintOutput(0, isResultFloatingPoint(typeLeft, typeRight) ? "21.0" : "21");
+	}
+
+	@ParameterizedTest
+	@MethodSource("numberTypes")
+	public void divisionWorksWithDifferentTypes(String typeLeft, String typeRight) {
+		ScriptBuilder.create()
+				.add("var left   = 27 as " + typeLeft + ";")
+				.add("var right  = 3 as " + typeRight + ";")
+				.add("var result = left / right;")
+				.add("println(result);")
+				.execute(this);
+
+		logger.assertPrintOutput(0, isResultFloatingPoint(typeLeft, typeRight) ? "9.0" : "9");
 	}
 
 	public static Stream<Arguments> numberTypes() {

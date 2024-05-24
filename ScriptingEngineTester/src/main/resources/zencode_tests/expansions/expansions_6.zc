@@ -1,0 +1,11 @@
+#output: 6.0
+
+expand double {
+	foo(): double => this * (2 as int);
+}
+
+expand double {
+	bar(): string => this as string;
+}
+
+println((3.0).foo().bar());

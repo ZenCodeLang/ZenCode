@@ -33,7 +33,7 @@ val usizeValue = 9 as usize;
 val floatValue = 10 as float;
 val doubleValue = 11 as double;
 
-/*println(typeof(byteValue + byteValue));
+println(typeof(byteValue + byteValue));
 println(byteValue + byteValue);
 println(typeof(sbyteValue + sbyteValue));
 println(sbyteValue + sbyteValue);
@@ -52,6 +52,6 @@ println(byteValue + ulongValue);
 println(typeof(byteValue + usizeValue));
 println(byteValue + usizeValue);
 println(typeof(byteValue + floatValue));
-println(byteValue + floatValue);*/
+println(byteValue + floatValue);
 println(typeof(byteValue + doubleValue));
 println(byteValue + doubleValue);

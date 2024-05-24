@@ -1,0 +1,12 @@
+#output: Expansion5Foo!
+
+class Expansion5Foo<T> {
+	print(): void => println("Expansion5Foo!");
+}
+
+expand <K, T> Expansion5Foo<T>?[][K]? {
+	getMe(): Expansion5Foo<T> => new Expansion5Foo<T>();
+}
+
+var x: Expansion5Foo<string>?[][int]? = {};
+x.getMe().print();
