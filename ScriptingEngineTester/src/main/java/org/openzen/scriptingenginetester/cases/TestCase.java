@@ -82,6 +82,10 @@ public class TestCase {
 
 	private static String withoutExtension(Path testCasePath) {
 		String filename = testCasePath.getFileName().toString();
+		if(filename.endsWith(".disabled")) {
+			filename = filename.substring(0, filename.length() - ".disabled".length());
+		}
+
 		int index = filename.lastIndexOf('.');
 		return index <= 0 ? filename : filename.substring(0, index);
 	}

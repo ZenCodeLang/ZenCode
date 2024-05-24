@@ -1,0 +1,13 @@
+#output: Empty
+
+public variant Optional<T> {
+	Present(T),
+	Empty;
+}
+
+var opt as Optional<string> = Empty;
+
+println(match opt {
+	Present(value) => value,
+	Empty => 'Empty'
+});

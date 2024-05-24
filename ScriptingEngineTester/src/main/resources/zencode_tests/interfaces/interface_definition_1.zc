@@ -5,6 +5,8 @@ interface Test {
 }
 
 class TestClass {
+	// ToDo: Currently fails since default .ctors fail
+
 	implements Test {
 		print() {
 			println("hello");
@@ -12,4 +14,5 @@ class TestClass {
 	}
 }
 
+// ToDo: Currently fails with an IncompatibleClassChangeError due to a missing CheckCast(Test) before the invokeInterface
 new TestClass().print();

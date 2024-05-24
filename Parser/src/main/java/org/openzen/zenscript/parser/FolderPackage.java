@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class FolderPackage {
+public class FolderPackage implements ModuleLoader {
 
 	private final Map<String, List<SourceFile>> files = new HashMap<>();
 

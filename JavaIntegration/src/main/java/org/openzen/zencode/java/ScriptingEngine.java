@@ -26,6 +26,7 @@ import org.openzen.zenscript.javashared.JavaEnumMapper;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
+import org.openzen.zenscript.parser.ModuleLoader;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.parser.ZippedPackage;
 import org.openzen.zenscript.validator.Validator;
@@ -48,7 +49,6 @@ import java.util.function.Function;
 public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
 	public final ZSPackage root = ZSPackage.createRoot();
-	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	private final ModuleSpace space;
 	private final JavaNativeModuleSpace nativeSpace = new JavaNativeModuleSpace();
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
@@ -78,7 +78,7 @@ public class ScriptingEngine {
 		try {
 			ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
 			for (String moduleName : stdLibModulesToRegister) {
-				registerLibFromStdLibs(logger, stdlibs, moduleName, root.getOrCreatePackage(moduleName));
+				registerModule(moduleName, root.getOrCreatePackage(moduleName), stdlibs);
 			}
 
 		} catch (CompileException | ParseException | IOException ex) {
@@ -86,9 +86,8 @@ public class ScriptingEngine {
 		}
 	}
 
-
-	private void registerLibFromStdLibs(ScriptingEngineLogger logger, ZippedPackage stdlibs, String name, ZSPackage zsPackage) throws ParseException, CompileException {
-		SemanticModule stdlibModule = stdlibs.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);
+	public void registerModule(String name, ZSPackage zsPackage, ModuleLoader loader) throws CompileException, ParseException {
+		SemanticModule stdlibModule = loader.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);
 		stdlibModule = Validator.validate(stdlibModule, logger);
 		space.addModule(name, stdlibModule);
 		registerCompiled(stdlibModule);
@@ -200,5 +199,9 @@ public class ScriptingEngine {
 
 	public List<JavaNativeModule> getNativeModules() {
 		return Collections.unmodifiableList(this.nativeModules);
+	}
+
+	public ZSPackage getRoot() {
+		return root;
 	}
 }
