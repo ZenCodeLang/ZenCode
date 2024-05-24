@@ -1,0 +1,13 @@
+#output: mangled
+
+class class_mangling {
+	print(): void {
+		println("mangled");
+	}
+}
+
+function print(): void {
+	println("mangling failure");
+}
+
+(new class_mangling()).print();

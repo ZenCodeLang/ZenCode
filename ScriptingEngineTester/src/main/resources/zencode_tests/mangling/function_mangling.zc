@@ -1,0 +1,7 @@
+#output: mangled
+
+function run(): void {
+	println("mangled");
+}
+
+run();
