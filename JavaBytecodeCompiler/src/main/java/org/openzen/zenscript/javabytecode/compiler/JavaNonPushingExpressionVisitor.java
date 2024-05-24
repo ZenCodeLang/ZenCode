@@ -357,7 +357,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		String internalName = context.getInternalName(expression.objectType);
 		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.forDefinition.isEnum()
 				? context.getEnumConstructorDescriptor(expression.constructor.getHeader())
-				: context.getMethodDescriptor(expression.constructor.getHeader()));
+				: context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));
 		return null;
 	}
 
