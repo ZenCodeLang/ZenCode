@@ -4,8 +4,10 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -67,6 +69,16 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 			return staticMethod;
 
 		return resolvedType.getContextMember(name.name).flatMap(member -> member.compile(compiler).call());
+	}
+
+	@Override
+	public CompilingExpression getMember(CodePosition position, GenericName name) {
+		ResolvedType resolvedType = compiler.resolve(type);
+		Optional<TypeSymbol> innerType = resolvedType.findInnerType(this.name.name);
+		if (innerType.isPresent())
+			return new StaticMemberCompilingExpression(compiler, position, innerType.get().normalize(this.name.arguments), name);
+
+		return new InstanceMemberCompilingExpression(compiler, position, this, name);
 	}
 
 	@Override
