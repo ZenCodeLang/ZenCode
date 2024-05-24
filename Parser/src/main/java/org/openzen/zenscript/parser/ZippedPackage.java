@@ -59,7 +59,7 @@ public class ZippedPackage {
 		CompilingPackage scriptPackage = new CompilingPackage(pkg, scriptModule);
 		ParsedFile[] files = new ParsedFile[sourceFiles.size()];
 		for (int i = 0; i < files.length; i++)
-			files[i] = ParsedFile.parse(bracketParser, sourceFiles.get(i));
+			files[i] = ParsedFile.parse(scriptPackage.getPackageForSourceFile(sourceFiles.get(i)), bracketParser, sourceFiles.get(i));
 
 		SemanticModule scripts = ParsedFile.compileSyntaxToSemantic(
 				dependencies,

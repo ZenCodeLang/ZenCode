@@ -1,6 +1,6 @@
 #output: Hello World
 
-public expand string {
+expand string {
     printMe() as void {
         println(this);
     }

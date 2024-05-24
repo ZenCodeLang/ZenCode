@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.context;
 
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -34,6 +35,15 @@ public class CompilingPackage {
 		CompilingPackage newPackage = new CompilingPackage(pkg.getOrCreatePackage(name), module);
 		packages.put(name, newPackage);
 		return newPackage;
+	}
+
+	public CompilingPackage getPackageForSourceFile(SourceFile file) {
+		List<String> path = file.getFilePath();
+		CompilingPackage filePackage = this;
+		for (int j = 0; j < path.size() - 1; j++) {
+			filePackage = filePackage.getOrCreatePackage(path.get(j));
+		}
+		return filePackage;
 	}
 
 	public void addPackage(String name, CompilingPackage package_) {

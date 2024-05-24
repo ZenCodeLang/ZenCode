@@ -73,6 +73,11 @@ public class ParsedFunction extends ParsedDefinition {
 		}
 
 		@Override
+		public CompilingPackage getPackage() {
+			return compiler.getPackage();
+		}
+
+		@Override
 		public String getName() {
 			return name;
 		}

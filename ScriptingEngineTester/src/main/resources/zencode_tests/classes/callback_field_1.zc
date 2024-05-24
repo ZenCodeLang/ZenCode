@@ -1,6 +1,6 @@
 #output: 3
 
-public class Test {
+class Test {
   private val callback as function(num as int) as int;
 
   public this(cb as function(num as int) as int) {

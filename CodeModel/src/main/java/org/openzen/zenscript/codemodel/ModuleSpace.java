@@ -17,7 +17,6 @@ import java.util.Map;
 
 public final class ModuleSpace {
 	public final ZSPackage rootPackage = new ZSPackage(null, "");
-	public final ZSPackage globalsPackage = new ZSPackage(null, "");
 	public final ZSPackage stdlib = new ZSPackage(rootPackage, "stdlib");
 
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();

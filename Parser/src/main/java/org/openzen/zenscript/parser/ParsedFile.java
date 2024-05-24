@@ -27,6 +27,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.EOF;
 import static org.openzen.zenscript.lexer.ZSTokenType.K_IMPORT;
 
 public class ParsedFile {
+	public final CompilingPackage pkg;
 	public final SourceFile file;
 	private final List<ParsedImport> imports = new ArrayList<>();
 	private final List<ParsedDefinition> definitions = new ArrayList<>();
@@ -34,13 +35,14 @@ public class ParsedFile {
 	private final List<ParseException> errors = new ArrayList<>();
 	private WhitespacePostComment postComment = null;
 
-	public ParsedFile(SourceFile file) {
+	public ParsedFile(CompilingPackage pkg, SourceFile file) {
+		this.pkg = pkg;
 		this.file = file;
 	}
 
 	public static SemanticModule compileSyntaxToSemantic(
 			SemanticModule[] dependencies,
-			CompilingPackage pkg,
+			CompilingPackage modulePackage,
 			ParsedFile[] files,
 			ModuleSpace registry,
 			FunctionParameter[] parameters,
@@ -64,7 +66,7 @@ public class ParsedFile {
 
 		CompileContext context = new CompileContext(
 				registry.rootPackage,
-				pkg.getPackage(),
+				modulePackage.getPackage(),
 				registry.collectExpansions(),
 				registry.collectGlobals(),
 				registry.getAnnotations());
@@ -73,7 +75,7 @@ public class ParsedFile {
 			// listDefinitions will merely register all definitions (classes,
 			// interfaces, functions ...) so they can later be available to
 			// the other files as well. It doesn't yet compile anything.
-			ParsedFileCompiler fileCompiler = new ParsedFileCompiler(context, pkg);
+			ParsedFileCompiler fileCompiler = new ParsedFileCompiler(context, file.pkg);
 			definitionCompilers.put(file, fileCompiler);
 
 			for (ParsedDefinition definition : file.definitions) {
@@ -84,7 +86,7 @@ public class ParsedFile {
 		}
 
 		for (CompilingDefinition definition : definitions) {
-			pkg.addType(definition.getName(), definition);
+			definition.getPackage().addType(definition.getName(), definition);
 		}
 
 		ZSPackage rootPackage = registry.collectPackages();
@@ -103,7 +105,7 @@ public class ParsedFile {
 			ParsedFileCompiler fileCompiler = definitionCompilers.get(file);
 			for (ParsedImport import_ : file.imports) {
 				if (import_.isRelative()) {
-					TypeSymbol type = pkg.getPackage().getImport(import_.getPath(), 0);
+					TypeSymbol type = modulePackage.getPackage().getImport(import_.getPath(), 0);
 					fileCompiler.addImport(import_.getName(), type);
 				} else {
 					TypeSymbol type = registry.rootPackage.getImport(import_.getPath(), 0);
@@ -140,12 +142,12 @@ public class ParsedFile {
 
 		if (failed) {
 			return new SemanticModule(
-					pkg.module,
+					modulePackage.module,
 					dependencies,
 					parameters,
 					SemanticModule.State.INVALID,
 					rootPackage,
-					pkg.getPackage(),
+					modulePackage.getPackage(),
 					new PackageDefinitions(),
 					Collections.emptyList(),
 					expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
@@ -184,7 +186,7 @@ public class ParsedFile {
 					compiledStatements.add(statement.complete());
 				}
 
-				ScriptBlock block = new ScriptBlock(file.file, pkg.module, pkg.getPackage(), scriptHeader, compiledStatements);
+				ScriptBlock block = new ScriptBlock(file.file, modulePackage.module, modulePackage.getPackage(), scriptHeader, compiledStatements);
 				block.setTag(WhitespacePostComment.class, file.postComment);
 				scripts.add(block);
 			}
@@ -194,12 +196,12 @@ public class ParsedFile {
 			logger.logCompileException(error);
 		}
 		return new SemanticModule(
-				pkg.module,
+				modulePackage.module,
 				dependencies,
 				parameters,
 				SemanticModule.State.ASSEMBLED,
 				rootPackage,
-				pkg.getPackage(),
+				modulePackage.getPackage(),
 				packageDefinitions,
 				scripts,
 				expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
@@ -241,25 +243,25 @@ public class ParsedFile {
 		result.add(definition);
 	}
 
-	public static ParsedFile parse(BracketExpressionParser bracketParser, File file) throws ParseException {
-		return parse(bracketParser, new FileSourceFile(file.getName(), file));
+	public static ParsedFile parse(CompilingPackage pkg, BracketExpressionParser bracketParser, File file) throws ParseException {
+		return parse(pkg, bracketParser, new FileSourceFile(file.getName(), file));
 	}
 
-	public static ParsedFile parse(BracketExpressionParser bracketParser, String filename, String content) throws ParseException {
-		return parse( bracketParser, new LiteralSourceFile(filename, content));
+	public static ParsedFile parse(CompilingPackage pkg, BracketExpressionParser bracketParser, String filename, String content) throws ParseException {
+		return parse(pkg, bracketParser, new LiteralSourceFile(filename, content));
 	}
 
-	public static ParsedFile parse(BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
+	public static ParsedFile parse(CompilingPackage pkg, BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
 		try {
 			ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser);
-			return parse(tokens);
+			return parse(pkg, tokens);
 		} catch (IOException ex) {
 			throw new ParseException(new CodePosition(file, 0, 0, 0, 0), ex.getMessage());
 		}
 	}
 
-	public static ParsedFile parse(ZSTokenParser tokens) throws ParseException {
-		ParsedFile result = new ParsedFile(tokens.getFile());
+	public static ParsedFile parse(CompilingPackage pkg, ZSTokenParser tokens) throws ParseException {
+		ParsedFile result = new ParsedFile(pkg, tokens.getFile());
 
 		while (true) {
 			CodePosition position = tokens.getPosition();

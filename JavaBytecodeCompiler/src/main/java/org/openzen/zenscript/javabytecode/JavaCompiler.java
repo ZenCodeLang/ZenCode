@@ -89,7 +89,7 @@ public class JavaCompiler {
 			final JavaScriptFile scriptFile;
 			if (definition instanceof FunctionDefinition) {
 				internalName = getClassName(getFilename(definition));
-				scriptFile = getScriptFile(scriptBlocks, module.modulePackage.fullName + "/" + internalName);
+				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + "/" + internalName);
 				scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			} else {
 				JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
@@ -154,11 +154,8 @@ public class JavaCompiler {
 	private String getFilename(HighLevelDefinition definition) {
 		SourceFile source = definition.position.file;
 		if (source != null) {
-			//int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
-			//String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);
-			//filename = filename.substring(0, filename.lastIndexOf('.'));
-			//return filename;
-			return source.getFilename();
+			List<String> parts = source.getFilePath();
+			return parts.get(parts.size() - 1);
 		} else {
 			return definition.name == null ? "Expansion" : definition.name;
 		}

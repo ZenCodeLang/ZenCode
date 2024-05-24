@@ -26,7 +26,7 @@ public class FileNamesAndSpecialCharacters extends ZenCodeTest {
 		engine.debug = false;
 	}
 
-	@ParameterizedTest(name = "[{index}] Checking special Character '{0}'")
+	@ParameterizedTest//(name = "[{index}] Checking special Character '{0}'")
 	@MethodSource("specialCharsToTest")
 	public void TestThatFilenameCanContainCharacter(char characterToTest) {
 

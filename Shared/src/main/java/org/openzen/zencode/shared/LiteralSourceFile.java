@@ -3,6 +3,8 @@ package org.openzen.zencode.shared;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.List;
 
 public final class LiteralSourceFile implements SourceFile {
 	public final String filename;
@@ -23,7 +25,13 @@ public final class LiteralSourceFile implements SourceFile {
 		throw new AssertionError("Cannot update literal source files");
 	}
 
+	@Override
 	public String getFilename() {
 		return filename;
+	}
+
+	@Override
+	public List<String> getFilePath() {
+		return Collections.singletonList(filename);
 	}
 }

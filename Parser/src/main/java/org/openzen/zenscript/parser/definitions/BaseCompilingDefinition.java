@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 
@@ -47,6 +48,11 @@ public class BaseCompilingDefinition<T extends HighLevelDefinition> implements C
 
 	public void registerCompiling(List<CompilingDefinition> definitions) {
 		definitions.addAll(innerDefinitions.values());
+	}
+
+	@Override
+	public CompilingPackage getPackage() {
+		return compiler.getPackage();
 	}
 
 	@Override

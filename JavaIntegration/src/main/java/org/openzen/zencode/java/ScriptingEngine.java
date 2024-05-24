@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,7 +132,8 @@ public class ScriptingEngine {
 		ParsedFile[] files = new ParsedFile[sources.length];
 		for (int i = 0; i < sources.length; i++) {
 			logger.logSourceFile(sources[i]);
-			files[i] = ParsedFile.parse(bracketParser, sources[i]);
+			CompilingPackage filePackage = scriptPackage.getPackageForSourceFile(sources[i]);
+			files[i] = ParsedFile.parse(filePackage, bracketParser, sources[i]);
 		}
 
 		SemanticModule[] dependencyModules = new SemanticModule[dependencies.length + 1];

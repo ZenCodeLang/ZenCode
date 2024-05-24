@@ -73,8 +73,10 @@ public class FolderPackage {
 		ModuleSymbol scriptModule = new ModuleSymbol(name);
 		CompilingPackage scriptPackage = new CompilingPackage(pkg, scriptModule);
 		ParsedFile[] files = new ParsedFile[sourceFiles.size()];
-		for (int i = 0; i < files.length; i++)
-			files[i] = ParsedFile.parse(bracketParser, sourceFiles.get(i));
+		for (int i = 0; i < files.length; i++) {
+			SourceFile sourceFile = sourceFiles.get(i);
+			files[i] = ParsedFile.parse(scriptPackage.getPackageForSourceFile(sourceFile), bracketParser, sourceFile);
+		}
 
 		SemanticModule scripts = ParsedFile.compileSyntaxToSemantic(
 				dependencies,
