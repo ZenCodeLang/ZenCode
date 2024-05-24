@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 public class JavaNativeTypeMembers implements ResolvedType {
@@ -104,7 +105,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<TypeSymbol> findInnerType(String name) {
-		return Optional.empty(); // not yet supported
+		return template.getInnerType(name).map(UnaryOperator.identity());
 	}
 
 	@Override

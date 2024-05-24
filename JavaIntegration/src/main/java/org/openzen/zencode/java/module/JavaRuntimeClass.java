@@ -23,15 +23,17 @@ public class JavaRuntimeClass implements TypeSymbol {
 	public final JavaNativeModule module;
 	public final JavaClass javaClass;
 	public final Class<?> cls;
+	public final String name;
 
 	private final Modifiers modifiers;
 	private final JavaNativeTypeTemplate template;
 	private final TypeParameter[] typeParameters;
 	private final TypeVariableContext context = new TypeVariableContext();
 
-	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, TypeID target, JavaClass.Kind kind) {
+	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, String name, TypeID target, JavaClass.Kind kind) {
 		this.module = module;
 		this.cls = cls;
+		this.name = name;
 		this.javaClass = JavaClass.fromInternalName(Type.getInternalName(cls), kind);
 		this.modifiers = translateModifiers(cls.getModifiers());
 		this.typeParameters = translateTypeParameters(cls);
@@ -49,7 +51,7 @@ public class JavaRuntimeClass implements TypeSymbol {
 
 	@Override
 	public String describe() {
-		return cls.getName();
+		return name;
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class JavaRuntimeClass implements TypeSymbol {
 
 	@Override
 	public String getName() {
-		return cls.getName();
+		return name;
 	}
 
 	@Override
