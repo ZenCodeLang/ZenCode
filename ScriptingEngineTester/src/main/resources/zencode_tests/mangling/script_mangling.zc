@@ -1,6 +1,6 @@
 #output: mangled
 
-class class_mangling {
+class script_mangling {
 	print(): void {
 		println("mangled");
 	}
@@ -10,4 +10,4 @@ function print(): void {
 	println("mangling failure");
 }
 
-(new class_mangling()).print();
+(new script_mangling()).print();

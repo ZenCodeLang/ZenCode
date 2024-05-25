@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -27,10 +27,7 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
-import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Hoofdgebruiker
@@ -38,11 +35,11 @@ import java.util.stream.Stream;
 public class JavaCompiler {
 
 	private final IZSLogger logger;
-	private final Map<String, Integer> expansionCounters = new HashMap<>();
-	private final Map<Class<?>, Integer> generatedCounters = new HashMap<>();
+	private final JavaMangler mangler;
 
 	public JavaCompiler(IZSLogger logger) {
 		this.logger = logger;
+		this.mangler = new JavaMangler();
 	}
 
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space, JavaEnumMapper enumMapper) {
@@ -51,7 +48,7 @@ public class JavaCompiler {
 		// Scripts with a higher priority load before scripts with a lower priority.
 		module.scripts.sort(Comparator.<ScriptBlock>comparingInt(a -> a.file.getOrder()).reversed());
 		module.scripts.forEach(script -> {
-			final String className = getClassName(script.file == null ? null : script.file.getFilename());
+			final String className = this.mangler.mangleScriptName(script.file);
 			getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 		});
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
@@ -66,16 +63,7 @@ public class JavaCompiler {
 		allDefinitions.addAll(module.expansions);
 
 		for (HighLevelDefinition definition : allDefinitions) {
-			final String className = getClassName(getFilename(definition));
-			final String filename;
-			if (definition instanceof FunctionDefinition) {
-				filename = className;
-			} else if (definition instanceof ExpansionDefinition) {
-				final String expansionTarget = getFriendlyExpansionTargetName(((ExpansionDefinition) definition).target);
-				filename = className + "$expansion$" + expansionTarget + '$' + getCounter(expansionCounters, expansionTarget);
-			} else {
-				filename = className + "$generated$" + definition.name + '$' + getCounter(generatedCounters, definition.getClass());
-			}
+			final String filename = this.mangler.mangleDefinitionName(definition);
 			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(compiling, filename, null, filename);
 			definition.accept(definitionPreparer);
 		}
@@ -91,7 +79,7 @@ public class JavaCompiler {
 			final String internalName;
 			final JavaScriptFile scriptFile;
 			if (definition instanceof FunctionDefinition) {
-				internalName = getClassName(getFilename(definition));
+				internalName = this.mangler.mangleSourceFileName(definition);
 				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + '/' + internalName);
 				scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			} else {
@@ -116,14 +104,14 @@ public class JavaCompiler {
 
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
-			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
+			final String className = this.mangler.mangleScriptName(sourceFile);
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 			scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			if (sourceFile != null) {
 				scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
 			}
 
-			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
+			String methodName = this.mangler.mangleScriptBodyMethod(scriptFile.scriptMethods.size());
 
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
@@ -154,57 +142,6 @@ public class JavaCompiler {
 		return target;
 	}
 
-	private String getFilename(HighLevelDefinition definition) {
-		SourceFile source = definition.position.file;
-		if (source != null) {
-			List<String> parts = source.getFilePath();
-			return parts.get(parts.size() - 1);
-		} else {
-			return definition.name == null ? "Expansion" : definition.name;
-		}
-	}
-
-	private String getClassName(String filename) {
-		if (filename == null) {
-			class GeneratedBlock {}
-			return "generatedBlock" + getCounter(generatedCounters, GeneratedBlock.class);
-		} else {
-			// TODO: find all special characters
-			final String specialCharRegex = Stream.of('/', '\\', '.', ';')
-					.filter(character -> character != File.separatorChar)
-					.map(String::valueOf)
-					.collect(Collectors.joining("", "[", "]"));
-
-			return filename
-					.substring(0, filename.lastIndexOf('.')) //remove the .zs part
-					.replaceAll(specialCharRegex, "_")
-					.replace('[', '_')
-					.replace(File.separatorChar, '/')
-					.concat("$");
-		}
-	}
-
-	private String getFriendlyExpansionTargetName(final TypeID expansionTarget) {
-		if (expansionTarget instanceof BasicTypeID) {
-			return ((BasicTypeID) expansionTarget).name;
-		} else if (expansionTarget instanceof DefinitionTypeID) {
-			String defName = ((DefinitionTypeID) expansionTarget).definition.getName();
-			int simpleNameBegin = defName.lastIndexOf('.');
-			return simpleNameBegin < 0? defName : defName.substring(simpleNameBegin + 1);
-		} else if (expansionTarget instanceof AssocTypeID) {
-			TypeID key = ((AssocTypeID) expansionTarget).keyType;
-			TypeID value = ((AssocTypeID) expansionTarget).valueType;
-			return "associative_" + getFriendlyExpansionTargetName(key) + "_2_" + getFriendlyExpansionTargetName(value);
-		} else if (expansionTarget instanceof GenericTypeID) {
-			return "generic";
-		} else if (expansionTarget instanceof ArrayTypeID) {
-			return "array_" + getFriendlyExpansionTargetName(((ArrayTypeID) expansionTarget).elementType);
-		} else if (expansionTarget instanceof OptionalTypeID) {
-			return "optional_" + getFriendlyExpansionTargetName(expansionTarget.withoutOptional());
-		}
-		return "unknown";
-	}
-
 	private JavaScriptFile getScriptFile(Map<String, JavaScriptFile> scriptBlocks, String className) {
 		if (!scriptBlocks.containsKey(className)) {
 			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -213,9 +150,5 @@ public class JavaCompiler {
 		}
 
 		return scriptBlocks.get(className);
-	}
-
-	private <K> int getCounter(Map<K, Integer> counter, K key) {
-		return counter.compute(key, (k, v) -> v == null? 0 : ++v);
 	}
 }

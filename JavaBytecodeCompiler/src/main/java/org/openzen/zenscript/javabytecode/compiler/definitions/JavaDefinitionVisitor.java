@@ -235,7 +235,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaClass expansionClassInfo = context.getJavaModule(definition.module).getExpansionClassInfo(definition);
 		final String internalName = expansionClassInfo.internalName;
 
-		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, internalName, null, "java/lang/Object", null);
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, internalName, null, "java/lang/Object", null);
 		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, class_, writer, definition.target, definition);
 
 		for (IDefinitionMember member : definition.members) {
