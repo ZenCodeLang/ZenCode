@@ -321,6 +321,11 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void builtinStaticMethod(BuiltinMethodSymbol method, TypeID returnType, CallArguments args) {
 		Expression[] arguments = args.arguments;
 		switch (method) {
+			case BOOL_NOT:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invertBoolean();
+				return null;
+
 			case BOOL_ADD_STRING:
 			case BOOL_CAT_STRING:
 				arguments[0].accept(expressionVisitor);

@@ -1,0 +1,14 @@
+#output: true
+#output: false
+#output: false
+#output: true
+
+function printBool(x as bool) as void {
+    println(x ? "true" : "false");
+}
+
+printBool(true);
+printBool(!true);
+
+printBool(false);
+printBool(!false);
