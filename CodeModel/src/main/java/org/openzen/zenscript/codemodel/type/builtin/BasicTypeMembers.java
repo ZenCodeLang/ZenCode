@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class BasicTypeMembers {
 	private static final MemberSet NO_MEMBERS = new MemberSet();
-	private static final MethodID CONSTRUCTOR = MethodID.operator(OperatorType.CONSTRUCTOR);
+	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	private static final MethodID COMPARE = MethodID.operator(OperatorType.COMPARE);
 
 	public static MemberSet get(BasicTypeID type) {
@@ -553,9 +553,9 @@ public class BasicTypeMembers {
 		for (BuiltinMethodSymbol method : BuiltinMethodSymbol.values()) {
 			if (method.getDefiningType().equals(type) && method.getID().equals(COMPARE)) {
 				comparator(builder);
-			}/* else if (method.getID().equals(CONSTRUCTOR)) {
+			} else if (method.getDefiningType().equals(type) && method.getID().equals(CONSTRUCTOR)) {
 				builder.constructor(new MethodInstance(method));
-			} else if (method.getDefiningType() == type) {
+			}/* else if (method.getDefiningType() == type) {
 				builder.method(new MethodInstance(method));
 			}*/
 			if (method.getDefiningType() == type) {
