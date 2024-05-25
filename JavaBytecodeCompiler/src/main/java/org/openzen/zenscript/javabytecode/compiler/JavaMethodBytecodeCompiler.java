@@ -409,6 +409,17 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				arguments[1].accept(expressionVisitor);
 				javaWriter.invokeVirtual(STRING_CONCAT);
 				return null;
+			case STRING_CONTAINS_STRING:
+			case STRING_CONTAINS_CHAR: {
+				arguments[0].accept(expressionVisitor);
+				arguments[1].accept(expressionVisitor);
+				if (method == BuiltinMethodSymbol.STRING_CONTAINS_CHAR) {
+					javaWriter.invokeStatic(CHARACTER_TO_STRING);
+				}
+
+				javaWriter.invokeVirtual(STRING_CONTAINS);
+				return null;
+			}
 			case STRING_RANGEGET: {
 				arguments[0].accept(expressionVisitor);
 				Expression argument = arguments[1];
