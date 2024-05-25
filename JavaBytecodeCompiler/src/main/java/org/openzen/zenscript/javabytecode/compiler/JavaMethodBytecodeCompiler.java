@@ -1223,6 +1223,21 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case OPTIONAL_IS_NULL:
+				// special case for usize where "null" === -1
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.pop();
+					javaWriter.iConstM1();
+					Label exit = new Label();
+					Label isFalse = new Label();
+					javaWriter.ifICmpNE(isFalse);
+					javaWriter.iConst1();
+					javaWriter.goTo(exit);
+					javaWriter.label(isFalse);
+					javaWriter.iConst0();
+					javaWriter.label(exit);
+					break;
+				}
+				// fallthrough to the other cases which handle all variants except for usize
 			case OBJECT_SAME:
 			case ASSOC_SAME:
 			case ARRAY_SAME: {
@@ -1237,6 +1252,22 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case OPTIONAL_IS_NOT_NULL:
+				// special case for usize where "null" === -1
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.pop();
+					javaWriter.iConstM1();
+					Label exit = new Label();
+					Label isFalse = new Label();
+					javaWriter.ifICmpEQ(isFalse);
+					javaWriter.iConst1();
+					javaWriter.goTo(exit);
+					javaWriter.label(isFalse);
+					javaWriter.iConst0();
+					javaWriter.label(exit);
+					break;
+				}
+				// fallthrough to the other cases which handle all variants except for usize
+
 			case OBJECT_NOTSAME:
 			case ASSOC_NOTSAME:
 			case ARRAY_NOTSAME: {
