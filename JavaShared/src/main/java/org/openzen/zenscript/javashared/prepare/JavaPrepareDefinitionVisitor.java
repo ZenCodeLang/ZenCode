@@ -344,7 +344,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			module.context.setJavaNativeClass(definition, nativeClass);
 		}
 
-		JavaClass cls = new JavaClass(module.context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(module.context.getPackageName(definition.pkg), className, JavaClass.Kind.EXPANSION);
 		module.addClass(definition, new JavaCompilingClass(module, definition, cls, nativeClass));
 		return cls;
 	}
