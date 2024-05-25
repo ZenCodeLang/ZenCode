@@ -70,7 +70,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
 		final JavaCompilingMethod method = class_.getMethod(member);
-		if (!method.compile) {
+		if (method == null || !method.compile) {
 			return null;
 		}
 
