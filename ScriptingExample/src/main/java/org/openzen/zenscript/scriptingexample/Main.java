@@ -1,5 +1,6 @@
 package org.openzen.zenscript.scriptingexample;
 
+import org.openzen.zencode.java.JavaNativeModuleBuilder;
 import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
@@ -30,7 +31,7 @@ public class Main {
 		scriptingEngine.debug = true;
 		scriptingEngine.addAnnotation(TestAnnotationDefinition.INSTANCE);
 
-		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
+		JavaNativeModuleBuilder example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
 		example.addGlobals(Globals.class);
 
 		example.addClass(UpdatableGrid.class);
@@ -39,7 +40,7 @@ public class Main {
 		example.addClass(ZCThread.class);
 		example.addClass(MyFunctionalInterfaceClass.class);
 
-		scriptingEngine.registerNativeProvided(example);
+		example.complete();
 
 		File inputDirectory = new File("ScriptingExample/scripts");
 		final SourceFile[] sourceFiles = Files.walk(inputDirectory.getAbsoluteFile().toPath())

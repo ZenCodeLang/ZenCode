@@ -97,22 +97,15 @@ public class ScriptingEngine {
 		space.addAnnotation(definition);
 	}
 
-	public JavaNativeModule createNativeModule(String name, String basePackage) {
+	public JavaNativeModuleBuilder createNativeModule(String name, String basePackage) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(space, nativeSpace, logger, testPackage, name, basePackage);
+		JavaNativeModule module = new JavaNativeModule(space, nativeSpace, logger, testPackage, name, basePackage);
+		nativeSpace.register(module.getBasePackage(), module);
+		nativeModules.add(module);
+		return new ModuleBuilder(module);
 	}
 
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
-		SemanticModule semantic = Validator.validate(module.toSemantic(), logger);
-		if (!semantic.isValid())
-			return;
-
-		space.addModule(module.getModule().name, semantic);
-		nativeSpace.register(module.getBasePackage(), module);
-		nativeModules.add(module);
-
-		for (Map.Entry<String, IGlobal> globalEntry : module.getGlobals().entrySet())
-			space.addGlobal(globalEntry.getKey(), globalEntry.getValue());
 	}
 
 	public SemanticModule createScriptedModule(String name, SourceFile[] sources, String... dependencies) throws ParseException {
@@ -203,5 +196,45 @@ public class ScriptingEngine {
 
 	public ZSPackage getRoot() {
 		return root;
+	}
+
+	private class ModuleBuilder implements JavaNativeModuleBuilder {
+		private final JavaNativeModule underConstruction;
+
+		public ModuleBuilder(JavaNativeModule underConstruction) {
+			this.underConstruction = underConstruction;
+		}
+
+		@Override
+		public JavaNativeModuleBuilder addClass(Class<?> cls) {
+			underConstruction.addClass(cls);
+			return this;
+		}
+
+		@Override
+		public JavaNativeModuleBuilder addGlobals(Class<?> cls) {
+			underConstruction.addGlobals(cls);
+			return this;
+		}
+
+		@Override
+		public JavaNativeModuleBuilder addGlobal(String name, IGlobal global) {
+			underConstruction.addGlobal(name, global);
+			return this;
+		}
+
+		@Override
+		public JavaNativeModule complete() throws CompileException {
+			SemanticModule semantic = Validator.validate(underConstruction.toSemantic(), logger);
+			if (!semantic.isValid())
+				throw new IllegalStateException("Module is not valid");
+
+			space.addModule(underConstruction.getModule().name, semantic);
+
+			for (Map.Entry<String, IGlobal> globalEntry : underConstruction.getGlobals().entrySet())
+				space.addGlobal(globalEntry.getKey(), globalEntry.getValue());
+
+			return underConstruction;
+		}
 	}
 }

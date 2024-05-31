@@ -3,6 +3,7 @@ package org.openzen.zenscript.scriptingexample.tests.runner;
 import org.openzen.scriptingenginetester.TestOutput;
 import org.openzen.scriptingenginetester.TestableScriptingEngine;
 import org.openzen.scriptingenginetester.cases.TestCase;
+import org.openzen.zencode.java.JavaNativeModuleBuilder;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
@@ -28,7 +29,7 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 		engine.debug = true;
 		engine.addAnnotation(TestAnnotationDefinition.INSTANCE);
 
-		JavaNativeModule testModule = engine.createNativeModule("testsupport", "org.openzen.zenscript.scripting_tests");
+		JavaNativeModuleBuilder testModule = engine.createNativeModule("testsupport", "org.openzen.zenscript.scripting_tests");
 		SharedGlobals.currentlyActiveLogger = logger;
 
 		getRequiredClasses().stream().distinct().forEach(requiredClass -> {
@@ -39,7 +40,7 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 		testModule.addGlobal("testAnnotationValue", TestAnnotationValueGlobal.INSTANCE);
 
 		try {
-			engine.registerNativeProvided(testModule);
+			testModule.complete();
 		} catch (CompileException ex) {
 			logger.logCompileException(ex);
 		}

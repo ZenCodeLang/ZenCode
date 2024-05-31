@@ -2,6 +2,7 @@ package org.openzen.zenscript.scriptingexample.tests.helpers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.openzen.zencode.java.JavaNativeModuleBuilder;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
@@ -41,14 +42,14 @@ public abstract class ZenCodeTest {
 				getRequiredStdLibModules().toArray(new String[0])
 		);
 		engine.debug = true;
-		this.testModule = engine.createNativeModule("test_module", "org.openzen.zenscript.scripting_tests");
+		JavaNativeModuleBuilder testModule = engine.createNativeModule("test_module", "org.openzen.zenscript.scriptingexample.tests");
 		SharedGlobals.currentlyActiveLogger = logger;
 
 		getRequiredClasses().stream().distinct().forEach(requiredClass -> {
 			testModule.addGlobals(requiredClass);
 			testModule.addClass(requiredClass);
 		});
-		engine.registerNativeProvided(testModule);
+		this.testModule = testModule.complete();
 	}
 
 	public void executeEngine() {
