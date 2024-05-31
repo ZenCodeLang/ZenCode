@@ -261,8 +261,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		if (expression.method.getHeader().getReturnType().isGeneric())
 				javaWriter.checkCast(context.getType(expression.type));
 
-			return null;
-		}
+		return null;
+	}
 
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {

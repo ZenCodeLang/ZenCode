@@ -3,14 +3,12 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.*;
 
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
@@ -1300,7 +1298,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				arguments[0].accept(expressionVisitor);
 				javaWriter.invokeVirtual(STRINGBUILDER_LENGTH);
 				break;
-			case LIST_TO_ARRAY: {
+			case COLLECTION_TO_ARRAY: {
 				Expression value = arguments[0];
 				value.accept(expressionVisitor);
 

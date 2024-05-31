@@ -388,6 +388,7 @@ public abstract class JavaContext {
 		return getMethodDescriptor(header, false, "");
 	}
 
+	// check if a type cast is needed after calling a method (such as, returning T or T[], but types like Map... are fine because any generic types would be erased)
 	public boolean isGenericReturn(TypeID type) {
 		return type.isGeneric() || type.asArray().map(array -> isGenericReturn(array.elementType)).orElse(false);
 	}
