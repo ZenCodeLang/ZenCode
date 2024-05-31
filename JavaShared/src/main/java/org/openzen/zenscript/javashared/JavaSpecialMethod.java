@@ -6,7 +6,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public enum JavaSpecialMethod implements JavaMethod {
 	STRINGBUILDER_ISEMPTY,
-	LIST_TO_ARRAY,
+	COLLECTION_TO_ARRAY,
 	CONTAINS_AS_INDEXOF,
 	SORTED,
 	SORTED_WITH_COMPARATOR,

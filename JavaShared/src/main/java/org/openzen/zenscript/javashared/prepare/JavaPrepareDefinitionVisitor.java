@@ -21,7 +21,6 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Hoofdgebruiker
@@ -39,7 +38,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			cls.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
 			cls.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
-			cls.addMethod("toArray", JavaSpecialMethod.LIST_TO_ARRAY);
+			cls.addMethod("toArray", JavaSpecialMethod.COLLECTION_TO_ARRAY);
 			cls.addInstanceMethod("length", "size", "()I");
 			cls.addInstanceMethod("isEmpty", "isEmpty", "()Z");
 			cls.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
@@ -90,7 +89,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;", true);
 			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;", true);
 			list.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
-			list.addMethod("toArray", JavaSpecialMethod.LIST_TO_ARRAY);
+			list.addMethod("toArray", JavaSpecialMethod.COLLECTION_TO_ARRAY);
 			list.addInstanceMethod("length", "size", "()I");
 			list.addInstanceMethod("isEmpty", "isEmpty", "()Z");
 			list.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
