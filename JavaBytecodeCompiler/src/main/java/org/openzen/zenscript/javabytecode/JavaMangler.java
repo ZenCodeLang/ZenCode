@@ -2,6 +2,7 @@ package org.openzen.zenscript.javabytecode;
 
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -99,16 +100,6 @@ public final class JavaMangler {
 		return builder.toString();
 	}
 
-	@Deprecated // TODO("Needs to be figured out and implemented")
-	public String mangleFunctionHeader(final FunctionHeader header) {
-		return Integer.toString(this.genericCounters.get(header.getClass()));
-	}
-
-	@Deprecated // TODO("Needs to be figured out and implemented")
-	public String mangleGenericTypeParameter(final TypeParameter parameter) {
-		return "T" + this.genericCounters.get(parameter.getClass());
-	}
-
 	private String mangleScriptName(final String rawName) {
 		if (rawName == null) {
 			class GeneratedBlock {}
@@ -166,6 +157,26 @@ public final class JavaMangler {
 
 	private String mangleExpansionWithType(final String type, final Supplier<String> inner) {
 		return type + (inner == null? "" : this.encodeLengthNameFormat(inner.get()));
+	}
+
+	private String mangleFunctionHeader(final FunctionHeader header) {
+		final StringBuilder builder = new StringBuilder("t");
+		builder.append(header.typeParameters.length);
+		for (final TypeParameter typeParameter : header.typeParameters) {
+			builder.append('T').append(this.encodeLengthNameFormat(this.mangleGenericTypeParameter(typeParameter)));
+		}
+		builder.append('R');
+		builder.append(this.encodeLengthNameFormat(this.mangleExpansionTarget(header.getReturnType())));
+		builder.append('p');
+		builder.append(header.parameters.length);
+		for (final FunctionParameter parameter : header.parameters) {
+			builder.append('P').append(this.encodeLengthNameFormat(this.mangleExpansionTarget(parameter.type)));
+		}
+		return builder.toString();
+	}
+
+	private String mangleGenericTypeParameter(final TypeParameter parameter) {
+		return parameter.name; // TODO("Verify")
 	}
 
 	private String encodeLengthNameFormat(final String string) {
