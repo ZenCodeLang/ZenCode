@@ -89,7 +89,7 @@ public class JavaCompiler {
 				internalName = cls.internalName;
 			}
 			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, compiling, scriptFile.classWriter)));
+			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, compiling, scriptFile.classWriter, mangler)));
 		}
 
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
@@ -121,7 +121,8 @@ public class JavaCompiler {
 			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method, scriptDescriptor);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null));
+			final JavaWriter writer = new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), writer, mangler);
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);

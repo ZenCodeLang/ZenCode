@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
@@ -28,23 +29,26 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	private final HighLevelDefinition definition;
 	private final JavaCompiledModule javaModule;
 	private final JavaCompilingClass class_;
+	private final JavaMangler mangler;
 
 	private final JavaStatementVisitor clinitStatementVisitor;
 
-	public JavaExpansionMemberVisitor(JavaBytecodeContext context, JavaCompilingClass class_, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition) {
+	public JavaExpansionMemberVisitor(JavaBytecodeContext context, JavaCompilingClass class_, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition, JavaMangler mangler) {
 		this.writer = writer;
 		this.class_ = class_;
 		this.expandedClass = expandedClass;
 		this.definition = definition;
 		this.context = context;
+		this.mangler = mangler;
+
 		javaModule = context.getJavaModule(definition.module);
 
 		JavaNativeMethod clinit = new JavaNativeMethod(context.getJavaClass(definition), JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
 		JavaCompilingMethod clinitCompiling = new JavaCompilingMethod(class_.compiled, clinit, "()V");
 		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitCompiling, definition);
-		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
+		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter, mangler);
 		this.clinitStatementVisitor.start();
-		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, mangler, true);
 	}
 
 	public void end() {
@@ -114,7 +118,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 
 		{
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 			statementVisitor.start();
 			member.body.accept(statementVisitor);
 			methodWriter.label(methodEnd);
@@ -152,7 +156,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		}
 
 		{
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 			statementVisitor.start();
 			member.body.accept(statementVisitor);
 			methodWriter.label(methodEnd);
@@ -202,7 +206,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(i, context.getDescriptor(setterType)));
 
-		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 		javaStatementVisitor.start();
 		member.body.accept(javaStatementVisitor);
 		javaStatementVisitor.end();
@@ -245,7 +249,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 			methodWriter.nameParameter(0, name);
 		}
 
-		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 		javaStatementVisitor.start();
 		member.body.accept(javaStatementVisitor);
 		javaStatementVisitor.end();

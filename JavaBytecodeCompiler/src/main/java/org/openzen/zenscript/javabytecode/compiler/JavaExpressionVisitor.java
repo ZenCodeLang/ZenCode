@@ -13,19 +13,17 @@ import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -40,43 +38,22 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	final JavaWriter javaWriter;
 	final JavaBytecodeContext context;
 	final JavaCompiledModule module;
+	private final JavaMangler javaMangler;
 	private final JavaBoxingTypeVisitor boxingTypeVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaFieldBytecodeCompiler fieldCompiler;
 	private final JavaMethodBytecodeCompiler methodCompiler;
 
-	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
+	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler javaMangler) {
 		this.javaWriter = javaWriter;
 		this.context = context;
 		this.module = module;
+		this.javaMangler = javaMangler;
 		boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
 		unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
 		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, this, true);
 		methodCompiler = new JavaMethodBytecodeCompiler(javaWriter, this, context, module);
-	}
-
-	//TODO replace with visitor?
-	private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
-		int h = 1;//expression.header.parameters.length;
-		for (CapturedExpression capture : expression.closure.captures) {
-			if (capture instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) capture).variable == localVariableExpression.variable)
-				return h;
-			if (capture instanceof CapturedClosureExpression && ((CapturedClosureExpression) capture).value instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) ((CapturedClosureExpression) capture).value).variable == localVariableExpression.variable)
-				return h;
-			h++;
-		}
-		throw new RuntimeException(localVariableExpression.position.toString() + ": Captured Statement error");
-	}
-
-	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
-		int h = 1;//expression.header.parameters.length;
-		for (CapturedExpression capture : expression.closure.captures) {
-			if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
-				return h;
-			h++;
-		}
-		throw new RuntimeException(functionParameterExpression.position.toString() + ": Captured Statement error");
 	}
 
 	private static boolean hasNoDefault(MatchExpression switchStatement) {
@@ -506,8 +483,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		final JavaNativeMethod methodInfo;
-		// We don't allow registering classes starting with "java"
-		final String className = interfaces[0].replace("java", "j").replace("/", "_") + "_" + context.getLambdaCounter();
+		final String className = this.javaMangler.mangleGeneratedLambdaName(interfaces[0]);
 		{
 			final JavaNativeMethod m = context.getFunctionalInterface(expression.type);
 			methodInfo = new JavaNativeMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
@@ -576,13 +552,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (CapturedExpression capture : expression.closure.captures) {
 			constructorWriter.dup();
 			Type type = context.getType(capture.type);
-			String name;
-			++i;
-			if (capture instanceof CapturedThisExpression) {
-				name = "capturedThis";
-			} else {
-				name = "captured" + i;
-			}
+			// TODO("Or maybe split i and ++i?")
+			String name = this.javaMangler.mangleCapturedParameter(++i, capture instanceof CapturedThisExpression);
 			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, name, type.getDescriptor(), null, null).visitEnd();
 
 			capture.accept(this);
@@ -601,42 +572,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		functionWriter.start();
 
-
-		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
-			@Override
-			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
-				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.id);
-				if (localVariable != null) {
-					final Label label = new Label();
-					localVariable.end = label;
-					functionWriter.label(label);
-					functionWriter.load(localVariable);
-					return null;
-				}
-
-				final int position = calculateMemberPosition(varExpression, expression);
-				functionWriter.loadObject(0);
-				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
-				return null;
-			}
-
-			@Override
-			public Void visitCapturedParameter(CapturedParameterExpression varExpression) {
-				final int position = calculateMemberPosition(varExpression, expression);
-				functionWriter.loadObject(0);
-				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.parameter.type));
-				return null;
-			}
-
-			@Override
-			public Void visitCapturedThis(CapturedThisExpression expression) {
-				functionWriter.loadObject(0);
-				functionWriter.getField(className, "capturedThis", context.getDescriptor(expression.type));
-				return null;
-			}
-		});
-
-		expression.body.accept(CSV);
+		final JavaExpressionVisitor lambdaBodyVisitor = new JavaLambdaBodyCapturingExpressionVisitor(context, module, functionWriter, javaMangler, className, expression);
+		final JavaStatementVisitor capturedStatementVisitor = new JavaStatementVisitor(context, lambdaBodyVisitor, javaMangler);
+		expression.body.accept(capturedStatementVisitor);
 
 		functionWriter.ret();
 		functionWriter.end();
@@ -1132,9 +1070,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	private FunctionCastWrapperClass generateFunctionCastWrapperClass(CodePosition position, FunctionTypeID fromType, FunctionTypeID toType) {
-		final String lambdaName = "lambda" + context.getLambdaCounter();
-		final JavaClass classInfo = new JavaClass("zsynthetic", lambdaName, JavaClass.Kind.CLASS);
-		final String className = "zsynthetic/" + lambdaName;
+		final String className = this.javaMangler.mangleGeneratedLambdaName(fromType.header);
+		final JavaClass classInfo = JavaClass.fromInternalName(className, JavaClass.Kind.CLASS);
 
 		String[] interfaces;
 		String wrappedFromSignature = context.getDescriptor(fromType);

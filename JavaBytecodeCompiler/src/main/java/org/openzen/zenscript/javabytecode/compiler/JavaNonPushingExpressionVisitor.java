@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
@@ -25,12 +26,14 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor original;
 	private final JavaFieldBytecodeCompiler fieldCompiler;
+	private final JavaMangler mangler;
 
-	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaExpressionVisitor original) {
+	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler mangler, JavaExpressionVisitor original) {
 		this.context = context;
 		this.module = module;
 		this.javaWriter = javaWriter;
 		this.original = original;
+		this.mangler = mangler;
 		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, original, false);
 	}
 
@@ -373,7 +376,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 				"<init>",
 				context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));
 
-		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, mangler, false);
 		return null;
 	}
 

@@ -31,7 +31,6 @@ public class JavaBytecodeContext extends JavaContext {
 	private final TypeGenerator typeGenerator;
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;
-	private int lambdaCounter = 0;
 	private final Map<LoopStatement.ObjectId, BytecodeLoopLabels> bytecodeLoopLabels = new HashMap<>();
 
 	public JavaBytecodeContext(JavaBytecodeModule target, JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
@@ -128,10 +127,6 @@ public class JavaBytecodeContext extends JavaContext {
 
 	private void createSharedClass() {
 		// TODO
-	}
-
-	public int getLambdaCounter() {
-		return ++lambdaCounter;
 	}
 
 	public BytecodeLoopLabels getLoopLabels(LoopStatement loopStatement) {

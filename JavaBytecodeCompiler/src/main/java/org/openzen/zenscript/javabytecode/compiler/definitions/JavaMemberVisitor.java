@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
@@ -29,26 +30,29 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	private final HighLevelDefinition definition;
 	private final JavaStatementVisitor clinitStatementVisitor;
 	private final JavaCompiledModule javaModule;
+	private final JavaMangler mangler;
 	private EnumDefinition enumDefinition = null;
 
 	public JavaMemberVisitor(
 			JavaBytecodeContext context,
 			ClassWriter writer,
 			JavaCompilingClass class_,
-			HighLevelDefinition definition
+			HighLevelDefinition definition,
+			JavaMangler mangler
 	) {
 		this.writer = writer;
 		this.class_ = class_;
 		this.definition = definition;
 		this.context = context;
+		this.mangler = mangler;
 		javaModule = context.getJavaModule(definition.module);
 
 		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
 		final JavaCompilingMethod clinitMethodCompiling = new JavaCompilingMethod(class_.compiled, clinitMethod, "()V");
 		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitMethodCompiling, definition);
-		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
+		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter, mangler);
 		this.clinitStatementVisitor.start();
-		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, mangler, true);
 
 		if (definition instanceof EnumDefinition) {
 			this.enumDefinition = (EnumDefinition) definition;
@@ -110,7 +114,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 					context.getType(parameter.type));
 		}
 
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter);
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter, mangler);
 		statementVisitor.start();
 
 		forwardToSuperConstructorIfNecessary(member, isEnum, constructorWriter, method);
@@ -204,7 +208,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			final Label methodStart = new Label();
 			final Label methodEnd = new Label();
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 
 			statementVisitor.start();
 			member.body.accept(statementVisitor);
@@ -226,7 +230,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, method, definition);
 
 		methodWriter.label(methodStart);
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 		statementVisitor.start();
 		member.body.accept(statementVisitor);
 		methodWriter.label(methodEnd);
@@ -254,7 +258,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(localIndex, context.getDescriptor(member.type)));
 
-		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 		javaStatementVisitor.start();
 		member.body.accept(javaStatementVisitor);
 		javaStatementVisitor.end();
@@ -279,7 +283,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition);
 			destructorWriter.label(constructorStart);
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter, mangler);
 			statementVisitor.start();
 
 			// TODO: destruction of members (to be done when memory tags are implemented)
@@ -321,7 +325,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		}
 
 		if(member.body != null) {
-			final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+			final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter, mangler);
 			javaStatementVisitor.start();
 			member.body.accept(javaStatementVisitor);
 			javaStatementVisitor.end();

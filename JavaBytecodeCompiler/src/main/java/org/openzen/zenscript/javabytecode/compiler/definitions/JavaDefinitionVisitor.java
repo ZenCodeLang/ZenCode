@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
@@ -34,12 +35,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	private final JavaClassWriter outerWriter;
 	private final JavaBytecodeContext context;
 	private final JavaCompilingModule module;
+	private final JavaMangler mangler;
 
-	public JavaDefinitionVisitor(JavaBytecodeContext context, JavaCompilingModule module, JavaClassWriter outerWriter) {
+	public JavaDefinitionVisitor(JavaBytecodeContext context, JavaCompilingModule module, JavaClassWriter outerWriter, JavaMangler mangler) {
 		this.context = context;
 		this.module = module;
 		this.outerWriter = outerWriter;
 		this.javaTypeGenericVisitor = new JavaTypeGenericVisitor(context);
+		this.mangler = mangler;
 	}
 
 	@Override
@@ -92,7 +95,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			);
 		}
 
-		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, compilingClass, definition);
+		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, compilingClass, definition, mangler);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberVisitor);
 		}
@@ -113,7 +116,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			baseInterfaces[i] = context.getInternalName(definition.baseInterfaces.get(i));
 
 		writer.visit(Opcodes.V1_8, JavaModifiers.getJavaModifiers(definition.modifiers) | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, compilingClass.compiled.internalName, signature, "java/lang/Object", baseInterfaces);
-		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, compilingClass, definition);
+		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, compilingClass, definition, mangler);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberVisitor);
 		}
@@ -136,7 +139,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		//Enum Stuff(required!)
 		writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + class_.getInternalName() + ";", null, null).visitEnd();
 
-		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, definition);
+		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, definition, mangler);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(visitor);
 		}
@@ -208,7 +211,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		JavaCompilingMethod method = class_.getMethod(definition.caller);
 
 		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, method, definition);
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer, mangler);
 		statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
@@ -236,7 +239,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final String internalName = expansionClassInfo.internalName;
 
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, internalName, null, "java/lang/Object", null);
-		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, class_, writer, definition.target, definition);
+		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, class_, writer, definition.target, definition, mangler);
 
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberVisitor);
@@ -267,7 +270,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, class_.getInternalName(), ss, "java/lang/Object", null);
 		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
 
-		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, variant);
+		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, class_, variant, mangler);
 
 		final List<VariantDefinition.Option> options = variant.options;
 		//Each option is one of the possible child classes

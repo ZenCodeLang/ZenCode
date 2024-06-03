@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class JavaMangler {
-	private static final class MangleCounter<K> {
-		private final Map<K, Integer> counters;
+	private static final class MangleCounter {
+		private final Map<Object, Integer> counters;
 
 		MangleCounter() {
 			this.counters = new HashMap<>();
 		}
 
-		int get(final K key) {
+		int get(final Object key) {
 			return this.counters.compute(key, (k, v) -> v == null? 0 : ++v);
 		}
 	}
@@ -42,12 +42,10 @@ public final class JavaMangler {
 	private static final String EXP_TAR_MANGLE_OPTIONAL_ID = "_o";
 	private static final String EXP_TAR_MANGLE_RANGE_ID = "_r";
 
-	private final MangleCounter<Class<?>> genericCounters;
-	private final MangleCounter<String> expansionCounters;
+	private final MangleCounter mangleCounters;
 
 	public JavaMangler() {
-		this.genericCounters = new MangleCounter<>();
-		this.expansionCounters = new MangleCounter<>();
+		this.mangleCounters = new MangleCounter();
 	}
 
 	public String mangleScriptName(final SourceFile sourceFile) {
@@ -85,25 +83,79 @@ public final class JavaMangler {
 		builder.append('$');
 
 		if (definition instanceof ExpansionDefinition) {
+			final class ExpansionId {
+				private final String id;
+
+				ExpansionId(final String id) {
+					this.id = id;
+				}
+
+				@Override
+				public boolean equals(final Object o) {
+					return this == o || o instanceof ExpansionId && this.id.equals(((ExpansionId) o).id);
+				}
+
+				@Override
+				public int hashCode() {
+					return 31 * this.id.hashCode();
+				}
+			}
+
 			// Expansions not only do not have a name, but they can be for different types: for ease of debugging, we
 			// want to include information on the type that is expanded
 			final String target = this.mangleExpansionTarget(((ExpansionDefinition) definition).target);
 			builder.append(target);
 			builder.append('$');
-			builder.append(this.expansionCounters.get(target));
+			builder.append(this.mangleCounters.get(new ExpansionId(target)));
 		} else {
 			builder.append(definition.name);
 			builder.append('$');
-			builder.append(this.genericCounters.get(clazz));
+			builder.append(this.mangleCounters.get(clazz));
 		}
 
 		return builder.toString();
 	}
 
+	public String mangleGeneratedLambdaName(final String interfaceName) {
+		final class LambdaId {
+			final String target;
+
+			LambdaId(final String target) {
+				this.target = target;
+			}
+
+			@Override
+			public boolean equals(final Object o) {
+				return this == o || o instanceof LambdaId && this.target.equals(((LambdaId) o).target);
+			}
+
+			@Override
+			public int hashCode() {
+				return 17 * this.target.hashCode();
+			}
+		}
+
+		final String interfaceTarget = interfaceName.replace('/', '_').replace('.', '_');
+		// TODO("Rework package structure")
+		return "zsynthetic/$Lambda$" + interfaceTarget + '$' + this.mangleCounters.get(new LambdaId(interfaceTarget));
+	}
+
+	public String mangleGeneratedLambdaName(final FunctionHeader header) {
+		return this.mangleGeneratedLambdaName("$Generated" + EXP_TAR_MANGLE_FUNCTION_ID + this.encodeLengthNameFormat(this.mangleFunctionHeader(header)));
+	}
+
+	public String mangleCapturedParameter(final int parameterId, final boolean isThis) {
+		if (isThis) {
+			return "$this";
+		} else {
+			return "$" + parameterId;
+		}
+	}
+
 	private String mangleScriptName(final String rawName) {
 		if (rawName == null) {
 			class GeneratedBlock {}
-			return "$GeneratedBlock" + this.genericCounters.get(GeneratedBlock.class);
+			return "$GeneratedBlock" + this.mangleCounters.get(GeneratedBlock.class);
 		}
 		final String separator = FileSystems.getDefault().getSeparator();
 		final String specialCharRegex = Stream.of("/", "\\", ".", ";", "\\[")
@@ -184,11 +236,12 @@ public final class JavaMangler {
 	}
 
 	@SafeVarargs // It's private, so it's already final...
+	@SuppressWarnings("unchecked")
 	private final <O> Optional<? extends O> oneOf(final Supplier<? extends Optional<? extends O>>... suppliers) {
 		return Arrays.stream(suppliers)
 				.map(Supplier::get)
 				.filter(Optional::isPresent)
 				.findFirst()
-				.flatMap(Function.identity());
+				.flatMap(it -> (Optional<? extends O>) it);
 	}
 }
