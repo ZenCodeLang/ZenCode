@@ -1,0 +1,9 @@
+#output: Hello
+#output: World
+
+true ? println("Hello") : println("Bye");
+
+val A : function() as void = () => println("World");
+val B : function() as void = () => println("Ducks");
+
+true ? A() : B();
