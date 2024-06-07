@@ -69,8 +69,12 @@ public class JavaCompilingClass {
 	}
 
 	public void addMethod(MethodSymbol method, JavaCompilingMethod compiling) {
+		addMethod(method, compiling, compiling.compiled);
+	}
+
+	public void addMethod(MethodSymbol method, JavaCompilingMethod compiling, JavaMethod javaMethod) {
 		methods.put(method, compiling);
-		module.module.setMethodInfo(method, compiling.compiled);
+		module.module.setMethodInfo(method, javaMethod);
 
 		if (DEBUG_EMPTY && empty)
 			getContext().logger.trace("Class " + compiled.fullName + " not empty because of " + method.getID());
@@ -121,7 +125,7 @@ public class JavaCompilingClass {
 		if (native_ != null && nativeClass != null) {
 			final String signature = getContext().getMethodSignature(method.getHeader());
 			JavaMethod method1 = nativeClass.getMethod(native_.value);
-			addMethod(method, method1.asCompilingMethod(compiled, signature));
+			addMethod(method, method1.asCompilingMethod(compiled, signature), method1);
 		} else {
 			final JavaNativeMethod.Kind kind = getKind(method);
 			final String descriptor;
