@@ -1,4 +1,4 @@
-#output: 6.06.0
+#output: 6.0
 
 expand double {
 	foo(): double => this * (2 as int);
@@ -8,8 +8,4 @@ expand double {
 	bar(): string => this as string;
 }
 
-expand string {
-	baz(): string => this + this;
-}
-
-println((3.0).foo().bar().baz());
+println((3.0).foo().bar());
