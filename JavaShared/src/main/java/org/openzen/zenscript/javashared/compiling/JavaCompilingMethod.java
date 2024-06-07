@@ -15,4 +15,11 @@ public class JavaCompilingMethod {
 		this.signature = signature;
 		this.compile = true;
 	}
+
+	public JavaCompilingMethod(JavaClass class_, String signature) {
+		this.class_ = class_;
+		this.compiled = null;
+		this.signature = signature;
+		this.compile = false;
+	}
 }

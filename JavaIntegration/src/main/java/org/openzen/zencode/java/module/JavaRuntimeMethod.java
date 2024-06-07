@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -134,6 +135,10 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		return method.getMapping(class_);
 	}
 
+	@Override
+	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
+		return new JavaCompilingMethod(compiled, signature);
+	}
 
 	private Modifiers getMethodModifiers(Member method) {
 		Modifiers result = Modifiers.PUBLIC;

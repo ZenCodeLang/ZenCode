@@ -8,6 +8,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 import java.util.Arrays;
 
@@ -107,6 +108,11 @@ public class JavaNativeMethod implements JavaMethod {
 			result.append('@').append(cls.internalName);
 
 		return result.toString();
+	}
+
+	@Override
+	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
+		return new JavaCompilingMethod(compiled, this, signature);
 	}
 
 	public boolean isAbstract() {

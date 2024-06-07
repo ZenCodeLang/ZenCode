@@ -121,12 +121,7 @@ public class JavaCompilingClass {
 		if (native_ != null && nativeClass != null) {
 			final String signature = getContext().getMethodSignature(method.getHeader());
 			JavaMethod method1 = nativeClass.getMethod(native_.value);
-			if(method1 instanceof JavaSpecialMethod) {
-				module.module.setMethodInfo(method, method1);
-			} else {
-				JavaNativeMethod javaMethod = (JavaNativeMethod) method1;
-				addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
-			}
+			addMethod(method, method1.asCompilingMethod(compiled, signature));
 		} else {
 			final JavaNativeMethod.Kind kind = getKind(method);
 			final String descriptor;

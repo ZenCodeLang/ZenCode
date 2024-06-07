@@ -62,11 +62,11 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 					return "Z";
 				case CHAR:
 					return "C";
-				case BYTE:
 				case SBYTE:
 					return "B";
 				case SHORT:
 					return "S";
+				case BYTE:
 				case USHORT:
 				case INT:
 				case UINT:

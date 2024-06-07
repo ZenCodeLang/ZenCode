@@ -3,6 +3,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 public enum JavaSpecialMethod implements JavaMethod {
 	STRINGBUILDER_ISEMPTY,
@@ -41,5 +42,10 @@ public enum JavaSpecialMethod implements JavaMethod {
 	@Override
 	public String getMapping(JavaClass class_) {
 		return class_.internalName + "::special::" + name();
+	}
+
+	@Override
+	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
+		return new JavaCompilingMethod(compiled, signature);
 	}
 }
