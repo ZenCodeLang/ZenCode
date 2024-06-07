@@ -238,6 +238,7 @@ public class JavaBuiltinModule {
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_CHARACTERS, stringCharacters);
 
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_COMPARE, STRING_COMPARETO);
+		result.setMethodInfo(BuiltinMethodSymbol.STRING_CONSTRUCTOR_CHARACTERS, STRING_INIT_CHARACTERS);
 
 		result.setMethodInfo(BuiltinMethodSymbol.ASSOC_SIZE, MAP_SIZE);
 		result.setMethodInfo(BuiltinMethodSymbol.ASSOC_ISEMPTY, MAP_ISEMPTY);

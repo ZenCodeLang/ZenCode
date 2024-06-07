@@ -217,7 +217,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		for (int index = 0; index < arguments.arguments.length; index++) {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
-			if (!method.primitiveArguments[typeArguments + index]) {
+			if (!method.primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION ? 1 : 0)]) {
 				argument.type.accept(argument.type, boxingTypeVisitor);
 			}
 		}
@@ -321,6 +321,11 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public Void builtinStaticMethod(BuiltinMethodSymbol method, TypeID returnType, CallArguments args) {
 		Expression[] arguments = args.arguments;
 		switch (method) {
+			case BOOL_NOT:
+				arguments[0].accept(expressionVisitor);
+				javaWriter.invertBoolean();
+				return null;
+
 			case BOOL_ADD_STRING:
 			case BOOL_CAT_STRING:
 				arguments[0].accept(expressionVisitor);
@@ -404,6 +409,17 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				arguments[1].accept(expressionVisitor);
 				javaWriter.invokeVirtual(STRING_CONCAT);
 				return null;
+			case STRING_CONTAINS_STRING:
+			case STRING_CONTAINS_CHAR: {
+				arguments[0].accept(expressionVisitor);
+				arguments[1].accept(expressionVisitor);
+				if (method == BuiltinMethodSymbol.STRING_CONTAINS_CHAR) {
+					javaWriter.invokeStatic(CHARACTER_TO_STRING);
+				}
+
+				javaWriter.invokeVirtual(STRING_CONTAINS);
+				return null;
+			}
 			case STRING_RANGEGET: {
 				arguments[0].accept(expressionVisitor);
 				Expression argument = arguments[1];
@@ -1207,6 +1223,21 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case OPTIONAL_IS_NULL:
+				// special case for usize where "null" === -1
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.pop();
+					javaWriter.iConstM1();
+					Label exit = new Label();
+					Label isFalse = new Label();
+					javaWriter.ifICmpNE(isFalse);
+					javaWriter.iConst1();
+					javaWriter.goTo(exit);
+					javaWriter.label(isFalse);
+					javaWriter.iConst0();
+					javaWriter.label(exit);
+					break;
+				}
+				// fallthrough to the other cases which handle all variants except for usize
 			case OBJECT_SAME:
 			case ASSOC_SAME:
 			case ARRAY_SAME: {
@@ -1221,6 +1252,22 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			}
 			case OPTIONAL_IS_NOT_NULL:
+				// special case for usize where "null" === -1
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.pop();
+					javaWriter.iConstM1();
+					Label exit = new Label();
+					Label isFalse = new Label();
+					javaWriter.ifICmpEQ(isFalse);
+					javaWriter.iConst1();
+					javaWriter.goTo(exit);
+					javaWriter.label(isFalse);
+					javaWriter.iConst0();
+					javaWriter.label(exit);
+					break;
+				}
+				// fallthrough to the other cases which handle all variants except for usize
+
 			case OBJECT_NOTSAME:
 			case ASSOC_NOTSAME:
 			case ARRAY_NOTSAME: {

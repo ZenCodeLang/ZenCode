@@ -22,10 +22,26 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void reverseWorks() {
+	public void reverseWorks_integers() {
 		ScriptBuilder.create()
 				.add("var array = [1, 2, 3, 4, 5];")
-				.add("println(array.isEmpty);")
+				.add("array.reverse();")
+				.add("for it in array println(it);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(5);
+
+		for (int i = 5; i > 0; i--) {
+			logger.assertPrintOutput(5 - i, String.valueOf(i));
+		}
+	}
+
+	@Test
+	public void reverseWorks_strings() {
+		ScriptBuilder.create()
+				.add("var array = ['1', '2', '3', '4', '5'];")
+				.add("array.reverse();")
+				.add("for it in array println(it);")
 				.execute(this);
 
 		logger.assertPrintOutputSize(5);
@@ -37,7 +53,6 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 
 
 	@Test
-	@Disabled("Requires stdlib")
 	public void canCastToList() {
 		ScriptBuilder.create()
 				.add("var array = ['a', 'b', 'c'] as string[];")
@@ -54,7 +69,6 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 	}
 
 	@Test
-	@Disabled("Requires stdlib")
 	public void canCastFromList() {
 		ScriptBuilder.create()
 				.add("var list = new stdlib.List<string>();")
@@ -74,7 +88,6 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 	}
 
 	@Test
-	@Disabled("Requires stdlib")
 	public void sortedWithComparatorWorks() {
 		final int length = 10;
 
@@ -109,7 +122,6 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 	}
 
 	@Test
-	@Disabled("Requires stdlib")
 	public void sortWithComparatorWorks() {
 		final int length = 10;
 

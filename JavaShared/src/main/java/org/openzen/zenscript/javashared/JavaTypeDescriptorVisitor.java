@@ -69,24 +69,19 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 					return "Z";
 				case CHAR:
 					return "C";
-				case BYTE:
-					return "I";
 				case SBYTE:
 					return "B";
 				case SHORT:
 					return "S";
+				case BYTE:
 				case USHORT:
-					return "I";
-				case INT:
-					return "I";
 				case UINT:
-					return "I";
-				case LONG:
-					return "J";
-				case ULONG:
-					return "J";
+				case INT:
 				case USIZE:
 					return "I";
+				case LONG:
+				case ULONG:
+					return "J";
 				case FLOAT:
 					return "F";
 				case DOUBLE:

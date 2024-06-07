@@ -1,0 +1,7 @@
+#output: null
+function getIndex() as usize? {
+    return null;
+}
+
+var x = getIndex();
+println(x == null ? "null" : (x as string));

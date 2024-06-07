@@ -14,11 +14,25 @@ import java.util.List;
 
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 
-@Disabled("Required Stdlib")
+//@Disabled("Required Stdlib")
 public class StdLibFunctions extends ZenCodeTest {
 	@Override
 	public List<String> getRequiredStdLibModules() {
 		return Collections.singletonList("stdlib");
+	}
+
+	@Override
+	public List<Class<?>> getRequiredClasses() {
+		return super.getRequiredClasses();
+	}
+
+	@Test
+	public void stdLibCompiles() {
+		ScriptBuilder.create()
+				.add("println('Hello World');")
+				.execute(this);
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "Hello World");
 	}
 
 	@Test

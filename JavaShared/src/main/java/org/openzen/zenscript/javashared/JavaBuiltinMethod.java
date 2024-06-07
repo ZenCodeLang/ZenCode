@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 
 public class JavaBuiltinMethod implements JavaMethod {
 	private final BuiltinMethodSymbol method;
@@ -35,5 +36,10 @@ public class JavaBuiltinMethod implements JavaMethod {
 	@Override
 	public String getMapping(JavaClass class_) {
 		return class_.internalName + "::builtin::" + method.getID().toString();
+	}
+
+	@Override
+	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
+		return new JavaCompilingMethod(compiled, signature);
 	}
 }

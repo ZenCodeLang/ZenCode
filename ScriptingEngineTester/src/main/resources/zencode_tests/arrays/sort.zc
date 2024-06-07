@@ -1,0 +1,5 @@
+#output: [1, 2, 3, 4, 5]
+
+val a = [5, 1, 2, 4, 3];
+a.sort();
+println(a);

@@ -1,0 +1,4 @@
+#output: 2
+
+var i = 1 as int;
+println(i + 1);
