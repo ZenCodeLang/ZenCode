@@ -10,6 +10,7 @@ import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaBuiltinModule;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 import java.util.Arrays;
@@ -25,18 +26,15 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	/**
 	 * @param javaWriter the method writer that compiles the statement
 	 */
-	public JavaStatementVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
-		this.javaWriter = javaWriter;
-		this.context = context;
-		this.expressionVisitor = new JavaExpressionVisitor(context, module, javaWriter);
-		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(context, module, javaWriter, expressionVisitor);
+	public JavaStatementVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler javaMangler) {
+		this(context, new JavaExpressionVisitor(context, module, javaWriter, javaMangler), javaMangler);
 	}
 
-	public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
+	public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor, JavaMangler javaMangler) {
 		this.javaWriter = expressionVisitor.getJavaWriter();
 		this.context = context;
 		this.expressionVisitor = expressionVisitor;
-		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(expressionVisitor.context, expressionVisitor.module, expressionVisitor.javaWriter, expressionVisitor);
+		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(expressionVisitor.context, expressionVisitor.module, expressionVisitor.javaWriter, javaMangler, expressionVisitor);
 	}
 
 	@Override

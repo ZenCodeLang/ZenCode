@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
@@ -131,8 +132,14 @@ public class CompilerUtils {
 		 */
 	}
 
-	public static void writeDefaultFieldInitializers(JavaBytecodeContext context, JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
-		JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(context, context.getJavaModule(definition.module), constructorWriter);
+	public static void writeDefaultFieldInitializers(
+			JavaBytecodeContext context,
+			JavaWriter constructorWriter,
+			HighLevelDefinition definition,
+			JavaMangler mangler,
+			boolean staticFields
+	) {
+		JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(context, context.getJavaModule(definition.module), constructorWriter, mangler);
 		for (final IDefinitionMember definitionMember : definition.members) {
 			if (!(definitionMember instanceof FieldMember))
 				continue;

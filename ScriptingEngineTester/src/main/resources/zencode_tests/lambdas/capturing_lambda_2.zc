@@ -1,0 +1,33 @@
+#output: 10
+
+public class CaptureTest2Foo {
+	private val field as int : public get;
+
+	public this(field: int) {
+		this.field = field;
+	}
+
+	public foo(provider: function() as int): int {
+		val lambdaHell = this.wrapItAllUp(() => provider() + 1, (p) => new CaptureTest2Bar(p));
+		return lambdaHell();
+	}
+
+	private wrapItAllUp(provider: function() as int, creator: function(foo as function() as int) as CaptureTest2Bar): function() as int {
+		return creator(() => provider() * this.field).wrapProvider();
+	}
+}
+
+public class CaptureTest2Bar {
+	private val provider as function() as int : public get;
+
+	public this(provider: function() as int) {
+		this.provider = provider;
+	}
+
+	public wrapProvider(): function() as int {
+		return () => this.provider();
+	}
+}
+
+val test = new CaptureTest2Foo(2);
+println(test.foo(() => 4) as string);

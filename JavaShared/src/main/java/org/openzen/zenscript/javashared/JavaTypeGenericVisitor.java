@@ -155,10 +155,10 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 		StringBuilder sb = new StringBuilder("L").append(function1.getCls().internalName).append("<");
 		for (TypeID typeArgument : function1.typeArguments) {
 			final String n = typeArgument instanceof GenericTypeID
-					? ((GenericTypeID) typeArgument).parameter.name
-					: "Ljava/lang/Object"; //Can latter even happen?
+					? ('T' + ((GenericTypeID) typeArgument).parameter.name)
+					: "Ljava/lang/Object"; // Can latter even happen? Yes, it can!
 
-			sb.append("T").append(n).append(";");
+			sb.append(n).append(";");
 		}
 
 		return sb.append(">;").toString();

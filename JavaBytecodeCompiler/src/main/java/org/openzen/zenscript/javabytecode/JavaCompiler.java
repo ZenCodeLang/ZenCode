@@ -27,10 +27,7 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
-import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Hoofdgebruiker
@@ -38,11 +35,11 @@ import java.util.stream.Stream;
 public class JavaCompiler {
 
 	private final IZSLogger logger;
-	private int generatedScriptBlockCounter = 0;
-	private int expansionCounter = 0;
+	private final JavaMangler mangler;
 
 	public JavaCompiler(IZSLogger logger) {
 		this.logger = logger;
+		this.mangler = new JavaMangler();
 	}
 
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space, JavaEnumMapper enumMapper) {
@@ -51,8 +48,8 @@ public class JavaCompiler {
 		// Scripts with a higher priority load before scripts with a lower priority.
 		module.scripts.sort(Comparator.<ScriptBlock>comparingInt(a -> a.file.getOrder()).reversed());
 		module.scripts.forEach(script -> {
-			final String className = getClassName(script.file == null ? null : script.file.getFilename());
-			getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			final String className = this.mangler.mangleScriptName(script.file);
+			getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 		});
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
 
@@ -66,13 +63,7 @@ public class JavaCompiler {
 		allDefinitions.addAll(module.expansions);
 
 		for (HighLevelDefinition definition : allDefinitions) {
-			final String className = getClassName(getFilename(definition));
-			final String filename;
-			if (definition instanceof FunctionDefinition) {
-				filename = className;
-			} else {
-				filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
-			}
+			final String filename = this.mangler.mangleDefinitionName(definition);
 			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(compiling, filename, null, filename);
 			definition.accept(definitionPreparer);
 		}
@@ -88,8 +79,8 @@ public class JavaCompiler {
 			final String internalName;
 			final JavaScriptFile scriptFile;
 			if (definition instanceof FunctionDefinition) {
-				internalName = getClassName(getFilename(definition));
-				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + "/" + internalName);
+				internalName = this.mangler.mangleSourceFileName(definition);
+				scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName.replace('.', '/') + '/' + internalName);
 				scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			} else {
 				JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
@@ -98,7 +89,7 @@ public class JavaCompiler {
 				internalName = cls.internalName;
 			}
 			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, compiling, scriptFile.classWriter)));
+			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, compiling, scriptFile.classWriter, mangler)));
 		}
 
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
@@ -113,14 +104,14 @@ public class JavaCompiler {
 
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
-			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
-			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			final String className = this.mangler.mangleScriptName(sourceFile);
+			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + '/' + className);
 			scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
 			if (sourceFile != null) {
 				scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
 			}
 
-			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
+			String methodName = this.mangler.mangleScriptBodyMethod(scriptFile.scriptMethods.size());
 
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
@@ -130,7 +121,8 @@ public class JavaCompiler {
 			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method, scriptDescriptor);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null));
+			final JavaWriter writer = new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null);
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), writer, mangler);
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);
@@ -149,35 +141,6 @@ public class JavaCompiler {
 		}
 
 		return target;
-	}
-
-	private String getFilename(HighLevelDefinition definition) {
-		SourceFile source = definition.position.file;
-		if (source != null) {
-			List<String> parts = source.getFilePath();
-			return parts.get(parts.size() - 1);
-		} else {
-			return definition.name == null ? "Expansion" : definition.name;
-		}
-	}
-
-	private String getClassName(String filename) {
-		if (filename == null) {
-			return "generatedBlock" + (generatedScriptBlockCounter++);
-		} else {
-			// TODO: find all special characters
-			final String specialCharRegex = Stream.of('/', '\\', '.', ';')
-					.filter(character -> character != File.separatorChar)
-					.map(String::valueOf)
-					.collect(Collectors.joining("", "[", "]"));
-
-			return filename
-					.substring(0, filename.lastIndexOf('.')) //remove the .zs part
-					.replaceAll(specialCharRegex, "_")
-					.replace('[', '_')
-					.replace(File.separatorChar, '/')
-					.concat("$");
-		}
 	}
 
 	private JavaScriptFile getScriptFile(Map<String, JavaScriptFile> scriptBlocks, String className) {

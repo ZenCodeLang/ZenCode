@@ -1,0 +1,10 @@
+#output: 10
+
+function foo(block: function(a as int) as int): void {
+	println(block(5) as string);
+}
+
+function findMultiplier(): int => 2;
+
+val multiplier = findMultiplier();
+foo((x) => x * multiplier);
