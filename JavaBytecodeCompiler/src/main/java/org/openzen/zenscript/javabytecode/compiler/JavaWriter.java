@@ -691,6 +691,14 @@ public class JavaWriter {
 		label(l2);
 	}
 
+	public void invertInt() {
+		if (debug)
+			logger.debug("invert int");
+
+		iConstM1();
+		iXor();
+	}
+
 	public void iShr() {
 		if (debug)
 			logger.debug("iShr");

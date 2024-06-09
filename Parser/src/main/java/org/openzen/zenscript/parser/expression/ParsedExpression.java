@@ -315,7 +315,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 				return new ParsedExpressionUnary(
 						position,
 						readUnaryExpression(parser.getPosition(), parser, options),
-						OperatorType.CAT);
+						OperatorType.INVERT);
 			case T_INCREMENT:
 				parser.next();
 				return new ParsedExpressionUnary(

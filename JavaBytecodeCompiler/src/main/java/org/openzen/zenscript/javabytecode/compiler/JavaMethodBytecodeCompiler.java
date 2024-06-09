@@ -727,6 +727,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}
 				break;
+			case INT_INVERT:
+				javaWriter.invertInt();
+				break;
 			case INT_TO_BYTE:
 			case USIZE_TO_BYTE:
 				break;
