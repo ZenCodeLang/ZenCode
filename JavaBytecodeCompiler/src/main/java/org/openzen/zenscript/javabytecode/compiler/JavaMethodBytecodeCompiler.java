@@ -735,12 +735,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case SBYTE_INVERT:
 				javaWriter.invertByte();
 				break;
-			case DOUBLE_INVERT:
-				javaWriter.invertDouble();
-				break;
-			case FLOAT_INVERT:
-				javaWriter.invertFloat();
-				break;
 			case USIZE_INVERT:
 			case UINT_INVERT:
 			case INT_INVERT:
