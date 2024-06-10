@@ -690,6 +690,20 @@ public class JavaWriter {
 		iConst1();
 		label(l2);
 	}
+	public void invertByte() {
+		if (debug)
+			logger.debug("invert byte");
+		constant((byte)-1);
+		iXor();
+	}
+
+	public void invertShort() {
+		if (debug)
+			logger.debug("invert short");
+
+		constant((short)-1);
+		iXor();
+	}
 
 	public void invertInt() {
 		if (debug)
@@ -697,6 +711,26 @@ public class JavaWriter {
 
 		iConstM1();
 		iXor();
+	}
+
+	public void invertLong() {
+		if (debug)
+			logger.debug("invert long");
+		constant(-1L);
+		lXor();
+	}
+
+	public void invertFloat() {
+		if (debug)
+			logger.debug("invert float");
+		throw new UnsupportedOperationException("Cannot invert float!");
+	}
+
+	public void invertDouble() {
+		if (debug)
+			logger.debug("invert double");
+
+		throw new UnsupportedOperationException("Cannot invert double!");
 	}
 
 	public void iShr() {

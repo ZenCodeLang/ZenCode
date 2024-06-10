@@ -329,7 +329,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ULONG_LOWEST_ZERO_BIT(ULONG, MethodID.getter("lowestZeroBit"), new OptionalTypeID(USIZE)),
 	ULONG_BIT_COUNT(ULONG, MethodID.getter("bitCount"), USIZE),
 
-	USIZE_INVERT(USIZE, NOT, USIZE),
+	USIZE_INVERT(USIZE, INVERT, USIZE),
 	USIZE_INC(USIZE, INCREMENT, USIZE),
 	USIZE_DEC(USIZE, DECREMENT, USIZE),
 	USIZE_ADD_USIZE(USIZE, ADD, USIZE, USIZE),

@@ -1,11 +1,11 @@
-#output: int
+#output: byte
 #output: 42
-#output: int
-#output: -43
-#output: int
+#output: byte
+#output: 213
+#output: byte
 #output: 42
 
-var i = 42;
+var i = 42 as byte;
 var inverted = ~i;
 var invertedAgain = ~inverted;
 

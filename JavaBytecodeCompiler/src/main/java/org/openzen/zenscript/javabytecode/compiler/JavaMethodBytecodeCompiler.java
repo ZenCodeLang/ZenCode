@@ -727,8 +727,28 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}
 				break;
+			case ULONG_INVERT:
+			case LONG_INVERT:
+				javaWriter.invertLong();
+				break;
+			case BYTE_INVERT:
+			case SBYTE_INVERT:
+				javaWriter.invertByte();
+				break;
+			case DOUBLE_INVERT:
+				javaWriter.invertDouble();
+				break;
+			case FLOAT_INVERT:
+				javaWriter.invertFloat();
+				break;
+			case USIZE_INVERT:
+			case UINT_INVERT:
 			case INT_INVERT:
 				javaWriter.invertInt();
+				break;
+			case USHORT_INVERT:
+			case SHORT_INVERT:
+				javaWriter.invertShort();
 				break;
 			case INT_TO_BYTE:
 			case USIZE_TO_BYTE:
@@ -781,14 +801,14 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 					javaWriter.dup();
 					javaWriter.constant(-1);
 					javaWriter.ifICmpEQ(ifNull);
-					javaWriter.invokeStatic(INTEGER_TO_STRING);
+					javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
 					javaWriter.goTo(exit);
 					javaWriter.label(ifNull);
 					javaWriter.pop();
 					javaWriter.constant("null");
 					javaWriter.label(exit);
 				} else {
-					javaWriter.invokeStatic(INTEGER_TO_STRING);
+					javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
 				}
 				break;
 			case UINT_TO_BYTE:

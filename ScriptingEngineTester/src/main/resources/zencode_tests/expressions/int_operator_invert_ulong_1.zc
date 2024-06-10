@@ -1,0 +1,19 @@
+#output: ulong
+#output: 42
+#output: ulong
+#output: 18446744073709551573
+#output: ulong
+#output: 42
+
+var i = 42 as ulong;
+var inverted = ~i;
+var invertedAgain = ~inverted;
+
+println(typeof(i));
+println(i);
+
+println(typeof(inverted));
+println(inverted);
+
+println(typeof(invertedAgain));
+println(invertedAgain);
