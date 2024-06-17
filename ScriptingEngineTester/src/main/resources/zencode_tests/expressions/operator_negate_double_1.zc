@@ -1,0 +1,19 @@
+#output: double
+#output: 42.0
+#output: double
+#output: -42.0
+#output: double
+#output: 42.0
+
+var i = 42 as double;
+var negated = -i;
+var negatedAgain = -negated;
+
+println(typeof(i));
+println(i);
+
+println(typeof(negated));
+println(negated);
+
+println(typeof(negatedAgain));
+println(negatedAgain);

@@ -1,0 +1,19 @@
+#output: int
+#output: 42
+#output: int
+#output: -42
+#output: int
+#output: 42
+
+var i = 42 as int;
+var negated = -i;
+var negatedAgain = -negated;
+
+println(typeof(i));
+println(i);
+
+println(typeof(negated));
+println(negated);
+
+println(typeof(negatedAgain));
+println(negatedAgain);

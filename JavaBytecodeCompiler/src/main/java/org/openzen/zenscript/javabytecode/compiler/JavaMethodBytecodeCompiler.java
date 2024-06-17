@@ -744,6 +744,27 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case SHORT_INVERT:
 				javaWriter.invertShort();
 				break;
+
+			case FLOAT_NEG:
+				javaWriter.fNeg();
+				break;
+			case DOUBLE_NEG:
+				javaWriter.dNeg();
+				break;
+			case INT_NEG:
+				javaWriter.iNeg();
+				break;
+			case LONG_NEG:
+				javaWriter.lNeg();
+				break;
+			case SBYTE_NEG:
+				javaWriter.iNeg();
+				javaWriter.i2b();
+				break;
+			case SHORT_NEG:
+				javaWriter.iNeg();
+				javaWriter.i2s();
+				break;
 			case INT_TO_BYTE:
 			case USIZE_TO_BYTE:
 				break;

@@ -1,0 +1,4 @@
+#error: 4:CALL_NO_VALID_METHOD
+
+var i = 42 as usize;
+println(-i);
