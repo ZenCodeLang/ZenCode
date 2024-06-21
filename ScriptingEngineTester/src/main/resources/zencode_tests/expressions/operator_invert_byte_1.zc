@@ -1,0 +1,19 @@
+#output: byte
+#output: 42
+#output: byte
+#output: 213
+#output: byte
+#output: 42
+
+var i = 42 as byte;
+var inverted = ~i;
+var invertedAgain = ~inverted;
+
+println(typeof(i));
+println(i);
+
+println(typeof(inverted));
+println(inverted);
+
+println(typeof(invertedAgain));
+println(invertedAgain);

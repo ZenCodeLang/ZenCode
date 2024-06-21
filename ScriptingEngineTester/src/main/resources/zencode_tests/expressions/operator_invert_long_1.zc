@@ -1,0 +1,19 @@
+#output: long
+#output: 42
+#output: long
+#output: -43
+#output: long
+#output: 42
+
+var i = 42 as long;
+var inverted = ~i;
+var invertedAgain = ~inverted;
+
+println(typeof(i));
+println(i);
+
+println(typeof(inverted));
+println(inverted);
+
+println(typeof(invertedAgain));
+println(invertedAgain);
