@@ -198,7 +198,8 @@ public class 	ParsedExpressionInt extends ParsedExpression {
 					|| type == BasicTypeID.INT
 					|| type == BasicTypeID.UINT
 					|| type == BasicTypeID.LONG
-					|| type == BasicTypeID.ULONG;
+					|| type == BasicTypeID.ULONG
+					|| type == BasicTypeID.USIZE;
 		}
 
 		private CastedExpression.Level level(boolean fits) {

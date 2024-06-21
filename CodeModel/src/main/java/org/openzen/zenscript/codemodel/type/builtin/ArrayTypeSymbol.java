@@ -4,10 +4,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -165,6 +167,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		if (dimension == 1) {
 			members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTH1D));
+			members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_DOLLAR1D));
 		} else {
 			members.method(new MethodInstance(BuiltinMethodSymbol.ARRAY_LENGTHMD));
 		}

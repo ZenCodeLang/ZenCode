@@ -36,5 +36,7 @@ public interface ExpressionCompiler extends TypeResolver {
 
 	ExpressionCompiler withLocalVariables(List<CompilingVariable> variables);
 
+	ExpressionCompiler withDollar(CompilingExpression array);
+
 	StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header);
 }

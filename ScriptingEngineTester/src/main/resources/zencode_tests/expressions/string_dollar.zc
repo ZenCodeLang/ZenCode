@@ -1,0 +1,4 @@
+#output: yz
+
+var test = "xyz";
+println(test[1 .. $]);

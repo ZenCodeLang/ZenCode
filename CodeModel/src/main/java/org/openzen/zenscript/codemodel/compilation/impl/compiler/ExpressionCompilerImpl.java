@@ -94,7 +94,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 	@Override
 	public Optional<CompilingExpression> dollar() {
-		return locals.getDollar().map(e -> e.compile(this));
+		return locals.getDollar();
 	}
 
 	@Override
@@ -138,6 +138,12 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		for (CompilingVariable variable : variables) {
 			newLocals.add(variable);
 		}
+		return new ExpressionCompilerImpl(context, localType, types, thrownType, newLocals, header);
+	}
+
+	@Override
+	public ExpressionCompiler withDollar(CompilingExpression array) {
+		LocalSymbols newLocals = locals.withDollar(array);
 		return new ExpressionCompilerImpl(context, localType, types, thrownType, newLocals, header);
 	}
 

@@ -231,6 +231,7 @@ public class JavaBuiltinModule {
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_ISEMPTY, STRING_ISEMPTY);
 		JavaNativeMethod stringLength = JavaNativeMethod.getNativeVirtual(JavaClass.STRING, "length", "()I");
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_LENGTH, stringLength);
+		result.setMethodInfo(BuiltinMethodSymbol.STRING_DOLLAR, stringLength);
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_TO_UPPER_CASE, STRING_TO_UPPER_CASE);
 		result.setMethodInfo(BuiltinMethodSymbol.STRING_TO_LOWER_CASE, STRING_TO_LOWER_CASE);
 

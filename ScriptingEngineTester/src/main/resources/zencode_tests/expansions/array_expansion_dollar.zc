@@ -1,0 +1,9 @@
+#output: 3
+
+expand int[] {
+	last() as int {
+		return this[$ - 1];
+	}
+}
+
+println([1, 2, 3].last());

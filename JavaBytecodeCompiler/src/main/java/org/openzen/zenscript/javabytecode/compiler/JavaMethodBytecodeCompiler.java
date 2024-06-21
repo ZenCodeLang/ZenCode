@@ -1206,7 +1206,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.checkCast(resultType);
 				return null;
 			}
-			case ARRAY_LENGTH1D: {
+			case ARRAY_LENGTH1D:
+			case ARRAY_DOLLAR1D: {
 				javaWriter.arrayLength();
 				return null;
 			}

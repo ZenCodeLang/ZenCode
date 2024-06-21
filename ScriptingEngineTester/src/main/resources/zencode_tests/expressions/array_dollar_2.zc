@@ -1,0 +1,9 @@
+#output: hello
+#output: 3
+
+function generate(): int[] {
+	println("hello");
+	return [1, 2, 3];
+}
+
+println(generate()[$ - 1]);

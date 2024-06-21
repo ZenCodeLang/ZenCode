@@ -7,10 +7,12 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ParsedExpressionIndex extends ParsedExpression {
 	private final CompilableExpression value;
@@ -25,11 +27,13 @@ public class ParsedExpressionIndex extends ParsedExpression {
 
 	@Override
 	public CompilingExpression compile(ExpressionCompiler compiler) {
+		CompilingExpression value = this.value.compile(compiler);
+		ExpressionCompiler indexCompiler = compiler.withDollar(value);
 		return new Compiling(
 				compiler,
 				position,
-				value.compile(compiler),
-				indexes.stream().map(ix -> ix.compile(compiler)).toArray(CompilingExpression[]::new));
+				value,
+				indexes.stream().map(ix -> ix.compile(indexCompiler)).toArray(CompilingExpression[]::new));
 	}
 
 	private static class Compiling extends AbstractCompilingExpression {
@@ -45,6 +49,9 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression value = this.value.eval();
+			if (value.type == BasicTypeID.INVALID)
+				return value;
+
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
 					.map(method -> method.call(compiler, position, value, TypeID.NONE, indexes))
@@ -54,6 +61,9 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
+			if (value.type == BasicTypeID.INVALID)
+				return CastedExpression.invalid(value);
+
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
 					.map(method -> method.cast(compiler, position, cast, value, TypeID.NONE, indexes))
@@ -105,6 +115,9 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression instance = this.instance.eval();
+			if (instance.type == BasicTypeID.INVALID)
+				return CastedExpression.invalid(instance);
+
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
 					.map(operator -> operator.cast(compiler, position, cast, instance, TypeID.NONE, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
@@ -123,6 +136,33 @@ public class ParsedExpressionIndex extends ParsedExpression {
 			instance.linkVariables(linker);
 			for (CompilingExpression argument : arguments)
 				argument.linkVariables(linker);
+		}
+	}
+
+	private static class DollarExpression extends AbstractCompilingExpression {
+		private final InstanceCallable getter;
+		private final Expression array;
+
+		public DollarExpression(ExpressionCompiler compiler, CodePosition position, InstanceCallable getter, Expression array) {
+			super(compiler, position);
+
+			this.getter = getter;
+			this.array = array;
+		}
+
+		@Override
+		public Expression eval() {
+			return getter.call(compiler, position, array, TypeID.NONE, CompilingExpression.NONE);
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+
 		}
 	}
 }

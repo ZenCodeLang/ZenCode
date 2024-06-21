@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionUnary extends ParsedExpression {
@@ -39,6 +40,9 @@ public class ParsedExpressionUnary extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression value = this.value.eval();
+			if (value.type == BasicTypeID.INVALID)
+				return value;
+
 			ResolvedType resolvedType = compiler.resolve(value.type);
 			return resolvedType.findOperator(operator)
 					.map(operator -> operator.call(compiler, position, value, TypeID.NONE))
@@ -48,6 +52,9 @@ public class ParsedExpressionUnary extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
+			if (value.type == BasicTypeID.INVALID)
+				return CastedExpression.invalid(value);
+
 			ResolvedType resolvedType = compiler.resolve(value.type);
 			return resolvedType.findOperator(operator)
 					.map(operator -> cast.of(operator.call(compiler, position, value, TypeID.NONE)))

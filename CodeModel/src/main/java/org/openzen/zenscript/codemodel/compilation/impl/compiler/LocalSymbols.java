@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.CompilingVariable;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.*;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
@@ -25,7 +26,7 @@ public class LocalSymbols {
 	private final CompilingLoopStatement loop;
 	private final FunctionHeader header;
 	private final Map<String, CompilingVariable> localVariables = new HashMap<>();
-	private final CompilableExpression dollar;
+	private final CompilingExpression dollar;
 
 	public LocalSymbols(FunctionHeader header) {
 		this.parent = null;
@@ -42,19 +43,28 @@ public class LocalSymbols {
 		this.loopName = null;
 		this.header = header;
 		this.closure = closure;
-		this.dollar = null;
+		this.dollar = parent.dollar;
 	}
 
 	private LocalSymbols(LocalSymbols parent, CompilingLoopStatement loop, String... loopName) {
 		this.parent = parent;
-		this.closure = null;
+		this.closure = parent.closure;
 		this.loop = loop;
 		this.loopName = loopName;
-		this.header = null;
-		this.dollar = null;
+		this.header = parent.header;
+		this.dollar = parent.dollar;
 
 		for (CompilingVariable loopVariable : loop.getLoopVariables())
 			localVariables.put(loopVariable.name, loopVariable);
+	}
+
+	private LocalSymbols(LocalSymbols parent, CompilingExpression dollar) {
+		this.parent = parent;
+		this.closure = parent.closure;
+		this.loop = null;
+		this.loopName = null;
+		this.header = parent.header;
+		this.dollar = dollar;
 	}
 
 	public LocalSymbols forBlock() {
@@ -67,6 +77,10 @@ public class LocalSymbols {
 
 	public LocalSymbols forLoop(CompilingLoopStatement loop, String... loopName) {
 		return new LocalSymbols(this, loop, loopName);
+	}
+
+	public LocalSymbols withDollar(CompilingExpression dollar) {
+		return new LocalSymbols(this, dollar);
 	}
 
 	public Optional<CompilingLoopStatement> findLoop(String name) {
@@ -120,7 +134,7 @@ public class LocalSymbols {
 			return parent.capture(position, local);
 	}
 
-	public Optional<CompilableExpression> getDollar() {
+	public Optional<CompilingExpression> getDollar() {
 		return Optional.ofNullable(dollar);
 	}
 }
