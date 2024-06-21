@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -62,6 +63,11 @@ public class ImplementationMember extends DefinitionMember {
 			@Override
 			public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
 				return builder.interfaceCast(implementationInstance, instance);
+			}
+
+			@Override
+			public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+				return builder.invalid(CompileErrors.invalidPostfix());
 			}
 		});
 

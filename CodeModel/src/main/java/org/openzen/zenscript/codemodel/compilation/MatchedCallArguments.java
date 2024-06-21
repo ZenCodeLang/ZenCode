@@ -27,25 +27,29 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
 	) {
-
 		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = overloads.stream()
 				.map(method -> new MatchedCallArguments<>(method, match(compiler, position, method, asType, typeArguments, arguments)))
 				.collect(Collectors.groupingBy(matched -> matched.arguments.level, Collectors.toList()));
-
 
 		for (final CastedExpression.Level level : candidateLevelsInOrderOfPriority) {
 			final List<MatchedCallArguments<T>> matchingMethods = methodsGroupedByMatchLevel.getOrDefault(level, Collections.emptyList());
 
 			switch (matchingMethods.size()) {
-				case 0: continue;
-				case 1: return matchingMethods.get(0);
-				default: return ambiguousCall(methodsGroupedByMatchLevel);
+				case 0:
+					continue;
+				case 1:
+					return matchingMethods.get(0);
+				default:
+					return ambiguousCall(methodsGroupedByMatchLevel);
 			}
 		}
 
-		List<FunctionHeader> headers = overloads.stream().map(AnyMethod::getHeader).collect(Collectors.toList());
-		List<TypeID> types = Arrays.stream(arguments).map(CompilingExpression::eval).map(it -> it.type).collect(Collectors.toList());
-		return new MatchedCallArguments<>(CompileErrors.noMethodMatched(headers, types));
+		return methodsGroupedByMatchLevel.get(CastedExpression.Level.INVALID).stream().findFirst()
+				.orElseGet(() -> {
+					List<FunctionHeader> headers = overloads.stream().map(AnyMethod::getHeader).collect(Collectors.toList());
+					List<TypeID> types = Arrays.stream(arguments).map(CompilingExpression::eval).map(it -> it.type).collect(Collectors.toList());
+					return new MatchedCallArguments<>(CompileErrors.noMethodMatched(headers, types));
+				});
 	}
 
 	private static <T extends AnyMethod> MatchedCallArguments<T> ambiguousCall(Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel) {
@@ -186,6 +190,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		List<Expression> varargArguments = new ArrayList<>();
 		CastedExpression.Level levelNormalCall = CastedExpression.Level.EXACT;
 		CastedExpression.Level levelVarargCall = null;
+		boolean hasInvalidArguments = false;
 
 		for (int i = 0; i < cArguments.length; i++) {
 			if (couldBeVariadic && i >= header.parameters.length - 1) {
@@ -195,17 +200,22 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				CastedExpression cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, variadicType));
 				varargArguments.add(cArgument.value);
 				levelVarargCall = levelVarargCall.max(cArgument.level);
+				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
 			} else {
 				TypeID parameterType = header.getParameterType(false, i);
 				CastedExpression cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
 				cArguments[i] = cArgument.value;
 				levelNormalCall = levelNormalCall.max(cArgument.level);
+				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
 			}
 		}
+		if (hasInvalidArguments) {
+			return new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, cArguments);
+		}
 
-		 if (method.hasWideningConversions()) {
-			 if (levelNormalCall == CastedExpression.Level.EXACT)
-				 levelNormalCall = CastedExpression.Level.WIDENING;
+		if (method.hasWideningConversions()) {
+			if (levelNormalCall == CastedExpression.Level.EXACT)
+				levelNormalCall = CastedExpression.Level.WIDENING;
 
 			FunctionHeader originalHeader = method.asMethod().map(instance -> instance.method.getHeader()).orElse(header);
 

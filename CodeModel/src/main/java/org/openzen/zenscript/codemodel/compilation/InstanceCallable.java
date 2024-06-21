@@ -49,7 +49,11 @@ public final class InstanceCallable {
 	}
 
 	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
-		return builder.invalid(CompileErrors.invalidPostfix());
+		if (overloads.size() != 1) {
+			return builder.invalid(CompileErrors.invalidPostfix());
+		} else {
+			return overloads.get(0).callPostfix(builder, instance);
+		}
 	}
 
 	public CompilingCallable bind(ExpressionCompiler compiler, Expression instance, TypeID[] typeArguments) {

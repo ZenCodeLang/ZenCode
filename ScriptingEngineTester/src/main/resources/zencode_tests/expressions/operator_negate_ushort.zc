@@ -1,4 +1,4 @@
-#error: 4:CALL_NO_VALID_METHOD
+#error: 4:NO_SUCH_MEMBER
 
 var i = 42 as ushort;
 println(-i);

@@ -27,6 +27,8 @@ public interface ExpressionBuilder {
 
 	Expression callSuper(MethodInstance method, Expression target, CallArguments arguments);
 
+	Expression callPostfix(MethodInstance method, Expression target);
+
 	Expression coalesce(Expression left, Expression right);
 
 	Expression constant(boolean value);

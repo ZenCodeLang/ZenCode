@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 
@@ -11,10 +10,9 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 public class PostCallExpression extends Expression {
 	public final Expression target;
 	public final MethodInstance member;
-	public final FunctionHeader instancedHeader;
 
-	public PostCallExpression(CodePosition position, Expression target, MethodInstance member, FunctionHeader instancedHeader) {
-		super(position, instancedHeader.getReturnType(), binaryThrow(position, instancedHeader.thrownType, target.thrownType));
+	public PostCallExpression(CodePosition position, Expression target, MethodInstance member) {
+		super(position, member.getHeader().getReturnType(), binaryThrow(position, member.getHeader().thrownType, target.thrownType));
 
 		OperatorType operator = member.method.getID().getOperator().orElse(null);
 		if (operator != OperatorType.DECREMENT && operator != OperatorType.INCREMENT)
@@ -22,7 +20,6 @@ public class PostCallExpression extends Expression {
 
 		this.target = target;
 		this.member = member;
-		this.instancedHeader = instancedHeader;
 	}
 
 	@Override
@@ -38,6 +35,6 @@ public class PostCallExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
-		return target == tTarget ? this : new PostCallExpression(position, tTarget, member, instancedHeader);
+		return target == tTarget ? this : new PostCallExpression(position, tTarget, member);
 	}
 }

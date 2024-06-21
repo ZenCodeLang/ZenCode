@@ -80,6 +80,11 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	}
 
 	@Override
+	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+		return builder.callPostfix(this, instance);
+	}
+
+	@Override
 	public Expression call(ExpressionBuilder builder, CallArguments arguments) {
 		return builder.callStatic(this, arguments);
 	}

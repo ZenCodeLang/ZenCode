@@ -43,6 +43,11 @@ public class AmbiguousExpansionCall implements InstanceCallableMethod, StaticCal
 	}
 
 	@Override
+	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+		return builder.invalid(CompileErrors.ambiguousExpansionCall(methods));
+	}
+
+	@Override
 	public Expression call(ExpressionBuilder builder, CallArguments arguments) {
 		return builder.invalid(CompileErrors.ambiguousExpansionCall(methods));
 	}

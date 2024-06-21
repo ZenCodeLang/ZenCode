@@ -8,4 +8,6 @@ public interface InstanceCallableMethod extends AnyMethod {
 	Modifiers getModifiers();
 
 	Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments);
+
+	Expression callPostfix(ExpressionBuilder builder, Expression instance);
 }

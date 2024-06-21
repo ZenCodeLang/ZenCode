@@ -180,6 +180,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression callPostfix(MethodInstance method, Expression target) {
+			return new PostCallExpression(position, target, method);
+		}
+
+		@Override
 		public Expression coalesce(Expression left, Expression right) {
 			return new CoalesceExpression(position, left, right);
 		}
