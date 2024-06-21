@@ -47,11 +47,11 @@ public class ParsedExpressionUnary extends ParsedExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			CastedExpression value = this.value.cast(cast);
-			ResolvedType resolvedType = compiler.resolve(value.value.type);
+			Expression value = this.value.eval();
+			ResolvedType resolvedType = compiler.resolve(value.type);
 			return resolvedType.findOperator(operator)
-					.map(operator -> cast.of(value.level, operator.call(compiler, position, value.value, TypeID.NONE)))
-					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.value.type, operator)));
+					.map(operator -> cast.of(operator.call(compiler, position, value, TypeID.NONE)))
+					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.type, operator)));
 		}
 
 		@Override
