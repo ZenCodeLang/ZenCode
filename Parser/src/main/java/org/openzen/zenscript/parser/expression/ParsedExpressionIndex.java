@@ -12,7 +12,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class ParsedExpressionIndex extends ParsedExpression {
 	private final CompilableExpression value;
@@ -28,11 +27,12 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	@Override
 	public CompilingExpression compile(ExpressionCompiler compiler) {
 		CompilingExpression value = this.value.compile(compiler);
-		ExpressionCompiler indexCompiler = compiler.withDollar(value);
+		CompilingExpression memoizedValue = new MemoizedCompilingExpression(compiler, position, value);
+		ExpressionCompiler indexCompiler = compiler.withDollar(memoizedValue);
 		return new Compiling(
 				compiler,
 				position,
-				value,
+				memoizedValue,
 				indexes.stream().map(ix -> ix.compile(indexCompiler)).toArray(CompilingExpression[]::new));
 	}
 
@@ -136,33 +136,6 @@ public class ParsedExpressionIndex extends ParsedExpression {
 			instance.linkVariables(linker);
 			for (CompilingExpression argument : arguments)
 				argument.linkVariables(linker);
-		}
-	}
-
-	private static class DollarExpression extends AbstractCompilingExpression {
-		private final InstanceCallable getter;
-		private final Expression array;
-
-		public DollarExpression(ExpressionCompiler compiler, CodePosition position, InstanceCallable getter, Expression array) {
-			super(compiler, position);
-
-			this.getter = getter;
-			this.array = array;
-		}
-
-		@Override
-		public Expression eval() {
-			return getter.call(compiler, position, array, TypeID.NONE, CompilingExpression.NONE);
-		}
-
-		@Override
-		public void collect(SSAVariableCollector collector) {
-
-		}
-
-		@Override
-		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-
 		}
 	}
 }
