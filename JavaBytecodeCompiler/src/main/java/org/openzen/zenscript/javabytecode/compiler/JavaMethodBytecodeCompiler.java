@@ -214,10 +214,19 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		if (method.compile) {
 			handleTypeArguments(method, arguments);
 		}
+
+		// This happens e.g. for Strings where compareTo is a static method in zencode but a virtual one in Java
+		boolean[] primitiveArguments = method.primitiveArguments;
+		if (primitiveArguments.length + 1 == arguments.arguments.length) {
+			primitiveArguments = new boolean[arguments.arguments.length];
+			primitiveArguments[0] = false; // Let's just assume they are all for object types
+			System.arraycopy(method.primitiveArguments, 0, primitiveArguments, 1, method.primitiveArguments.length);
+		}
+
 		for (int index = 0; index < arguments.arguments.length; index++) {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
-			if (!method.primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION ? 1 : 0)]) {
+			if (!primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION ? 1 : 0)]) {
 				argument.type.accept(argument.type, boxingTypeVisitor);
 			}
 		}
@@ -1185,6 +1194,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case STRING_INDEXGET:
 				javaWriter.invokeVirtual(STRING_CHAR_AT);
+				break;
+			case STRING_TRIM:
+				javaWriter.invokeVirtual(STRING_TRIM);
 				break;
 			case ASSOC_KEYS: {
 				Type resultType = context.getType(arguments[0].type);

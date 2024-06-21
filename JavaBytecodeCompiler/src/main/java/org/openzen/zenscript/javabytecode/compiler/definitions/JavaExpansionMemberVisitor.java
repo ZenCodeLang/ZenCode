@@ -221,6 +221,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.compiled.name, member.header);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;
+		class_.addMethod(methodMember, javaMethod);
 		return methodMember.accept(this);
 	}
 

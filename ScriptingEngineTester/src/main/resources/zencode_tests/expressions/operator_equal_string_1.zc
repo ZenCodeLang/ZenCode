@@ -1,0 +1,5 @@
+#output: true
+#output: false
+
+println("hello" == "hello");
+println("hello" == "world");
