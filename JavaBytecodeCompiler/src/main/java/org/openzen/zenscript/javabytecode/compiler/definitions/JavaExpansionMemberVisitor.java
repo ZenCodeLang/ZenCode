@@ -218,6 +218,10 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitOperator(OperatorMember member) {
 		final JavaCompilingMethod javaMethod = class_.getMethod(member);
+		if (!javaMethod.compile) {
+			return null;
+		}
+
 		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.compiled.name, member.header);
 		methodMember.body = member.body;
 		methodMember.annotations = member.annotations;

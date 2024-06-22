@@ -125,29 +125,33 @@ public class JavaCompilingClass {
 		if (native_ != null && nativeClass != null) {
 			final String signature = getContext().getMethodSignature(method.getHeader());
 			JavaMethod method1 = nativeClass.getMethod(native_.value);
-			addMethod(method, method1.asCompilingMethod(compiled, signature), method1);
-		} else {
-			final JavaNativeMethod.Kind kind = getKind(method);
-			final String descriptor;
-			final String signature;
-			if (kind == JavaNativeMethod.Kind.EXPANSION) {
-				descriptor = getContext().getMethodDescriptorExpansion(method.getHeader(), method.getTargetType());
-				signature = getContext().getMethodSignatureExpansion(method.getHeader(), method.getTargetType());
-			} else {
-				descriptor = getContext().getMethodDescriptor(method.getHeader());
-				signature = getContext().getMethodSignature(method.getHeader());
+			if (method1 != null) {
+				addMethod(method, method1.asCompilingMethod(compiled, signature), method1);
+				return;
 			}
-			JavaNativeMethod javaMethod = new JavaNativeMethod(
-					compiled,
-					kind,
-					method.getID().accept(MethodNamer.INSTANCE),
-					true,
-					descriptor,
-					JavaModifiers.getJavaModifiers(method.getModifiers()),
-					getContext().isGenericReturn(method.getHeader().getReturnType()),
-					method.getHeader().useTypeParameters());
-			addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
+
 		}
+
+		final JavaNativeMethod.Kind kind = getKind(method);
+		final String descriptor;
+		final String signature;
+		if (kind == JavaNativeMethod.Kind.EXPANSION) {
+			descriptor = getContext().getMethodDescriptorExpansion(method.getHeader(), method.getTargetType());
+			signature = getContext().getMethodSignatureExpansion(method.getHeader(), method.getTargetType());
+		} else {
+			descriptor = getContext().getMethodDescriptor(method.getHeader());
+			signature = getContext().getMethodSignature(method.getHeader());
+		}
+		JavaNativeMethod javaMethod = new JavaNativeMethod(
+				compiled,
+				kind,
+				method.getID().accept(MethodNamer.INSTANCE),
+				true,
+				descriptor,
+				JavaModifiers.getJavaModifiers(method.getModifiers()),
+				getContext().isGenericReturn(method.getHeader().getReturnType()),
+				method.getHeader().useTypeParameters());
+		addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
 	}
 
 	public void addDependency(DefinitionSymbol symbol) {
