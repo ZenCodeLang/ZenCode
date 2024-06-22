@@ -59,6 +59,19 @@ public class ArithmeticTests extends ZenCodeTest {
 		logger.assertPrintOutput(0, isResultFloatingPoint(typeLeft, typeRight) ? "42.0" : "42");
 	}
 
+	// Ensure that widening also works when nested in other calls
+	@ParameterizedTest
+	@MethodSource("numberTypes")
+	public void additionWorksWithDifferentTypes_withCastingToString(String typeLeft, String typeRight) {
+		ScriptBuilder.create()
+				.add("var left   = 13 as " + typeLeft + ";")
+				.add("var right  = 29 as " + typeRight + ";")
+				.add("println(left + right);")
+				.execute(this);
+
+		logger.assertPrintOutput(0, isResultFloatingPoint(typeLeft, typeRight) ? "42.0" : "42");
+	}
+
 	@ParameterizedTest
 	@MethodSource("numberTypes")
 	public void subtractionWorksWithDifferentTypes(String typeLeft, String typeRight) {
