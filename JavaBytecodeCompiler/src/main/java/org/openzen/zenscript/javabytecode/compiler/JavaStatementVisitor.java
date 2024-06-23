@@ -51,7 +51,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	public Boolean visitBreak(BreakStatement statement) {
 		javaWriter.position(statement.position.fromLine);
 
-		Label endLabel = context.getLoopLabels(statement.target).loopEnd;
+		Label endLabel = context.getLoopLabels(statement.target).afterLoop;
 		javaWriter.goTo(endLabel);
 
 		return false;
@@ -61,8 +61,8 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	public Boolean visitContinue(ContinueStatement statement) {
 		javaWriter.position(statement.position.fromLine);
 
-		Label startLabel = context.getLoopLabels(statement.target).loopStart;
-		javaWriter.goTo(startLabel);
+		Label endOfLoopBody = context.getLoopLabels(statement.target).endOfLoopBody;
+		javaWriter.goTo(endOfLoopBody);
 
 		return false;
 	}
@@ -70,19 +70,21 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitDoWhile(DoWhileStatement statement) {
 		javaWriter.position(statement.position.fromLine);
-		Label start = new Label();
-		Label end = new Label();
+		Label startOfLoopBody = new Label();
+		Label endOfLoopBody = new Label();
+		Label afterLoop = new Label();
 
-		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
+		context.setLoopLabels(statement, new BytecodeLoopLabels(startOfLoopBody, endOfLoopBody, afterLoop));
 
-		javaWriter.label(start);
+		javaWriter.label(startOfLoopBody);
 		statement.content.accept(this);
+		javaWriter.label(endOfLoopBody);
 
 		statement.condition.accept(expressionVisitor);
-		javaWriter.ifNE(start);
+		javaWriter.ifNE(startOfLoopBody);
 
 		//Only needed for break statements, should be nop if not used
-		javaWriter.label(end);
+		javaWriter.label(afterLoop);
 		return false;
 	}
 
@@ -103,9 +105,10 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	public Boolean visitForeach(ForeachStatement statement) {
 		javaWriter.position(statement.position.fromLine);
 		//Create Labels
-		Label start = new Label();
-		Label end = new Label();
-		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
+		Label startOfLoopBody = new Label();
+		Label endOfLoopBody = new Label();
+		Label afterLoop = new Label();
+		context.setLoopLabels(statement, new BytecodeLoopLabels(startOfLoopBody, endOfLoopBody, afterLoop));
 
 
 		//Compile Array/Collection
@@ -116,13 +119,13 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 			final Type type = context.getType(variable.type);
 			final Label variableStart = new Label();
 			final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
-			info.end = end;
+			info.end = afterLoop;
 			javaWriter.setLocalVariable(variable.variable, info);
 			javaWriter.addVariableInfo(info);
 		}
 
 		//javaWriter.label(min);
-		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, start, end);
+		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, startOfLoopBody, endOfLoopBody, afterLoop);
 		if (statement.iterator.method.method instanceof BuiltinMethodSymbol) {
 			switch ((BuiltinMethodSymbol) statement.iterator.method.method) {
 				case ITERATOR_INT_RANGE:
@@ -156,8 +159,8 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 			iteratorWriter.visitCustomIterator();
 		}
 
-		javaWriter.goTo(start);
-		javaWriter.label(end);
+		javaWriter.goTo(startOfLoopBody);
+		javaWriter.label(afterLoop);
 		javaWriter.pop();
 		return false;
 	}
@@ -214,7 +217,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		final Label start = new Label();
 		final Label end = new Label();
-		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
+		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end, end));
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
@@ -352,16 +355,16 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitWhile(WhileStatement statement) {
 		javaWriter.position(statement.position.fromLine);
-		Label start = new Label();
-		Label end = new Label();
-		context.setLoopLabels(statement, new BytecodeLoopLabels(start, end));
+		Label startOfLoopBody = new Label();
+		Label afterLoop = new Label();
+		context.setLoopLabels(statement, new BytecodeLoopLabels(startOfLoopBody, startOfLoopBody, afterLoop));
 
-		javaWriter.label(start);
+		javaWriter.label(startOfLoopBody);
 		statement.condition.accept(expressionVisitor);
-		javaWriter.ifEQ(end);
+		javaWriter.ifEQ(afterLoop);
 		statement.content.accept(this);
-		javaWriter.goTo(start);
-		javaWriter.label(end);
+		javaWriter.goTo(startOfLoopBody);
+		javaWriter.label(afterLoop);
 		return false;
 	}
 

@@ -20,17 +20,19 @@ public class JavaForeachWriter {
 
 	private final JavaWriter javaWriter;
 	private final ForeachStatement statement;
-	private final Label startLabel;
-	private final Label endLabel;
+	private final Label startOfLoopBody;
+	private final Label endOfLoopBody;
+	private final Label afterLoop;
 	private final JavaStatementVisitor statementVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 
-	public JavaForeachWriter(JavaStatementVisitor statementVisitor, ForeachStatement statement, Label start, Label end) {
+	public JavaForeachWriter(JavaStatementVisitor statementVisitor, ForeachStatement statement, Label startOfLoopBody, Label endOfLoopBody, Label afterLoop) {
 		this.statementVisitor = statementVisitor;
 		this.javaWriter = statementVisitor.getJavaWriter();
 		this.statement = statement;
-		this.startLabel = start;
-		this.endLabel = end;
+		this.startOfLoopBody = startOfLoopBody;
+		this.endOfLoopBody = endOfLoopBody;
+		this.afterLoop = afterLoop;
 		this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
 	}
 
@@ -43,12 +45,13 @@ public class JavaForeachWriter {
 
 		final int z = javaWriter.getLocalVariable(statement.loopVariables[0].variable).local;
 		javaWriter.storeInt(z);
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.loadInt(z);
-		javaWriter.ifICmpLE(endLabel);
+		javaWriter.ifICmpLE(afterLoop);
 
 		statement.getContent().accept(statementVisitor);
+		javaWriter.label(endOfLoopBody);
 		javaWriter.iinc(z);
 	}
 
@@ -67,33 +70,34 @@ public class JavaForeachWriter {
 
 	public void visitIteratorIterator(Type targetType) {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERABLE, "iterator", "()Ljava/lang/Iterator;", 0));
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(endLabel);
+		javaWriter.ifEQ(afterLoop);
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(targetType);
 		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		javaWriter.store(variable.type, variable.local);
 
 		statement.getContent().accept(statementVisitor);
+		javaWriter.label(endOfLoopBody);
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
 		if (statement.list.type.isOptional()) {
 			javaWriter.dup();
-			javaWriter.ifNull(endLabel);
+			javaWriter.ifNull(afterLoop);
 		}
 
 		javaWriter.iConst0();
 		javaWriter.storeInt(z);
 
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.arrayLength();
 		javaWriter.loadInt(z);
 
-		javaWriter.ifICmpLE(endLabel);
+		javaWriter.ifICmpLE(afterLoop);
 		javaWriter.dup();
 		javaWriter.loadInt(z);
 
@@ -111,16 +115,18 @@ public class JavaForeachWriter {
 		}
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);
 		statement.getContent().accept(statementVisitor);
+
+		javaWriter.label(endOfLoopBody);
 		javaWriter.iinc(z);
 	}
 
 	public void visitCustomIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE), "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(endLabel);
+		javaWriter.ifEQ(afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
@@ -129,16 +135,17 @@ public class JavaForeachWriter {
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
 		statement.getContent().accept(statementVisitor);
+		javaWriter.label(endOfLoopBody);
 	}
 
 	public void visitAssocKeyIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.MAP, "keySet", "()Ljava/util/Set;", 0));
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(endLabel);
+		javaWriter.ifEQ(afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
@@ -147,16 +154,17 @@ public class JavaForeachWriter {
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
 		statement.getContent().accept(statementVisitor);
+		javaWriter.label(endOfLoopBody);
 	}
 
 	public void visitAssocKeyValueIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.MAP, "entrySet", "()Ljava/util/Set;", 0));
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startLabel);
+		javaWriter.label(startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(endLabel);
+		javaWriter.ifEQ(afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(Type.getType(Map.Entry.class));
@@ -175,6 +183,7 @@ public class JavaForeachWriter {
 		javaWriter.store(valueVariable.type, valueVariable.local);
 
 		statement.getContent().accept(statementVisitor);
+		javaWriter.label(endOfLoopBody);
 	}
 
 	private void downCast(int typeNumber, Type t) {

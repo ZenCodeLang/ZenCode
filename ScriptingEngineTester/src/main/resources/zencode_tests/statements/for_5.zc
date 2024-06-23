@@ -1,0 +1,9 @@
+#output: 1
+#output: 3
+
+val nums = [1, 2, 3, 4];
+
+for x in nums {
+    if (x % 2 == 0) continue;
+    println(x);
+}
