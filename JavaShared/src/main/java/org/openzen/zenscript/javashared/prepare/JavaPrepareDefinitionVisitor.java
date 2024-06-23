@@ -133,7 +133,6 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass cls = new JavaNativeClass(string);
 			cls.addMethod("contains", JavaSpecialMethod.CONTAINS_AS_INDEXOF);
 			cls.addInstanceMethod("compareToIgnoreCase","compareToIgnoreCase", "(Ljava/lang/String;)I");
-			cls.addInstanceMethod("endsWith","endsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("equalsIgnoreCase","equalsIgnoreCase", "(Ljava/lang/String;)Z");
 
 			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
