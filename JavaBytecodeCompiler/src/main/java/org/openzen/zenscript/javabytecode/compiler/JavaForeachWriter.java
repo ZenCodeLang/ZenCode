@@ -1,6 +1,5 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -8,6 +7,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
@@ -20,19 +20,15 @@ public class JavaForeachWriter {
 
 	private final JavaWriter javaWriter;
 	private final ForeachStatement statement;
-	private final Label startOfLoopBody;
-	private final Label endOfLoopBody;
-	private final Label afterLoop;
 	private final JavaStatementVisitor statementVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
+	private final BytecodeLoopLabels bytecodeLoopLabels;
 
-	public JavaForeachWriter(JavaStatementVisitor statementVisitor, ForeachStatement statement, Label startOfLoopBody, Label endOfLoopBody, Label afterLoop) {
+	public JavaForeachWriter(JavaStatementVisitor statementVisitor, ForeachStatement statement, BytecodeLoopLabels bytecodeLoopLabels) {
 		this.statementVisitor = statementVisitor;
 		this.javaWriter = statementVisitor.getJavaWriter();
 		this.statement = statement;
-		this.startOfLoopBody = startOfLoopBody;
-		this.endOfLoopBody = endOfLoopBody;
-		this.afterLoop = afterLoop;
+		this.bytecodeLoopLabels = bytecodeLoopLabels;
 		this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
 	}
 
@@ -45,13 +41,13 @@ public class JavaForeachWriter {
 
 		final int z = javaWriter.getLocalVariable(statement.loopVariables[0].variable).local;
 		javaWriter.storeInt(z);
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.loadInt(z);
-		javaWriter.ifICmpLE(afterLoop);
+		javaWriter.ifICmpLE(bytecodeLoopLabels.afterLoop);
 
 		statement.getContent().accept(statementVisitor);
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 		javaWriter.iinc(z);
 	}
 
@@ -70,34 +66,34 @@ public class JavaForeachWriter {
 
 	public void visitIteratorIterator(Type targetType) {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERABLE, "iterator", "()Ljava/lang/Iterator;", 0));
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(afterLoop);
+		javaWriter.ifEQ(bytecodeLoopLabels.afterLoop);
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(targetType);
 		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		javaWriter.store(variable.type, variable.local);
 
 		statement.getContent().accept(statementVisitor);
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
 		if (statement.list.type.isOptional()) {
 			javaWriter.dup();
-			javaWriter.ifNull(afterLoop);
+			javaWriter.ifNull(bytecodeLoopLabels.afterLoop);
 		}
 
 		javaWriter.iConst0();
 		javaWriter.storeInt(z);
 
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.arrayLength();
 		javaWriter.loadInt(z);
 
-		javaWriter.ifICmpLE(afterLoop);
+		javaWriter.ifICmpLE(bytecodeLoopLabels.afterLoop);
 		javaWriter.dup();
 		javaWriter.loadInt(z);
 
@@ -116,17 +112,17 @@ public class JavaForeachWriter {
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);
 		statement.getContent().accept(statementVisitor);
 
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 		javaWriter.iinc(z);
 	}
 
 	public void visitCustomIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE), "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(afterLoop);
+		javaWriter.ifEQ(bytecodeLoopLabels.afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
@@ -135,17 +131,17 @@ public class JavaForeachWriter {
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
 		statement.getContent().accept(statementVisitor);
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 	}
 
 	public void visitAssocKeyIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.MAP, "keySet", "()Ljava/util/Set;", 0));
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(afterLoop);
+		javaWriter.ifEQ(bytecodeLoopLabels.afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 
@@ -154,17 +150,17 @@ public class JavaForeachWriter {
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
 		statement.getContent().accept(statementVisitor);
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 	}
 
 	public void visitAssocKeyValueIterator() {
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.MAP, "entrySet", "()Ljava/util/Set;", 0));
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
 
-		javaWriter.label(startOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.startOfLoopBody);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-		javaWriter.ifEQ(afterLoop);
+		javaWriter.ifEQ(bytecodeLoopLabels.afterLoop);
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaNativeMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0, true));
 		javaWriter.checkCast(Type.getType(Map.Entry.class));
@@ -183,7 +179,7 @@ public class JavaForeachWriter {
 		javaWriter.store(valueVariable.type, valueVariable.local);
 
 		statement.getContent().accept(statementVisitor);
-		javaWriter.label(endOfLoopBody);
+		javaWriter.label(bytecodeLoopLabels.endOfLoopBody);
 	}
 
 	private void downCast(int typeNumber, Type t) {

@@ -108,7 +108,8 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		Label startOfLoopBody = new Label();
 		Label endOfLoopBody = new Label();
 		Label afterLoop = new Label();
-		context.setLoopLabels(statement, new BytecodeLoopLabels(startOfLoopBody, endOfLoopBody, afterLoop));
+		BytecodeLoopLabels bytecodeLoopLabels = new BytecodeLoopLabels(startOfLoopBody, endOfLoopBody, afterLoop);
+		context.setLoopLabels(statement, bytecodeLoopLabels);
 
 
 		//Compile Array/Collection
@@ -125,7 +126,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		}
 
 		//javaWriter.label(min);
-		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, startOfLoopBody, endOfLoopBody, afterLoop);
+		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, bytecodeLoopLabels);
 		if (statement.iterator.method.method instanceof BuiltinMethodSymbol) {
 			switch ((BuiltinMethodSymbol) statement.iterator.method.method) {
 				case ITERATOR_INT_RANGE:

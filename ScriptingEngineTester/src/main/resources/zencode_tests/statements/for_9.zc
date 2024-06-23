@@ -1,0 +1,23 @@
+#output: 0
+#output: 1
+#output: not even
+#output: 2
+#output: 3
+#output: not even
+#output: 4
+#output: 5
+#output: not even
+#output: 6
+#output: 7
+#output: not even
+#output: 8
+#output: 9
+#output: not even
+
+for i in 0 .. 10 {
+	println(i);
+	if i % 2 == 0 {
+		continue;
+	}
+	println("not even");
+}
