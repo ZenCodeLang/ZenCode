@@ -96,26 +96,28 @@ public class JavaNativeTypeTemplate {
 		fields = new HashMap<>();
 
 		for (Field field : class_.cls.getFields()) {
-			if (!field.isAccessible())
+			if (!Modifier.isPublic(field.getModifiers()))
 				continue;
 
+			final String zenCodeName;
 			if (field.isAnnotationPresent(ZenCodeType.Field.class)) {
 				ZenCodeType.Field fieldAnnotation = field.getAnnotation(ZenCodeType.Field.class);
-				String name = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
-				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
-				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
-				fields.put(name, new JavaRuntimeField(class_, name, nativeField, type, field));
+				zenCodeName = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
 			} else if (field.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(field.getModifiers())) {
 				ZenCodeGlobals.Global fieldAnnotation = field.getAnnotation(ZenCodeGlobals.Global.class);
-				String name = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
-				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
-				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
-				fields.put(name, new JavaRuntimeField(class_, name, nativeField, type, field));
+				zenCodeName = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
 			} else if (field.isEnumConstant()) {
-				TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
-				JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
-				fields.put(field.getName(), new JavaRuntimeField(class_, field.getName(), nativeField, type, field));
+				zenCodeName = field.getName();
+			} else {
+				continue;
 			}
+
+			TypeID type = class_.module.getTypeConverter().getType(typeVariableContext, field.getAnnotatedType());
+			JavaNativeField nativeField = new JavaNativeField(class_.javaClass, field.getName(), Type.getDescriptor(field.getType()));
+			JavaRuntimeField runtimeField = new JavaRuntimeField(class_, zenCodeName, nativeField, type, field);
+
+			fields.put(zenCodeName, runtimeField);
+			class_.module.getCompiled().setFieldInfo(runtimeField, nativeField);
 		}
 	}
 
