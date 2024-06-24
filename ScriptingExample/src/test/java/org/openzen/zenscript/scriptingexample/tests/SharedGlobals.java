@@ -13,4 +13,9 @@ public class SharedGlobals {
 	public static void println(String s) {
 		currentlyActiveLogger.logPrintln(s);
 	}
+
+	@ZenCodeGlobals.Global
+	public static String softNullString(boolean null_) {
+		return null_ ? null : "value";
+	}
 }

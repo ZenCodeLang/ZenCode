@@ -1,4 +1,3 @@
-// Disabled until .isPresent method definition properly compiles
 #output: Hello World
 #output: Done
 
@@ -27,3 +26,4 @@ public variant Optional<T> {
 
 var opt as Optional<string> = Present('Hello World');
 opt.ifPresent((value) => println(value));
+println("Done");

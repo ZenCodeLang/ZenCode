@@ -29,9 +29,4 @@ public class Globals implements ZenCodeGlobals {
 			println("Doing something: " + functionalInterfaceClass.doSomething("Hello World"));
 		}
 	}
-
-	@Global
-	public static String softNullString(boolean null_) {
-		return null_ ? null : "value";
-	}
 }
