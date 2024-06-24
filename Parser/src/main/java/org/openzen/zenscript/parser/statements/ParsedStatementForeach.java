@@ -1,16 +1,20 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingExpressionCodeStatement;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingStatement;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.ssa.IterateStatement;
 import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 
@@ -106,8 +110,12 @@ public class ParsedStatementForeach extends ParsedStatement {
 
 			ResolvedType listType = compiler.resolve(list.type);
 			Optional<IteratorInstance> maybeIterator = listType.findIterator(varnames.length);
-			if (!maybeIterator.isPresent())
+			if (!maybeIterator.isPresent()) {
+				if(list instanceof InvalidExpression) {
+					return new InvalidStatement(position, ((InvalidExpression) list).error);
+				}
 				return new InvalidStatement(position, CompileErrors.noSuchIterator(list.type, varnames.length));
+			}
 
 			IteratorInstance iterator = maybeIterator.get();
 			TypeID[] loopTypes = iterator.getLoopVariableTypes();
