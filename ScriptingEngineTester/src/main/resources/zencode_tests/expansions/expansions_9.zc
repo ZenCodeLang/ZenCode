@@ -1,0 +1,37 @@
+#output: -- t --
+#output: string[]
+#output: -- t2 --
+#output: T@expansions_9.zc:10:15[]
+#output: string
+#output: -- getU --
+#output: U@expansions_9.zc:19:16
+#output: string
+
+public expand <T> T[] {
+    public get t => this;
+
+    public get t2 as T {
+        println(typeof(this));
+        return this[0];
+    }
+
+
+    public getU<U>(u: U): U {
+        println(typeof(u));
+        return u;
+    }
+}
+
+var array = [""] as string[];
+
+
+println("-- t --");
+println(typeof(array.t));
+
+println("-- t2 --");
+var t2 = array.t2;
+println(typeof(t2));
+
+println("-- getU --");
+var getU = array.getU<string>("");
+println(typeof(getU));
