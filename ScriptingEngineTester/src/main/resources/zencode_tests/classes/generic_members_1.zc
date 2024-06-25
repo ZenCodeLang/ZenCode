@@ -1,0 +1,13 @@
+#output: string
+#output: Hello World
+
+public class MyClass {
+    public static identity<T>(t: T): T {
+        return t;
+    }
+}
+
+var identity = MyClass.identity<string>("Hello World");
+println(typeof(identity));
+// comment back in when typeof identity == string instead of T@generic_members
+//println(identity);
