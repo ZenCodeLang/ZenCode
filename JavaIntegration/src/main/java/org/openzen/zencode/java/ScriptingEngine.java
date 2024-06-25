@@ -223,6 +223,12 @@ public class ScriptingEngine {
 		}
 
 		@Override
+		public JavaNativeModuleBuilder addDependency(JavaNativeModule dependency) {
+			underConstruction.addDependency(dependency);
+			return this;
+		}
+
+		@Override
 		public JavaNativeModule complete() throws CompileException {
 			SemanticModule semantic = Validator.validate(underConstruction.toSemantic(), logger);
 			if (!semantic.isValid())
