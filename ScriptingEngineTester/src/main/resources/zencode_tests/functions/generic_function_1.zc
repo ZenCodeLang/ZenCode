@@ -1,0 +1,9 @@
+#output: string
+#output: Hello World
+
+function identity<T>(t: T): T => t;
+
+var res = identity<string>("Hello World");
+
+println(typeof(res));
+println(res);
