@@ -1,0 +1,18 @@
+#output: 2
+#output: 2
+
+// One of the tests required to make StdLib (Arrays.zs) work
+public expand int[] {
+	public lastSupplier() as function() as int {
+		return () => this[length - 1];
+	}
+
+	public lastSupplier2() as function() as int {
+		return () => this[$ - 1];
+	}
+}
+
+
+var arr = [1, 2];
+println(arr.lastSupplier()());
+println(arr.lastSupplier2()());

@@ -3,19 +3,14 @@
 
 // One of the tests required to make StdLib (Arrays.zs) work
 public expand <T> T[] {
-	public reversed() as T[] {
-       var result = new T[](this.length);
-       for i in 0 .. length {
-           result[i] = this[length - i];
-       }
-
-   	return result;
+	public reversed(defaultValue as T) as T[] {
+       return new T[](this.length, i => this[length - i - 1]);
    }
 }
 
 
 var arr = ["Hello", "World"];
-var rev = arr.reversed();
+var rev = arr.reversed("");
 for it in rev {
     println(it);
 }

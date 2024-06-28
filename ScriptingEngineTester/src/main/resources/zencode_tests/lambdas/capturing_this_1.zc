@@ -1,0 +1,15 @@
+#output: 4
+
+public class Stuff {
+	public val x as int : get;
+
+	this(x: int) {
+		this.x = x;
+	}
+
+	asSupplier(): function() as int {
+		return () => this.x;
+	}
+}
+
+println(new Stuff(4).asSupplier()());

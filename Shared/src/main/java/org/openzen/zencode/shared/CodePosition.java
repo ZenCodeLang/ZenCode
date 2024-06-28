@@ -1,5 +1,7 @@
 package org.openzen.zencode.shared;
 
+import java.util.List;
+
 public final class CodePosition {
 	public static final CodePosition BUILTIN = new CodePosition(new VirtualSourceFile("builtin"), 0, 0, 0, 0);
 	public static final CodePosition NATIVE = new CodePosition(new VirtualSourceFile("native"), 0, 0, 0, 0);
@@ -25,11 +27,11 @@ public final class CodePosition {
 	}
 
 	public String toShortString() {
-		int lastSeparator = file.getFilename().lastIndexOf('/');
-		String shortFilename = lastSeparator >= 0 ? file.getFilename().substring(lastSeparator + 1, (file.getFilename()).length()) : file.getFilename();
+		List<String> filePath = file.getFilePath();
+		String shortFilename = filePath.get(filePath.size() - 1);
 		if (fromLine == 0 && fromLineOffset == 0)
 			return shortFilename;
-		return shortFilename + ":" + Integer.toString(fromLine) + ":" + Integer.toString(fromLineOffset);
+		return shortFilename + ":" + fromLine + ":" + fromLineOffset;
 	}
 
 	public CodePosition until(CodePosition to) {
