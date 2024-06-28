@@ -1,7 +1,9 @@
 package org.openzen.zenscript.codemodel.identifiers.instances;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.AnyMethod;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.compilation.StaticCallableMethod;
@@ -52,6 +54,14 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 		this.hasWideningConversions = false;
 	}
 
+	public MethodInstance(MethodSymbol method, FunctionHeader header, TypeID target, TypeID[] expansionTypeArguments, boolean hasWideningConversions) {
+		this.method = method;
+		this.header = header;
+		this.target = target;
+		this.expansionTypeArguments = expansionTypeArguments;
+		this.hasWideningConversions = hasWideningConversions;
+	}
+
 	public TypeID getTarget() {
 		return target;
 	}
@@ -72,6 +82,11 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	@Override
 	public Optional<MethodInstance> asMethod() {
 		return Optional.of(this);
+	}
+
+	@Override
+	public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+		return new MethodInstance(method, header.withGenericArguments(mapper), target, expansionTypeArguments, hasWideningConversions);
 	}
 
 	@Override

@@ -1,3 +1,4 @@
+#output: string[]
 #output: a1
 #output: a2
 #output: a3
@@ -11,6 +12,6 @@ public expand <T> T[] {
 var a = ["1", "2", "3"];
 var b = a.map<string>(x => "a" + x);
 println(typeof(b));
-/*for item in b {
+for item in b {
 	println(item);
-}*/
+}

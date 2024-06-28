@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.AnyMethod;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
@@ -44,32 +45,7 @@ public class ImplementationMember extends DefinitionMember {
 		TypeID implementsType = mapper.map(type);
 		FunctionHeader header = new FunctionHeader(implementsType);
 		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(this, targetType, implementsType);
-		members.method(MethodID.caster(type), new InstanceCallableMethod() {
-			@Override
-			public FunctionHeader getHeader() {
-				return header;
-			}
-
-			@Override
-			public Optional<MethodInstance> asMethod() {
-				return Optional.empty();
-			}
-
-			@Override
-			public Modifiers getModifiers() {
-				return Modifiers.IMPLICIT;
-			}
-
-			@Override
-			public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
-				return builder.interfaceCast(implementationInstance, instance);
-			}
-
-			@Override
-			public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
-				return builder.invalid(CompileErrors.invalidPostfix());
-			}
-		});
+		members.method(MethodID.caster(type), new InterfaceCaster(header, implementationInstance));
 
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(targetType, members, mapper);
@@ -105,5 +81,45 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public FunctionHeader getHeader() {
 		return null;
+	}
+
+	private static class InterfaceCaster implements InstanceCallableMethod {
+		private final FunctionHeader header;
+		private final ImplementationMemberInstance implementationInstance;
+
+		public InterfaceCaster(FunctionHeader header, ImplementationMemberInstance implementationInstance) {
+			this.header = header;
+			this.implementationInstance = implementationInstance;
+		}
+
+		@Override
+		public FunctionHeader getHeader() {
+			return header;
+		}
+
+		@Override
+		public Optional<MethodInstance> asMethod() {
+			return Optional.empty();
+		}
+
+		@Override
+		public AnyMethod withGenericArguments(GenericMapper mapper) {
+			return new InterfaceCaster(header.withGenericArguments(mapper), implementationInstance);
+		}
+
+		@Override
+		public Modifiers getModifiers() {
+			return Modifiers.IMPLICIT;
+		}
+
+		@Override
+		public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
+			return builder.interfaceCast(implementationInstance, instance);
+		}
+
+		@Override
+		public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+			return builder.invalid(CompileErrors.invalidPostfix());
+		}
 	}
 }

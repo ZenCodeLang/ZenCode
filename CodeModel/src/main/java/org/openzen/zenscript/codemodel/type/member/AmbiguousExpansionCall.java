@@ -1,11 +1,9 @@
 package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
-import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
-import org.openzen.zenscript.codemodel.compilation.StaticCallableMethod;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -30,6 +28,11 @@ public class AmbiguousExpansionCall implements InstanceCallableMethod, StaticCal
 	@Override
 	public Optional<MethodInstance> asMethod() {
 		return Optional.empty();
+	}
+
+	@Override
+	public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+		return this;
 	}
 
 	@Override

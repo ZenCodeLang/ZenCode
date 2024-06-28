@@ -1,8 +1,10 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.AnyMethod;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
@@ -21,5 +23,10 @@ public class AnnotationInitializer implements AnyMethod {
 	@Override
 	public Optional<MethodInstance> asMethod() {
 		return Optional.empty();
+	}
+
+	@Override
+	public AnyMethod withGenericArguments(GenericMapper mapper) {
+		return new AnnotationInitializer(header.withGenericArguments(mapper));
 	}
 }

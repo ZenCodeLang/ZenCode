@@ -28,7 +28,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			CompilingExpression... arguments
 	) {
 		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = overloads.stream()
-				.map(method -> new MatchedCallArguments<>(method, match(compiler, position, method, asType, typeArguments, arguments)))
+				.map(method -> match(compiler, position, method, asType, typeArguments, arguments))
 				.collect(Collectors.groupingBy(matched -> matched.arguments.level, Collectors.toList()));
 
 		for (final CastedExpression.Level level : candidateLevelsInOrderOfPriority) {
@@ -114,10 +114,10 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		Expression eval(ExpressionBuilder builder, T method, CallArguments arguments);
 	}
 
-	private static CallArguments match(
+	private static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
 			CodePosition position,
-			AnyMethod method,
+			T method,
 			TypeID result,
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
@@ -125,11 +125,11 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		TypeID[] expansionTypeArguments = method.asMethod().map(MethodInstance::getExpansionTypeArguments).orElse(TypeID.NONE);
 
 		if (!method.getHeader().accepts(arguments.length))
-			return new CallArguments(
+			return new MatchedCallArguments<>(method, new CallArguments(
 					CastedExpression.Level.INVALID,
 					expansionTypeArguments,
 					typeArguments,
-					Expression.NONE);
+					Expression.NONE));
 
 		if ((typeArguments == null || typeArguments.length == 0) && method.getHeader().typeParameters.length > 0) {
 			// attempt to infer type arguments from the return type
@@ -168,7 +168,9 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 			if (hasUnknowns) {
 				// TODO: improve type inference
-				return new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE);
+				return new MatchedCallArguments<>(
+						method,
+						new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE));
 			}
 
 			typeArguments = typeArguments2;
@@ -176,9 +178,9 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			typeArguments = TypeID.NONE;
 		}
 
-		FunctionHeader header = method
-				.getHeader()
-				.withGenericArguments(GenericMapper.create(method.getHeader().typeParameters, typeArguments));
+		GenericMapper mapper = GenericMapper.create(method.getHeader().typeParameters, typeArguments);
+		T instancedMethod = (T) method.withGenericArguments(mapper);
+		FunctionHeader header = instancedMethod.getHeader();
 
 		// Use Parameters.length instead of maxParameters to get number of declared parameters
 		// We could be variadic if we have 0 vararg parameters (=#parameters-1 arguments), 1 (=#parameters arguments) or more
@@ -210,7 +212,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 		}
 		if (hasInvalidArguments) {
-			return new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, cArguments);
+			return new MatchedCallArguments<>(instancedMethod, new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, cArguments));
 		}
 
 		if (method.hasWideningConversions()) {
@@ -233,6 +235,6 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			cArguments[cArguments.length - 1] = compiler.at(position).newArray(new ArrayTypeID(variadicType), varargArguments.toArray(Expression.NONE));
 			levelNormalCall = levelVarargCall;
 		}
-		return new CallArguments(levelNormalCall, expansionTypeArguments, typeArguments, cArguments);
+		return new MatchedCallArguments<>(instancedMethod, new CallArguments(levelNormalCall, expansionTypeArguments, typeArguments, cArguments));
 	}
 }

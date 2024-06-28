@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -50,10 +51,12 @@ public class LocalTypeImpl implements LocalType {
 
 	private static class ThisCallable implements StaticCallableMethod {
 		private final TypeID type;
+		private final StaticCallableMethod staticMethod;
 		private final MethodInstance method;
 
 		public ThisCallable(TypeID type, StaticCallableMethod method) {
 			this.type = type;
+			this.staticMethod = method;
 			this.method = method.asMethod().orElseThrow(() -> new RuntimeException("Constructor which isn't a method!"));
 		}
 
@@ -65,6 +68,11 @@ public class LocalTypeImpl implements LocalType {
 		@Override
 		public Optional<MethodInstance> asMethod() {
 			return Optional.of(method);
+		}
+
+		@Override
+		public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+			return new ThisCallable(type, staticMethod.withGenericArguments(mapper));
 		}
 
 		@Override
@@ -80,10 +88,12 @@ public class LocalTypeImpl implements LocalType {
 
 	private static class SuperCallable implements StaticCallableMethod {
 		private final TypeID type;
+		private final StaticCallableMethod staticMethod;
 		private final MethodInstance method;
 
 		public SuperCallable(TypeID type, StaticCallableMethod method) {
 			this.type = type;
+			this.staticMethod = method;
 			this.method = method.asMethod().orElseThrow(() -> new RuntimeException("Constructor which isn't a method!"));
 		}
 
@@ -95,6 +105,11 @@ public class LocalTypeImpl implements LocalType {
 		@Override
 		public Optional<MethodInstance> asMethod() {
 			return Optional.of(method);
+		}
+
+		@Override
+		public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+			return new SuperCallable(type, staticMethod.withGenericArguments(mapper));
 		}
 
 		@Override
