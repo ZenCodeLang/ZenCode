@@ -38,7 +38,7 @@ public class JavaRuntimeField implements FieldSymbol {
 
 	@Override
 	public String getName() {
-		return nativeField.name;
+		return name;
 	}
 
 	@Override

@@ -72,15 +72,20 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitMethod(MethodMember member) {
+		visitFunctional(member);
+		return null;
+	}
+
+	private void visitFunctional(FunctionalMember member) {
 		final boolean isStatic = member.isStatic();
 		final JavaCompilingMethod method = class_.getMethod(member);
 		if (!method.compile) {
-			return null;
+			return;
 		}
 
 		if (member.body == null && member.hasTag(NativeTag.class)) {
 			//Is it an error that method.compile == true then?
-			return null;
+			return;
 		}
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
@@ -124,8 +129,6 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 			methodWriter.label(methodEnd);
 			statementVisitor.end();
 		}
-
-		return null;
 	}
 
 
@@ -222,11 +225,8 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 			return null;
 		}
 
-		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.compiled.name, member.header);
-		methodMember.body = member.body;
-		methodMember.annotations = member.annotations;
-		class_.addMethod(methodMember, javaMethod);
-		return methodMember.accept(this);
+		visitFunctional(member);
+		return null;
 	}
 
 	@Override

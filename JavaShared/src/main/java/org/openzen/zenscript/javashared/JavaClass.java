@@ -104,6 +104,10 @@ public class JavaClass implements Comparable<JavaClass> {
 			return filename;
 	}
 
+	public boolean isPrimitive() {
+		return false;
+	}
+
 	/**
 	 * Retrieves the name of the class itself, excluding outer class or package
 	 * name.

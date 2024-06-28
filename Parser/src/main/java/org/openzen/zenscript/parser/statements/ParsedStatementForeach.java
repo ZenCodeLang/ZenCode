@@ -107,13 +107,13 @@ public class ParsedStatementForeach extends ParsedStatement {
 		@Override
 		public Statement complete() {
 			Expression list = this.list.eval();
+			if (list.type.isInvalid() && list instanceof InvalidExpression) {
+				return new InvalidStatement(position, ((InvalidExpression) list).error);
+			}
 
 			ResolvedType listType = compiler.resolve(list.type);
 			Optional<IteratorInstance> maybeIterator = listType.findIterator(varnames.length);
 			if (!maybeIterator.isPresent()) {
-				if(list instanceof InvalidExpression) {
-					return new InvalidStatement(position, ((InvalidExpression) list).error);
-				}
 				return new InvalidStatement(position, CompileErrors.noSuchIterator(list.type, varnames.length));
 			}
 

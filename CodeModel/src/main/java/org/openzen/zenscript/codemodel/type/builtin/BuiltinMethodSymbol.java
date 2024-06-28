@@ -468,11 +468,8 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	STRING_CHARACTERS(STRING, MethodID.getter("characters"), ArrayTypeID.CHAR),
 	STRING_ISEMPTY(STRING, MethodID.getter("isEmpty"), BOOL),
 	STRING_REMOVE_DIACRITICS(STRING, MethodID.instanceMethod("removeDiacritics"), STRING),
-	STRING_TRIM(STRING, MethodID.instanceMethod("trim"), STRING),
 	STRING_TO_LOWER_CASE(STRING, MethodID.instanceMethod("toLowerCase"), STRING),
 	STRING_TO_UPPER_CASE(STRING, MethodID.instanceMethod("toUpperCase"), STRING),
-	STRING_CONTAINS_CHAR(STRING, CONTAINS, BOOL, CHAR),
-	STRING_CONTAINS_STRING(STRING, CONTAINS, BOOL, STRING),
 
 	ASSOC_CONSTRUCTOR(MapTypeSymbol.INSTANCE, CONSTRUCTOR, new AssocTypeID(MapTypeSymbol.KEY_TYPE, MapTypeSymbol.VALUE_TYPE)),
 	ASSOC_INDEXGET(MapTypeSymbol.INSTANCE, INDEXGET, new OptionalTypeID(MapTypeSymbol.VALUE_TYPE), MapTypeSymbol.KEY_TYPE),

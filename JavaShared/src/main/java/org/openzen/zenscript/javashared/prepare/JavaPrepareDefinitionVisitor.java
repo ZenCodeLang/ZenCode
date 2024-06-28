@@ -145,7 +145,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("lastIndexOfStringFrom", "lastIndexOf", "(Ljava/lang/String;I)I");
 
 			cls.addInstanceMethod("replace", "replace", "(CC)Ljava/lang/String;");
-			//cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
+			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
 			cls.addMethod("fromAsciiBytes", JavaSpecialMethod.BYTES_ASCII_TO_STRING);

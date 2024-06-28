@@ -156,7 +156,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				}
 			});
 		}
-		handleArguments(typeArguments.get(), method, arguments);
+		handleArguments(typeArguments.get(), method, arguments, false);
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
@@ -170,12 +170,18 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			}
 		}
 		target.accept(expressionVisitor);
-		return nativeStaticMethod(method, returnType, arguments);
+		nativeMethod(method, returnType, arguments, false);
+		return null;
 	}
 
 	@Override
 	public Void nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments) {
-		handleArguments(arguments.typeArguments.length, method, arguments);
+		nativeMethod(method, returnType, arguments, true);
+		return null;
+	}
+
+	public void nativeMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments, boolean asStatic) {
+		handleArguments(arguments.typeArguments.length, method, arguments, asStatic);
 
 		if (method.kind == JavaNativeMethod.Kind.STATIC) {
 			javaWriter.invokeStatic(method);
@@ -198,28 +204,26 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			final boolean isLarge = method.descriptor.endsWith(")D") || method.descriptor.endsWith(")J");
 			javaWriter.pop(isLarge);
 		}
-
-		return null;
 	}
 
 	@Override
 	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		target.accept(expressionVisitor);
-		handleArguments(arguments.typeArguments.length, method, arguments);
+		handleArguments(arguments.typeArguments.length, method, arguments, false);
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
 
-	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments) {
+	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments, boolean asStatic) {
 		if (method.compile) {
 			handleTypeArguments(method, arguments);
 		}
 
 		// This happens e.g. for Strings where compareTo is a static method in zencode but a virtual one in Java
 		boolean[] primitiveArguments = method.primitiveArguments;
-		if (primitiveArguments.length + 1 == arguments.arguments.length) {
+		if (method.kind == JavaNativeMethod.Kind.INSTANCE && asStatic) {
 			primitiveArguments = new boolean[arguments.arguments.length];
-			primitiveArguments[0] = false; // Let's just assume they are all for object types
+			primitiveArguments[0] = method.cls.isPrimitive(); // Let's just assume they are all for object types
 			System.arraycopy(method.primitiveArguments, 0, primitiveArguments, 1, method.primitiveArguments.length);
 		}
 
@@ -418,17 +422,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				arguments[1].accept(expressionVisitor);
 				javaWriter.invokeVirtual(STRING_CONCAT);
 				return null;
-			case STRING_CONTAINS_STRING:
-			case STRING_CONTAINS_CHAR: {
-				arguments[0].accept(expressionVisitor);
-				arguments[1].accept(expressionVisitor);
-				if (method == BuiltinMethodSymbol.STRING_CONTAINS_CHAR) {
-					javaWriter.invokeStatic(CHARACTER_TO_STRING);
-				}
-
-				javaWriter.invokeVirtual(STRING_CONTAINS);
-				return null;
-			}
 			case STRING_RANGEGET: {
 				arguments[0].accept(expressionVisitor);
 				Expression argument = arguments[1];
@@ -1194,9 +1187,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case STRING_INDEXGET:
 				javaWriter.invokeVirtual(STRING_CHAR_AT);
-				break;
-			case STRING_TRIM:
-				javaWriter.invokeVirtual(STRING_TRIM);
 				break;
 			case ASSOC_KEYS: {
 				Type resultType = context.getType(arguments[0].type);
