@@ -71,7 +71,7 @@ public class LocalTypeImpl implements LocalType {
 		}
 
 		@Override
-		public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+		public ThisCallable withGenericArguments(GenericMapper mapper) {
 			return new ThisCallable(type, staticMethod.withGenericArguments(mapper));
 		}
 

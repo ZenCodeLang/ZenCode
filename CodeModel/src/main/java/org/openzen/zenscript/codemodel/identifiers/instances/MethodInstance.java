@@ -85,7 +85,7 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	}
 
 	@Override
-	public StaticCallableMethod withGenericArguments(GenericMapper mapper) {
+	public MethodInstance withGenericArguments(GenericMapper mapper) {
 		return new MethodInstance(method, header.withGenericArguments(mapper), target, expansionTypeArguments, hasWideningConversions);
 	}
 
