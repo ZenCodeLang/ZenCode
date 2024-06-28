@@ -154,4 +154,53 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 			logger.assertPrintOutput(i++, s);
 		}
 	}
+
+	@Test
+	public void mapValues() {
+		ScriptBuilder.create()
+				.add("public class Stuff { public var x as string; public this(x: string){this.x = x;} }")
+				.add("var array = [1, 2, 3, 4, 5] as string[];")
+				.add("var mapped = array.map<Stuff>(value => new Stuff(value + value));")
+				.add("for element in mapped println(element.x);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(5);
+		logger.assertPrintOutput(0, "11");
+		logger.assertPrintOutput(1, "22");
+		logger.assertPrintOutput(2, "33");
+		logger.assertPrintOutput(3, "44");
+		logger.assertPrintOutput(4, "55");
+	}
+
+	@Test
+	public void mapKeyValues() {
+		ScriptBuilder.create()
+				.add("public class Stuff { public var x as string; public this(x: string){this.x = x;} }")
+				.add("var array = [1, 2, 3, 4, 5] as string[];")
+				.add("var mapped = array.map<Stuff>((i, value) => new Stuff(i + '~' + value));")
+				.add("for element in mapped println(element.x);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(5);
+		logger.assertPrintOutput(0, "0~1");
+		logger.assertPrintOutput(1, "1~2");
+		logger.assertPrintOutput(2, "2~3");
+		logger.assertPrintOutput(3, "3~4");
+		logger.assertPrintOutput(4, "4~5");
+	}
+
+
+	@Test
+	public void filterValues() {
+		ScriptBuilder.create()
+				.add("var array = [1, 22, 333, 4444, 55555] as string[];")
+				.add("var filtered = array.filter((value) => value.length % 2 == 0);")
+				.add("for element in filtered println(element);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(2);
+		logger.assertPrintOutput(0, "22");
+		logger.assertPrintOutput(1, "4444");
+	}
+
 }

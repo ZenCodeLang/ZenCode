@@ -1390,12 +1390,20 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				Expression value = arguments[0];
 				value.accept(expressionVisitor);
 
+
+
+				// for .toArray(new T[0]) we need to know what T is
+				final TypeID arrayBaseType = value.type
+						.asDefinition()
+						.map(d -> d.typeArguments.length == 1 ? d.typeArguments[0] : null)
+						.orElseThrow(() -> new IllegalStateException("Cannot cast Collection to Array: Cannot infer array type"));
+
 				javaWriter.iConst0();
-				final Type type = context.getType(((ArrayTypeID) value.type).elementType);
-				javaWriter.newArray(type);
+				new ArrayHelperType(arrayBaseType, context).newArray(javaWriter);
+
 				final JavaNativeMethod toArray = new JavaNativeMethod(JavaClass.COLLECTION, JavaNativeMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
 				javaWriter.invokeInterface(toArray);
-				javaWriter.checkCast(context.getType(value.type));
+				javaWriter.checkCast(context.getType(new ArrayTypeID(arrayBaseType)));
 				break;
 			}
 			case CONTAINS_AS_INDEXOF: {

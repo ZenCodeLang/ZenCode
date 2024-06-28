@@ -58,10 +58,17 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 		MethodID id = MethodID.caster(toType);
-		if (!instanceMethods.containsKey(id))
-			return Optional.empty();
+		if (instanceMethods.containsKey(id)) {
+			return instanceMethods.get(id).stream().findFirst();
+		}
 
-		return instanceMethods.get(id).stream().findFirst();
+		// ToDo: When we have `var a = new List<string>(); var a as string[];`
+		//  Then the MethodID int he instanceMethods map is List<T> but its header returns string?
+		return instanceMethods.keySet().stream()
+				.filter(method -> method.getKind() == MethodID.Kind.CASTER)
+				.flatMap(method -> instanceMethods.get(method).stream())
+				.filter(callable -> callable.getHeader().getReturnType().equals(toType))
+				.findFirst();
 	}
 
 	@Override
