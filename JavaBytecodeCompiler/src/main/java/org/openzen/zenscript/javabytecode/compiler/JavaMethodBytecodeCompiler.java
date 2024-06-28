@@ -1411,7 +1411,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 				arguments[1].accept(expressionVisitor);
 				javaWriter.invokeStatic(CHARACTER_TO_STRING);
-				javaWriter.invokeInterface(STRING_CONTAINS);
+				javaWriter.invokeVirtual(STRING_CONTAINS);
 				break;
 			}
 			case SORTED: {
