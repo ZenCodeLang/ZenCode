@@ -1433,7 +1433,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				value.accept(expressionVisitor);
 				javaWriter.invokeVirtual(OBJECT_CLONE);
 				javaWriter.checkCast(context.getDescriptor(value.type));
-				javaWriter.dupX1();
+				javaWriter.dup();
 
 				arguments[1].accept(expressionVisitor);
 				// ToDo: Primitive Arrays?

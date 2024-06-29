@@ -114,8 +114,7 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 
 		ScriptBuilder.create()
 				.add("var array = " + unsortedArrayString + " as string[];")
-				.add("var comparator as function(left as string, right as string) as int = (left as string, right as string) as int => left.length as int - right.length as int;")
-				.add("var sortedArray = array.sorted(comparator);")
+				.add("var sortedArray = array.sorted((left, right) => (left.length - right.length) as int);")
 				.add("for element in array println(element);")
 				.add("println('---');")
 				.add("for element in sortedArray println(element);")
@@ -148,8 +147,7 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 
 		ScriptBuilder.create()
 				.add("var array = " + unsortedArrayString + " as string[];")
-				.add("var comparator as function(left as string, right as string) as int = (left as string, right as string) as int => left.length as int - right.length as int;")
-				.add("for element in array println(element);")
+				.add("for element in array println((left, right) => (left.length - right.length) as int);")
 				.add("println('---');")
 				.add("array.sort(comparator);")
 				.add("for element in array println(element);")
