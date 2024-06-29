@@ -26,8 +26,7 @@ public class LocalParameterExpression implements LocalExpression {
 
 	@Override
 	public LocalExpression capture(LambdaClosure closure) {
-		CapturedExpression value = new CapturedParameterExpression(position, parameter, closure);
-		closure.add(value);
+		CapturedExpression value = closure.add(new CapturedParameterExpression(position, parameter, closure));
 		return new LocalCapturedExpression(value);
 	}
 

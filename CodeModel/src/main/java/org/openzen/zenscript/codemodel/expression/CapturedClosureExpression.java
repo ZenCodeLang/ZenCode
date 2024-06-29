@@ -2,6 +2,8 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 
+import java.util.Objects;
+
 public class CapturedClosureExpression extends CapturedExpression {
 	public final CapturedExpression value;
 
@@ -34,5 +36,18 @@ public class CapturedClosureExpression extends CapturedExpression {
 		} else {
 			return tValue == value ? this : new CapturedClosureExpression(position, (CapturedExpression) tValue, closure);
 		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CapturedClosureExpression that = (CapturedClosureExpression) o;
+		return Objects.equals(value, that.value);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(value);
 	}
 }

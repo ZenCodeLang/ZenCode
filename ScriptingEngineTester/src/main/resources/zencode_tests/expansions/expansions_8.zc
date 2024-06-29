@@ -4,9 +4,10 @@
 // One of the tests required to make StdLib (Arrays.zs) work
 public expand <T> T[] {
 	public reversed(defaultValue as T) as T[] {
-       return new T[](this.length, i => this[length - i - 1]);
+	    return new T[](length as usize, i => this[length - i - 1]); // ToDo: substituting the length with $ or this.length both work!
    }
 }
+
 
 
 var arr = ["Hello", "World"];

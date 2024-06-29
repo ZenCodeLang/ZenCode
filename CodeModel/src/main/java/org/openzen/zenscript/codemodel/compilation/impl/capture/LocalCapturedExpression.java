@@ -15,8 +15,7 @@ public class LocalCapturedExpression implements LocalExpression {
 
 	@Override
 	public LocalExpression capture(LambdaClosure closure) {
-		CapturedExpression result = new CapturedClosureExpression(outer.position, outer, closure);
-		closure.add(result);
+		CapturedExpression result = closure.add(new CapturedClosureExpression(outer.position, outer, closure));
 		return new LocalCapturedExpression(result);
 	}
 

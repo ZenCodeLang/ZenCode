@@ -51,6 +51,20 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 		}
 	}
 
+	@Test
+	public void reversedWorks_strings() {
+		ScriptBuilder.create()
+				.add("var array = ['1', '2', '3', '4', '5'];")
+				.add("for it in array.reversed() println(it);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(5);
+
+		for (int i = 5; i > 0; i--) {
+			logger.assertPrintOutput(5 - i, String.valueOf(i));
+		}
+	}
+
 
 	@Test
 	public void canCastToList() {

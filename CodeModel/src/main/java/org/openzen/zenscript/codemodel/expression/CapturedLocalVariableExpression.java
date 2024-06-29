@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.VariableDefinition;
 
+import java.util.Objects;
+
 public class CapturedLocalVariableExpression extends CapturedExpression {
 	public final VariableDefinition variable;
 
@@ -30,5 +32,18 @@ public class CapturedLocalVariableExpression extends CapturedExpression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CapturedLocalVariableExpression that = (CapturedLocalVariableExpression) o;
+		return Objects.equals(variable, that.variable);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(variable);
 	}
 }

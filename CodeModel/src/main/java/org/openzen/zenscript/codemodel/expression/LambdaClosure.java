@@ -6,7 +6,12 @@ import java.util.List;
 public class LambdaClosure {
 	public final List<CapturedExpression> captures = new ArrayList<>();
 
-	public void add(CapturedExpression capture) {
+	public CapturedExpression add(CapturedExpression capture) {
+		int i = captures.indexOf(capture);
+		if (i != -1) {
+			return captures.get(i);
+		}
 		captures.add(capture);
+		return capture;
 	}
 }
