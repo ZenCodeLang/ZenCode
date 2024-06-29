@@ -1,6 +1,5 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.arrays;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
@@ -213,8 +212,28 @@ public class ArraysWithStdLibTests extends ZenCodeTest {
 				.execute(this);
 
 		logger.assertPrintOutputSize(2);
-		logger.assertPrintOutput(0, "22");
-		logger.assertPrintOutput(1, "4444");
+		logger.printlnOutputs().assertLinesInOrder(
+				"22",
+				"4444"
+		);
+	}
+
+	@Test
+	public void index_string() {
+		ScriptBuilder.create()
+				.add("var array = ['1', '2', '3', '4', '5'];")
+				.add("var map = array.index<string>(element => 'index for ' + element);")
+				.add("for key, value in map println(key + ' -> ' + value);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(5);
+		logger.printlnOutputs().assertLinesPresentInAnyOrder(
+				"index for 1 -> 1",
+				"index for 2 -> 2",
+				"index for 3 -> 3",
+				"index for 4 -> 4",
+				"index for 5 -> 5"
+		);
 	}
 
 }
