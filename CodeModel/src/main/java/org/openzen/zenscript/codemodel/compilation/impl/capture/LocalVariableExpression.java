@@ -23,7 +23,8 @@ public class LocalVariableExpression implements LocalExpression {
 
 	@Override
 	public LocalExpression capture(LambdaClosure closure) {
-		CapturedExpression value = closure.add(new CapturedLocalVariableExpression(position, variable.eval(), closure));
+		CapturedLocalVariableExpression value = new CapturedLocalVariableExpression(position, variable.eval(), closure);
+		closure.add(value);
 		return new LocalCapturedExpression(value);
 	}
 

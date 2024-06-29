@@ -1,17 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class LambdaClosure {
-	public final List<CapturedExpression> captures = new ArrayList<>();
+	public final Collection<CapturedExpression> captures = new LinkedHashSet<>();
 
-	public CapturedExpression add(CapturedExpression capture) {
-		int i = captures.indexOf(capture);
-		if (i != -1) {
-			return captures.get(i);
+	public void add(CapturedExpression capture) {
+		if(!captures.contains(capture)) {
+			captures.add(capture);
 		}
-		captures.add(capture);
-		return capture;
 	}
 }
