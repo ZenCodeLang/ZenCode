@@ -1,6 +1,5 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.strings;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -14,8 +13,7 @@ import java.util.List;
 
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 
-//@Disabled("Required Stdlib")
-public class StdLibFunctions extends ZenCodeTest {
+public class StdLibFunctionTests extends ZenCodeTest {
 	@Override
 	public List<String> getRequiredStdLibModules() {
 		return Collections.singletonList("stdlib");
@@ -68,7 +66,7 @@ public class StdLibFunctions extends ZenCodeTest {
 	})
 	public void containsChar(String string, char character) {
 		ScriptBuilder.create()
-				.add(String.format("println('%s' as char in \"%s\");", character, string))
+				.add(String.format("println('%s' in \"%s\");", character, string))
 				.execute(this);
 
 		logger.assertPrintOutputSize(1);
