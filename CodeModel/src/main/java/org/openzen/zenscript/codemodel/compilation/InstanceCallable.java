@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -33,19 +32,24 @@ public final class InstanceCallable {
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
 		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, null, typeArguments, arguments);
+		Expression finalInstance = applyWideningIfNecessary(compiler, position, instance, matched);
+		return matched.eval(compiler.at(position), (buildr, method, args) -> method.call(buildr, finalInstance, args));
+	}
+
+	public CastedExpression cast(ExpressionCompiler compiler, CodePosition position, CastedEval cast, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
+		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, cast.type, typeArguments, arguments);
+		Expression finalInstance = applyWideningIfNecessary(compiler, position, instance, matched);
+		return matched.cast(compiler.at(position), cast, (buildr, method, args) -> method.call(buildr, finalInstance, args));
+	}
+
+	private static Expression applyWideningIfNecessary(ExpressionCompiler compiler, CodePosition position, Expression instance, MatchedCallArguments<InstanceCallableMethod> matched) {
 		if (matched.requiresWidenedInstance(instance.type)) {
 			Expression originalInstance = instance;
 			instance = compiler.resolve(instance.type).findCaster(matched.getWidenedInstanceType())
 					.map(caster -> caster.call(compiler.at(position), originalInstance, CallArguments.EMPTY))
 					.orElseThrow(() -> new IllegalStateException("No widening conversion found for " + originalInstance.type + " to " + matched.getWidenedInstanceType()));
 		}
-		Expression finalInstance = instance;
-		return matched.eval(compiler.at(position), (buildr, method, args) -> method.call(buildr, finalInstance, args));
-	}
-
-	public CastedExpression cast(ExpressionCompiler compiler, CodePosition position, CastedEval cast, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
-		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, cast.type, typeArguments, arguments);
-		return matched.cast(compiler.at(position), cast, (buildr, method, args) -> method.call(buildr, instance, args));
+		return instance;
 	}
 
 	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
