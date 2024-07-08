@@ -65,10 +65,13 @@ public class ParsedExpressionString extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			TypeID type = cast.type.simplified();
+			boolean literalCanBeChar = value.length() == 1;
+
 			if (type == BasicTypeID.STRING) {
-				return cast.of(new ConstantStringExpression(position, value));
+				CastedExpression.Level level = literalCanBeChar ? CastedExpression.Level.WIDENING : CastedExpression.Level.EXACT;
+				return cast.of(level, eval());
 			} else if (type.simplified() == BasicTypeID.CHAR) {
-				if (value.length() != 1)
+				if (!literalCanBeChar)
 					return cast.invalid(CompileErrors.invalidCharLiteral());
 
 				return cast.of(new ConstantCharExpression(position, value.charAt(0)));

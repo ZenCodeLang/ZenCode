@@ -34,4 +34,14 @@ public class ZenCodeTestLoggerOutput {
 		final String foundLine = lines.get(line);
 		Assertions.assertTrue(foundLine.contains(content), "Expected this line to contain '" + content + "' but found '" + line + "'!");
 	}
+
+	public void assertLinesInOrder(String... lines) {
+		Assertions.assertEquals(Arrays.asList(lines), this.lines);
+	}
+
+	public void assertLinesPresentInAnyOrder(String... lines) {
+		for (String line : lines) {
+			Assertions.assertTrue(this.lines.contains(line));
+		}
+	}
 }

@@ -58,9 +58,9 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 		MethodID id = MethodID.caster(toType);
-		if (!instanceMethods.containsKey(id))
+		if (!instanceMethods.containsKey(id)) {
 			return Optional.empty();
-
+		}
 		return instanceMethods.get(id).stream().findFirst();
 	}
 
@@ -162,10 +162,14 @@ public class MemberSet implements ResolvedType {
 		}
 
 		public Builder method(MethodInstance method) {
-			if (method.getID().isStatic()) {
-				target.staticMethods.computeIfAbsent(method.getID(), id -> new ArrayList<>()).add(method);
+			return method(method.getID(), method);
+		}
+
+		public Builder method(MethodID id, MethodInstance method) {
+			if (id.isStatic()) {
+				target.staticMethods.computeIfAbsent(id, _id -> new ArrayList<>()).add(method);
 			} else {
-				target.instanceMethods.computeIfAbsent(method.getID(), id -> new ArrayList<>()).add(method);
+				target.instanceMethods.computeIfAbsent(id, _id -> new ArrayList<>()).add(method);
 			}
 			return this;
 		}

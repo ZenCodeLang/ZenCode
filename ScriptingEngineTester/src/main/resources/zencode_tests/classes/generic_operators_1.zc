@@ -1,0 +1,36 @@
+#output: a
+#output: b
+#output: c
+
+
+public class CustomList<T> {
+    private val backingArray as T[];
+    private val length as usize = 0;
+
+    public this(capacity: usize, initialValue: T) {
+        backingArray = new T[](capacity, initialValue);
+    }
+
+    public add(element: T): void {
+        if(length >= backingArray.length) {
+            panic("too many elements");
+        }
+        backingArray[length] = element;
+        length = length + 1;
+    }
+
+    public <<(element: T): CustomList<T> {
+        this.add(element); // ToDo: reference to "this" is needed here atm...
+        return this;
+    }
+
+    public forEach(consumer: function(t: T): void): void {
+        for i in 0 .. length consumer(backingArray[i]);
+    }
+}
+
+var list = new CustomList<string>(10, "");
+list.add("a");
+list << "b" << "c";
+
+list.forEach(it => println(it));

@@ -62,8 +62,10 @@ public class JavaSwitchKeyVariableVisitor implements SwitchValueVisitor<Void> {
 			javaWriter.dup();
 			javaWriter.getField(
 					javaVariantOption.variantOptionClass.internalName,
-					"field" + fieldNumber++,
-					context.getDescriptor(binding.type));
+					"field" + fieldNumber,
+					context.getDescriptor(key.option.getOption().types[fieldNumber]));
+			javaWriter.checkCast(context.getType(binding.type));
+			fieldNumber++;
 
 			final JavaLocalVariableInfo javaLocalVariableInfo = new JavaLocalVariableInfo(
 					context.getType(binding.type),

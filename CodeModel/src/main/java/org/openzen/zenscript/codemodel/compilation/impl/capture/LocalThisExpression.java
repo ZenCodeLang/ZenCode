@@ -21,7 +21,7 @@ public class LocalThisExpression implements LocalExpression {
 
 	@Override
 	public LocalExpression capture(LambdaClosure closure) {
-		CapturedExpression value = new CapturedThisExpression(position, type, closure);
+		CapturedThisExpression value = new CapturedThisExpression(position, type, closure);
 		closure.add(value);
 		return new LocalCapturedExpression(value);
 	}

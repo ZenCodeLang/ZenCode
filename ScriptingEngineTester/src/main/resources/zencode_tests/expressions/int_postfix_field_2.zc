@@ -1,0 +1,16 @@
+#output: 0
+#output: 1
+
+public class MyClass {
+   public var value as int = 0;
+
+   public increment(): void {
+       this.value++;
+   }
+}
+
+var x = new MyClass();
+
+println(x.value);
+x.increment();
+println(x.value);

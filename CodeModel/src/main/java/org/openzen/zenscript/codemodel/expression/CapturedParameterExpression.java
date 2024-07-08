@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 
+import java.util.Objects;
+
 public class CapturedParameterExpression extends CapturedExpression {
 	public final FunctionParameter parameter;
 
@@ -30,5 +32,18 @@ public class CapturedParameterExpression extends CapturedExpression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CapturedParameterExpression that = (CapturedParameterExpression) o;
+		return Objects.equals(parameter, that.parameter);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(parameter);
 	}
 }
