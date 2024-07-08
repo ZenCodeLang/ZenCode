@@ -4,7 +4,6 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.codemodel.compilation.expression.CompilingThisExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceFieldCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
@@ -37,7 +36,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		if (resolved.isPresent()) {
 			return new CompilingResolved(compiler, position, name, resolved.get());
 		} else {
-			if (compiler.getThisType().isPresent()) {
+			return compiler.getThis(position).map(thisExpression -> {
 				ResolvedType resolvedThis = compiler.resolve(compiler.getThisType().get());
 
 				Optional<InstanceCallable> getter = resolvedThis.findGetter(name);
@@ -45,7 +44,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					return new InstanceMemberCompilingExpression(
 							compiler,
 							position,
-							compiler.getThis(position).get(),
+							thisExpression,
 							new GenericName(name, typeArguments));
 				}
 
@@ -57,11 +56,12 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					return new InstanceFieldCompilingExpression(
 							compiler,
 							position,
-							new CompilingThisExpression(compiler, position, compiler.getThisType().get()),
+							thisExpression,
 							field.get());
 				}
-			}
-			return new CompilingUnresolved(compiler, position, name);
+
+				return new CompilingUnresolved(compiler, position, name);
+			}).orElseGet(() -> new CompilingUnresolved(compiler, position, name));
 		}
 	}
 
