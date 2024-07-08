@@ -45,7 +45,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					return new InstanceMemberCompilingExpression(
 							compiler,
 							position,
-							new CompilingThisExpression(compiler, position, compiler.getThisType().get()),
+							compiler.getThis(position).get(),
 							new GenericName(name, typeArguments));
 				}
 
