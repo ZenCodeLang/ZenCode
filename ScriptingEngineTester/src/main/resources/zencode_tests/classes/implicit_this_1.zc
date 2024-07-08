@@ -1,0 +1,14 @@
+#output: a
+
+public class Printer {
+    public print(value: string): void {
+    	println(value);
+    }
+
+    public doPrint(element: string): void {
+    	print(element);
+    }
+}
+
+var printer = new Printer();
+printer.print("a");

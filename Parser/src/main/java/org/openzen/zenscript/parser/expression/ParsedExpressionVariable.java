@@ -60,6 +60,15 @@ public class ParsedExpressionVariable extends ParsedExpression {
 							field.get());
 				}
 
+				Optional<InstanceCallable> method = resolvedThis.findMethod(name);
+				if (method.isPresent()) {
+					return new InstanceMemberCompilingExpression(
+							compiler,
+							position,
+						 thisExpression,
+						 new GenericName(name, typeArguments));
+				}
+
 				return new CompilingUnresolved(compiler, position, name);
 			}).orElseGet(() -> new CompilingUnresolved(compiler, position, name));
 		}

@@ -20,7 +20,7 @@ public class CustomList<T> {
     }
 
     public <<(element: T): CustomList<T> {
-        this.add(element); // ToDo: reference to "this" is needed here atm...
+        add(element);
         return this;
     }
 
