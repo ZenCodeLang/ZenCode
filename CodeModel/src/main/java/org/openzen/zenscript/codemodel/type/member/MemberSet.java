@@ -58,17 +58,10 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 		MethodID id = MethodID.caster(toType);
-		if (instanceMethods.containsKey(id)) {
-			return instanceMethods.get(id).stream().findFirst();
+		if (!instanceMethods.containsKey(id)) {
+			return Optional.empty();
 		}
-
-		// ToDo: When we have `var a = new List<string>(); var a as string[];`
-		//  Then the MethodID int he instanceMethods map is List<T> but its header returns string?
-		return instanceMethods.keySet().stream()
-				.filter(method -> method.getKind() == MethodID.Kind.CASTER)
-				.flatMap(method -> instanceMethods.get(method).stream())
-				.filter(callable -> callable.getHeader().getReturnType().equals(toType))
-				.findFirst();
+		return instanceMethods.get(id).stream().findFirst();
 	}
 
 	@Override
@@ -169,10 +162,14 @@ public class MemberSet implements ResolvedType {
 		}
 
 		public Builder method(MethodInstance method) {
-			if (method.getID().isStatic()) {
-				target.staticMethods.computeIfAbsent(method.getID(), id -> new ArrayList<>()).add(method);
+			return method(method.getID(), method);
+		}
+
+		public Builder method(MethodID id, MethodInstance method) {
+			if (id.isStatic()) {
+				target.staticMethods.computeIfAbsent(id, _id -> new ArrayList<>()).add(method);
 			} else {
-				target.instanceMethods.computeIfAbsent(method.getID(), id -> new ArrayList<>()).add(method);
+				target.instanceMethods.computeIfAbsent(id, _id -> new ArrayList<>()).add(method);
 			}
 			return this;
 		}

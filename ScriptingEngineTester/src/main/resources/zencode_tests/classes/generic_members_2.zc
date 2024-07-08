@@ -1,0 +1,14 @@
+#output: 42
+
+public class MyClass<T> {
+	var value as T;
+
+	this(value: T) {
+		this.value = value;
+	}
+
+	public as T => value;
+}
+
+val instance = new MyClass<string>("42");
+println(instance as string);
