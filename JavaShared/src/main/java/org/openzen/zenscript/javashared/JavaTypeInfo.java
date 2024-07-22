@@ -77,7 +77,7 @@ public class JavaTypeInfo {
 
 		@Override
 		public JavaTypeInfo visitOptional(TypeID context, OptionalTypeID type) {
-			return type.baseType.accept(null, this);
+			return type.baseType == BasicTypeID.USIZE ? PRIMITIVE : OBJECT;
 		}
 	}
 }
