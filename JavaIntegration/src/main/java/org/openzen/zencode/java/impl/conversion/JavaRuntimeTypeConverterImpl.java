@@ -27,6 +27,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.*;
 
 import static org.objectweb.asm.Type.getInternalName;
 import static org.objectweb.asm.Type.getMethodDescriptor;
@@ -36,12 +37,14 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 	private final JavaNativePackageInfo packageInfo;
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
+	private final Map<Class<?>, Function<TypeID[], TypeID>> specialTypes = new HashMap<>();
 	private JavaNativeHeaderConverter headerConverter;
 
 	public JavaRuntimeTypeConverterImpl(JavaNativeModuleSpace nativeModuleSpace, JavaNativePackageInfo packageInfo) {
 		this.nativeModuleSpace = nativeModuleSpace;
 		this.packageInfo = packageInfo;
 		fillClassMaps();
+		fillSpecialTypes();
 	}
 
 	public void setHeaderConverter(JavaNativeHeaderConverter headerConverter) {
@@ -118,6 +121,21 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		throw new IllegalArgumentException("Invalid type " + elementType + ": not yet implemented or foolery");
 	}
 
+	private TypeSymbol loadRawType(TypeVariableContext context, JavaAnnotatedType type, boolean unsigned) {
+		final JavaAnnotatedType.ElementType elementType = type.getElementType();
+
+		try {
+			switch (elementType) {
+				case CLASS:
+					return findType((Class<?>) type.getType());
+				default:
+					throw new IllegalArgumentException("Didn't expect to get this kind of type: " + type);
+			}
+		} catch (final IllegalArgumentException e) {
+			throw new IllegalArgumentException("Unable to analyze type: " + type, e);
+		}
+	}
+
 	private TypeID loadAnnotatedParameterizedType(TypeVariableContext context, AnnotatedParameterizedType type, boolean unsigned) {
 		final ParameterizedType parameterizedType = this.getTypeIfValid(JavaAnnotatedType.of(type.getType()), JavaAnnotatedType.ElementType.PARAMETERIZED_TYPE);
 		final JavaAnnotatedType rawType = JavaAnnotatedType.of(parameterizedType.getRawType());
@@ -130,21 +148,12 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 
 		if (rawType.getElementType() == JavaAnnotatedType.ElementType.CLASS) {
-			if (rawType.getType() == Map.class) {
-				return new AssocTypeID(codeParameters[0], codeParameters[1]);
+			if (specialTypes.containsKey(rawType.getType())) {
+				return specialTypes.get(rawType.getType()).apply(codeParameters);
 			}
 
-			final Map<TypeParameter, TypeID> map = new HashMap<>();
-			final JavaAnnotatedType[] typeParameters = JavaAnnotatedType.arrayOf(((Class<?>) rawType.getType()).getTypeParameters());
-			final TypeID rawTypeId = this.loadType(context, rawType, unsigned);
-
-			for (int i = 0; i < typeParameters.length; i++) {
-				final TypeVariable<?> typeVariable = this.getTypeIfValid(typeParameters[i], JavaAnnotatedType.ElementType.TYPE_VARIABLE);
-				final TypeParameter typeParameter = context.get(typeVariable);
-				map.put(typeParameter, codeParameters[i]);
-			}
-
-			return rawTypeId.instance(new GenericMapper(map, TypeID.NONE));
+			final TypeSymbol rawTypeSymbol = loadRawType(context, rawType, unsigned);
+			return DefinitionTypeID.create(rawTypeSymbol, codeParameters);
 		}
 		return this.loadType(context, JavaAnnotatedType.of(type), unsigned);
 	}
@@ -217,6 +226,10 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 	}
 
 	private TypeSymbol findType(Class<?> cls) {
+		if (cls == List.class) {
+			return packageInfo.getRoot().getImport(Arrays.asList("stdlib", "List"), 0);
+		}
+
 		JavaNativeModule module = nativeModuleSpace.getModule(cls)
 				.orElseThrow(() -> new IllegalArgumentException("Could not find module for class " + cls.getName()));
 		return module.findClass(cls)
@@ -378,5 +391,51 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		unsignedByClass.put(Short.class, new OptionalTypeID(BasicTypeID.SHORT));
 		unsignedByClass.put(Integer.class, new OptionalTypeID(BasicTypeID.INT));
 		unsignedByClass.put(Long.class, new OptionalTypeID(BasicTypeID.LONG));
+	}
+
+	private void fillSpecialTypes() {
+		specialTypes.put(Map.class, args -> new AssocTypeID(args[0], args[1]));
+
+		specialTypes.put(BiConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, args[0], args[1])));
+		specialTypes.put(BiFunction.class, args -> new FunctionTypeID(new FunctionHeader(args[2], args[0], args[1])));
+		specialTypes.put(BiPredicate.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL, args[0], args[1])));
+		specialTypes.put(BooleanSupplier.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL)));
+		specialTypes.put(Consumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, args[0])));
+		specialTypes.put(DoubleBinaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, BasicTypeID.DOUBLE, BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleFunction.class, args -> new FunctionTypeID(new FunctionHeader(args[0], BasicTypeID.DOUBLE)));
+		specialTypes.put(DoublePredicate.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleSupplier.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleToIntFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleToLongFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, BasicTypeID.DOUBLE)));
+		specialTypes.put(DoubleUnaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, BasicTypeID.DOUBLE)));
+		specialTypes.put(Function.class, args -> new FunctionTypeID(new FunctionHeader(args[1], args[0])));
+		specialTypes.put(IntBinaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, BasicTypeID.INT, BasicTypeID.INT)));
+		specialTypes.put(IntConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, BasicTypeID.INT)));
+		specialTypes.put(IntFunction.class, args -> new FunctionTypeID(new FunctionHeader(args[0], BasicTypeID.INT)));
+		specialTypes.put(IntPredicate.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.INT)));
+		specialTypes.put(IntSupplier.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT)));
+		specialTypes.put(IntToDoubleFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, BasicTypeID.INT)));
+		specialTypes.put(IntToLongFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, BasicTypeID.INT)));
+		specialTypes.put(IntUnaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, BasicTypeID.INT)));
+		specialTypes.put(LongBinaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, BasicTypeID.LONG, BasicTypeID.LONG)));
+		specialTypes.put(LongConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, BasicTypeID.LONG)));
+		specialTypes.put(LongFunction.class, args -> new FunctionTypeID(new FunctionHeader(args[0], BasicTypeID.LONG)));
+		specialTypes.put(LongPredicate.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.LONG)));
+		specialTypes.put(LongSupplier.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG)));
+		specialTypes.put(LongToDoubleFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, BasicTypeID.LONG)));
+		specialTypes.put(LongToIntFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, BasicTypeID.LONG)));
+		specialTypes.put(LongUnaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, BasicTypeID.LONG)));
+		specialTypes.put(ObjDoubleConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, args[0], BasicTypeID.DOUBLE)));
+		specialTypes.put(ObjIntConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, args[0], BasicTypeID.INT)));
+		specialTypes.put(ObjLongConsumer.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.VOID, args[0], BasicTypeID.LONG)));
+		specialTypes.put(Predicate.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.BOOL, args[0])));
+		specialTypes.put(Supplier.class, args -> new FunctionTypeID(new FunctionHeader(args[0])));
+		specialTypes.put(ToDoubleBiFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, args[0], args[1])));
+		specialTypes.put(ToDoubleFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.DOUBLE, args[0])));
+		specialTypes.put(ToIntBiFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, args[0], args[1])));
+		specialTypes.put(ToIntFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, args[0])));
+		specialTypes.put(ToLongBiFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0], args[1])));
+		specialTypes.put(ToLongFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0])));
 	}
 }

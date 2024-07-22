@@ -64,7 +64,7 @@ public class ScriptingEngine {
 	}
     
     public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter) {
-        this(logger, resourceGetter, "stdlib", "math", "collections", "uuid");
+        this(logger, resourceGetter, "stdlib"/*, "math", "collections", "uuid"*/);
     }
 
 	public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter, String... stdLibModulesToRegister) {
@@ -80,7 +80,6 @@ public class ScriptingEngine {
 			for (String moduleName : stdLibModulesToRegister) {
 				registerModule(moduleName, root.getOrCreatePackage(moduleName), stdlibs);
 			}
-
 		} catch (CompileException | ParseException | IOException ex) {
 			throw new RuntimeException(ex);
 		}

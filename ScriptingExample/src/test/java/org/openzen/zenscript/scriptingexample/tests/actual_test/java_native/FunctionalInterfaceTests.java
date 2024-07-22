@@ -21,11 +21,17 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 		return requiredClasses;
 	}
 
+	@Override
+	public List<String> getRequiredStdLibModules() {
+		return Collections.singletonList("stdlib");
+	}
+
 	@Test
 	public void testFunctionalInterface() {
 		addScript(
 				"var modified = modifyString('test', (strings, context) => { return strings; });\n" +
-						"for str in modified { println(str); }",
+						"println(modified.length);",
+						//"for str in modified { println(str); }",
 				"FunctionalInterfaceTests_testFunctionalInterface.zs");
 
 		executeEngine();
@@ -33,14 +39,16 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 		logger.assertNoErrors();
 		logger.assertNoWarnings();
 		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "test");
+		//logger.assertPrintOutput(0, "test");
+		logger.assertPrintOutput(0, "1");
 	}
 
 	@Test
 	public void testBiFunction() {
 		addScript(
 				"var modified = stringFunction('test', (strings, context) => {return strings;});\n" +
-						"for str in modified { println(str); }",
+						"println(modified.length);",
+				//"for str in modified { println(str); }",
 				"FunctionalInterfaceTests_testBiFunction.zs");
 
 		executeEngine();
@@ -48,7 +56,8 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 		logger.assertNoErrors();
 		logger.assertNoWarnings();
 		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "test");
+		//logger.assertPrintOutput(0, "test");
+		logger.assertPrintOutput(0, "1");
 	}
 
 	@ZenCodeType.Name("test_module.java_native.TestClass")

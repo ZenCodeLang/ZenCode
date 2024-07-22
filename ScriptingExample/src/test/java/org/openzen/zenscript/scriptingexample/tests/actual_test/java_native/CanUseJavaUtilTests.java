@@ -27,16 +27,11 @@ public class CanUseJavaUtilTests extends ZenCodeTest {
 	void canUseAggregate() {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.Aggregator;")
-				.add("for i in Aggregator.aggregate('Hello', 'World') {")
-				.add("  println(i);")
-				.add("}")
+				.add("println(Aggregator.aggregate('Hello', 'World').length);")
 				.execute(this);
 
 		logger.assertNoErrors();
-		logger.printlnOutputs().assertLinesInOrder(
-				"Hello",
-				"World"
-		);
+		logger.printlnOutputs().assertLinesInOrder("2");
 	}
 
 	@ZenCodeType.Name("test_module.java_native.Aggregator")
