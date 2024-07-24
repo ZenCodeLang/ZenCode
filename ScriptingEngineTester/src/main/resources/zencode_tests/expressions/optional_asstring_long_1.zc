@@ -1,0 +1,4 @@
+#output: 4711
+
+var x = 4711 as long?;
+println(x);
