@@ -200,6 +200,7 @@ public class JavaNativeTypeTemplate {
 	private MethodSymbol loadJavaMethod(Constructor<?> constructor) {
 		JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
 		FunctionHeader header = headerConverter.getHeader(typeVariableContext, constructor);
+		header.setReturnType(target); // In ZC, .ctors return the instantiated type
 		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, constructor, header);
 		class_.module.getCompiled().setMethodInfo(method, method);
 		return method;

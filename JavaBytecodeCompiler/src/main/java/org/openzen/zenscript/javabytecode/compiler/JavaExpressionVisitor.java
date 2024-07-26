@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
@@ -1169,8 +1168,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			functionWriter.getField(className, "wrapped", wrappedFromSignature);
 
 			//Load all function parameters
-			for (int i = 0; i < methodParameterTypes.length; i++) {
-				functionWriter.load(methodParameterTypes[i], i + 1);
+			for (int i = 0, currentLocalPosition = 1; i < methodParameterTypes.length; i++) {
+				functionWriter.load(methodParameterTypes[i], currentLocalPosition);
+				currentLocalPosition += methodParameterTypes[i].getSize();
 			}
 
 			//Invokes the wrapped interface's method and returns the result

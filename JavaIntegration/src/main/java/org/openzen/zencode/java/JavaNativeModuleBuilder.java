@@ -12,5 +12,7 @@ public interface JavaNativeModuleBuilder {
 
 	JavaNativeModuleBuilder addClass(Class<?> cls);
 
+	JavaNativeModuleBuilder addDependency(JavaNativeModule dependency);
+
 	JavaNativeModule complete() throws CompileException;
 }

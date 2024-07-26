@@ -8,4 +8,9 @@ public class CompileError {
 		this.code = code;
 		this.description = description;
 	}
+
+	@Override
+	public String toString() {
+		return code + ":" + description;
+	}
 }

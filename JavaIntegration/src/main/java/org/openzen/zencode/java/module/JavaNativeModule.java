@@ -5,10 +5,7 @@
  */
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.java.JavaRuntimeTypeConverter;
-import org.openzen.zencode.java.TypeVariableContext;
-import org.openzen.zencode.java.ZenCodeGlobals;
-import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.*;
 import org.openzen.zencode.java.impl.JavaNativeModuleSpace;
 import org.openzen.zencode.java.impl.conversion.ConversionUtils;
 import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
@@ -37,10 +34,7 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -57,6 +51,7 @@ public class JavaNativeModule {
 	private final Map<String, IGlobal> globals = new HashMap<>();
 	private final PackageDefinitions packageDefinitions = new PackageDefinitions();
 	private final JavaCompiledModule compiled;
+	private final List<JavaNativeModule> dependencies = new ArrayList<>();
 
 	public JavaNativeModule(
 			ModuleSpace space,
@@ -79,9 +74,14 @@ public class JavaNativeModule {
 	}
 
 	public SemanticModule toSemantic() {
-		return new SemanticModule(
+		SemanticModule[] semanticModules = dependencies.stream()
+				.map(javaNativeModule -> javaNativeModule.getModule().name)
+				.map(space::getModule)
+				.toArray(SemanticModule[]::new);
+
+		SemanticModule semanticModule = new SemanticModule(
 				packageInfo.getModule(),
-				SemanticModule.NONE,
+				semanticModules,
 				FunctionParameter.NONE,
 				SemanticModule.State.NORMALIZED,
 				space.rootPackage,
@@ -91,6 +91,9 @@ public class JavaNativeModule {
 				space.collectExpansions(),
 				space.getAnnotations().toArray(new AnnotationDefinition[0]),
 				logger);
+
+		semanticModule.globals.putAll(this.globals);
+		return semanticModule;
 	}
 
 	public JavaRuntimeClass addClass(Class<?> cls) {
@@ -230,6 +233,10 @@ public class JavaNativeModule {
 			return cls.getAnnotation(ZenCodeType.Name.class).value();
 		}
 		return cls.getName();
+	}
+
+	public void addDependency(JavaNativeModule dependency) {
+		dependencies.add(dependency);
 	}
 
 	private static class ParsedName {

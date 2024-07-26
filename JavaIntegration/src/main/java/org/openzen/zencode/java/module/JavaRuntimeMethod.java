@@ -30,19 +30,19 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	private final MethodID id;
 
 	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Constructor<?> constructor, FunctionHeader header) {
-		method = new JavaNativeMethod(
+		this.method = new JavaNativeMethod(
 				class_.javaClass,
 				JavaNativeMethod.Kind.CONSTRUCTOR,
-				"init",
+				"<init>",
 				false,
 				Type.getConstructorDescriptor(constructor),
 				constructor.getModifiers(),
 				false);
 		this.class_ = class_;
 		this.target = target;
-		modifiers = getMethodModifiers(constructor);
 		this.header = header;
-		this.id = MethodID.operator(OperatorType.CONSTRUCTOR);
+		this.modifiers = getMethodModifiers(constructor).withStatic(); // In ZC, .ctors are static
+		this.id = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	}
 
 	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header) {
