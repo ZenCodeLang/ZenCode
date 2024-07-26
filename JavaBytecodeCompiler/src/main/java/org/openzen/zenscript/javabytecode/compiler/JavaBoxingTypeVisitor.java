@@ -15,9 +15,19 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 	private static final JavaNativeMethod CHARACTER_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.CHARACTER, "valueOf", "(C)Ljava/lang/Character;");
 
 	private final JavaWriter writer;
+	private final boolean wrapping;
 
-	public JavaBoxingTypeVisitor(JavaWriter writer) {
+	public static JavaBoxingTypeVisitor forJavaBoxing(JavaWriter writer) {
+		return new JavaBoxingTypeVisitor(writer, false);
+	}
+
+	public static JavaBoxingTypeVisitor forOptionalWrapping(JavaWriter writer) {
+		return new JavaBoxingTypeVisitor(writer, true);
+	}
+
+	private JavaBoxingTypeVisitor(JavaWriter writer, boolean wrapping) {
 		this.writer = writer;
+		this.wrapping = wrapping;
 	}
 
 	@Override
@@ -41,8 +51,14 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 				break;
 			case INT:
 			case UINT:
-			case USIZE:
 				method = INTEGER_VALUEOF;
+				break;
+			case USIZE:
+				if (!wrapping) {
+					method = INTEGER_VALUEOF;
+				} else {
+					return null;
+				}
 				break;
 			case LONG:
 			case ULONG:
@@ -64,8 +80,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 				return null;
 		}
 
-		if (method != null)
-			writer.invokeStatic(method);
+		writer.invokeStatic(method);
 		return null;
 	}
 

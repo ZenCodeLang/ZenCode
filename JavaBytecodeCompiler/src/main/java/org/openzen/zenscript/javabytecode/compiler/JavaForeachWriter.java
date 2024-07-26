@@ -29,7 +29,7 @@ public class JavaForeachWriter {
 		this.javaWriter = statementVisitor.getJavaWriter();
 		this.statement = statement;
 		this.bytecodeLoopLabels = bytecodeLoopLabels;
-		this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
+		this.unboxingTypeVisitor = JavaUnboxingTypeVisitor.forJavaUnboxing(this.javaWriter);
 	}
 
 	public void visitIntRange(RangeTypeID type) {

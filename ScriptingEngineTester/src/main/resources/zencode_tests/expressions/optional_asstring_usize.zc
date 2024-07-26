@@ -1,8 +1,8 @@
 #output: 4711
 #output: null
 
-var x = 4711 as long?;
+var x = 4711 as usize?;
 println(x);
 
-val y = null as long?;
+val y = null as usize?;
 println(y);

@@ -16,9 +16,19 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 	private static final JavaNativeMethod UNBOX_CHARACTER = JavaNativeMethod.getNativeVirtual(JavaClass.CHARACTER, "charValue", "()C");
 
 	private final JavaWriter writer;
+	private final boolean unwrapping;
 
-	public JavaUnboxingTypeVisitor(JavaWriter writer) {
+	public static JavaUnboxingTypeVisitor forJavaUnboxing(JavaWriter writer) {
+		return new JavaUnboxingTypeVisitor(writer, false);
+	}
+
+	public static JavaUnboxingTypeVisitor forOptionalUnwrapping(JavaWriter writer) {
+		return new JavaUnboxingTypeVisitor(writer, true);
+	}
+
+	private JavaUnboxingTypeVisitor(JavaWriter writer, boolean unwrapping) {
 		this.writer = writer;
+		this.unwrapping = unwrapping;
 	}
 
 
@@ -42,9 +52,15 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 			case UINT:
 				method = UNBOX_INTEGER;
 				break;
+			case USIZE:
+				if (!unwrapping) {
+					method = UNBOX_INTEGER;
+				} else {
+					return null;
+				}
+				break;
 			case LONG:
 			case ULONG:
-			case USIZE:
 				method = UNBOX_LONG;
 				break;
 			case FLOAT:

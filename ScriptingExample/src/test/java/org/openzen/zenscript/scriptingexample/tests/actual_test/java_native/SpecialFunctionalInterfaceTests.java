@@ -528,7 +528,7 @@ public class SpecialFunctionalInterfaceTests extends ZenCodeTest {
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
-				"Inside ToIntBiFunction: toIntBiFunction 47",
+				"Inside ToIntBiFunction: toIntBiFunction 3.14",
 				"4535"
 		);
 	}
@@ -556,7 +556,7 @@ public class SpecialFunctionalInterfaceTests extends ZenCodeTest {
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
-				"Inside ToLongBiFunction: toLongBiFunction 47",
+				"Inside ToLongBiFunction: toLongBiFunction 3.14",
 				"9263"
 		);
 	}

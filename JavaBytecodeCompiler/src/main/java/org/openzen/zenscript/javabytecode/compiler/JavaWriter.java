@@ -13,6 +13,10 @@ import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +40,7 @@ public class JavaWriter {
 	private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
 	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
 	private final List<Integer> lineNumberLabels = new ArrayList<>();
-	private boolean debug = false;
+	private boolean debug = true;
 	private final boolean nameVariables = true;
 	private int labelIndex = 1;
 	private Map<Label, String> labelNames = new HashMap<>();
@@ -140,7 +144,11 @@ public class JavaWriter {
 		} catch (ArrayIndexOutOfBoundsException | NegativeArraySizeException ex) {
 			if (debug && (clazzVisitor instanceof ClassWriter)) {
 				// TODO Write to a file for debugging?
-				System.out.println(Arrays.toString(((ClassWriter) clazzVisitor).toByteArray()));
+				byte[] bytes = ((ClassWriter) clazzVisitor).toByteArray();
+				//System.out.println(Arrays.toString(bytes));
+				try {
+					Files.write(Paths.get("broken_class.class"), bytes);
+				} catch (IOException ignored) {}
 			}
 			throw ex;
 		}

@@ -1,0 +1,4 @@
+#output: void
+
+val a = println("Hello, world!");
+println(typeof(a));

@@ -39,7 +39,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	final JavaCompiledModule module;
 	private final JavaMangler javaMangler;
 	private final JavaBoxingTypeVisitor boxingTypeVisitor;
+	private final JavaBoxingTypeVisitor optionalWrappingTypeVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
+	private final JavaUnboxingTypeVisitor optionalUnwrappingTypeVisitor;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaFieldBytecodeCompiler fieldCompiler;
 	private final JavaMethodBytecodeCompiler methodCompiler;
@@ -49,8 +51,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		this.context = context;
 		this.module = module;
 		this.javaMangler = javaMangler;
-		boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
-		unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
+		boxingTypeVisitor = JavaBoxingTypeVisitor.forJavaBoxing(javaWriter);
+		optionalWrappingTypeVisitor = JavaBoxingTypeVisitor.forOptionalWrapping(javaWriter);
+		unboxingTypeVisitor = JavaUnboxingTypeVisitor.forJavaUnboxing(javaWriter);
+		optionalUnwrappingTypeVisitor = JavaUnboxingTypeVisitor.forOptionalUnwrapping(javaWriter);
 		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, this, true);
 		methodCompiler = new JavaMethodBytecodeCompiler(javaWriter, this, context, module);
 	}
@@ -307,7 +311,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final Label end = new Label();
 		expression.value.accept(this);
 		javaWriter.dup();
-		javaWriter.ifNonNull(end);
+		if (expression.type.withoutOptional() == BasicTypeID.USIZE) {
+			javaWriter.iConstM1();
+			javaWriter.ifICmpNE(end);
+		} else {
+			javaWriter.ifNonNull(end);
+		}
 		javaWriter.pop();
 		javaWriter.newObject("java/lang/NullPointerException");
 		javaWriter.dup();
@@ -315,6 +324,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
 		javaWriter.aThrow();
 		javaWriter.label(end);
+
+		expression.type.accept(expression.type, optionalUnwrappingTypeVisitor);
 
 		return null;
 	}
@@ -1284,7 +1295,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.accept(expression.value.type, boxingTypeVisitor);
+		expression.value.type.accept(expression.value.type, optionalWrappingTypeVisitor);
 		return null;
 	}
 

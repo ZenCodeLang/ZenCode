@@ -9,10 +9,10 @@ var nestedMap = {
     "fish" : ["sardine", "tuna", "salmon"]
 } as string[][string];
 
-for word in nestedMap["fish"] ?? [] {
+for word in nestedMap["fish"] {
     println(word);
 }
 
-for nothing in nestedMap["shark"] ?? [] {
+for nothing in nestedMap["shark"] {
 	println(nothing);
 }

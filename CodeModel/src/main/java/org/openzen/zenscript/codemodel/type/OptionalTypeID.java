@@ -36,9 +36,7 @@ public class OptionalTypeID implements TypeID {
 
 	@Override
 	public ResolvedType resolve() {
-		ResolvedType optionalMembers = OptionalTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
-		ResolvedType baseTypeMembers = baseType.resolve();
-		return ExpandedResolvedType.of(baseTypeMembers, Collections.singletonList(optionalMembers));
+		return OptionalTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
 	}
 
 	@Override

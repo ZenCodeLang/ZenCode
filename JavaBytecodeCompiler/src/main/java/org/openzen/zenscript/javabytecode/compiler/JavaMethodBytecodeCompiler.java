@@ -136,8 +136,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	public JavaMethodBytecodeCompiler(JavaWriter javaWriter, JavaExpressionVisitor expressionVisitor, JavaBytecodeContext context, JavaCompiledModule module) {
 		this.javaWriter = javaWriter;
 		this.expressionVisitor = expressionVisitor;
-		boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
-		unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
+		boxingTypeVisitor = JavaBoxingTypeVisitor.forJavaBoxing(javaWriter);
+		unboxingTypeVisitor = JavaUnboxingTypeVisitor.forJavaUnboxing(javaWriter);
 		this.context = context;
 		this.module = module;
 	}
@@ -563,6 +563,43 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				type.valueType.accept(type.valueType, boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_PUT);
 				javaWriter.pop();
+				return null;
+			}
+			case OPTIONAL_IS_NULL: {
+				// special case for usize where "null" === -1
+				Label exit = new Label();
+				Label isNull = new Label();
+
+				arguments[0].accept(expressionVisitor);
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.iConstM1();
+					javaWriter.ifICmpEQ(isNull);
+				} else {
+					javaWriter.ifNull(isNull);
+				}
+				javaWriter.iConst0();
+				javaWriter.goTo(exit);
+				javaWriter.label(isNull);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
+				return null;
+			}
+			case OPTIONAL_IS_NOT_NULL: {
+				// special case for usize where "null" === -1
+				Label exit = new Label();
+				Label isNotNull = new Label();
+				arguments[0].accept(expressionVisitor);
+				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.iConstM1();
+					javaWriter.ifICmpNE(isNotNull);
+				} else {
+					javaWriter.ifNonNull(isNotNull);
+				}
+				javaWriter.iConst0();
+				javaWriter.goTo(exit);
+				javaWriter.label(isNotNull);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
 				return null;
 			}
 		}
@@ -1266,7 +1303,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case OPTIONAL_IS_NULL:
 				// special case for usize where "null" === -1
 				if(arguments[0].type.withoutOptional() == BasicTypeID.USIZE) {
-					javaWriter.pop();
 					javaWriter.iConstM1();
 					Label exit = new Label();
 					Label isFalse = new Label();
@@ -1278,6 +1314,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 					javaWriter.label(exit);
 					break;
 				}
+				javaWriter.aConstNull();
 				// fallthrough to the other cases which handle all variants except for usize
 			case OBJECT_SAME:
 			case ASSOC_SAME:
