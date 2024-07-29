@@ -40,7 +40,7 @@ public class JavaWriter {
 	private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
 	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
 	private final List<Integer> lineNumberLabels = new ArrayList<>();
-	private boolean debug = true;
+	private boolean debug = false;
 	private final boolean nameVariables = true;
 	private int labelIndex = 1;
 	private Map<Label, String> labelNames = new HashMap<>();
