@@ -66,8 +66,7 @@ public class JavaNativeModule {
 
 		this.compiled = new JavaCompiledModule(packageInfo.getModule(), FunctionParameter.NONE);
 
-		JavaRuntimeTypeConverterImpl typeConverter = new JavaRuntimeTypeConverterImpl(nativeModuleSpace, packageInfo);
-		this.typeConverter = typeConverter;
+		typeConverter = new JavaRuntimeTypeConverterImpl(nativeModuleSpace, packageInfo);
 		headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, this);
 		typeConverter.setHeaderConverter(headerConverter);
 
@@ -159,7 +158,7 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? method.getName() : global.value();
 
 			FunctionHeader header = getHeaderConverter().getHeader(TypeVariableContext.EMPTY, method);
-			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, thisType, method, MethodID.staticMethod(name), header);
+			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, thisType, method, MethodID.staticMethod(name), header, false);
 			getCompiled().setMethodInfo(runtimeMethod, runtimeMethod.getNative());
 
 			globals.put(name, new ExpressionGlobal((compiler, position, typeArguments) ->
@@ -191,8 +190,16 @@ public class JavaNativeModule {
 		return packageInfo.getBasePackage();
 	}
 
-	public Optional<TypeSymbol> findClass(Class<?> cls) {
+	public Optional<TypeSymbol> findLocalClass(Class<?> cls) {
 		return Optional.ofNullable(classes.get(cls));
+	}
+
+	public Optional<TypeSymbol> findClass(Class<?> cls) {
+		return nativeModuleSpace.getModule(cls).flatMap(module -> module.findLocalClass(cls));
+	}
+
+	public boolean isKnownType(Class<?> cls) {
+		return findClass(cls).isPresent();
 	}
 
 	public JavaRuntimeTypeConverter getTypeConverter() {

@@ -26,6 +26,8 @@ public abstract class JavaRuntimeClass implements TypeSymbol {
 	public final String name;
 
 	private final Modifiers modifiers;
+	private boolean superclassEvaluated = false;
+	private TypeID superclass;
 	private TypeParameter[] typeParameters;
 	protected final TypeVariableContext context = new TypeVariableContext();
 
@@ -95,7 +97,18 @@ public abstract class JavaRuntimeClass implements TypeSymbol {
 
 	@Override
 	public Optional<TypeID> getSupertype(TypeID[] typeArguments) {
-		return Optional.empty();
+		if (!superclassEvaluated) {
+			superclassEvaluated = true;
+
+			AnnotatedType superType = cls.getAnnotatedSuperclass();
+			if (superType != null && module.isKnownType(cls.getSuperclass())) {
+				superclass = module.getTypeConverter().getType(context, superType);
+			}
+		}
+		return Optional.ofNullable(superclass).map(s -> {
+			GenericMapper mapper = GenericMapper.create(getTypeParameters(), typeArguments);
+			return mapper.map(s);
+		});
 	}
 
 	private static Modifiers translateModifiers(int modifiers) {

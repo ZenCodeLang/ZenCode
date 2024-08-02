@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
+import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,14 +150,18 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 			member.registerTo(type, members, mapper);
 		}
 
-		if (superType != null) {
-			// TODO - register supertype members
-		}
-
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		resolveAdditional(type, members, mapper);
-		return members.build();
+		ResolvedType resolved = members.build();
+
+		if (superType != null) {
+			TypeID instancedSuperType = mapper.map(superType);
+			ResolvedType superResolved = instancedSuperType.resolve();
+			resolved = new SubclassResolvedType(superResolved, resolved, superType);
+		}
+
+		return resolved;
 	}
 
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {}

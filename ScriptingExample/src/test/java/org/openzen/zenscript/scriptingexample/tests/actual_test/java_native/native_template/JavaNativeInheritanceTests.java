@@ -2,6 +2,7 @@ package org.openzen.zenscript.scriptingexample.tests.actual_test.java_native.nat
 
 import org.junit.jupiter.api.Test;
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zenscript.scriptingexample.tests.SharedGlobals;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
@@ -76,7 +77,7 @@ public class JavaNativeInheritanceTests extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("import test_module.ChildClass;")
 				.add("var child = new ChildClass();")
-				.add("println(child.dayOfWeek = 'Tuesday');")
+				.add("child.dayOfWeek = 'Tuesday';")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
@@ -94,6 +95,19 @@ public class JavaNativeInheritanceTests extends ZenCodeTest {
 
 		logger.printlnOutputs().assertLinesInOrder(
 				"4.0"
+		);
+	}
+
+	@Test
+	void casterIsAvailableOnParent() {
+		ScriptBuilder.create()
+				.add("import test_module.ParentClass;")
+				.add("var instance = new ParentClass();")
+				.add("println(instance);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"ParentClass"
 		);
 	}
 
@@ -136,8 +150,8 @@ public class JavaNativeInheritanceTests extends ZenCodeTest {
 		}
 
 		@ZenCodeType.Setter("dayOfWeek")
-		public String setDayOfWeek(String dayOfWeek) {
-			return "Before: Monday, After: " + dayOfWeek;
+		public void setDayOfWeek(String dayOfWeek) {
+			SharedGlobals.println("Before: Monday, After: " + dayOfWeek);
 		}
 
 		@ZenCodeType.Operator(ZenCodeType.OperatorType.MUL)

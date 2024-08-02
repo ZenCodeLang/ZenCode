@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,25 @@ public final class InstanceCallable {
 	public InstanceCallable union(InstanceCallable other) {
 		List<InstanceCallableMethod> concatenated = Stream.concat(overloads.stream(), other.overloads.stream()).collect(Collectors.toList());
 		return new InstanceCallable(concatenated);
+	}
+
+	/**
+	 * Merges the given callable into this one; skipping any overloads that are already present.
+	 *
+	 * @param other
+	 * @return
+	 */
+	public InstanceCallable merge(InstanceCallable other) {
+		List<InstanceCallableMethod> overloads = new ArrayList<>(this.overloads);
+		outer: for (InstanceCallableMethod overload : other.overloads) {
+			for (InstanceCallableMethod existing : this.overloads) {
+				if (overload.getHeader().isEquivalentTo(existing.getHeader()))
+					continue outer;
+			}
+
+			overloads.add(overload);
+		}
+		return new InstanceCallable(overloads);
 	}
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {

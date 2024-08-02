@@ -29,7 +29,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	private final FunctionHeader header;
 	private final MethodID id;
 
-	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Constructor<?> constructor, FunctionHeader header) {
+	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Constructor<?> constructor, FunctionHeader header, boolean implicit) {
 		this.method = new JavaNativeMethod(
 				class_.javaClass,
 				JavaNativeMethod.Kind.CONSTRUCTOR,
@@ -41,11 +41,11 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		this.class_ = class_;
 		this.target = target;
 		this.header = header;
-		this.modifiers = getMethodModifiers(constructor).withStatic(); // In ZC, .ctors are static
+		this.modifiers = getMethodModifiers(constructor, implicit).withStatic(); // In ZC, .ctors are static
 		this.id = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	}
 
-	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header) {
+	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header, boolean implicit) {
 		JavaNativeMethod.Kind kind;
 		if (method.getName().equals("<init>"))
 			kind = JavaNativeMethod.Kind.CONSTRUCTOR;
@@ -67,7 +67,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		this.target = target;
 		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
 				.getModifiers(), header.getReturnType().isGeneric());
-		modifiers = getMethodModifiers(method);
+		modifiers = getMethodModifiers(method, implicit);
 		this.id = id;
 		this.header = header;
 	}
@@ -140,12 +140,14 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		return new JavaCompilingMethod(compiled, signature);
 	}
 
-	private Modifiers getMethodModifiers(Member method) {
+	private Modifiers getMethodModifiers(Member method, boolean implicit) {
 		Modifiers result = Modifiers.PUBLIC;
 		if (Modifier.isStatic(method.getModifiers()))
 			result = result.withStatic();
 		if (Modifier.isFinal(method.getModifiers()))
 			result = result.withFinal();
+		if (implicit)
+			result = result.withImplicit();
 
 		return result;
 	}

@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,25 @@ public final class StaticCallable {
 	public StaticCallable union(StaticCallable other) {
 		List<StaticCallableMethod> concatenated = Stream.concat(overloads.stream(), other.overloads.stream()).collect(Collectors.toList());
 		return new StaticCallable(concatenated);
+	}
+
+	/**
+	 * Merges the given callable into this one; skipping any overloads that are already present.
+	 *
+	 * @param other
+	 * @return
+	 */
+	public StaticCallable merge(StaticCallable other) {
+		List<StaticCallableMethod> overloads = new ArrayList<>(this.overloads);
+		outer: for (StaticCallableMethod overload : other.overloads) {
+			for (StaticCallableMethod existing : this.overloads) {
+				if (overload.getHeader().isEquivalentTo(existing.getHeader()))
+					continue outer;
+			}
+
+			overloads.add(overload);
+		}
+		return new StaticCallable(overloads);
 	}
 
 	public boolean acceptsZeroArguments() {

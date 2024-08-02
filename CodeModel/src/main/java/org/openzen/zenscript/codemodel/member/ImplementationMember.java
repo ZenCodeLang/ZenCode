@@ -116,10 +116,5 @@ public class ImplementationMember extends DefinitionMember {
 		public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
 			return builder.interfaceCast(implementationInstance, instance);
 		}
-
-		@Override
-		public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
-			return builder.invalid(CompileErrors.invalidPostfix());
-		}
 	}
 }

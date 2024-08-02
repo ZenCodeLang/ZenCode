@@ -4,7 +4,10 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 import org.openzen.zenscript.javashared.JavaClass;
+
+import java.util.Optional;
 
 public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	private JavaNativeTypeTemplate template;
@@ -24,6 +27,11 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 				target = DefinitionTypeID.createThis(this);
 			this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
 		}
-		return new JavaNativeTypeMembers(template, DefinitionTypeID.create(this, typeArguments), GenericMapper.create(getTypeParameters(), typeArguments));
+		ResolvedType resolved = new JavaNativeTypeMembers(template, DefinitionTypeID.create(this, typeArguments), GenericMapper.create(getTypeParameters(), typeArguments));
+		Optional<TypeID> superType = getSupertype(typeArguments);
+		if (superType.isPresent()) {
+			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
+		}
+		return resolved;
 	}
 }

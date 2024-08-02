@@ -1,11 +1,16 @@
 #output: hello thing
 #output: world
+#output: goodbye thing
 
 virtual class Foo {
   val name as string;
 
   sayHello(): void {
 	println("hello " + this.name);
+  }
+
+  sayGoodbye(): void {
+  	println("goodbye " + this.name);
   }
 }
 
@@ -17,4 +22,4 @@ class Bar : Foo {
 }
 
 new Bar("thing").sayHello();
-
+new Bar("thing").sayGoodbye();

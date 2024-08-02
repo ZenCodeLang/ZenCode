@@ -12,6 +12,9 @@ public class JavaNativeModuleSpace {
 	private final Map<Class<?>, JavaNativeModule> moduleByClass = new HashMap<>();
 
 	public Optional<JavaNativeModule> getModule(Class<?> cls) {
+		if (moduleByClass.containsKey(cls))
+			return Optional.of(moduleByClass.get(cls));
+
 		String package_ = cls.getPackage().getName();
 		return Optional.ofNullable(moduleByPackage.computeIfAbsent(package_, this::getModuleHierarchical));
 	}

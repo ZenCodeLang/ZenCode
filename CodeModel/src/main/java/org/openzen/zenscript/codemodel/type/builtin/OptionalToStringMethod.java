@@ -52,9 +52,4 @@ public class OptionalToStringMethod implements InstanceCallableMethod {
 				.orElseThrow(() -> new IllegalStateException("No caster found for " + resolvedBaseType));
 		return builder.ternary(isNull, builder.constant("null"), cast);
 	}
-
-	@Override
-	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
-		return builder.invalid(CompileErrors.invalidPostfix());
-	}
 }

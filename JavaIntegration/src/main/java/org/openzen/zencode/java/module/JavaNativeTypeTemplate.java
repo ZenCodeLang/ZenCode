@@ -134,6 +134,7 @@ public class JavaNativeTypeTemplate {
 			MethodID id = null;
 			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
 			boolean isStaticExpansion = false;
+			boolean implicit = false;
 			if (method.isAnnotationPresent(ZenCodeType.Operator.class)) {
 				ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 				id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
@@ -147,7 +148,7 @@ public class JavaNativeTypeTemplate {
 				id = MethodID.setter(name);
 			} else if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
 				ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
-				// TODO: implicit flag!
+				implicit = caster.implicit();
 				id = MethodID.caster(header.getReturnType());
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
@@ -171,7 +172,7 @@ public class JavaNativeTypeTemplate {
 				header = new FunctionHeader(header.getReturnType(), withoutFirst);
 			}
 
-			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header);
+			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit);
 			methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
 			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
 		}
@@ -201,7 +202,7 @@ public class JavaNativeTypeTemplate {
 		JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
 		FunctionHeader header = headerConverter.getHeader(typeVariableContext, constructor);
 		header.setReturnType(target); // In ZC, .ctors return the instantiated type
-		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, constructor, header);
+		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, constructor, header, false);
 		class_.module.getCompiled().setMethodInfo(method, method);
 		return method;
 	}

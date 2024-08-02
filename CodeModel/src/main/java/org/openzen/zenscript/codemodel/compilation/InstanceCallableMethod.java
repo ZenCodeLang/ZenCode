@@ -9,5 +9,7 @@ public interface InstanceCallableMethod extends AnyMethod {
 
 	Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments);
 
-	Expression callPostfix(ExpressionBuilder builder, Expression instance);
+	default Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+		return builder.invalid(CompileErrors.invalidPostfix());
+	}
 }

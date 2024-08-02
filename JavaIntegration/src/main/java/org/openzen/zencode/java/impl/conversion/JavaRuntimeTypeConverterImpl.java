@@ -232,7 +232,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 
 		JavaNativeModule module = nativeModuleSpace.getModule(cls)
 				.orElseThrow(() -> new IllegalArgumentException("Could not find module for class " + cls.getName()));
-		return module.findClass(cls)
+		return module.findLocalClass(cls)
 				.orElseThrow(() -> new IllegalArgumentException("Could not find class " + cls.getName() + " in module " + module.getModule().name));
 	}
 
