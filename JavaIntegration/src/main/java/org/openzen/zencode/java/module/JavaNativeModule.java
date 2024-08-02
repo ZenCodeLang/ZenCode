@@ -27,6 +27,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.parser.BracketExpressionParser;
+import stdlib.Strings;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
