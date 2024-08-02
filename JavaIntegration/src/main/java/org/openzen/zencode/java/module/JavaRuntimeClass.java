@@ -19,29 +19,22 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Optional;
 
-public class JavaRuntimeClass implements TypeSymbol {
+public abstract class JavaRuntimeClass implements TypeSymbol {
 	public final JavaNativeModule module;
 	public final JavaClass javaClass;
 	public final Class<?> cls;
 	public final String name;
 
 	private final Modifiers modifiers;
-	private final JavaNativeTypeTemplate template;
-	private final TypeParameter[] typeParameters;
-	private final TypeVariableContext context = new TypeVariableContext();
+	private TypeParameter[] typeParameters;
+	protected final TypeVariableContext context = new TypeVariableContext();
 
-	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, String name, TypeID target, JavaClass.Kind kind) {
+	public JavaRuntimeClass(JavaNativeModule module, Class<?> cls, String name, JavaClass.Kind kind) {
 		this.module = module;
 		this.cls = cls;
 		this.name = name;
 		this.javaClass = JavaClass.fromInternalName(Type.getInternalName(cls), kind);
 		this.modifiers = translateModifiers(cls.getModifiers());
-		this.typeParameters = translateTypeParameters(cls);
-
-		if (target == null)
-			target = DefinitionTypeID.createThis(this);
-
-		this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
 	}
 
 	@Override
@@ -85,12 +78,13 @@ public class JavaRuntimeClass implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments) {
-		return new JavaNativeTypeMembers(template, DefinitionTypeID.create(this, typeArguments), GenericMapper.create(typeParameters, typeArguments));
-	}
+	public abstract ResolvedType resolve(TypeID[] typeArguments);
 
 	@Override
 	public TypeParameter[] getTypeParameters() {
+		if (this.typeParameters == null) {
+			this.typeParameters = translateTypeParameters(cls);
+		}
 		return typeParameters;
 	}
 

@@ -184,7 +184,7 @@ public class JavaNativeTypeTemplate {
 			ZenCodeType.Inner innerType = cls.getAnnotation(ZenCodeType.Inner.class);
 			String name = innerType.value().isEmpty() ? cls.getSimpleName() : innerType.value();
 			JavaClass.Kind kind = ConversionUtils.getKindFromAnnotations(cls);
-			JavaRuntimeClass innerClass = new JavaRuntimeClass(class_.module, cls, name, null, kind);
+			JavaRuntimeClass innerClass = new JavaAnnotatedRuntimeClass(class_.module, cls, name, null, kind);
 			innerTypes.put(name, innerClass);
 		}
 	}

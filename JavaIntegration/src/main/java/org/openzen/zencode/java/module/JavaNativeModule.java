@@ -12,9 +12,7 @@ import org.openzen.zencode.java.impl.conversion.JavaNativeHeaderConverter;
 import org.openzen.zencode.java.impl.conversion.JavaRuntimeTypeConverterImpl;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.StaticMemberCompilingExpression;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.globals.ExpressionGlobal;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -23,7 +21,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -43,6 +40,7 @@ import java.util.*;
 public class JavaNativeModule {
 	private final IZSLogger logger;
 	private final ModuleSpace space;
+	private final JavaNativeModuleSpace nativeModuleSpace;
 	private final JavaNativePackageInfo packageInfo;
 	private final Map<Class<?>, JavaRuntimeClass> classes = new HashMap<>();
 	private final JavaRuntimeTypeConverterImpl typeConverter;
@@ -71,6 +69,8 @@ public class JavaNativeModule {
 		this.typeConverter = typeConverter;
 		headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, this);
 		typeConverter.setHeaderConverter(headerConverter);
+
+		this.nativeModuleSpace = nativeModuleSpace;
 	}
 
 	public SemanticModule toSemantic() {
@@ -108,12 +108,20 @@ public class JavaNativeModule {
 			target = typeConverter.parseType(expansion.value());
 		}
 
-		ParsedName name = getClassName(packageInfo.getPkg(), cls);
-		JavaRuntimeClass class_ = new JavaRuntimeClass(this, cls, name.name, target, kind);
+		ParsedName name = getClassName(cls);
+		JavaRuntimeClass class_ = new JavaAnnotatedRuntimeClass(this, cls, name.name, target, kind);
 		classes.put(cls, class_);
 		getCompiled().setClassInfo(class_, class_.javaClass);
 		name.pkg.register(class_);
 		return class_;
+	}
+
+	public void registerAdditionalClass(String packageName, Class<?> cls, JavaRuntimeClass runtimeClass) {
+		classes.put(cls, runtimeClass);
+		nativeModuleSpace.registerClass(cls, this);
+
+		ZSPackage targetPackage = parsePackageName(packageName);
+		targetPackage.register(runtimeClass);
 	}
 
 	public void addGlobals(Class<?> cls) {
@@ -194,7 +202,7 @@ public class JavaNativeModule {
 		return headerConverter;
 	}
 
-	private ParsedName getClassName(ZSPackage pkg, Class<?> cls) {
+	private ParsedName getClassName(Class<?> cls) {
 		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 		final String specifiedName = getNameForScripts(cls);
 
@@ -226,6 +234,17 @@ public class JavaNativeModule {
 		}
 
 		return new ParsedName(classPkg, className);
+	}
+
+	private ZSPackage parsePackageName(String packageName) {
+		ZSPackage result = packageInfo.getPkg();
+		if (packageName != null && !packageName.isEmpty()) {
+			String[] classNameParts = Strings.split(packageName, '.');
+			for (int i = 0; i < classNameParts.length - 1; i++)
+				result = result.getOrCreatePackage(classNameParts[i]);
+		}
+
+		return result;
 	}
 
 	private static String getNameForScripts(Class<?> cls) {

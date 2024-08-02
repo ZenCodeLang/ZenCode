@@ -9,6 +9,7 @@ import java.util.Optional;
 public class JavaNativeModuleSpace {
 	private final Map<String, JavaNativeModule> modulesByBasePackage = new HashMap<>();
 	private final Map<String, JavaNativeModule> moduleByPackage = new HashMap<>();
+	private final Map<Class<?>, JavaNativeModule> moduleByClass = new HashMap<>();
 
 	public Optional<JavaNativeModule> getModule(Class<?> cls) {
 		String package_ = cls.getPackage().getName();
@@ -21,6 +22,10 @@ public class JavaNativeModuleSpace {
 			throw new IllegalArgumentException("This is already a module at " + base + ": " + existing.getModule().name);
 
 		modulesByBasePackage.put(base, module);
+	}
+
+	public void registerClass(Class<?> cls, JavaNativeModule module) {
+		moduleByClass.put(cls, module);
 	}
 
 	private JavaNativeModule getModuleHierarchical(String packageName) {
