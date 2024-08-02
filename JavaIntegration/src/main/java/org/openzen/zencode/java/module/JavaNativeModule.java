@@ -111,13 +111,13 @@ public class JavaNativeModule {
 		ParsedName name = getClassName(packageInfo.getPkg(), cls);
 		JavaRuntimeClass class_ = new JavaRuntimeClass(this, cls, name.name, target, kind);
 		classes.put(cls, class_);
+		getCompiled().setClassInfo(class_, class_.javaClass);
 		name.pkg.register(class_);
 		return class_;
 	}
 
 	public void addGlobals(Class<?> cls) {
 		JavaRuntimeClass class_ = addClass(cls);
-		getCompiled().setClassInfo(class_, class_.javaClass);
 
 		TypeID thisType = DefinitionTypeID.createThis(class_);
 		TypeVariableContext context = new TypeVariableContext();
