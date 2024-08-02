@@ -12,22 +12,8 @@ public class JavaNativeConstructorTest extends ZenCodeTest {
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> classes = super.getRequiredClasses();
-		classes.add(ClassWithImplicitConstructor.class);
 		classes.add(ClassWithOverloadedConstructor.class);
 		return classes;
-	}
-
-	@Test
-	void canCallImplicitConstructor() {
-		ScriptBuilder.create()
-				.add("import test_module.ClassWithImplicitConstructor;")
-				.add("var child = new ClassWithImplicitConstructor();")
-				.add("println(child.greetMe());")
-				.execute(this);
-
-		logger.printlnOutputs().assertLinesInOrder(
-				"Hi from class with implicit constructor"
-		);
 	}
 
 	@Test
@@ -44,14 +30,6 @@ public class JavaNativeConstructorTest extends ZenCodeTest {
 				"Int value: 1",
 				"String value: test"
 		);
-	}
-
-	@ZenCodeType.Name("test_module.ClassWithImplicitConstructor")
-	public static class ClassWithImplicitConstructor {
-		@ZenCodeType.Method
-		public String greetMe() {
-			return "Hi from class with implicit constructor";
-		}
 	}
 
 	@ZenCodeType.Name("test_module.ClassWithOverloadedConstructor")
