@@ -30,10 +30,10 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class JavaNativeTypeTemplate {
-	private final JavaRuntimeClass class_;
-	private final TypeID target;
-	private final TypeVariableContext typeVariableContext;
-	private final boolean expansion;
+	protected final JavaRuntimeClass class_;
+	protected final TypeID target;
+	protected final TypeVariableContext typeVariableContext;
+	protected final boolean expansion;
 
 	private List<MethodSymbol> constructors;
 	private Map<String, JavaRuntimeField> fields;
