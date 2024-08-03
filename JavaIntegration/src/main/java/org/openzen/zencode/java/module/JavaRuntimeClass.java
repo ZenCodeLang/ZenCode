@@ -17,6 +17,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 import java.util.Optional;
 
 public abstract class JavaRuntimeClass implements TypeSymbol {
@@ -125,6 +126,14 @@ public abstract class JavaRuntimeClass implements TypeSymbol {
 
 	private TypeParameter[] translateTypeParameters(Class<?> cls) {
 		TypeVariable<?>[] javaTypeParameters = cls.getTypeParameters();
+
+		// Early abort in case of self-referencing generics
+		if(context.containsAll(javaTypeParameters)) {
+			return Arrays.stream(javaTypeParameters)
+					.map(context::get)
+					.toArray(TypeParameter[]::new);
+		}
+
 		TypeParameter[] typeParameters = TypeParameter.NONE;
 		if (javaTypeParameters.length > 0) {
 			typeParameters = new TypeParameter[cls.getTypeParameters().length];
