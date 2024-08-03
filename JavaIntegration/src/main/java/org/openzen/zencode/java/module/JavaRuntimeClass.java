@@ -124,7 +124,11 @@ public abstract class JavaRuntimeClass implements TypeSymbol {
 		return result;
 	}
 
-	private TypeParameter[] translateTypeParameters(Class<?> cls) {
+	public void translateTypeParameters(TypeVariableContext context) {
+		translateTypeParameters(cls, context);
+	}
+
+	private TypeParameter[] translateTypeParameters(Class<?> cls, TypeVariableContext context) {
 		TypeVariable<?>[] javaTypeParameters = cls.getTypeParameters();
 
 		// Early abort in case of self-referencing generics
@@ -158,5 +162,9 @@ public abstract class JavaRuntimeClass implements TypeSymbol {
 		}
 
 		return typeParameters;
+	}
+
+	private TypeParameter[] translateTypeParameters(Class<?> cls) {
+		return translateTypeParameters(cls, context);
 	}
 }

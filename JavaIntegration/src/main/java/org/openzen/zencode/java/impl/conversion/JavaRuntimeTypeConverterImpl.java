@@ -7,6 +7,7 @@ import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.java.module.JavaAnnotatedType;
 import org.openzen.zencode.java.module.JavaNativePackageInfo;
+import org.openzen.zencode.java.module.JavaRuntimeClass;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -181,6 +182,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 
 		final TypeSymbol definition = findType(type);
+		if(definition instanceof JavaRuntimeClass) {
+			((JavaRuntimeClass) definition).translateTypeParameters(context);
+		}
 
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
