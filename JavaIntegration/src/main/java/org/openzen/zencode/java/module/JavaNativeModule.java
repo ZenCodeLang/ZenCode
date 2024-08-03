@@ -120,6 +120,8 @@ public class JavaNativeModule {
 		classes.put(cls, runtimeClass);
 		nativeModuleSpace.registerClass(cls, this);
 
+		getCompiled().setClassInfo(runtimeClass, runtimeClass.javaClass);
+
 		ZSPackage targetPackage = parsePackageName(packageName);
 		targetPackage.register(runtimeClass);
 	}
