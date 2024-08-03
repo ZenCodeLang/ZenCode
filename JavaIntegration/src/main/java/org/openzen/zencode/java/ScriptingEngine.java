@@ -9,6 +9,7 @@ import org.openzen.zencode.java.impl.JavaNativeModuleSpace;
 import org.openzen.zencode.java.logger.ScriptingEngineLogger;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
 import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zencode.java.module.JavaRuntimeClass;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -35,8 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -210,6 +209,13 @@ public class ScriptingEngine {
 			return this;
 		}
 
+
+		@Override
+		public JavaNativeModuleBuilder registerAdditionalClass(String packageName, Class<?> cls, JavaRuntimeClass runtimeClass) {
+			underConstruction.registerAdditionalClass(packageName, cls, runtimeClass);
+			return this;
+		}
+
 		@Override
 		public JavaNativeModuleBuilder addGlobals(Class<?> cls) {
 			underConstruction.addGlobals(cls);
@@ -226,6 +232,11 @@ public class ScriptingEngine {
 		public JavaNativeModuleBuilder addDependency(JavaNativeModule dependency) {
 			underConstruction.addDependency(dependency);
 			return this;
+		}
+
+		@Override
+		public JavaNativeModule getModuleUnderConstruction() {
+			return underConstruction;
 		}
 
 		@Override

@@ -6,13 +6,17 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 
 public interface JavaNativeModuleBuilder {
-	JavaNativeModuleBuilder addGlobals(Class<?> cls);
+    JavaNativeModuleBuilder registerAdditionalClass(String packageName, Class<?> cls, JavaRuntimeClass runtimeClass);
+
+    JavaNativeModuleBuilder addGlobals(Class<?> cls);
 
 	JavaNativeModuleBuilder addGlobal(String name, IGlobal global);
 
 	JavaNativeModuleBuilder addClass(Class<?> cls);
 
 	JavaNativeModuleBuilder addDependency(JavaNativeModule dependency);
+
+	JavaNativeModule getModuleUnderConstruction();
 
 	JavaNativeModule complete() throws CompileException;
 }
