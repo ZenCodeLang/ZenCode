@@ -1,0 +1,11 @@
+#output: Hello World
+#output: Bye Felicia
+
+function greet(greeting: string, name: string = "World"): string
+    => greeting + " " + name;
+
+var greetHello = greet("Hello");
+println(greetHello);
+
+var greetGoodbye = greet("Bye", "Felicia");
+println(greetGoodbye);

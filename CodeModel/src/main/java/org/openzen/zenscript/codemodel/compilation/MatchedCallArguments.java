@@ -205,7 +205,21 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
 			} else {
 				TypeID parameterType = header.getParameterType(false, i);
-				CastedExpression cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
+				CastedExpression cArgument;
+
+				// Handle default values (if header has more args than we provided, and we got here -> use default value)
+				if(i >= arguments.length) {
+					Expression defaultValue = Optional.ofNullable(header.getParameter(false, i).defaultValue)
+							.orElse(parameterType.getDefaultValue());
+
+					if(defaultValue == null) {
+						hasInvalidArguments = true;
+					}
+
+					cArgument = CastedExpression.implicit(defaultValue);
+				} else {
+					cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
+				}
 				cArguments[i] = cArgument.value;
 				levelNormalCall = levelNormalCall.max(cArgument.level);
 				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
