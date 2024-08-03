@@ -437,5 +437,6 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		specialTypes.put(ToIntFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.INT, args[0])));
 		specialTypes.put(ToLongBiFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0], args[1])));
 		specialTypes.put(ToLongFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0])));
+		specialTypes.put(UnaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(args[0], args[0])));
 	}
 }
