@@ -226,7 +226,8 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 	}
 
 	private TypeSymbol findType(Class<?> cls) {
-		if (cls == List.class) {
+		// ToDo: Have a custom type for Collection
+		if (cls == List.class || cls == Collection.class) {
 			return packageInfo.getRoot().getImport(Arrays.asList("stdlib", "List"), 0);
 		}
 
