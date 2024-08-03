@@ -1,15 +1,21 @@
 package org.openzen.zencode.java.impl;
 
 import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zenscript.codemodel.ModuleSpace;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class JavaNativeModuleSpace {
+	public final ModuleSpace moduleSpace;
 	private final Map<String, JavaNativeModule> modulesByBasePackage = new HashMap<>();
 	private final Map<String, JavaNativeModule> moduleByPackage = new HashMap<>();
 	private final Map<Class<?>, JavaNativeModule> moduleByClass = new HashMap<>();
+
+	public JavaNativeModuleSpace(ModuleSpace moduleSpace) {
+		this.moduleSpace = moduleSpace;
+	}
 
 	public Optional<JavaNativeModule> getModule(Class<?> cls) {
 		if (moduleByClass.containsKey(cls))

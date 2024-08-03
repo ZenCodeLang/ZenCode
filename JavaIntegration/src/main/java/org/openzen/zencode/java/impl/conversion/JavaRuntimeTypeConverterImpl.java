@@ -12,9 +12,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.compilation.CompileContext;
+import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -182,7 +187,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 
 		final TypeSymbol definition = findType(type);
-		if(definition instanceof JavaRuntimeClass) {
+		if (definition instanceof JavaRuntimeClass) {
 			((JavaRuntimeClass) definition).translateTypeParameters(context);
 		}
 
@@ -234,6 +239,19 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		if (cls == List.class || cls == Collection.class) {
 			return packageInfo.getRoot().getImport(Arrays.asList("stdlib", "List"), 0);
 		}
+		if (cls == Object.class) {
+			TypeSymbol result = packageInfo.getRoot().getImport(Arrays.asList("stdlib", "Object"), 0);
+			if (result == null) {
+
+				ZSPackage stdlib = packageInfo.getRoot().getOptional("stdlib").orElseThrow(() -> new IllegalStateException("Must depend on stdlib if trying to register java.lang.Object"));
+				ModuleSymbol module = nativeModuleSpace.moduleSpace.getModule("stdlib").module;
+				// registers itself to the package automatically
+				new ClassDefinition(CodePosition.BUILTIN, module, stdlib, "Object", Modifiers.PUBLIC, null);
+				result = packageInfo.getRoot().getImport(Arrays.asList("stdlib", "Object"), 0);
+			}
+			return result;
+		}
+
 
 		JavaNativeModule module = nativeModuleSpace.getModule(cls)
 				.orElseThrow(() -> new IllegalArgumentException("Could not find module for class " + cls.getName()));

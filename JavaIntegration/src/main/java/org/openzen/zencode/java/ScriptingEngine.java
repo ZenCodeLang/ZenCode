@@ -49,7 +49,7 @@ public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
 	public final ZSPackage root = ZSPackage.createRoot();
 	private final ModuleSpace space;
-	private final JavaNativeModuleSpace nativeSpace = new JavaNativeModuleSpace();
+	private final JavaNativeModuleSpace nativeSpace;
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
 	private final List<SemanticModule> compiledModules = new ArrayList<>();
 	public boolean debug = false;
@@ -68,6 +68,7 @@ public class ScriptingEngine {
 
 	public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter, String... stdLibModulesToRegister) {
 		this.space = new ModuleSpace(new ArrayList<>());
+		this.nativeSpace = new JavaNativeModuleSpace(space);
 		this.logger = logger;
 
 		if(stdLibModulesToRegister.length == 0) {
