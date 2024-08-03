@@ -132,7 +132,6 @@ public class JavaNativeTypeTemplate {
 				continue;
 
 			MethodID id = null;
-			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
 			boolean isStaticExpansion = false;
 			boolean implicit = false;
 			if (method.isAnnotationPresent(ZenCodeType.Operator.class)) {
@@ -149,7 +148,7 @@ public class JavaNativeTypeTemplate {
 			} else if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
 				ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
 				implicit = caster.implicit();
-				id = MethodID.caster(header.getReturnType());
+				id = MethodID.caster(headerConverter.getHeader(typeVariableContext, method).getReturnType());
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
@@ -166,6 +165,8 @@ public class JavaNativeTypeTemplate {
 			}
 			if (id == null)
 				continue;
+
+			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
 
 			if (expansion && !isStaticExpansion) {
 				FunctionParameter[] withoutFirst = Arrays.copyOfRange(header.parameters, 1, header.parameters.length);
