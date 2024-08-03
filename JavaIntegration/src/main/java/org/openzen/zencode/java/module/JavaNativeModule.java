@@ -246,10 +246,16 @@ public class JavaNativeModule {
 
 	private ZSPackage parsePackageName(String packageName) {
 		ZSPackage result = packageInfo.getPkg();
-		if (packageName != null && !packageName.isEmpty()) {
-			String[] classNameParts = Strings.split(packageName, '.');
-			for (int i = 0; i < classNameParts.length - 1; i++)
-				result = result.getOrCreatePackage(classNameParts[i]);
+		if(packageName == null || packageName.isEmpty()) {
+			return result;
+		}
+
+		if(packageName.startsWith(result.fullName)) {
+			packageName = packageName.substring(result.fullName.length() + 1);
+		}
+
+		for (String classNamePart : Strings.split(packageName, '.')) {
+			result = result.getOrCreatePackage(classNamePart);
 		}
 
 		return result;
