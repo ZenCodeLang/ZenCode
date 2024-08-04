@@ -213,7 +213,6 @@ public class JavaNativeModule {
 	}
 
 	private ParsedName getClassName(Class<?> cls) {
-		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 		final String specifiedName = getNameForScripts(cls);
 
 		ZSPackage classPkg;
@@ -233,7 +232,7 @@ public class JavaNativeModule {
 			} else if (specifiedName.indexOf('.') >= 0) {
 				if (!specifiedName.startsWith(packageInfo.getPkg().fullName))
 					throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls
-							.toString() + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
+							 + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
 
 				classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
