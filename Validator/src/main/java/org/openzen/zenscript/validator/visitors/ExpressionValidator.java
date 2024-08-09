@@ -687,10 +687,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		if (actual == BasicTypeID.INVALID)
 			return; // in this case the underlying error will already by reported elsewhere
 
-		if(expected.isOptional() && actual == BasicTypeID.NULL) {
-			return;
-		}
-
 		if (!expected.equals(actual)) {
 			validator.logError(position, CompileErrors.typeMismatch(expected, actual));
 		}

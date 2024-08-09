@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -212,11 +213,14 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					Expression defaultValue = Optional.ofNullable(header.getParameter(false, i).defaultValue)
 							.orElse(parameterType.getDefaultValue());
 
-					if(defaultValue == null) {
+					if (defaultValue == null) {
 						hasInvalidArguments = true;
+						cArgument = CastedExpression.invalid(
+								compiler.at(position).invalid(CompileErrors.invalidNumberOfArguments(arguments.length, header.parameters.length)));
+					} else {
+						cArgument = new WrappedCompilingExpression(compiler, defaultValue)
+								.cast(CastedEval.implicit(compiler, position, parameterType));
 					}
-
-					cArgument = CastedExpression.implicit(defaultValue);
 				} else {
 					cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
 				}

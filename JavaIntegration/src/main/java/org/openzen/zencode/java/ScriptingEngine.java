@@ -211,7 +211,8 @@ public class ScriptingEngine {
 
 
 		@Override
-		public JavaNativeModuleBuilder registerAdditionalClass(String packageName, Class<?> cls, JavaRuntimeClass runtimeClass) {
+		public JavaNativeModuleBuilder registerAdditionalClass(String packageName, Class<?> cls, Function<JavaNativeModule, JavaRuntimeClass> runtimeClassFactory) {
+			JavaRuntimeClass runtimeClass = runtimeClassFactory.apply(underConstruction);
 			underConstruction.registerAdditionalClass(packageName, cls, runtimeClass);
 			return this;
 		}
@@ -232,11 +233,6 @@ public class ScriptingEngine {
 		public JavaNativeModuleBuilder addDependency(JavaNativeModule dependency) {
 			underConstruction.addDependency(dependency);
 			return this;
-		}
-
-		@Override
-		public JavaNativeModule getModuleUnderConstruction() {
-			return underConstruction;
 		}
 
 		@Override
