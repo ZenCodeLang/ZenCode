@@ -6,9 +6,9 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public final class ModuleSpace {
 	public final ZSPackage rootPackage = new ZSPackage(null, "");
 	public final ZSPackage stdlib = new ZSPackage(rootPackage, "stdlib");
 
-	private final List<ExpansionDefinition> expansions = new ArrayList<>();
+	private final List<ExpansionSymbol> expansions = new ArrayList<>();
 	private final Map<String, IGlobal> globals = new HashMap<>();
 	private final List<AnnotationDefinition> annotations;
 	private final Map<String, SemanticModule> modules = new HashMap<>();
@@ -43,6 +43,10 @@ public final class ModuleSpace {
 		}
 	}
 
+	public void addExpansion(ExpansionSymbol expansion) {
+		expansions.add(expansion);
+	}
+
 	public void addGlobal(String name, IGlobal global) {
 		globals.put(name, global);
 	}
@@ -55,7 +59,7 @@ public final class ModuleSpace {
 		return rootPackage;
 	}
 
-	public List<ExpansionDefinition> collectExpansions() {
+	public List<ExpansionSymbol> collectExpansions() {
 		return expansions;
 	}
 

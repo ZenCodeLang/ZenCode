@@ -5,6 +5,7 @@ import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
@@ -20,7 +21,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Optional;
 
-public abstract class JavaRuntimeClass implements TypeSymbol {
+public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	public final JavaNativeModule module;
 	public final JavaClass javaClass;
 	public final Class<?> cls;

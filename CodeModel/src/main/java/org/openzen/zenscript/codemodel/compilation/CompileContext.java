@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.compilation.impl.compiler.LocalSymbols;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
 public class CompileContext extends AbstractTypeBuilder implements TypeResolver {
 	private final ZSPackage rootPackage;
 	private final ZSPackage modulePackage;
-	private final List<ExpansionDefinition> expansions;
+	private final List<ExpansionSymbol> expansions;
 	private final Map<String, IGlobal> globals;
 	private final Map<String, CompilingDefinition> compiling = new HashMap<>();
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
@@ -34,7 +35,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	public CompileContext(
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
-			List<ExpansionDefinition> expansions,
+			List<ExpansionSymbol> expansions,
 			Map<String, IGlobal> globals,
 			List<AnnotationDefinition> annotations
 	) {
@@ -86,21 +87,8 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	public ResolvedType resolve(TypeID type) {
 		ResolvedType base = type.resolve();
 		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionDefinition expansion : expansions) {
-			if (expansion.target == null)
-				throw new RuntimeException(expansion.position.toString() + ": Missing expansion target");
-
-			Map<TypeParameter, TypeID> mapping = TypeMatcher.match(type, expansion.target);
-			if (mapping == null)
-				continue;
-
-			TypeID[] expansionTypeArguments = Stream.of(expansion.typeParameters).map(mapping::get).toArray(TypeID[]::new);
-			MemberSet.Builder resolution = MemberSet.create();
-			GenericMapper mapper = new GenericMapper(mapping, expansionTypeArguments);
-			for (IDefinitionMember member : expansion.members)
-				member.registerTo(type, resolution, mapper);
-
-			resolutions.add(resolution.build());
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(type).ifPresent(resolutions::add);
 		}
 		return ExpandedResolvedType.of(base, resolutions);
 	}

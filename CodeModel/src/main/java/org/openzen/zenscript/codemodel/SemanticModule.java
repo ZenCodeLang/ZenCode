@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 
 import java.util.*;
@@ -28,7 +29,7 @@ public class SemanticModule {
 	public final PackageDefinitions definitions;
 	public final List<ScriptBlock> scripts;
 	public final Map<String, IGlobal> globals = new HashMap<>();
-	public final List<ExpansionDefinition> expansions;
+	public final List<ExpansionSymbol> expansions;
 	public final AnnotationDefinition[] annotations;
 	public final IZSLogger logger;
 
@@ -41,7 +42,7 @@ public class SemanticModule {
 			ZSPackage modulePackage,
 			PackageDefinitions definitions,
 			List<ScriptBlock> scripts,
-			List<ExpansionDefinition> expansions,
+			List<ExpansionSymbol> expansions,
 			AnnotationDefinition[] annotations,
 			IZSLogger logger) {
 		this.name = module.name;
@@ -68,7 +69,7 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 
-		AnnotationProcessor annotationProcessor = new AnnotationProcessor(expansions);
+		AnnotationProcessor annotationProcessor = new AnnotationProcessor(Collections.unmodifiableList(expansions));
 		List<ScriptBlock> processedScripts = new ArrayList<>();
 
 		for (ScriptBlock block : scripts)
@@ -76,7 +77,7 @@ public class SemanticModule {
 
 		Stream.concat(
 				definitions.getAll().stream(),
-				expansions.stream()
+				expansions.stream().filter(e -> e instanceof ExpansionDefinition).map(e -> (ExpansionDefinition) e)
 		).forEach(annotationProcessor::process);
 
 		return new SemanticModule(
@@ -98,7 +99,7 @@ public class SemanticModule {
 	}
 
 	public CompileContext createCompileContext() {
-		return new CompileContext(rootPackage, modulePackage, expansions, globals, Arrays.asList(annotations));
+		return new CompileContext(rootPackage, modulePackage, Collections.unmodifiableList(expansions), globals, Arrays.asList(annotations));
 	}
 
 	public enum State {

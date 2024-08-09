@@ -41,11 +41,15 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		this.class_ = class_;
 		this.target = target;
 		this.header = header;
-		this.modifiers = getMethodModifiers(constructor, implicit).withStatic(); // In ZC, .ctors are static
+		this.modifiers = getMethodModifiers(constructor, implicit, false).withStatic(); // In ZC, .ctors are static
 		this.id = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	}
 
 	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header, boolean implicit) {
+		this(class_, target, method, id, header, implicit, false);
+	}
+
+	public JavaRuntimeMethod(JavaRuntimeClass class_, TypeID target, Method method, MethodID id, FunctionHeader header, boolean implicit, boolean expansion) {
 		JavaNativeMethod.Kind kind;
 		if (method.getName().equals("<init>"))
 			kind = JavaNativeMethod.Kind.CONSTRUCTOR;
@@ -67,7 +71,7 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		this.target = target;
 		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
 				.getModifiers(), header.getReturnType().isGeneric());
-		modifiers = getMethodModifiers(method, implicit);
+		modifiers = getMethodModifiers(method, implicit, expansion);
 		this.id = id;
 		this.header = header;
 	}
@@ -140,9 +144,9 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		return new JavaCompilingMethod(compiled, signature);
 	}
 
-	private Modifiers getMethodModifiers(Member method, boolean implicit) {
+	private Modifiers getMethodModifiers(Member method, boolean implicit, boolean expansion) {
 		Modifiers result = Modifiers.PUBLIC;
-		if (Modifier.isStatic(method.getModifiers()))
+		if (Modifier.isStatic(method.getModifiers()) && !expansion)
 			result = result.withStatic();
 		if (Modifier.isFinal(method.getModifiers()))
 			result = result.withFinal();

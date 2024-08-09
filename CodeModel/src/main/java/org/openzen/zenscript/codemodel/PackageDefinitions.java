@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel;
 
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,10 +35,10 @@ public class PackageDefinitions {
 		}
 	}
 
-	public void registerExpansionsTo(List<ExpansionDefinition> expansions) {
+	public void registerExpansionsTo(List<ExpansionSymbol> expansions) {
 		for (HighLevelDefinition definition : definitions) {
-			if (definition instanceof ExpansionDefinition)
-				expansions.add((ExpansionDefinition) definition);
+			if (definition instanceof ExpansionSymbol)
+				expansions.add((ExpansionSymbol) definition);
 		}
 	}
 }

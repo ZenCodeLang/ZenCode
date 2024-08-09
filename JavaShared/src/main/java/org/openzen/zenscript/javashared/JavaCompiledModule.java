@@ -8,14 +8,10 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
+import org.openzen.zenscript.codemodel.identifiers.*;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
-import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
@@ -48,6 +44,10 @@ public class JavaCompiledModule {
 	public JavaCompiledModule(ModuleSymbol module, FunctionParameter[] scriptParameters) {
 		this.module = module;
 		this.scriptParameters = scriptParameters;
+	}
+
+	public void addExpansion(ExpansionSymbol expansion, JavaClass cls) {
+		expansionClasses.put(expansion, cls);
 	}
 
 	public String generateMappings() {
@@ -214,11 +214,11 @@ public class JavaCompiledModule {
 		this.enumMapper.merge(compiled.enumMapper);
 	}
 
-	public List<ExpansionDefinition> getExpansions() {
+	public List<ExpansionSymbol> getExpansions() {
 		return expansionClasses.keySet()
 				.stream()
-				.filter(definition -> definition instanceof ExpansionDefinition)
-				.map(definition -> (ExpansionDefinition) definition)
+				.filter(definition -> definition instanceof ExpansionSymbol)
+				.map(definition -> (ExpansionSymbol) definition)
 				.collect(Collectors.toList());
 	}
 }

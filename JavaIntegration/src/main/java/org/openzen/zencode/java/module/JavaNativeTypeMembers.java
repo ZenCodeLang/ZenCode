@@ -130,7 +130,6 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	private Optional<StaticCallable> loadStatic(MethodID id) {
 		List<StaticCallableMethod> methods = template.getMethod(id).stream()
-				.filter(c -> c.getModifiers().isStatic())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
 		return methods.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(methods));
@@ -138,7 +137,6 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	private Optional<InstanceCallable> load(MethodID id) {
 		List<InstanceCallableMethod> methods = template.getMethod(id).stream()
-				.filter(c -> !c.getModifiers().isStatic())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
 		return methods.isEmpty() ? Optional.empty() : Optional.of(new InstanceCallable(methods));

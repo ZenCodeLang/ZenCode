@@ -28,6 +28,7 @@ import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisit
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Hoofdgebruiker
@@ -60,7 +61,7 @@ public class JavaCompiler {
 		context.addModule(module.module, target);
 
 		List<HighLevelDefinition> allDefinitions = new ArrayList<>(module.definitions.getAll());
-		allDefinitions.addAll(module.expansions);
+		allDefinitions.addAll(module.expansions.stream().filter(e -> e instanceof HighLevelDefinition).map(e -> (HighLevelDefinition) e).collect(Collectors.toList()));
 
 		for (HighLevelDefinition definition : allDefinitions) {
 			final String filename = this.mangler.mangleDefinitionName(definition);

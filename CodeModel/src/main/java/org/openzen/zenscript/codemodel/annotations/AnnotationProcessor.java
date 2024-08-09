@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ModuleProcessor;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -12,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AnnotationProcessor implements ModuleProcessor {
-	private final List<ExpansionDefinition> expansions;
+	private final List<ExpansionSymbol> expansions;
 
-	public AnnotationProcessor(List<ExpansionDefinition> expansions) {
+	public AnnotationProcessor(List<ExpansionSymbol> expansions) {
 		this.expansions = expansions;
 	}
 

@@ -152,7 +152,7 @@ public class JavaNativeTypeTemplate {
 			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				id = JavaModifiers.isStatic(method.getModifiers()) ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				id = JavaModifiers.isStatic(method.getModifiers()) && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
 			} else if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
@@ -173,7 +173,7 @@ public class JavaNativeTypeTemplate {
 				header = new FunctionHeader(header.getReturnType(), withoutFirst);
 			}
 
-			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit);
+			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit, expansion && !isStaticExpansion);
 			methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
 			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
 		}

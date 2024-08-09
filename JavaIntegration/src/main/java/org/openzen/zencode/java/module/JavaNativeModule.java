@@ -112,7 +112,12 @@ public class JavaNativeModule {
 		JavaRuntimeClass class_ = new JavaAnnotatedRuntimeClass(this, cls, name.name, target, kind);
 		classes.put(cls, class_);
 		getCompiled().setClassInfo(class_, class_.javaClass);
-		name.pkg.register(class_);
+		if (class_.isExpansion()) {
+			compiled.addExpansion(class_, class_.javaClass);
+			space.addExpansion(class_);
+		} else {
+			name.pkg.register(class_);
+		}
 		return class_;
 	}
 

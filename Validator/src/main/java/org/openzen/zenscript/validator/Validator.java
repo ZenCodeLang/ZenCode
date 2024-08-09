@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.validator.analysis.StatementScope;
@@ -47,8 +48,10 @@ public class Validator {
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			validator.validate(definition);
 		}
-		for (ExpansionDefinition expansion : module.expansions) {
-			validator.validate(expansion);
+		for (ExpansionSymbol expansion : module.expansions) {
+			if (expansion instanceof ExpansionDefinition) {
+				validator.validate((ExpansionDefinition) expansion);
+			}
 		}
 
 		for (ValidationLogEntry entry : validator.getLog()) {

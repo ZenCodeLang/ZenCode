@@ -28,6 +28,7 @@ import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
+import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.io.IOException;
@@ -89,9 +90,12 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 
 		try {
-			CompileContext context = new CompileContext(packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + type, type), null);
-			return IParsedType.parse(tokens).compile(context);
+			boolean relative = tokens.optional(ZSTokenType.T_DOT) != null;
+			IParsedType parsed = IParsedType.parse(tokens);
+
+			CompileContext context = new CompileContext(relative ? packageInfo.getPkg() : packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
+			return parsed.compile(context);
 		} catch (IOException ex) {
 			throw new AssertionError("Not supposed to happen");
 		} catch (ParseException ex) {
@@ -187,9 +191,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 
 		final TypeSymbol definition = findType(type);
-		if (definition instanceof JavaRuntimeClass) {
-			((JavaRuntimeClass) definition).translateTypeParameters(context);
-		}
+		//if (definition instanceof JavaRuntimeClass) {
+		//	((JavaRuntimeClass) definition).translateTypeParameters(context);
+		//}
 
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
