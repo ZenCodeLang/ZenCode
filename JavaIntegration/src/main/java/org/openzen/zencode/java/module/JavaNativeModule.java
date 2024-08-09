@@ -109,26 +109,26 @@ public class JavaNativeModule {
 		}
 
 		ParsedName name = getClassName(cls);
-		JavaRuntimeClass class_ = new JavaAnnotatedRuntimeClass(this, cls, name.name, target, kind);
-		classes.put(cls, class_);
-		getCompiled().setClassInfo(class_, class_.javaClass);
-		if (class_.isExpansion()) {
-			compiled.addExpansion(class_, class_.javaClass);
-			space.addExpansion(class_);
-		} else {
-			name.pkg.register(class_);
-		}
-		return class_;
+		JavaRuntimeClass runtimeClass = new JavaAnnotatedRuntimeClass(this, cls, name.name, target, kind);
+		finishRegisteringClass(cls, runtimeClass, name.pkg);
+		return runtimeClass;
 	}
 
 	public void registerAdditionalClass(String packageName, Class<?> cls, JavaRuntimeClass runtimeClass) {
-		classes.put(cls, runtimeClass);
 		nativeModuleSpace.registerClass(cls, this);
-
-		getCompiled().setClassInfo(runtimeClass, runtimeClass.javaClass);
-
 		ZSPackage targetPackage = parsePackageName(packageName);
-		targetPackage.register(runtimeClass);
+		finishRegisteringClass(cls, runtimeClass, targetPackage);
+	}
+
+	private void finishRegisteringClass(Class<?> cls, JavaRuntimeClass runtimeClass, ZSPackage pkg) {
+		classes.put(cls, runtimeClass);
+		getCompiled().setClassInfo(runtimeClass, runtimeClass.javaClass);
+		if (runtimeClass.isExpansion()) {
+			compiled.addExpansion(runtimeClass, runtimeClass.javaClass);
+			space.addExpansion(runtimeClass);
+		} else {
+			pkg.register(runtimeClass);
+		}
 	}
 
 	public void addGlobals(Class<?> cls) {
