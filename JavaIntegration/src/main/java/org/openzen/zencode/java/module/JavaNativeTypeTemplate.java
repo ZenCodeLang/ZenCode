@@ -131,39 +131,52 @@ public class JavaNativeTypeTemplate {
 			if (expansion && !JavaModifiers.isStatic(method.getModifiers()))
 				continue;
 
-			MethodID id = null;
+			Collection<MethodID> ids = new LinkedList<>();
 			boolean isStaticExpansion = false;
 			boolean implicit = false;
 			if (method.isAnnotationPresent(ZenCodeType.Operator.class)) {
 				ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
-				id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
-			} else if (method.isAnnotationPresent(ZenCodeType.Getter.class)) {
+				MethodID id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
+				ids.add(id);
+			}
+			if (method.isAnnotationPresent(ZenCodeType.Getter.class)) {
 				ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
 				String name = getter.value().isEmpty() ? method.getName() : getter.value();
-				id = MethodID.getter(name);
-			} else if (method.isAnnotationPresent(ZenCodeType.Setter.class)) {
+				MethodID id = MethodID.getter(name);
+				ids.add(id);
+			}
+			if (method.isAnnotationPresent(ZenCodeType.Setter.class)) {
 				ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
 				String name = setter.value().isEmpty() ? method.getName() : setter.value();
-				id = MethodID.setter(name);
-			} else if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
+				MethodID id = MethodID.setter(name);
+				ids.add(id);
+			}
+			if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
 				ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
 				implicit = caster.implicit();
-				id = MethodID.caster(headerConverter.getHeader(typeVariableContext, method).getReturnType());
-			} else if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
+				MethodID id = MethodID.caster(headerConverter.getHeader(typeVariableContext, method).getReturnType());
+				ids.add(id);
+			}
+			if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				id = JavaModifiers.isStatic(method.getModifiers()) && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
-			} else if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
+				MethodID id = JavaModifiers.isStatic(method.getModifiers()) && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				ids.add(id);
+			}
+			if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				id = MethodID.staticMethod(name);
+				MethodID id = MethodID.staticMethod(name);
+				ids.add(id);
 				isStaticExpansion = true;
-			} else if(method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
+			}
+			if(method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
 				ZenCodeGlobals.Global methodAnnotation = method.getAnnotation(ZenCodeGlobals.Global.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				id = MethodID.staticMethod(name);
+				MethodID id = MethodID.staticMethod(name);
+				ids.add(id);
 			}
-			if (id == null)
+			if (ids.isEmpty())
 				continue;
 
 			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
@@ -173,9 +186,11 @@ public class JavaNativeTypeTemplate {
 				header = new FunctionHeader(header.getReturnType(), withoutFirst);
 			}
 
-			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit, expansion && !isStaticExpansion);
-			methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
-			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			for (MethodID id : ids) {
+				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit, expansion && !isStaticExpansion);
+				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
+				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			}
 		}
 	}
 
