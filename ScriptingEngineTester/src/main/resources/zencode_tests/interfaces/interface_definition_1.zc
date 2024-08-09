@@ -5,8 +5,6 @@ interface Test {
 }
 
 class TestClass {
-	// ToDo: Currently fails since default .ctors fail
-
 	implements Test {
 		print() {
 			println("hello");

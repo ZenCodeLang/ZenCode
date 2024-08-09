@@ -120,6 +120,8 @@ public class JavaNativeModule {
 		classes.put(cls, runtimeClass);
 		nativeModuleSpace.registerClass(cls, this);
 
+		getCompiled().setClassInfo(runtimeClass, runtimeClass.javaClass);
+
 		ZSPackage targetPackage = parsePackageName(packageName);
 		targetPackage.register(runtimeClass);
 	}
@@ -211,7 +213,6 @@ public class JavaNativeModule {
 	}
 
 	private ParsedName getClassName(Class<?> cls) {
-		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 		final String specifiedName = getNameForScripts(cls);
 
 		ZSPackage classPkg;
@@ -231,7 +232,7 @@ public class JavaNativeModule {
 			} else if (specifiedName.indexOf('.') >= 0) {
 				if (!specifiedName.startsWith(packageInfo.getPkg().fullName))
 					throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls
-							.toString() + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
+							 + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
 
 				classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
@@ -246,10 +247,16 @@ public class JavaNativeModule {
 
 	private ZSPackage parsePackageName(String packageName) {
 		ZSPackage result = packageInfo.getPkg();
-		if (packageName != null && !packageName.isEmpty()) {
-			String[] classNameParts = Strings.split(packageName, '.');
-			for (int i = 0; i < classNameParts.length - 1; i++)
-				result = result.getOrCreatePackage(classNameParts[i]);
+		if(packageName == null || packageName.isEmpty()) {
+			return result;
+		}
+
+		if(packageName.startsWith(result.fullName)) {
+			packageName = packageName.substring(result.fullName.length() + 1);
+		}
+
+		for (String classNamePart : Strings.split(packageName, '.')) {
+			result = result.getOrCreatePackage(classNamePart);
 		}
 
 		return result;

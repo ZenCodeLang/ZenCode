@@ -575,6 +575,19 @@ public class SpecialFunctionalInterfaceTests extends ZenCodeTest {
 		);
 	}
 
+	@Test
+	void useUnaryOperator() {
+		ScriptBuilder.create()
+				.add("import test_module.Acceptor;")
+				.add("var result = Acceptor.acceptUnaryOperator((a) => {println('Inside UnaryOperator: ' + a); return 'Hello World';});")
+				.add("println(result);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"Inside UnaryOperator: unaryOperator",
+				"Hello World"
+		);
+	}
 
 	@ZenCodeType.Name("test_module.Acceptor")
 	public static class Acceptor {
@@ -781,6 +794,11 @@ public class SpecialFunctionalInterfaceTests extends ZenCodeTest {
 		@ZenCodeType.Method
 		public static long acceptToLongFunction(ToLongFunction<String> toLongFunction) {
 			return toLongFunction.applyAsLong("toLongFunction");
+		}
+
+		@ZenCodeType.Method
+		public static String acceptUnaryOperator(UnaryOperator<String> unaryOperator) {
+			return unaryOperator.apply("unaryOperator");
 		}
 	}
 }

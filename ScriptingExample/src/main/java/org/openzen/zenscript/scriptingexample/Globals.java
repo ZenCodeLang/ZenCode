@@ -22,7 +22,7 @@ public class Globals implements ZenCodeGlobals {
 	}
 
 	@Global
-	public static void doSomething(@ZenCodeType.Optional MyFunctionalInterfaceClass functionalInterfaceClass) {
+	public static void doSomething(@ZenCodeType.Optional @ZenCodeType.Nullable MyFunctionalInterfaceClass functionalInterfaceClass) {
 		if (functionalInterfaceClass == null) {
 			println("Doing something with a null function!");
 		} else {

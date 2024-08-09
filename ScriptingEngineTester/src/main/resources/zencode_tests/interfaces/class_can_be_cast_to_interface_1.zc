@@ -1,0 +1,18 @@
+#output: hello
+
+interface Test {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {
+		print() {
+			println("hello");
+		}
+	}
+}
+
+var impl = new TestClass();
+var inter = impl as Test;
+
+inter.print();

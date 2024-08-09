@@ -144,7 +144,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 		return methods.isEmpty() ? Optional.empty() : Optional.of(new InstanceCallable(methods));
 	}
 
-	private class RuntimeField implements Field {
+	private static class RuntimeField implements Field {
 		private final FieldInstance field;
 
 		public RuntimeField(FieldInstance field) {

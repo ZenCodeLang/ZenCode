@@ -124,7 +124,7 @@ public abstract class JavaContext {
 		registerFunction(paramConverter, ToLongFunction.class);
 		// Needs special handling due to it just implementing BiFunction/Function.
 		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType, tType);
-		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, tType);
+		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType);
 		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, new GenericTypeID(t), tType);
 	}
 
@@ -502,34 +502,23 @@ public abstract class JavaContext {
 
 	private String getFunctionId(FunctionHeader header) {
 		StringBuilder signature = new StringBuilder();
-		int typeParameterIndex = 0;
-
-		//Check if we already know the type, so that function(String,String) becomes function(TT) instead of TU
-		final Map<TypeID, String> alreadyKnownParameters = new HashMap<>();
+		JavaFunctionIdParameterConverter javaFunctionIdParameterConverter = new JavaFunctionIdParameterConverter();
 
 		for (FunctionParameter parameter : header.parameters) {
-			final String id;
-			final TypeID parameterType = parameter.type;
-
-			if(alreadyKnownParameters.containsKey(parameterType)) {
-				id = alreadyKnownParameters.get(parameterType);
-			} else {
-				JavaTypeInfo typeInfo = JavaTypeInfo.get(parameterType);
-				id = typeInfo.primitive ? parameterType.accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
-				alreadyKnownParameters.put(parameterType, id);
-			}
+			final String id = javaFunctionIdParameterConverter.convertTypeToId(parameter.type);
 			signature.append(id);
 		}
 		signature.append("To");
 		{
-			JavaTypeInfo typeInfo = JavaTypeInfo.get(header.getReturnType());
-			String id = typeInfo.primitive ? header.getReturnType().accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
+			final String id = javaFunctionIdParameterConverter.convertTypeToId(header.getReturnType());
 			signature.append(id);
 		}
 		return signature.toString();
 	}
 
-	private String getTypeParameter(int index) {
+
+
+	public static String getTypeParameter(int index) {
 		switch (index) {
 			case 0:
 				return "T";

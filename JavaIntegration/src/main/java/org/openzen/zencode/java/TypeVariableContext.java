@@ -3,6 +3,7 @@ package org.openzen.zencode.java;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,5 +39,17 @@ public class TypeVariableContext {
 		}
 
 		return typeVariables.get(variable);
+	}
+
+	public boolean contains(TypeVariable<?> javaTypeParameter) {
+		if(typeVariables.containsKey(javaTypeParameter)) {
+			return true;
+		}
+
+		return parent != null && parent.contains(javaTypeParameter);
+	}
+
+	public boolean containsAll(TypeVariable<?>... javaTypeParameters) {
+		return Arrays.stream(javaTypeParameters).allMatch(this::contains);
 	}
 }
