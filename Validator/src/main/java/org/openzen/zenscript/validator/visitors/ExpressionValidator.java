@@ -704,14 +704,17 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private boolean hasAccess(Modifiers modifiers, DefinitionSymbol definition) {
-		if (modifiers.isPrivate())
+		if (modifiers.isPrivate()) {
 			return definition == scope.getDefinition();
-		if (modifiers.isProtected())
-			return definition.asType()
+		}
+		if (modifiers.isProtected()) {
+			return definition == scope.getDefinition() || definition.asType()
 					.map(type -> DefinitionTypeID.createThis(scope.getDefinition()).extendsOrImplements(DefinitionTypeID.createThis(type)))
 					.orElse(false);
-		if (modifiers.isInternal())
+		}
+		if (modifiers.isInternal()) {
 			return definition.getModule() == validator.module;
+		}
 
 		return true;
 	}
