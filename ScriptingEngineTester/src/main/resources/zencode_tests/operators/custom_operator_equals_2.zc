@@ -1,0 +1,17 @@
+#output: true
+#output: false
+
+public class A {
+    private val value as string;
+    public this(value as string) {
+        this.value = value;
+    }
+    public ==(other as A) as bool => this.value == other.value;
+}
+var a = new A('A');
+var b = new A('B');
+var a2 = new A('A');
+
+// Registering == should implicitly register != if not specified explicitly
+println(a != b);
+println(a != a2);
