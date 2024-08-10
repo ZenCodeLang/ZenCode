@@ -1,5 +1,15 @@
-#output: TestException
+#output: TestException1
 #output: test
+
+import testsupport.TestException;
+
+public class TestException1 : TestException {
+    this(message: string) => super(message);
+}
+
+public class TestException2 : TestException {
+    this(message: string) => super(message);
+}
 
 try {
 	if true {

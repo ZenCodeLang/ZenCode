@@ -1,6 +1,7 @@
-#output:
-# test
-# 3
+#output: test
+#output: 3
+
+import testsupport.TestException;
 
 val a: int;
 try {

@@ -1,6 +1,8 @@
 #output: TestException
 #output: test
 
+import testsupport.TestException;
+
 try {
 	throw new TestException("test");
 } catch ex {
