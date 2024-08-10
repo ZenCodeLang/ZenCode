@@ -9,10 +9,10 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class ExpansionMembers extends ZenCodeTest {
+class ExpansionMemberTests extends ZenCodeTest {
 
 	@Test
-	public void TestThatAnnotationWorks() {
+	void TestThatAnnotationWorks() {
 		ScriptBuilder.create()
 				.add("getExpandedClassInstance().expansionMethod();")
 				.execute(this);
@@ -29,10 +29,10 @@ public class ExpansionMembers extends ZenCodeTest {
 	}
 
 	@SuppressWarnings("InstantiationOfUtilityClass")
-	@ZenCodeType.Name(ExpandedClass.className)
+	@ZenCodeType.Name(ExpandedClass.CLASS_NAME)
 	public static final class ExpandedClass {
 
-		public static final String className = ".java_native.expansions.ExpandedClass";
+		public static final String CLASS_NAME = ".java_native.expansions.ExpandedClass";
 
 		@ZenCodeGlobals.Global
 		public static ExpandedClass getExpandedClassInstance() {
@@ -41,16 +41,17 @@ public class ExpansionMembers extends ZenCodeTest {
 	}
 
 	@SuppressWarnings("unused")
-	@ZenCodeType.Expansion(ExpandedClass.className)
+	@ZenCodeType.Expansion(ExpandedClass.CLASS_NAME)
 	public static final class ExpansionUnderTest {
 
 		private static boolean wasCalled = false;
 
 		public static void methodWithoutAnnotation() {
+			throw new IllegalStateException("Should never be called");
 		}
 
 		@ZenCodeType.Method
-		public static void expansionMethod(ExpandedClass _this) {
+		public static void expansionMethod(ExpandedClass expandedObj) {
 			if (wasCalled) {
 				throw new IllegalStateException("Called twice");
 			}

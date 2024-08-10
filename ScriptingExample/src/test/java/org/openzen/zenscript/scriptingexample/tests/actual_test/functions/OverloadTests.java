@@ -10,7 +10,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 import java.util.Arrays;
 import java.util.List;
 
-public class Overloads extends ZenCodeTest {
+class OverloadTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -20,7 +20,7 @@ public class Overloads extends ZenCodeTest {
 	}
 
 	@Test
-	public void testArrayOverloads() {
+	void testArrayOverloads() {
 		ScriptBuilder.create()
 				.add("printArray([1, 2, 3]);")
 				.add("printArray(['one', 'two', 'three']);")

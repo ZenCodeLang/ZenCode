@@ -53,7 +53,7 @@ public class TestAnnotationValueGlobal implements IGlobal {
 
 		@Override
 		public Expression eval() {
-			return compiler.at(position).invalid(CompileErrors.notAnExpression("typeof is not a valid expression"));
+			return compiler.at(position).invalid(CompileErrors.notAnExpression("testAnnotationValue is not a valid expression"));
 		}
 
 		@Override
@@ -63,12 +63,12 @@ public class TestAnnotationValueGlobal implements IGlobal {
 
 		@Override
 		public void collect(SSAVariableCollector collector) {
-
+			// No-Op since testAnnotationValue does not create new variables
 		}
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-
+			// No-Op since testAnnotationValue does not create new variables
 		}
 
 		@Override

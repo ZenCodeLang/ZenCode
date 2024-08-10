@@ -7,7 +7,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class JavaNativeConstructorTest extends ZenCodeTest {
+class JavaNativeConstructorTest extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {

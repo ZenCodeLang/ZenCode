@@ -8,7 +8,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaticExpansionMethod extends ZenCodeTest {
+class StaticExpansionMethodTests extends ZenCodeTest {
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		final ArrayList<Class<?>> classes = new ArrayList<>(super.getRequiredClasses());
@@ -18,7 +18,7 @@ public class StaticExpansionMethod extends ZenCodeTest {
 	}
 
 	@Test
-	public void TestThatStaticExpansionMethodWorks() {
+	void TestThatStaticExpansionMethodWorks() {
 		ScriptBuilder.create()
 				.add("import test_module.Expanded;")
 				.add("println(Expanded.getString());")

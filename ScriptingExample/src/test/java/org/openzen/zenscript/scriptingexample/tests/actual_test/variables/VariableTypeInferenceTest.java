@@ -2,9 +2,9 @@ package org.openzen.zenscript.scriptingexample.tests.actual_test.variables;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-public class VariableTypeInferenceTest extends ZenCodeTest {
+class VariableTypeInferenceTest extends ZenCodeTest {
 	@Test
-	public void validateCast() {
+	void validateCast() {
 		addScript("var a = 1; println(a); println(a * 2);");
 		executeEngine();
 
@@ -17,7 +17,7 @@ public class VariableTypeInferenceTest extends ZenCodeTest {
 
 	// not valid for now
 	@Test
-	public void validateInference() {
+	void validateInference() {
 		addScript("var a; a = 1; println(a);");
 		executeEngine(true);
 

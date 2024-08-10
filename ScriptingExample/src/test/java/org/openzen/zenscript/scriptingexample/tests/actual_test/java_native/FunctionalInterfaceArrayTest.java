@@ -7,7 +7,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class FunctionalInterfaceArray extends ZenCodeTest {
+class FunctionalInterfaceArrayTest extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -17,7 +17,7 @@ public class FunctionalInterfaceArray extends ZenCodeTest {
 	}
 
 	@Test
-	public void testFunctionalInterfaceArray() {
+	void testFunctionalInterfaceArray() {
 		addScript("execute([() => println('A'), () => println('B')]);");
 		executeEngine();
 

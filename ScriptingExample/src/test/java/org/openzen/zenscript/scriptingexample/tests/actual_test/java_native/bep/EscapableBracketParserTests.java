@@ -6,7 +6,7 @@ import org.openzen.zenscript.parser.EscapableBracketParser;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-public class EscapableBracketParserTests extends ZenCodeTest {
+class EscapableBracketParserTests extends ZenCodeTest {
 	@Override
 	public BracketExpressionParser getBEP() {
 		return new EscapableBracketParser();

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ZenCodeTestLogger extends ScriptingEngineStreamLogger implements PrintLogger {
 
-	private static final boolean logDebug = false;
+	private static final boolean LOG_DEBUG = false;
 	private final ZenCodeTestLoggerOutput printlnOutputs;
 	private final ZenCodeTestLoggerOutput errors;
 	private final ZenCodeTestLoggerOutput warnings;
@@ -28,7 +28,7 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger implements Pr
 
 	@Override
 	public void debug(String message) {
-		if (logDebug) {
+		if (LOG_DEBUG) {
 			super.debug(message);
 		}
 	}

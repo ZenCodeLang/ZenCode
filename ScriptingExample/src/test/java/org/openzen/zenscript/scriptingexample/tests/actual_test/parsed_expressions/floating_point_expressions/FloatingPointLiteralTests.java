@@ -105,8 +105,8 @@ class FloatingPointLiteralTests extends ZenCodeTest {
 	public static class ExpandFloatForOtherFloatDataClass {
 
 		@ZenCodeType.Caster(implicit = true)
-		public static OtherFloatDataClass toOtherFloatDataClass(double _this) {
-			return new OtherFloatDataClass(_this);
+		public static OtherFloatDataClass toOtherFloatDataClass(double expandedObj) {
+			return new OtherFloatDataClass(expandedObj);
 		}
 	}
 }

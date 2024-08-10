@@ -9,7 +9,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTestLogger;
 
 import java.util.List;
 
-public class OperatorEquals extends ZenCodeTest {
+class OperatorEqualsTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -20,7 +20,7 @@ public class OperatorEquals extends ZenCodeTest {
 	}
 
 	@Test
-	public void canUseEqualsOperator() {
+	void canUseEqualsOperator() {
 		ScriptBuilder.create()
 				.add("var a = createWithEquals('A');")
 				.add("var b = createWithEquals('B');")
@@ -35,7 +35,7 @@ public class OperatorEquals extends ZenCodeTest {
 	}
 
 	@Test
-	public void canUseImplicitNotEqualsOperator() {
+	void canUseImplicitNotEqualsOperator() {
 		ScriptBuilder.create()
 				.add("var a = createWithEquals('A');")
 				.add("var b = createWithEquals('B');")
@@ -50,7 +50,7 @@ public class OperatorEquals extends ZenCodeTest {
 	}
 
 	@Test
-	public void useExplicitNotEqualsWhenPresent() {
+	void useExplicitNotEqualsWhenPresent() {
 		ClassWithEqualsAndNotEqualsOperator.logger = logger;
 		ScriptBuilder.create()
 				.add("var a = createWithEqualsAndNotEquals('A');")

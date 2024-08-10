@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public class FunctionalInterfaceTests extends ZenCodeTest {
+class FunctionalInterfaceTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -27,11 +27,10 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void testFunctionalInterface() {
+	void testFunctionalInterface() {
 		addScript(
 				"var modified = modifyString('test', (strings, context) => { return strings; });\n" +
 						"println(modified.length);",
-						//"for str in modified { println(str); }",
 				"FunctionalInterfaceTests_testFunctionalInterface.zs");
 
 		executeEngine();
@@ -39,16 +38,14 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 		logger.assertNoErrors();
 		logger.assertNoWarnings();
 		logger.assertPrintOutputSize(1);
-		//logger.assertPrintOutput(0, "test");
 		logger.assertPrintOutput(0, "1");
 	}
 
 	@Test
-	public void testBiFunction() {
+	void testBiFunction() {
 		addScript(
 				"var modified = stringFunction('test', (strings, context) => {return strings;});\n" +
 						"println(modified.length);",
-				//"for str in modified { println(str); }",
 				"FunctionalInterfaceTests_testBiFunction.zs");
 
 		executeEngine();
@@ -56,7 +53,6 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 		logger.assertNoErrors();
 		logger.assertNoWarnings();
 		logger.assertPrintOutputSize(1);
-		//logger.assertPrintOutput(0, "test");
 		logger.assertPrintOutput(0, "1");
 	}
 
@@ -75,7 +71,7 @@ public class FunctionalInterfaceTests extends ZenCodeTest {
 
 	@FunctionalInterface
 	@ZenCodeType.Name("test_module.java_native.StringModifier")
-	public static interface StringModifier {
+	public interface StringModifier {
 
 		List<String> modify(List<String> strings, boolean context);
 	}
