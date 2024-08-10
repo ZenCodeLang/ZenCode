@@ -1,6 +1,6 @@
 public class Cell {
 
-    public var alive as bool;
+    public var alive as bool : public get, public set;
     private var row as usize;
     private var column as usize;
 
