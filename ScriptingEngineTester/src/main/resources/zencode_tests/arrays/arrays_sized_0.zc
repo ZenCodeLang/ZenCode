@@ -1,0 +1,7 @@
+#output: 1
+#output: 0
+
+var array = new int[](1);
+
+println(array.length);
+println(array[0]);

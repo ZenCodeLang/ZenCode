@@ -1,0 +1,7 @@
+#output: 10
+#output: 8
+
+var array = new int[](10, 8);
+
+println(array.length);
+println(array[5]);

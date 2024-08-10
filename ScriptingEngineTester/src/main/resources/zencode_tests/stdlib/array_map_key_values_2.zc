@@ -1,0 +1,8 @@
+#dependency: stdlib
+#output: A0A
+#output: B1B
+#output: C2C
+
+var array = ['A', 'B', 'C'] as string[];
+var mapped = array.map<string>((index, element) => (element + index + element) as string);
+for element in mapped println(element);
