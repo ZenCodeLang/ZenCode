@@ -1,6 +1,6 @@
 public class Cell {
 
-    public var alive as bool : public get, public set;
+    public var alive as bool : get, set;
     private var row as usize;
     private var column as usize;
 
@@ -21,10 +21,16 @@ public class Cell {
 
 
         if(!alive) {
+            // 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
             return new Cell(row, column, aliveCellsIn3x3Grid == 3);
         }
 
-        //2. Any live cell with two or three live neighbours lives on to the next generation.
-        return new Cell(row, column, aliveCellsIn3x3Grid == 3 || aliveCellsIn3x3Grid == 4);
+        // This cell itself is alive, we only want the number of neighbors
+        aliveCellsIn3x3Grid--;
+
+        // 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+        // 2. Any live cell with two or three live neighbours lives on to the next generation.
+        // 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+        return new Cell(row, column, aliveCellsIn3x3Grid == 2 || aliveCellsIn3x3Grid == 3);
     }
 }
