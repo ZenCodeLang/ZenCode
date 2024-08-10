@@ -8,12 +8,12 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.io.File;
 
-public class FileNamesAndSpecialCharacters extends ZenCodeTest {
+class FileNameWithSpecialCharacterTests extends ZenCodeTest {
 
 	/**
 	 * All the characters that we test.
 	 */
-	public static char[] specialCharsToTest() {
+	static char[] specialCharsToTest() {
 		return new char[]{'.', '1', '%', '$', '_', '!', '/', '\\', ' ', ';', ':', '-', '|', '[', ']'};
 	}
 
@@ -22,13 +22,13 @@ public class FileNamesAndSpecialCharacters extends ZenCodeTest {
 	 * Since debug mode would try to write them out we disable it here.
 	 */
 	@BeforeEach
-	public void disableDebug() {
+	void disableDebug() {
 		engine.debug = false;
 	}
 
 	@ParameterizedTest//(name = "[{index}] Checking special Character '{0}'")
 	@MethodSource("specialCharsToTest")
-	public void TestThatFilenameCanContainCharacter(char characterToTest) {
+	void TestThatFilenameCanContainCharacter(char characterToTest) {
 
 		ScriptBuilder.create()
 				.startNewScript(String.format("t%1$se%1$ss%1$st.zs", characterToTest))
@@ -43,7 +43,7 @@ public class FileNamesAndSpecialCharacters extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource(value = "specialCharsToTest")
-	public void TestThatFilesWithSpecialCharacterFileNameAreAccessibleInsideOtherScripts(char characterToTest) {
+	void TestThatFilesWithSpecialCharacterFileNameAreAccessibleInsideOtherScripts(char characterToTest) {
 		ScriptBuilder.create()
 				.startNewScript(String.format("t%1$se%1$ss%1$st_1.zs", characterToTest))
 				.add("public function getTheString() as string => 'Hello World';")
@@ -59,7 +59,7 @@ public class FileNamesAndSpecialCharacters extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource(value = "specialCharsToTest")
-	public void TestThatFilesWithSpecialCharactersCanBePutInSubFolders(char characterToTest) {
+	void TestThatFilesWithSpecialCharactersCanBePutInSubFolders(char characterToTest) {
 		//noinspection SpellCheckingInspection
 		ScriptBuilder.create()
 				.startNewScript(String.format("some%2$sfolder%2$st%1$se%1$ss%1$st_1.zs", characterToTest, File.separatorChar))

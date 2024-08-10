@@ -7,7 +7,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
+class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> requiredClasses = super.getRequiredClasses();

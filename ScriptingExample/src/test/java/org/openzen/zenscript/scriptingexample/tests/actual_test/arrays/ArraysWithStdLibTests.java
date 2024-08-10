@@ -5,7 +5,6 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 class ArraysWithStdLibTests extends ZenCodeTest {
 

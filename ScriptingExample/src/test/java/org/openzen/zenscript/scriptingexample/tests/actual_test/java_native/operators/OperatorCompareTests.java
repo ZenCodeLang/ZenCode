@@ -16,7 +16,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTestLogger;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class OperatorCompare extends ZenCodeTest {
+class OperatorCompareTests extends ZenCodeTest {
 
 	public static Stream<Arguments> getTestCases() {
 		final Stream.Builder<Arguments> builder = Stream.builder();
@@ -45,14 +45,14 @@ public class OperatorCompare extends ZenCodeTest {
 	}
 
 	@BeforeEach
-	public void before() {
+	void before() {
 		ClassWithCompareAndEquals.logger = this.logger;
 	}
 
 	@ParameterizedTest(name = "{1} {0} {2} == {3}")
 	@MethodSource("getTestCases")
 	@Disabled("Test is invalid due to Object == already being an operator.")
-	public void testOperatorWorks(String type, int a, int b, boolean compareResult) {
+	void testOperatorWorks(String type, int a, int b, boolean compareResult) {
 		ScriptBuilder.create()
 				.add("var a = createWithCompare(" + a + ");")
 				.add("var b = createWithCompare(" + b + ");")
@@ -63,7 +63,7 @@ public class OperatorCompare extends ZenCodeTest {
 	}
 
 	@Test
-	public void testEqualsOperatorUsedWhenPresentInsteadOfCompare() {
+	void testEqualsOperatorUsedWhenPresentInsteadOfCompare() {
 		ScriptBuilder.create()
 				.add("var a = createWithCompareAndEquals(1);")
 				.add("var b = createWithCompareAndEquals(2);")

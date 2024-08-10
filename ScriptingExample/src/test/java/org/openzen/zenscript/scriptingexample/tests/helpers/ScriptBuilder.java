@@ -62,6 +62,9 @@ public class ScriptBuilder {
 				test.logger.assertNoWarnings(); //Fallthrough intended
 			case NO_ERRORS:
 				test.logger.assertNoErrors();
+				break;
+			case ALLOW_ERRORS:
+				// nothing to check
 		}
 	}
 

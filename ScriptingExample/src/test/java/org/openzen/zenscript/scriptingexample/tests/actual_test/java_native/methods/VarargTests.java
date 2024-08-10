@@ -7,7 +7,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class VarargTests extends ZenCodeTest {
+class VarargTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {

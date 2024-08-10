@@ -8,7 +8,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 import java.util.List;
 import java.util.function.*;
 
-public class SpecialFunctionalInterfaceTests extends ZenCodeTest {
+class SpecialFunctionalInterfaceTests extends ZenCodeTest {
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> classes = super.getRequiredClasses();

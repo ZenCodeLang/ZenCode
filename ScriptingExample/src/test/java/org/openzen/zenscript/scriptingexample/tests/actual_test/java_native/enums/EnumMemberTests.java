@@ -8,7 +8,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class EnumMemberTests extends ZenCodeTest {
+class EnumMemberTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -19,7 +19,7 @@ public class EnumMemberTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void EnumMembersMustBeRetrievableByTypeHintAndName() {
+	void EnumMembersMustBeRetrievableByTypeHintAndName() {
 		ScriptBuilder.create()
 				.add("println(getName(A));")
 				.execute(this);

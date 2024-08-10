@@ -18,7 +18,8 @@ import org.openzen.zenscript.scriptingexample.tests.SharedGlobals;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JavaTestingEngineTest implements TestableScriptingEngine {
+@SuppressWarnings("unused") // This class is found via reflection by ScriptingEngineTester
+public class JavaTestingEngine implements TestableScriptingEngine {
 	public TestOutput run(TestCase test) {
 		EngineTestLogger logger = new EngineTestLogger();
 		ScriptingEngine engine = new ScriptingEngine(
@@ -50,11 +51,11 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 
 	private void run(ScriptingEngine engine, EngineTestLogger logger, List<SourceFile> sourceFiles) {
 		try {
-			final SemanticModule script_tests = engine.createScriptedModule("script_tests", sourceFiles
+			final SemanticModule scriptTests = engine.createScriptedModule("script_tests", sourceFiles
 					.toArray(new SourceFile[0]), null, FunctionParameter.NONE, "testsupport");
-			final boolean scriptsValid = script_tests.isValid();
+			final boolean scriptsValid = scriptTests.isValid();
 			if (scriptsValid) {
-				engine.registerCompiled(script_tests);
+				engine.registerCompiled(scriptTests);
 				engine.run();
 			}
 		} catch (ParseException e) {
