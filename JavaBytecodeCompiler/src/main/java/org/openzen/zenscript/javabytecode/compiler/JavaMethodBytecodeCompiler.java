@@ -1134,6 +1134,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case INT_SHR:
 				javaWriter.iShr();
 				break;
+			case SBYTE_USHR:
+			case SHORT_USHR:
+			case INT_USHR:
 			case BYTE_SHR:
 			case USHORT_SHR:
 			case UINT_SHR:
@@ -1177,6 +1180,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case LONG_SHR:
 				javaWriter.lShr();
 				break;
+			case LONG_USHR:
 			case ULONG_SHR:
 				javaWriter.lUShr();
 				break;
