@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: 0
+
+println("helllo".lastIndexOf('h', 99999));

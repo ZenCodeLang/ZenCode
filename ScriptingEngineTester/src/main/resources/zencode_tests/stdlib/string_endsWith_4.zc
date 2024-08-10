@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: true
+
+println("hello".endsWith("hello"));

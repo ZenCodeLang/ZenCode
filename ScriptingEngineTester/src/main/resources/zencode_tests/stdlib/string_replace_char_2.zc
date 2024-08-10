@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: He		o
+
+println("Hello".replace('l', '\t'));

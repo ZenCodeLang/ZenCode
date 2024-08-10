@@ -1,0 +1,4 @@
+#output: hello world
+
+println("hello world".trim());
+#dependency: stdlib

@@ -1,0 +1,13 @@
+#dependency: stdlib
+#output: 5
+#output: 72
+#output: 101
+#output: 108
+#output: 108
+#output: 111
+
+var result = "Hello".toAsciiBytes();
+println(result.length);
+for charPoint in result {
+	println(charPoint);
+}

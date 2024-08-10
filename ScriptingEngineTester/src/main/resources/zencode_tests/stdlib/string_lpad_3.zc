@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: already too long
+
+println("already too long".lpad(10, 'X'));

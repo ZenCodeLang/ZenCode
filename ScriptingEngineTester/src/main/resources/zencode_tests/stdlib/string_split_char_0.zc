@@ -1,0 +1,11 @@
+#dependency: stdlib
+#output: 2
+#output: h
+#output: llo
+
+var result = "hello".split('e');
+
+println(result.length);
+for element in result {
+    println(element);
+}

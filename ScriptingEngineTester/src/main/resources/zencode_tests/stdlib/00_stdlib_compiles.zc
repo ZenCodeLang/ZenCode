@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: If this test does not compile, then don't even check the other stdlib tests!
+
+println("If this test does not compile, then don't even check the other stdlib tests!");

@@ -1,0 +1,5 @@
+#dependency: stdlib
+#output: A
+
+var x = string.fromAsciiBytes([65]);
+println(x);

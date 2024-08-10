@@ -1,0 +1,8 @@
+#dependency: stdlib
+#output: 0
+
+var result = "".toUTF8Bytes();
+println(result.length);
+for charPoint in result {
+	println(charPoint);
+}

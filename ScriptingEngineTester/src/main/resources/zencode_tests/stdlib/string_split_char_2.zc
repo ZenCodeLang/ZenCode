@@ -1,0 +1,10 @@
+#dependency: stdlib
+#output: 1
+#output: Abc
+
+var result = "Abc".split('a');
+
+println(result.length);
+for element in result {
+    println(element);
+}
