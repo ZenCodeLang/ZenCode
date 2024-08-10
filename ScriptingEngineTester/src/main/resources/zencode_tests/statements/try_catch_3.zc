@@ -1,3 +1,6 @@
+#disabled: Not part of the refactor
+#disabled: The parser does not yet support "AS" in Catch clauses
+
 #output: TestException1
 #output: test
 

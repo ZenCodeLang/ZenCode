@@ -1,3 +1,4 @@
+#disabled: should be caught by the ExpressionValidator, test invalid
 #output: void
 
 val a = println("Hello, world!");

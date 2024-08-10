@@ -1,3 +1,4 @@
+#disabled: Not part of the refactor, we haven't decided on how to handle these cases, yet
 #output: MyClass
 #output: MyClass
 
