@@ -1,0 +1,20 @@
+#dependency: stdlib
+#output: 11
+#output: 22
+#output: 33
+#output: 44
+#output: 55
+
+public class Stuff {
+	public var x as string;
+
+	public this(x: string) {
+		this.x = x;
+	}
+}
+
+var array = [1, 2, 3, 4, 5] as string[];
+var mapped = array.map<Stuff>(value => new Stuff(value + value));
+for element in mapped {
+	println(element.x);
+}

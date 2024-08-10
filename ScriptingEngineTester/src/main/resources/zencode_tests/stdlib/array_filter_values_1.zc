@@ -1,0 +1,10 @@
+#dependency: stdlib
+#output: 22
+#output: 4444
+
+var array = [1, 22, 333, 4444, 55555] as string[];
+var filtered = array.filter((value) => value.length % 2 == 0);
+
+for element in filtered {
+	println(element);
+}

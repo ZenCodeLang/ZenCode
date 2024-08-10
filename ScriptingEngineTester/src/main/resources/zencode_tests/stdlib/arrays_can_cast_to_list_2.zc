@@ -1,0 +1,7 @@
+#dependency: stdlib
+#output: 3
+
+var array = ['a', 'b', 'c'] as string[];
+var listImplicit as stdlib.List<string>;
+listImplicit = array;
+println(listImplicit.length);

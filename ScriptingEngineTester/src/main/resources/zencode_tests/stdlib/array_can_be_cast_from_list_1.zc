@@ -1,0 +1,10 @@
+#dependency: stdlib
+#output: 3
+
+var list = new stdlib.List<string>();
+list.add('a');
+list.add('b');
+list.add('c');
+
+var array = list as string[];
+println(array.length);
