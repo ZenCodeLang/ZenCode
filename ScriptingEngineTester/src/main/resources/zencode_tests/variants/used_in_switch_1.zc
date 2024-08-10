@@ -1,4 +1,4 @@
-// Disabled since currently the parser fails with a "Type Expected" at the closing }
+#disabled: Disabled since currently the parser fails with a "Type Expected" at the closing }
 #output: Hello World
 
 public variant Optional<T> {
