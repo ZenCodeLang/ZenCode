@@ -1,0 +1,4 @@
+#output: double
+
+var number = 1.0D;
+println(typeof(number));

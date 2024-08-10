@@ -1,0 +1,22 @@
+#output: Money
+#output: 10.5€
+
+public class Money {
+
+	public var amount as double;
+	public var currency as string;
+
+	this(amount: double, currency: string) {
+		this.amount = amount;
+		this.currency = currency;
+	}
+
+	public implicit static EUR(amount: double): Money =>
+		new Money(amount, '€');
+
+	public print(): void => println((amount as string) + currency);
+}
+
+var number as Money = 10.5EUR;
+println(typeof(number));
+number.print();
