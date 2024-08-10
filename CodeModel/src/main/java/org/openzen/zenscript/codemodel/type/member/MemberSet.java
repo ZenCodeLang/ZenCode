@@ -45,7 +45,7 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findSuffixConstructor(String suffix) {
 		MethodID id = MethodID.staticMethod(suffix);
-		if (!instanceMethods.containsKey(id))
+		if (!staticMethods.containsKey(id))
 			return Optional.empty();
 
 		List<StaticCallableMethod> methods = this.staticMethods.get(id).stream()

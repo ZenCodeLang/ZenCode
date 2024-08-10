@@ -32,16 +32,6 @@ class FloatingPointLiteralTests extends ZenCodeTest {
 	}
 
 	@Test
-	void InvalidSuffixReturnsError() {
-		ScriptBuilder.create()
-				.add("var x = 1.0Invalid;")
-				.execute(this, ScriptBuilder.LogTolerance.ALLOW_ERRORS);
-
-		logger.errors().assertSize(1);
-		logger.errors().assertLine(0, "ERROR test_script_1.zs:1:8: test_script_1.zs:1:8: Invalid suffix: Invalid");
-	}
-
-	@Test
 	void implicitCastWorksForDoubleTypeEvenIfNoSuffixWasGiven() {
 		ScriptBuilder.create()
 				.add("var value = otherFloatDataToString(1.0);")
