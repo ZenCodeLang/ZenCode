@@ -33,10 +33,6 @@ public class TestCaseDescriptor extends AbstractTestDescriptor {
 	 * If this test is disabled, returns an Optional that contains the reason why the test should be skipped
 	 */
 	public Optional<String> getDisabledReason() {
-		if (case_.getSourceFiles().stream().anyMatch(sourceFile -> sourceFile.getFilename().endsWith(".disabled"))) {
-			return Optional.of("Some of the source files were disabled (filename ended with .disabled)");
-		}
-
-		return Optional.empty();
+		return case_.getDisabledReason();
 	}
 }
