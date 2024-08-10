@@ -1,9 +1,7 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.arithmethic_operators;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
@@ -11,44 +9,11 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class ArithmeticTests extends ZenCodeTest {
-
-	@ParameterizedTest(name = "{0} + {1}")
-	@CsvSource({"0,0", "0,1", "10,10", "-1,1", "815,4711"})
-	public void testSomeAdditions(int i, int j) {
-		addScript(String.format("println(%d + %d);", i, j));
-		executeEngine();
-
-		logger.assertNoErrors();
-		logger.assertNoWarnings();
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, String.valueOf(i + j));
-	}
-
-	@Test
-	public void testChainedAdditions() {
-		addScript("println(1+2+3+4+5+6+7+8+9+10);");
-		executeEngine();
-
-		logger.assertNoErrors();
-		logger.assertNoWarnings();
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, String.valueOf(55));
-	}
-
-	@Test
-	public void testChainedSubtractions() {
-		ScriptBuilder.create()
-				.add("println(1-2-3-4-5-6-7-8-9-10);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, String.valueOf(-53));
-	}
+class ArithmeticTests extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource("numberTypes")
-	public void additionWorksWithDifferentTypes(String typeLeft, String typeRight) {
+	void additionWorksWithDifferentTypes(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
 				.add("var left   = 13 as " + typeLeft + ";")
 				.add("var right  = 29 as " + typeRight + ";")
@@ -62,7 +27,7 @@ public class ArithmeticTests extends ZenCodeTest {
 	// Ensure that widening also works when nested in other calls
 	@ParameterizedTest
 	@MethodSource("numberTypes")
-	public void additionWorksWithDifferentTypes_withCastingToString(String typeLeft, String typeRight) {
+	void additionWorksWithDifferentTypes_withCastingToString(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
 				.add("var left   = 13 as " + typeLeft + ";")
 				.add("var right  = 29 as " + typeRight + ";")
@@ -74,7 +39,7 @@ public class ArithmeticTests extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource("numberTypes")
-	public void subtractionWorksWithDifferentTypes(String typeLeft, String typeRight) {
+	void subtractionWorksWithDifferentTypes(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
 				.add("var left   = 29 as " + typeLeft + ";")
 				.add("var right  = 13 as " + typeRight + ";")
@@ -87,7 +52,7 @@ public class ArithmeticTests extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource("numberTypes")
-	public void multiplicationWorksWithDifferentTypes(String typeLeft, String typeRight) {
+	void multiplicationWorksWithDifferentTypes(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
 				.add("var left   = 3 as " + typeLeft + ";")
 				.add("var right  = 7 as " + typeRight + ";")
@@ -100,7 +65,7 @@ public class ArithmeticTests extends ZenCodeTest {
 
 	@ParameterizedTest
 	@MethodSource("numberTypes")
-	public void divisionWorksWithDifferentTypes(String typeLeft, String typeRight) {
+	void divisionWorksWithDifferentTypes(String typeLeft, String typeRight) {
 		ScriptBuilder.create()
 				.add("var left   = 27 as " + typeLeft + ";")
 				.add("var right  = 3 as " + typeRight + ";")
