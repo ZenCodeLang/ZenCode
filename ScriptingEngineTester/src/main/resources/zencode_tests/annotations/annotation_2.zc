@@ -1,3 +1,4 @@
+#disabled: We currently haven't decided how to handle annotations, yet
 #output: Something
 
 class Foo {

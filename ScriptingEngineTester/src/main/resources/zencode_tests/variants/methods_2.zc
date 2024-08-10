@@ -1,4 +1,5 @@
-// ToDo: How to define the preprocessor for "java.lang.AssertionError:Expect called on empty value" ?
+#disabled: not part of the refactor
+#disabled: We need to define how to check for panic expressions like "java.lang.AssertionError:Expect called on empty value"
 #error: 7:NO_SUCH_TYPE
 
 public variant Optional<T> {
