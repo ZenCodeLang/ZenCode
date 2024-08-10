@@ -3,9 +3,9 @@ package org.openzen.zenscript.scriptingexample.tests.actual_test.lexer;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-public class UnicodeCharacters extends ZenCodeTest {
+class UnicodeCharacterTests extends ZenCodeTest {
 	@Test
-	public void unicode() {
+	void unicode() {
 		addScript("println('你好');");
 		executeEngine();
 

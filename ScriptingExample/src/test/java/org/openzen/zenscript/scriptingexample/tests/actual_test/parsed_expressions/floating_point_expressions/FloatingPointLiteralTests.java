@@ -87,11 +87,6 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 
 	@ZenCodeType.Name(".RegisteredGlobalClass")
 	public static class RegisteredClass {
-		@ZenCodeGlobals.Global
-		@ZenCodeType.Method
-		public static String getType(Object object) {
-			return String.valueOf(object.getClass());
-		}
 
 		@ZenCodeGlobals.Global
 		@ZenCodeType.Method
