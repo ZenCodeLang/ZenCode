@@ -447,6 +447,38 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.invokeVirtual(STRING_SUBSTRING);
 				return null;
 			}
+			case ARRAY_INDEXGET: {
+				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
+				arguments[0].accept(expressionVisitor); // array
+
+				ArrayHelperType arrayHelperType = new ArrayHelperType(type, context);
+				for (int i = 0; i < type.dimension; i++) {
+					arguments[i + 1].accept(expressionVisitor);
+					arrayHelperType = arrayHelperType.getWithOneDimensionLess();
+					javaWriter.arrayLoad(arrayHelperType.getASMElementType());
+				}
+
+				return null;
+			}
+			case ARRAY_INDEXSET: {
+
+				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
+				arguments[0].accept(expressionVisitor); // array
+
+				ArrayHelperType arrayHelperType = new ArrayHelperType(type, context);
+				for (int i = 0; i < type.dimension - 1; i++) {
+					arguments[i + 1].accept(expressionVisitor);
+					arrayHelperType = arrayHelperType.getWithOneDimensionLess();
+					javaWriter.arrayLoad(arrayHelperType.getASMElementType());
+				}
+
+				arguments[arguments.length - 2].accept(expressionVisitor);
+				arguments[arguments.length - 1].accept(expressionVisitor);
+				arrayHelperType = arrayHelperType.getWithOneDimensionLess();
+				javaWriter.arrayStore(arrayHelperType.getASMElementType());
+
+				return null;
+			}
 			case ARRAY_CONTAINS: {
 				arguments[0].accept(expressionVisitor);
 				final Label loopStart = new Label();
@@ -1375,16 +1407,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.label(isTrue);
 				javaWriter.iConst1();
 				javaWriter.label(exit);
-				break;
-			}
-			case ARRAY_INDEXGET: {
-				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
-				javaWriter.arrayLoad(context.getType(type.elementType));
-				break;
-			}
-			case ARRAY_INDEXSET: {
-				ArrayTypeID type = arguments[0].type.asArray().orElseThrow(() -> new IllegalStateException("Must be an array"));
-				javaWriter.arrayStore(context.getType(type.elementType));
 				break;
 			}
 			case ENUM_VALUES: {

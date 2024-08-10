@@ -36,7 +36,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 	public static ArrayTypeSymbol get(int dimension) {
 		while (types.size() < dimension) {
-			types.add(new ArrayTypeSymbol(types.size()));
+			types.add(new ArrayTypeSymbol(types.size() + 1));
 		}
 
 		return types.get(dimension - 1);
@@ -100,7 +100,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < indexGetParameters.length; i++)
-			indexGetParameters[i] = new FunctionParameter(USIZE);
+			indexGetParameters[i] = new FunctionParameter(USIZE, "dimension" + i);
 
 		members.method(new MethodInstance(
 				BuiltinMethodSymbol.ARRAY_INDEXGET,
@@ -143,17 +143,17 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			initialValueConstructorParameters[i] = new FunctionParameter(USIZE);
-		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
+			initialValueConstructorParameters[i] = new FunctionParameter(USIZE, "dimension" + i);
+		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType, "initialValue");
 		FunctionHeader initialValueConstructorHeader = new FunctionHeader(type, initialValueConstructorParameters);
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_INITIAL_VALUE, initialValueConstructorHeader, type));
 
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			lambdaConstructorParameters[i] = new FunctionParameter(USIZE);
+			lambdaConstructorParameters[i] = new FunctionParameter(USIZE, "dimension" + i);
 
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
-		lambdaConstructorParameters[dimension] = new FunctionParameter(new FunctionTypeID(lambdaConstructorFunction));
+		lambdaConstructorParameters[dimension] = new FunctionParameter(new FunctionTypeID(lambdaConstructorFunction), "mapper");
 		FunctionHeader lambdaConstructorHeader = new FunctionHeader(type, lambdaConstructorParameters);
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ARRAY_CONSTRUCTOR_LAMBDA, lambdaConstructorHeader, type));
 
