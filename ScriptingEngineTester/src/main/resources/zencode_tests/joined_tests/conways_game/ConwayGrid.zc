@@ -1,5 +1,5 @@
 public class ConwayGrid {
-    public var cells as Cell[,];
+    public var cells as Cell[,] : public get, protected set;
     private var width as usize;
     private var height as usize;
 
