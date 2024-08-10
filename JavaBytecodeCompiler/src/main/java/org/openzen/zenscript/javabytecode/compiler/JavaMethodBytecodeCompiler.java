@@ -1219,6 +1219,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			//case INT_ADD_USIZE:
 			//	javaWriter.iAdd();
 			//	break;
+			case STRING_CAT_STRING:
 			case STRING_ADD_STRING:
 				javaWriter.invokeVirtual(STRING_CONCAT);
 				break;
