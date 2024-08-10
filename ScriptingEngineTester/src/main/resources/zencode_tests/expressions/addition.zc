@@ -1,25 +1,5 @@
-#output: byte
-#output: 2
-#output: sbyte
-#output: 3
-#output: short
-#output: 4
-#output: ushort
-#output: 5
-#output: int
-#output: 6
-#output: uint
-#output: 7
-#output: long
-#output: 8
-#output: ulong
-#output: 9
-#output: usize
-#output: 10
-#output: float
-#output: 11
-#output: double
-#output: 12
+// For this test, the output directives have been moved below so that its easier to correlate the assertion to the expressions
+
 
 val byteValue = 1 as byte;
 val sbyteValue = 2 as sbyte;
@@ -33,25 +13,58 @@ val usizeValue = 9 as usize;
 val floatValue = 10 as float;
 val doubleValue = 11 as double;
 
+
+#output: byte
+#output: 2
 println(typeof(byteValue + byteValue));
 println(byteValue + byteValue);
+
+#output: sbyte
+#output: 4
 println(typeof(sbyteValue + sbyteValue));
 println(sbyteValue + sbyteValue);
+
+#output: short
+#output: 5
 println(typeof(sbyteValue + shortValue));
 println(sbyteValue + shortValue);
+
+#output: ushort
+#output: 5
 println(typeof(byteValue + ushortValue));
 println(byteValue + ushortValue);
+
+#output: int
+#output: 7
 println(typeof(sbyteValue + intValue));
 println(sbyteValue + intValue);
+
+#output: uint
+#output: 7
 println(typeof(byteValue + uintValue));
 println(byteValue + uintValue);
+
+#output: long
+#output: 9
 println(typeof(sbyteValue + longValue));
 println(sbyteValue + longValue);
+
+#output: ulong
+#output: 9
 println(typeof(byteValue + ulongValue));
 println(byteValue + ulongValue);
+
+#output: usize
+#output: 10
 println(typeof(byteValue + usizeValue));
 println(byteValue + usizeValue);
+
+#output: float
+#output: 11.0
 println(typeof(byteValue + floatValue));
 println(byteValue + floatValue);
+
+#output: double
+#output: 12.0
 println(typeof(byteValue + doubleValue));
 println(byteValue + doubleValue);
