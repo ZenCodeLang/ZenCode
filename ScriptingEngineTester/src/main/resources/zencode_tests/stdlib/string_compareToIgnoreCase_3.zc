@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: -6
+
+println("Hello".compareToIgnoreCase('hello world'));

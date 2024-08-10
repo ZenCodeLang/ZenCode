@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: 0
+
+println("Abc".lastIndexOf('A', 999999));

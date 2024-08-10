@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: null
+
+println("bc".indexOf('C', 1));

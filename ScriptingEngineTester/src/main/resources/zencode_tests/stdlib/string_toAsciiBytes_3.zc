@@ -1,0 +1,11 @@
+#dependency: stdlib
+#output: 2
+#output: 63
+#output: 63
+
+// will be ?? in ASCII -> [63, 63]
+var result = "你好".toAsciiBytes();
+println(result.length);
+for charPoint in result {
+	println(charPoint);
+}

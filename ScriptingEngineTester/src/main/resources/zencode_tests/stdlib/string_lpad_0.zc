@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: __________
+
+println("".lpad(10, '_'));

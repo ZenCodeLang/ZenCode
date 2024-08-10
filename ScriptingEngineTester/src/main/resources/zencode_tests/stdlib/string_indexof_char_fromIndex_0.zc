@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: 0
+
+println("hello".indexOf('h', 0));

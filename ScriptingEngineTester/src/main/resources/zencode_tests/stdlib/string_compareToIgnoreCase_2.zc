@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: -1
+
+println("A".compareToIgnoreCase('b'));

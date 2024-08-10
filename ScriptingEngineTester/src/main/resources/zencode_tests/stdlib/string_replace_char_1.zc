@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: Hello
+
+println("Hello".replace('h', '?'));
