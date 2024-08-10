@@ -1,0 +1,6 @@
+#dependency: stdlib
+#output: 3
+
+var array = ['a', 'b', 'c'] as string[];
+var list = array as stdlib.List<string>;
+println(list.length);

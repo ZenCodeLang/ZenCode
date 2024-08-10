@@ -1,0 +1,16 @@
+#dependency: stdlib
+#output: A
+#output: A
+#output: AAA
+#output: AAAA
+#output: AAAAA
+#output: AAAAA
+
+var array = ['AAA', 'AAAAA', 'A', 'AAAAA', 'A', 'AAAA'] as string[];
+var sortedArray = array.sorted(
+    (left, right) => (left.length - right.length) as int
+);
+
+for element in sortedArray {
+	println(element);
+}

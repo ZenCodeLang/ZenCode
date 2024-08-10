@@ -1,0 +1,12 @@
+#dependency: stdlib
+#output: 5
+#output: 4
+#output: 3
+#output: 2
+#output: 1
+
+var array = [1, 2, 3, 4, 5] as string[];
+array.reverse();
+for it in array {
+	println(it);
+}

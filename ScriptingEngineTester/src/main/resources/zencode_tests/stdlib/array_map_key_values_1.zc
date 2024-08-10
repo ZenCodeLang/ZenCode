@@ -1,0 +1,20 @@
+#dependency: stdlib
+#output: 0~1
+#output: 1~2
+#output: 2~3
+#output: 3~4
+#output: 4~5
+
+public class Stuff {
+	public var x as string;
+
+	public this(x: string) {
+		this.x = x;
+	}
+}
+
+var array = [1, 2, 3, 4, 5] as string[];
+var mapped = array.map<Stuff>((i, value) => new Stuff(i + '~' + value));
+for element in mapped {
+	println(element.x);
+}
