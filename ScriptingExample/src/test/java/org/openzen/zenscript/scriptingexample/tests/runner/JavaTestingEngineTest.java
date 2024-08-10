@@ -1,11 +1,11 @@
 package org.openzen.zenscript.scriptingexample.tests.runner;
 
+import org.openzen.zenscript.scriptingexample.tests.TestException;
 import org.openzen.scriptingenginetester.TestOutput;
 import org.openzen.scriptingenginetester.TestableScriptingEngine;
 import org.openzen.scriptingenginetester.cases.TestCase;
 import org.openzen.zencode.java.JavaNativeModuleBuilder;
 import org.openzen.zencode.java.ScriptingEngine;
-import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -65,6 +65,7 @@ public class JavaTestingEngineTest implements TestableScriptingEngine {
 	public List<Class<?>> getRequiredClasses() {
 		final ArrayList<Class<?>> result = new ArrayList<>();
 		result.add(SharedGlobals.class);
+		result.add(TestException.class);
 		return result;
 	}
 }
