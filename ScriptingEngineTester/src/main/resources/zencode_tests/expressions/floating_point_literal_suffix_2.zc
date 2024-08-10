@@ -1,0 +1,4 @@
+#output: float
+
+var number = 1.0f;
+println(typeof(number));
