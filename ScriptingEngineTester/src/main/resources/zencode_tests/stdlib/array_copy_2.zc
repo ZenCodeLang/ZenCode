@@ -1,0 +1,9 @@
+#dependency: stdlib
+#output: 99
+#output: 0
+
+var oldArray = [0, 1, 2, 3, 4] as int[];
+var newArray = oldArray.copy();
+newArray[0] = 99;
+println(newArray[0]);
+println(oldArray[0]);

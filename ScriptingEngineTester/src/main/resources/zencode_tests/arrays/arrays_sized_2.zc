@@ -1,0 +1,5 @@
+#output: 0
+
+var array = new int[,](10, 10);
+
+println(array[0, 0]);

@@ -1,0 +1,4 @@
+#output: false
+
+var array = ['a', 'b', 'c'] as string[];
+println(('x' in array) as string);

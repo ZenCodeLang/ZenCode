@@ -1,0 +1,5 @@
+#output: 99
+
+var array = new int[,](10, 10, 99);
+
+println(array[0, 0]);
