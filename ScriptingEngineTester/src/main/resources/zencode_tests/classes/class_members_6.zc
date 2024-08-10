@@ -1,0 +1,7 @@
+#output: Hello World
+
+public class TestClass {
+    public static val test as string = 'Hello World';
+}
+
+println(TestClass.test);

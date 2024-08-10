@@ -1,0 +1,6 @@
+public class SomeClass {
+    public this(){}
+    public callMeMaybe() as void {
+        println('Hello World!');
+    }
+}

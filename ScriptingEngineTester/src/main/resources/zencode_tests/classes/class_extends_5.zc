@@ -1,0 +1,18 @@
+#output: Hello from MyChildClass
+
+public abstract virtual class MySuperClass {
+    public this(someInput as string){}
+    public abstract print() as void;
+}
+
+public class MyChildClass : MySuperClass {
+    public this() {
+        super('');
+    }
+
+    public print() as void {
+        println('Hello from MyChildClass');
+    }
+}
+
+new MyChildClass().print();

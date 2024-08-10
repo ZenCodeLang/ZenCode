@@ -1,0 +1,6 @@
+#output: Hello World
+
+public class SomeClass {
+    public static someMethod() as string => 'Hello World';
+}
+println(SomeClass.someMethod());

@@ -1,0 +1,8 @@
+#output: Hello World
+
+public class SomeClass {
+     public var x as string = 'Hello World';
+     public this(){}
+ }
+
+ println(new SomeClass().x);

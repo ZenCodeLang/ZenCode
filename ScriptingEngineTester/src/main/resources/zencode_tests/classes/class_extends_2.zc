@@ -1,0 +1,14 @@
+// Test implicitly calling super works
+#output: Hello from MyChildClass
+
+public abstract virtual class MySuperClass {
+    public abstract print() as void;
+}
+
+public class MyChildClass : MySuperClass {
+    public print() as void {
+        println('Hello from MyChildClass');
+    }
+}
+
+new MyChildClass().print();
