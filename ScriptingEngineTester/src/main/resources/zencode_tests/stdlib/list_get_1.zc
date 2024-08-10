@@ -1,0 +1,11 @@
+#dependency: stdlib
+#output: 1
+#output: thing
+
+import stdlib.List;
+
+var list = new List<string>();
+list.add('thing');
+
+println(list.length);
+println(list[0]);
