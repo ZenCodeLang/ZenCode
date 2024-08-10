@@ -1,5 +1,5 @@
 public class ConwayGrid {
-    public var cells as Cell[,] : public get, protected set;
+    public var cells as Cell[,] : get, protected set;
     private var width as usize;
     private var height as usize;
 
@@ -10,15 +10,14 @@ public class ConwayGrid {
     }
 
     public []=(row as int, column as int, alive as bool) as void {
-        this.cells[row, column].alive = alive;
+        cells[row, column].alive = alive;
     }
 
     public update() as void {
-        var gridCapture = this;
-        this.cells = new Cell[,](width, height, (row, column) => gridCapture.cells[row, column].getCellNextTick(gridCapture));
+        cells = new Cell[,](width, height, (row, column) => cells[row, column].getCellNextTick(this));
     }
 
-    public [](rows as usize .. usize, columns as usize .. usize) as Cell[]{
+    public [](rows as usize .. usize, columns as usize .. usize) as Cell[] {
         var usedRows = rows.withBounds(0 .. height);
         var usedColumns = columns.withBounds(0 .. width);
 

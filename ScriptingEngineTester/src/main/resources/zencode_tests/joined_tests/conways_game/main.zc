@@ -19,10 +19,7 @@
 #output: Number of alive cells: 20
 #output: Generation 9
 #output: Number of alive cells: 12
-#output: Generation 10
-#output: Number of alive cells: 12
-#output: Generation 11
-#output: Number of alive cells: 12
+
 
 var height = 25;
 var width = 25;
@@ -35,7 +32,8 @@ conwayGrid[5,5] = true;
 conwayGrid[5,6] = true;
 
 
-for i in 0 .. 12 {
+for i in 0 .. 10 {
     println("Generation " + i);
-    println("Number of alive cells: " + conwayGrid.totalNumberOfAliveCells);    conwayGrid.update();
+    println("Number of alive cells: " + conwayGrid.totalNumberOfAliveCells);
+    conwayGrid.update();
 }
