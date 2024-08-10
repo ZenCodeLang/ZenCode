@@ -1,5 +1,9 @@
+interface IntA {
+     asString(): string;
+}
+
 class MyClass {
-  asString(): string => "asdvyukl;adjhysadashydiusajfashjdrf";
+  asString(): string => "Some value";
   public implements IntA { asString() => asString(); }
 }
 

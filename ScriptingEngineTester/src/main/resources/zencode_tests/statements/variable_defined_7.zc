@@ -1,4 +1,6 @@
-#output: 1
+#error: 8:VARIABLE_NOT_SET
+
+import testsupport.TestException;
 
 val a as int;
 try {

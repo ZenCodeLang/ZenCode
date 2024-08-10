@@ -1,3 +1,5 @@
+#output: Something
+
 class Foo {
 	static val VALUE = "Something";
 

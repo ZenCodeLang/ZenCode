@@ -5,7 +5,7 @@ enum MyEnum: int {
 }
 
 val a = match MyEnum.A {
-	case A: 0,
-	default: 1
+	A => 0,
+	default => 1
 };
 println(a);

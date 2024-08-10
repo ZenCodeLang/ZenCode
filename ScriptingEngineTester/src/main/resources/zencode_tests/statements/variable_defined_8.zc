@@ -1,4 +1,6 @@
-#output: 2
+#output: 1
+
+import testsupport.TestException;
 
 val a as int;
 try {
