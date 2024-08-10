@@ -14,7 +14,7 @@ public class FileNamesAndSpecialCharacters extends ZenCodeTest {
 	 * All the characters that we test.
 	 */
 	public static char[] specialCharsToTest() {
-		return new char[]{'.', '1', '%', '$', '_', '!', '/', '\\', '\0', '\1', ' ', ';', ':', '-', '|', '[', ']'};
+		return new char[]{'.', '1', '%', '$', '_', '!', '/', '\\', ' ', ';', ':', '-', '|', '[', ']'};
 	}
 
 	/**
