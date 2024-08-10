@@ -1,0 +1,7 @@
+#output: Hello
+
+// empty class compiles
+public class SomeClass {
+}
+
+println("Hello");

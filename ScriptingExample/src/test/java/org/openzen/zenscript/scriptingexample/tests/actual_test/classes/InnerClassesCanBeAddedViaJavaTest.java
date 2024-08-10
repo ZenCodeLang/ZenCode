@@ -13,10 +13,10 @@ import java.util.List;
  * Reason for test:
  * <a href="https://github.com/CraftTweaker/CraftTweaker/issues/1727">Link to GitHub issue</a>
  */
-public class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
+class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
 
 	@Test
-	public void testInnerClassesCanBeAddedViaJava_Outer() {
+	void testInnerClassesCanBeAddedViaJava_Outer() {
 		ScriptBuilder.create()
 				.add("import test_module.Outer;")
 				.add("println(Outer.getName());")
@@ -27,7 +27,7 @@ public class InnerClassesCanBeAddedViaJavaTest extends ZenCodeTest {
 	}
 
 	@Test
-	public void testInnerClassesCanBeAddedViaJava_Inner() {
+	void testInnerClassesCanBeAddedViaJava_Inner() {
 		ScriptBuilder.create()
 				.add("import test_module.Outer;")
 				.add("println(Outer.Inner.getName());")
