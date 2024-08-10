@@ -1,5 +1,15 @@
 #output: 0
+#output: 0
+#output: 33
+#output: 0
+#output: 0
 
-var array = new int[,](10, 10);
+var array = new int[,](10, 8);
 
 println(array[0, 0]);
+println(array[9, 7]);
+
+array[1, 6] = 33;
+println(array[1, 6]);
+println(array[2, 6]);
+println(array[1, 1]);

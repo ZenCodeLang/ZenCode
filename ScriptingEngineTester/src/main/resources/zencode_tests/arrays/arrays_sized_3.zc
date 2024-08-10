@@ -1,5 +1,7 @@
 #output: 99
+#output: 99
 
-var array = new int[,](10, 10, 99);
+var array = new int[,](10, 8, 99);
 
 println(array[0, 0]);
+println(array[9, 7]);
