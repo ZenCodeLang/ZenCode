@@ -14,12 +14,12 @@ import java.util.Optional;
 
 public class LocalTypeImpl implements LocalType {
 	private final TypeID thisType;
-	private final ResolvedType resolvedThis;
 	private ResolvedType resolvedSuper;
+	private final TypeResolver resolver;
 
 	public LocalTypeImpl(TypeID type, TypeResolver resolver) {
 		thisType = type;
-		resolvedThis = resolver.resolve(thisType);
+		this.resolver = resolver;
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class LocalTypeImpl implements LocalType {
 
 	@Override
 	public StaticCallable thisCall() {
-		return resolvedThis.getConstructor().map(constructor -> new ThisCallable(thisType, constructor));
+		return resolver.resolve(thisType).getConstructor().map(constructor -> new ThisCallable(thisType, constructor));
 	}
 
 	@Override

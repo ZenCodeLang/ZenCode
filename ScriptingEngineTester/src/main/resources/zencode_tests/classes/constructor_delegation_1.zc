@@ -1,0 +1,23 @@
+#output: Hello, World
+#output: Goodbye, World
+
+public class Greeter {
+
+    private var greeting as string;
+    private var name as string;
+
+    public this(name: string) {
+        this("Hello", name);
+    }
+
+    public this(greeting: string, name: string) {
+        this.greeting = greeting;
+        this.name = name;
+    }
+
+    public printMe(): void => println(greeting + ", " + name);
+
+}
+
+new Greeter("World").printMe();
+new Greeter("Goodbye", "World").printMe();
