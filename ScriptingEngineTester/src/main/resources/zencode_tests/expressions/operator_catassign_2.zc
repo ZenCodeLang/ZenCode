@@ -1,0 +1,14 @@
+#output: Hello World!
+
+public class CatTest {
+  public var value as string : get, set;
+  public this(value as string) {
+      this.value = value;
+  }
+  public ~(value as string) as CatTest {
+      return new CatTest(this.value + value);
+  }
+}
+var x = new CatTest('Hello');
+x ~= ' World!';
+println(x.value);
