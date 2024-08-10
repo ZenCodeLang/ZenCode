@@ -1,0 +1,11 @@
+#output: Hello World
+
+public class MyClass<T> {
+    public this() {}
+}
+
+public expand MyClass<string> {
+    public printMe() as void {println("Hello World");}
+}
+
+new MyClass<string>().printMe();
