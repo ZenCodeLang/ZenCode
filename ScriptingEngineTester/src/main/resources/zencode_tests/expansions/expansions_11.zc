@@ -1,0 +1,11 @@
+#error: 11:NO_SUCH_MEMBER
+
+public class MyClass<T> {
+    public this() {}
+}
+
+public expand MyClass<string> {
+    public printMe() as void {println("Hello World");}
+}
+
+new MyClass<bool>().printMe();
