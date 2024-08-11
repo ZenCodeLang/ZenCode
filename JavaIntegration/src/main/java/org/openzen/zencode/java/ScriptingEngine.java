@@ -63,7 +63,7 @@ public class ScriptingEngine {
 	}
     
     public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter) {
-        this(logger, resourceGetter, "stdlib"/*, "math", "collections", "uuid"*/);
+        this(logger, resourceGetter, "stdlib", "math", "collections", "uuid");
     }
 
 	public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter, String... stdLibModulesToRegister) {

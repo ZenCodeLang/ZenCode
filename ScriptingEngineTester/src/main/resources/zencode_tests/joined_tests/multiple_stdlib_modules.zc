@@ -1,0 +1,30 @@
+#dependency: uuid
+#dependency: stdlib
+#dependency: math
+
+#output: 67
+#output: 67
+#output: 69
+#output: 56
+#output: 69
+
+import uuid.UUID;
+import math.Functions;
+
+
+var parsed = UUID.parse("7402c1ab-58bc-4e03-8742-5ae4677a7372");
+var split = (parsed as string).split('-');
+
+var maxDigits = split.map<string>(element => {
+    var max = -1;
+    for c in element.toUpperCase().characters {
+        max = Functions.max(max, c as int);
+    }
+
+    return max as string;
+});
+
+//C, C, E, 8, E are the largest codepoints
+for maxDigit in maxDigits {
+    println(maxDigit);
+}

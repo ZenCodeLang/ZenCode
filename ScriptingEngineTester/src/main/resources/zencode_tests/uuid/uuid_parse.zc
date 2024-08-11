@@ -1,0 +1,9 @@
+#dependency: uuid
+
+#output: 7402c1ab-58bc-4e03-8742-5ae4677a7372
+
+import uuid.UUID;
+
+var parsed = UUID.parse("7402c1ab-58bc-4e03-8742-5ae4677a7372");
+println(parsed as string);
+
