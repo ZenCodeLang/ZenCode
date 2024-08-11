@@ -4,9 +4,11 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
 import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 import org.openzen.zenscript.javashared.JavaClass;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
@@ -32,6 +34,13 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 		if (superType.isPresent()) {
 			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
 		}
+
+		Collection<TypeID> interfaces = getInterfaces(typeArguments);
+		if (!interfaces.isEmpty()) {
+			resolved = new InterfaceResolvedType(resolved, interfaces);
+		}
+
+
 		return resolved;
 	}
 }

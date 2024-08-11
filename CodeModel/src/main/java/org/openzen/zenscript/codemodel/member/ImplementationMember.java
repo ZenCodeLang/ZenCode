@@ -6,7 +6,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.AnyMethod;
-import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -44,7 +43,7 @@ public class ImplementationMember extends DefinitionMember {
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
 		TypeID implementsType = mapper.map(type);
 		FunctionHeader header = new FunctionHeader(implementsType);
-		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(this, targetType, implementsType);
+		ImplementationMemberInstance implementationInstance = new ImplementationMemberInstance(implementsType);
 		members.method(MethodID.caster(type), new InterfaceCaster(header, implementationInstance));
 
 		for (IDefinitionMember member : this.members) {
@@ -83,7 +82,7 @@ public class ImplementationMember extends DefinitionMember {
 		return null;
 	}
 
-	private static class InterfaceCaster implements InstanceCallableMethod {
+	public static class InterfaceCaster implements InstanceCallableMethod {
 		private final FunctionHeader header;
 		private final ImplementationMemberInstance implementationInstance;
 
