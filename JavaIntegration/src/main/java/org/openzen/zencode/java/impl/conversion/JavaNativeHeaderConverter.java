@@ -83,22 +83,15 @@ public class JavaNativeHeaderConverter {
 				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, typeConverter.getType(context, bound)));
 		}
 
-		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
-		int classParameters = 0;
-		for (int i = 0; i < parameters.length; i++) {
-			Parameter parameter = javaParameters[i];
-			if (parameter.getType().getCanonicalName().contentEquals("java.lang.Class")) {
-				classParameters++;
-				continue;
-			}
-
-			TypeID type = typeConverter.getType(context, parameter.getAnnotatedType());
-			parameters[i] = new FunctionParameter(type, parameter.getName(), parameter.isVarArgs());
-			parameters[i].defaultValue = getDefaultValue(parameter, type, parameters[i]);
-		}
-		if (classParameters > 0 && classParameters == typeParameters.length) {
-			parameters = Arrays.copyOfRange(parameters, classParameters, parameters.length);
-		}
+		FunctionParameter[] parameters = Arrays.stream(javaParameters)
+				.filter(p -> p.getType() != Class.class)
+				.map(parameter -> {
+					TypeID type = typeConverter.getType(context, parameter.getAnnotatedType());
+					FunctionParameter result = new FunctionParameter(type, parameter.getName(), parameter.isVarArgs());
+					result.defaultValue = getDefaultValue(parameter, type, result);
+					return result;
+				})
+				.toArray(FunctionParameter[]::new);
 
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");

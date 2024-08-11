@@ -183,7 +183,7 @@ public class JavaNativeTypeTemplate {
 
 			if (expansion && !isStaticExpansion) {
 				FunctionParameter[] withoutFirst = Arrays.copyOfRange(header.parameters, 1, header.parameters.length);
-				header = new FunctionHeader(header.getReturnType(), withoutFirst);
+				header = new FunctionHeader(header.typeParameters, header.getReturnType(), header.thrownType, withoutFirst);
 			}
 
 			for (MethodID id : ids) {

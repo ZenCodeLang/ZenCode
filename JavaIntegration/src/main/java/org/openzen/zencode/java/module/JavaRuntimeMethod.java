@@ -70,18 +70,26 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 		this.class_ = class_;
 		this.target = target;
 		this.method = new JavaNativeMethod(class_.javaClass, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
-				.getModifiers(), header.getReturnType().isGeneric(), calculateTypeParameterArguments(method));
+				.getModifiers(), header.getReturnType().isGeneric(), calculateTypeParameterArguments(method, expansion));
 		modifiers = getMethodModifiers(method, implicit, expansion);
 		this.id = id;
 		this.header = header;
 	}
 
-	private static boolean[] calculateTypeParameterArguments(Method method) {
+	private static boolean[] calculateTypeParameterArguments(Method method, boolean expansion) {
 		boolean[] typeArguments = new boolean[method.getTypeParameters().length];
-		for (int i = 0; i < typeArguments.length; i++) {
-			if(method.getParameterTypes()[i] == Class.class) {
+
+		int i = 0;
+		boolean expandedTypeFound = false;
+		for (Class<?> parameterType : method.getParameterTypes()) {
+			if (parameterType == Class.class) {
 				typeArguments[i] = true;
-			} else break;
+				i++;
+			} else if (expansion && !expandedTypeFound) {
+				expandedTypeFound = true;
+			} else {
+				break;
+			}
 		}
 		return typeArguments;
 	}

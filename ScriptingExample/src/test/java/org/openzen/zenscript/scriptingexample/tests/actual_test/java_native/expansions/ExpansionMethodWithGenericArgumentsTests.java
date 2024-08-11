@@ -35,8 +35,25 @@ class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 		);
 	}
 
+	@Test
+	void canUseVirtualExpansionMethodWithGenericArguments() {
+		ScriptBuilder.create()
+				.add("import test_module.ExpandedClass;")
+				.add("var result = new ExpandedClass().nameOf<int?>();")
+				.add("println(result);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"java.lang.Integer"
+		);
+	}
+
 	@ZenCodeType.Name("test_module.ExpandedClass")
 	public static class ExpandedClass {
+		@ZenCodeType.Constructor
+		public ExpandedClass() {
+			// default .ctor
+		}
 	}
 
 	@ZenCodeType.Expansion(".ExpandedClass")
@@ -58,6 +75,11 @@ class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 				default:
 					throw new IllegalArgumentException("Unknown type: " + type);
 			}
+		}
+
+		@ZenCodeType.Method
+		public static <T> String nameOf(ExpandedClass expandedObj, Class<T> typeOfT) {
+			return typeOfT.getCanonicalName();
 		}
 	}
 }
