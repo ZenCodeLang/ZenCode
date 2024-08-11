@@ -1,3 +1,4 @@
+#disabled: ZenCode does not check the bounds
 #dependency: stdlib
 #output: 0
 

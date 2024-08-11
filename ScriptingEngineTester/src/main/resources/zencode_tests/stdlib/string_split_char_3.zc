@@ -1,10 +1,10 @@
 #dependency: stdlib
 #output: 3
 #output: Hell
-#output:  W
+#output: _W
 #output: rld
 
-var result = "Hello World".split('o');
+var result = "Hello_World".split('o');
 
 println(result.length);
 for element in result {

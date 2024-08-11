@@ -1,4 +1,4 @@
 #dependency: stdlib
-#output:
+#output: XXXXXXXXXX
 
-println("".lpad(10, ' '));
+println("".lpad(10, 'X'));

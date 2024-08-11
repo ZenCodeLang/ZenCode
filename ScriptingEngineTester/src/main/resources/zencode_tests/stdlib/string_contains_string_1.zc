@@ -1,4 +1,4 @@
 #dependency: stdlib
-#output: true
+#output: false
 
 println('world' in 'hello');

@@ -1,4 +1,4 @@
 #dependency: stdlib
 #output: 2
 
-println("hello".lastIndexOf('l', 2));
+println("hello".lastIndexOf('l', 3));

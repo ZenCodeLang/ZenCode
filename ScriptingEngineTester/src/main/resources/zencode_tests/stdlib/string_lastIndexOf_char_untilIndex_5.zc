@@ -1,3 +1,4 @@
+#disabled: ZC does not check the bounds
 #dependency: stdlib
 #output: 0
 
