@@ -89,6 +89,7 @@ public class JavaNativeHeaderConverter {
 			Parameter parameter = javaParameters[i];
 			if (parameter.getType().getCanonicalName().contentEquals("java.lang.Class")) {
 				classParameters++;
+				continue;
 			}
 
 			TypeID type = typeConverter.getType(context, parameter.getAnnotatedType());

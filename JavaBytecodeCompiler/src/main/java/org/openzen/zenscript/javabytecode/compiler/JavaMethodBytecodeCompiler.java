@@ -230,7 +230,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		for (int index = 0; index < arguments.arguments.length; index++) {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
-			if (!primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION ? 1 : 0)]) {
+			if (!primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION && !asStatic ? 1 : 0)]) {
 				argument.type.accept(argument.type, boxingTypeVisitor);
 			}
 		}
