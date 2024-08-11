@@ -15,6 +15,7 @@ class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 		requiredClasses.add(GrandparentInterface.class);
 		requiredClasses.add(ParentInterface.class);
 		requiredClasses.add(ChildClass.class);
+		requiredClasses.add(ExpansionToParent.class);
 		return requiredClasses;
 	}
 
@@ -113,6 +114,19 @@ class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 		);
 	}
 
+	@Test
+	void expansionFromParentInterfaceAvailableOnChild() {
+		ScriptBuilder.create()
+				.add("import test_module.java_native.native_template.ChildClass;")
+				.add("var child = new ChildClass();")
+				.add("println(child.getInfo());")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"Info for Grandparent"
+		);
+	}
+
 	@ZenCodeType.Name("test_module.java_native.native_template.GrandparentInterface")
 	public interface GrandparentInterface {
 		@ZenCodeType.Getter("commandString")
@@ -161,6 +175,15 @@ class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 		@Override
 		public String getCommandString() {
 			return "<childClass>";
+		}
+	}
+
+	@ZenCodeType.Expansion(".java_native.native_template.ParentInterface")
+	public static class ExpansionToParent {
+
+		@ZenCodeType.Method
+		public static String getInfo(ParentInterface value) {
+			return "Info for Parent";
 		}
 	}
 }
