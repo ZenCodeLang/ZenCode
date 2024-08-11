@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class Statement extends Taggable {
@@ -20,8 +21,8 @@ public abstract class Statement extends Taggable {
 		this.thrownType = thrownType;
 	}
 
-	public TypeID getReturnType() {
-		return BasicTypeID.VOID;
+	public Optional<TypeID> getReturnType() {
+		return Optional.empty();
 	}
 
 	public TypeID getThrownType() {

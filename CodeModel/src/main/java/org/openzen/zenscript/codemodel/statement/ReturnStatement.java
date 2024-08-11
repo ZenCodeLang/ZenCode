@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ReturnStatement extends Statement {
@@ -19,8 +20,8 @@ public class ReturnStatement extends Statement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
-		return value != null ? value.type : BasicTypeID.VOID;
+	public Optional<TypeID> getReturnType() {
+		return Optional.of(value != null ? value.type : BasicTypeID.VOID);
 	}
 
 	@Override

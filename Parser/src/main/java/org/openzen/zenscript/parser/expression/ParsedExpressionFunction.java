@@ -74,7 +74,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 				//Statement statements = body.compile(innerScope, header);
 
 				if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
-					TypeID returnType = statement.getReturnType();
+					Optional<TypeID> returnType = statement.getReturnType();
 					/*if (returnType == null) {
 						if (header.getReturnType() != BasicTypeID.UNDETERMINED) {
 							returnType = genericHeader.getReturnType();
@@ -83,7 +83,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 						}
 					}*/
 
-					header.setReturnType(returnType);
+					returnType.ifPresent(header::setReturnType);
 				}
 
 				/*if (genericHeader.typeParameters.length > 0 && !scope.genericInferenceMap.isEmpty()) {

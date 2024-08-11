@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -72,17 +73,18 @@ public class BlockStatement extends Statement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
+	public Optional<TypeID> getReturnType() {
 		final List<TypeID> collect = Arrays.stream(statements)
 				.map(Statement::getReturnType)
-				.filter(Objects::nonNull)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.distinct()
 				.collect(Collectors.toList());
 
 		if (collect.isEmpty())
 			return super.getReturnType();
 		else if (collect.size() == 1)
-			return collect.get(0);
+			return Optional.ofNullable(collect.get(0));
 		else
 			//TODO make this real?
 			throw new IllegalStateException("More than one possible type: " + collect.size());

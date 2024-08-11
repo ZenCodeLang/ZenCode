@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class TryCatchStatement extends Statement {
@@ -72,12 +73,13 @@ public class TryCatchStatement extends Statement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
-		if (finallyClause != null && finallyClause.getReturnType() != null)
-			return finallyClause.getReturnType();
+	public Optional<TypeID> getReturnType() {
+		Optional<TypeID> finallyType = Optional.ofNullable(finallyClause).flatMap(Statement::getReturnType);
+		if (finallyType.isPresent()) {
+			return finallyType;
+		}
 
-		final TypeID contentType = content.getReturnType();
 		//TODO check catch clauses and do stuff I guess?
-		return contentType;
+		return content.getReturnType();
 	}
 }
