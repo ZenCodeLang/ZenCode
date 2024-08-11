@@ -35,7 +35,7 @@ public class JavaNativeTypeTemplate {
 	protected final TypeVariableContext typeVariableContext;
 	protected final boolean expansion;
 
-	private List<MethodSymbol> constructors;
+	protected List<MethodSymbol> constructors;
 	private Map<String, JavaRuntimeField> fields;
 	private Map<MethodID, List<MethodSymbol>> methods;
 	private Map<String, JavaRuntimeClass> innerTypes;
@@ -214,7 +214,7 @@ public class JavaNativeTypeTemplate {
 		return !method.getDeclaringClass().equals(cls) || method.isBridge();
 	}
 
-	private MethodSymbol loadJavaMethod(Constructor<?> constructor) {
+	protected MethodSymbol loadJavaMethod(Constructor<?> constructor) {
 		JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
 		FunctionHeader header = headerConverter.getHeader(typeVariableContext, constructor);
 		header.setReturnType(target); // In ZC, .ctors return the instantiated type

@@ -119,7 +119,7 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 		GenericMapper mapper = GenericMapper.create(getTypeParameters(), typeArguments);
 
 		return Arrays.stream(cls.getAnnotatedInterfaces())
-				.filter(annotatedType -> annotatedType.getType() instanceof Class<?> && module.isKnownType(((Class<?>) annotatedType.getType())))
+				.filter(annotatedType -> module.isKnownType(annotatedType.getType()))
 				.map(it -> module.getTypeConverter().getType(context, it))
 				.map(mapper::map)
 				.collect(Collectors.toList());
