@@ -1,16 +1,17 @@
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
 import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 import org.openzen.zenscript.javashared.JavaClass;
 
 import java.util.Map;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -31,6 +32,12 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 		if (superType.isPresent()) {
 			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
 		}
+
+		Collection<TypeID> interfaces = getInterfaces(typeArguments);
+		if (!interfaces.isEmpty()) {
+			resolved = new InterfaceResolvedType(resolved, interfaces);
+		}
+
 		return resolved;
 	}
 
@@ -46,7 +53,8 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 
 		TypeID[] expansionTypeArguments = Stream.of(getTypeParameters()).map(mapping::get).toArray(TypeID[]::new);
 		GenericMapper mapper = new GenericMapper(mapping, expansionTypeArguments);
-		JavaNativeTypeMembers resolved = new JavaNativeTypeMembers(getTemplate(), DefinitionTypeID.create(this, expansionTypeArguments), mapper);
+		ResolvedType resolved = new JavaNativeTypeMembers(getTemplate(), DefinitionTypeID.create(this, expansionTypeArguments), mapper);
+
 		return Optional.of(resolved);
 	}
 
