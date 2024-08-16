@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.InterfaceCaster;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -45,7 +45,7 @@ public class InterfaceResolvedType implements ResolvedType {
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 		if (implementedInterfaces.contains(toType)) {
-			ImplementationMember.InterfaceCaster interfaceCaster = new ImplementationMember.InterfaceCaster(new FunctionHeader(toType), new ImplementationMemberInstance(toType));
+			InterfaceCaster interfaceCaster = new InterfaceCaster(new FunctionHeader(toType), new ImplementationMemberInstance(toType));
 			return Optional.of(interfaceCaster);
 		}
 
@@ -84,7 +84,7 @@ public class InterfaceResolvedType implements ResolvedType {
 
 	@Override
 	public Optional<InstanceCallable> findOperator(OperatorType operator) {
-		return findFirstInLocalOrImplementedInterfaces(type -> type.findOperator(operator));
+		return mergeLocalWithImplementedInterfaces(type -> type.findOperator(operator), InstanceCallable::union);
 	}
 
 	@Override

@@ -5,9 +5,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -16,6 +14,7 @@ public class LocalTypeImpl implements LocalType {
 	private final TypeID thisType;
 	private ResolvedType resolvedSuper;
 	private final TypeResolver resolver;
+	private ResolvedType resolvedThis;
 
 	public LocalTypeImpl(TypeID type, TypeResolver resolver) {
 		thisType = type;
@@ -34,7 +33,10 @@ public class LocalTypeImpl implements LocalType {
 
 	@Override
 	public StaticCallable thisCall() {
-		return resolver.resolve(thisType).getConstructor().map(constructor -> new ThisCallable(thisType, constructor));
+		if (resolvedThis == null) {
+			resolvedThis = resolver.resolve(thisType);
+		}
+		return resolvedThis.getConstructor().map(constructor -> new ThisCallable(thisType, constructor));
 	}
 
 	@Override

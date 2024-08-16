@@ -5,13 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.AnyMethod;
-import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
-import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -22,7 +16,6 @@ import java.util.*;
 public class ImplementationMember extends DefinitionMember {
 	public final TypeID type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
-	public final Map<DefinitionMemberRef, IDefinitionMember> definitionBorrowedMembers = new HashMap<>(); // contains members from the outer definition to implement interface members
 
 	public ImplementationMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, TypeID type) {
 		super(position, definition, modifiers);
@@ -80,40 +73,5 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public FunctionHeader getHeader() {
 		return null;
-	}
-
-	public static class InterfaceCaster implements InstanceCallableMethod {
-		private final FunctionHeader header;
-		private final ImplementationMemberInstance implementationInstance;
-
-		public InterfaceCaster(FunctionHeader header, ImplementationMemberInstance implementationInstance) {
-			this.header = header;
-			this.implementationInstance = implementationInstance;
-		}
-
-		@Override
-		public FunctionHeader getHeader() {
-			return header;
-		}
-
-		@Override
-		public Optional<MethodInstance> asMethod() {
-			return Optional.empty();
-		}
-
-		@Override
-		public AnyMethod withGenericArguments(GenericMapper mapper) {
-			return new InterfaceCaster(header.withGenericArguments(mapper), implementationInstance);
-		}
-
-		@Override
-		public Modifiers getModifiers() {
-			return Modifiers.IMPLICIT;
-		}
-
-		@Override
-		public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
-			return builder.interfaceCast(implementationInstance, instance);
-		}
 	}
 }

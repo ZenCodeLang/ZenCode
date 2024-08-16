@@ -1,5 +1,3 @@
-#disabled: Not part of the refactor
-#disabled: Collides with the check for members inside a known type (which is used for e.g. Enums): No such member "nothing" in string
 #error: 3:UNDEFINED_VARIABLE
 
 println(nothing);

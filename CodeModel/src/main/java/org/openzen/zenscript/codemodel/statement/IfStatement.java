@@ -67,12 +67,12 @@ public class IfStatement extends Statement {
 	public Optional<TypeID> getReturnType() {
 		final Optional<TypeID> thenType = onThen.getReturnType();
 
-		if(onElse == null) {
+		if (onElse == null) {
 			return thenType;
 		}
 
 		final Optional<TypeID> elseType = onElse.getReturnType();
-		if(thenType.equals(elseType)) {
+		if (thenType.equals(elseType)) {
 			return thenType;
 		}
 		return thenType.isPresent() ? thenType : elseType;
