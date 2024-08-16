@@ -1,0 +1,14 @@
+#dependency: stdlib
+#output: 6
+#output: 228
+#output: 189
+#output: 160
+#output: 229
+#output: 165
+#output: 189
+
+var result = "你好".toUTF8Bytes();
+println(result.length);
+for charPoint in result {
+	println(charPoint);
+}

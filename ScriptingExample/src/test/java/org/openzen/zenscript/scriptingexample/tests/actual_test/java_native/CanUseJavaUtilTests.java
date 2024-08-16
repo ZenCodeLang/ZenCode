@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class CanUseJavaUtilTests extends ZenCodeTest {
+class CanUseJavaUtilTests extends ZenCodeTest {
 
 	@Override
 	public List<String> getRequiredStdLibModules() {

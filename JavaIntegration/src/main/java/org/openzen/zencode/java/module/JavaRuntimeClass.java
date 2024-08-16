@@ -19,7 +19,9 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	public final JavaNativeModule module;
@@ -111,6 +113,16 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 			GenericMapper mapper = GenericMapper.create(getTypeParameters(), typeArguments);
 			return mapper.map(s);
 		});
+	}
+
+	protected Collection<TypeID> getInterfaces(TypeID[] typeArguments) {
+		GenericMapper mapper = GenericMapper.create(getTypeParameters(), typeArguments);
+
+		return Arrays.stream(cls.getAnnotatedInterfaces())
+				.filter(annotatedType -> module.isKnownType(annotatedType.getType()))
+				.map(it -> module.getTypeConverter().getType(context, it))
+				.map(mapper::map)
+				.collect(Collectors.toList());
 	}
 
 	private static Modifiers translateModifiers(int modifiers) {

@@ -1,0 +1,9 @@
+#output: 10
+#output: 0
+#output: 70
+
+var array = new int[](10, index => (index * 10) as int);
+
+println(array.length);
+println(array[0]);
+println(array[7]);

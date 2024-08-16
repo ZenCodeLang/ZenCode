@@ -1,8 +1,6 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.parsed_expressions.floating_point_expressions;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
@@ -10,7 +8,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class FloatingPointLiteralTests extends ZenCodeTest {
+class FloatingPointLiteralTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -22,38 +20,8 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 		return requiredClasses;
 	}
 
-	@ParameterizedTest
-	@CsvSource({
-			"F,float",
-			"f,float",
-			"D,double",
-			"d,double",
-	})
-	public void FSuffixGivesFloatingPointExpression(String inbuiltSuffix, String expectedType) {
-		ScriptBuilder.create()
-				.add("var obj = 1.0" + inbuiltSuffix + ";")
-				.add("var type = getType(obj);")
-				.add("println(type);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, expectedType);
-	}
-
 	@Test
-	public void NoSuffixAndNoTypeHintGivesDouble() {
-		ScriptBuilder.create()
-				.add("var obj = 1.0;")
-				.add("var type = getType(obj);")
-				.add("println(type);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "double");
-	}
-
-	@Test
-	public void CustomSuffixAndTypeHintChecksForFactoryMethod() {
+	void CustomSuffixAndTypeHintChecksForFactoryMethod() {
 		ScriptBuilder.create()
 				.add("var value = valueOf(10.0Data);")
 				.add("println(value);")
@@ -64,17 +32,7 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void InvalidSuffixReturnsError() {
-		ScriptBuilder.create()
-				.add("var x = 1.0Invalid;")
-				.execute(this, ScriptBuilder.LogTolerance.ALLOW_ERRORS);
-
-		logger.errors().assertSize(1);
-		logger.errors().assertLine(0, "ERROR test_script_1.zs:1:8: test_script_1.zs:1:8: Invalid suffix: Invalid");
-	}
-
-	@Test
-	public void implicitCastWorksForDoubleTypeEvenIfNoSuffixWasGiven() {
+	void implicitCastWorksForDoubleTypeEvenIfNoSuffixWasGiven() {
 		ScriptBuilder.create()
 				.add("var value = otherFloatDataToString(1.0);")
 				.add("println(value);")
@@ -87,11 +45,6 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 
 	@ZenCodeType.Name(".RegisteredGlobalClass")
 	public static class RegisteredClass {
-		@ZenCodeGlobals.Global
-		@ZenCodeType.Method
-		public static String getType(Object object) {
-			return String.valueOf(object.getClass());
-		}
 
 		@ZenCodeGlobals.Global
 		@ZenCodeType.Method
@@ -116,7 +69,6 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 		}
 
 		@ZenCodeType.Method
-		@ZenCodeGlobals.Global //FixMe: Since the method below is global, this needs to be global as well, as Global Class != "normal" class
 		public static FloatDataClass Data(double value) {
 			return new FloatDataClass(value);
 		}
@@ -153,8 +105,8 @@ public class FloatingPointLiteralTests extends ZenCodeTest {
 	public static class ExpandFloatForOtherFloatDataClass {
 
 		@ZenCodeType.Caster(implicit = true)
-		public static OtherFloatDataClass toOtherFloatDataClass(double _this) {
-			return new OtherFloatDataClass(_this);
+		public static OtherFloatDataClass toOtherFloatDataClass(double expandedObj) {
+			return new OtherFloatDataClass(expandedObj);
 		}
 	}
 }

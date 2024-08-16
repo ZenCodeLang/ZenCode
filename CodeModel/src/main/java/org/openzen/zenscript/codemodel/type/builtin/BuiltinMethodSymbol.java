@@ -454,7 +454,7 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 			}
 		}
 	},
-	STRING_CAT_STRING(BYTE, CAT, STRING, STRING) {
+	STRING_CAT_STRING(STRING, CAT, STRING, STRING) {
 		@Override
 		public Optional<CompileTimeConstant> evaluate(TypeID[] typeArguments, CompileTimeConstant[] arguments) {
 			return STRING_ADD_STRING.evaluate(typeArguments, arguments);

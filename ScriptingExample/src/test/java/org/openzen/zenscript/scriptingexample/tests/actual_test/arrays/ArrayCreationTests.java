@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ArrayCreationTests extends ZenCodeTest {
+class ArrayCreationTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -21,77 +21,7 @@ public class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void basic() {
-		ScriptBuilder.create()
-				.add("var result = [1, 2, 3];")
-				.add("println(result[0]);")
-				.add("println(result.length);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(2);
-		logger.assertPrintOutput(0, "1");
-		logger.assertPrintOutput(1, "3");
-	}
-
-	@Test
-	public void sized() {
-		ScriptBuilder.create()
-				.add("var result = new int[](1);")
-				.add("println(result[0]);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "0");
-	}
-
-	@Test
-	public void sizedWithDefaultValue() {
-		ScriptBuilder.create()
-				.add("var x = new int[](10, 8);")
-				.add("println(x[5]);")
-				.add("println(x.length);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(2);
-		logger.assertPrintOutput(0, "8");
-		logger.assertPrintOutput(1, "10");
-	}
-
-	@Test
-	public void multiDimSized() {
-		ScriptBuilder.create()
-				.add("var x = new int[,](10, 10);")
-				.add("println(x[5, 0]);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "0");
-	}
-
-	@Test
-	public void multiDimSizedWithDefault() {
-		ScriptBuilder.create()
-				.add("var x = new int[,](10, 10, 7);")
-				.add("println(x[5, 0]);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "7");
-	}
-
-	@Test
-	public void callback() {
-		ScriptBuilder.create()
-				.add("var result = new int[](10, (index as usize) => 4);")
-				.add("println(result[0]);")
-				.execute(this);
-
-		logger.assertPrintOutputSize(1);
-		logger.assertPrintOutput(0, "4");
-	}
-
-	@Test
-	public void varargCreationShouldUseProperType() {
+	void varargCreationShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass(createChildClass(), createChildClass());")
 				.add("println(result);")
@@ -102,7 +32,7 @@ public class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void varargExplicitArrayShouldUseProperType() {
+	void varargExplicitArrayShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass([createChildClass(), createChildClass()]);")
 				.add("println(result);")
@@ -113,7 +43,7 @@ public class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void varargMixedArrayShouldUseProperType() {
+	void varargMixedArrayShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass(createChildClass(), createSuperClass());")
 				.add("println(result);")
@@ -124,7 +54,7 @@ public class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void varargExplicitMixedArrayShouldUseProperType() {
+	void varargExplicitMixedArrayShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass([createChildClass(), createSuperClass()]);")
 				.add("println(result);")

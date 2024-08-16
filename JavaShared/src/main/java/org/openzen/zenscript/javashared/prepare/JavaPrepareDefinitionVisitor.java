@@ -135,10 +135,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("compareToIgnoreCase","compareToIgnoreCase", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("equalsIgnoreCase","equalsIgnoreCase", "(Ljava/lang/String;)Z");
 
+			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
 			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
-			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
 			cls.addInstanceMethod("indexOfString", "indexOf", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("indexOfStringFrom", "indexOf", "(Ljava/lang/String;I)I");
 			cls.addInstanceMethod("lastIndexOfString", "lastIndexOf", "(Ljava/lang/String;)I");

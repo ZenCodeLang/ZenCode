@@ -8,7 +8,7 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class JavaNativeInheritanceTests extends ZenCodeTest {
+class JavaNativeInheritanceTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -132,6 +132,7 @@ public class JavaNativeInheritanceTests extends ZenCodeTest {
 
 		@ZenCodeType.Constructor
 		public ParentClass() {
+			// default .ctor
 		}
 
 		@ZenCodeType.Method
@@ -170,6 +171,7 @@ public class JavaNativeInheritanceTests extends ZenCodeTest {
 
 		@ZenCodeType.Constructor
 		public ChildClass() {
+			// default .ctor
 		}
 
 		@Override

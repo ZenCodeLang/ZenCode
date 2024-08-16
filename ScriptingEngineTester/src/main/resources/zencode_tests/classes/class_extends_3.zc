@@ -1,0 +1,19 @@
+// child class creates implicit constructor forwarding to base if none specified
+#output: ctor called with 'Something'
+#output: Hello from MyChildClass
+
+public abstract virtual class MySuperClass {
+    public this(someInput as string){
+        println("ctor called with '" + someInput + "'");
+    }
+
+    public abstract print() as void;
+}
+
+public class MyChildClass : MySuperClass {
+    public print() as void {
+        println('Hello from MyChildClass');
+    }
+}
+
+new MyChildClass("Something").print();

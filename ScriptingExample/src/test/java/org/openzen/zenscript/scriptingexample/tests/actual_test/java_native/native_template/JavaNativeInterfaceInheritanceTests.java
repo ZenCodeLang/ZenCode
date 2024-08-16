@@ -7,13 +7,15 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
+class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> requiredClasses = super.getRequiredClasses();
+		requiredClasses.add(GrandparentInterface.class);
 		requiredClasses.add(ParentInterface.class);
 		requiredClasses.add(ChildClass.class);
+		requiredClasses.add(ExpansionToParent.class);
 		return requiredClasses;
 	}
 
@@ -84,8 +86,55 @@ public class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 		);
 	}
 
+	@Test
+	void childCanBeCastToGrandParent() {
+		ScriptBuilder.create()
+				.add("import test_module.java_native.native_template.GrandparentInterface;")
+				.add("import test_module.java_native.native_template.ChildClass;")
+				.add("var child = new ChildClass();")
+				.add("var grandparent = child as GrandparentInterface;")
+				.add("println(grandparent.commandString);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"<childClass>"
+		);
+	}
+
+	@Test
+	void methodsFromGrandparentInterfaceAvailableOnChild() {
+		ScriptBuilder.create()
+				.add("import test_module.java_native.native_template.ChildClass;")
+				.add("var child = new ChildClass();")
+				.add("println(child.commandString);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"<childClass>"
+		);
+	}
+
+	@Test
+	void expansionFromParentInterfaceAvailableOnChild() {
+		ScriptBuilder.create()
+				.add("import test_module.java_native.native_template.ChildClass;")
+				.add("var child = new ChildClass();")
+				.add("println(child.getInfo());")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"Info for Grandparent"
+		);
+	}
+
+	@ZenCodeType.Name("test_module.java_native.native_template.GrandparentInterface")
+	public interface GrandparentInterface {
+		@ZenCodeType.Getter("commandString")
+		String getCommandString();
+	}
+
 	@ZenCodeType.Name("test_module.java_native.native_template.ParentInterface")
-	public interface ParentInterface {
+	public interface ParentInterface extends GrandparentInterface {
 		@ZenCodeType.Method
 		String sayHello();
 
@@ -105,6 +154,7 @@ public class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 
 		@ZenCodeType.Constructor
 		public ChildClass() {
+			// default .ctor
 		}
 
 		@Override
@@ -120,6 +170,20 @@ public class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 		@ZenCodeType.Method
 		public String methodOnlyInChild() {
 			return "Method only in child";
+		}
+
+		@Override
+		public String getCommandString() {
+			return "<childClass>";
+		}
+	}
+
+	@ZenCodeType.Expansion(".java_native.native_template.ParentInterface")
+	public static class ExpansionToParent {
+
+		@ZenCodeType.Method
+		public static String getInfo(ParentInterface value) {
+			return "Info for Parent";
 		}
 	}
 }

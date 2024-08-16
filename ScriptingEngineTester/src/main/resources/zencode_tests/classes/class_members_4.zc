@@ -1,0 +1,10 @@
+#output: Goodbye World
+
+public class SomeClass {
+    public var x as string = 'Hello World';
+    public this(){
+        this.x = 'Goodbye World';
+    }
+}
+
+println(new SomeClass().x);

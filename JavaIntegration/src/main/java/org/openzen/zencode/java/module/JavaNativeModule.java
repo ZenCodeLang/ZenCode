@@ -29,9 +29,7 @@ import org.openzen.zenscript.javashared.JavaNativeField;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import stdlib.Strings;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
 
@@ -203,6 +201,17 @@ public class JavaNativeModule {
 
 	public Optional<TypeSymbol> findClass(Class<?> cls) {
 		return nativeModuleSpace.getModule(cls).flatMap(module -> module.findLocalClass(cls));
+	}
+
+	public boolean isKnownType(Type type) {
+		if(type instanceof Class<?>) {
+			return isKnownType((Class<?>)type);
+		}
+		if (type instanceof ParameterizedType) {
+			return isKnownType(((ParameterizedType)type).getRawType());
+		}
+
+		return false;
 	}
 
 	public boolean isKnownType(Class<?> cls) {

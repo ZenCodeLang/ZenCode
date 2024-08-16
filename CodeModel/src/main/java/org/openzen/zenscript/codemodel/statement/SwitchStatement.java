@@ -6,10 +6,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -69,25 +66,22 @@ public class SwitchStatement extends LoopStatement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
-		//return super.getReturnType();
+	public Optional<TypeID> getReturnType() {
 		final List<TypeID> collect = cases.stream()
 				.flatMap(aCase -> Arrays.stream(aCase.statements))
 				.map(Statement::getReturnType)
-				.filter(Objects::nonNull)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.distinct()
 				.collect(Collectors.toList());
 
 		if (collect.isEmpty())
-			return null;
+			return Optional.empty();
 
 		if (collect.size() == 1)
-			return collect.get(0);
+			return Optional.ofNullable(collect.get(0));
 
-		final long c = collect.stream().distinct().count();
-		if (c == 1)
-			return collect.get(0);
-		else
-			//TODO make this real
-			throw new IllegalStateException("Too many possible types: " + c);
+		//TODO make this real
+		throw new IllegalStateException("Too many possible types: " + collect.size());
 	}
 }

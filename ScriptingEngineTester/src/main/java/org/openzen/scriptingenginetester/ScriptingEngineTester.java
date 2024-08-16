@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class ScriptingEngineTester implements TestEngine, AutoCloseable {
-	private final Predicate<Class<?>> IS_TESTABLE_ENGINE = TestableScriptingEngine.class::isAssignableFrom;
+	private static final Predicate<Class<?>> IS_TESTABLE_ENGINE = TestableScriptingEngine.class::isAssignableFrom;
 
 	private final TestDiscoverer testDiscoverer = new TestDiscoverer();
 

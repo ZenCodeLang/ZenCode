@@ -1,0 +1,23 @@
+// Test that loop variables can be reused
+#output: before 1st loop
+#output: Hello 1
+#output: Hello 2
+#output: Hello 3
+#output: between loops
+#output: 1
+#output: done
+
+var items = [1, 2, 3];
+println('before 1st loop');
+
+for i in items {
+    println('Hello ' + i);
+}
+
+println('between loops');
+
+for i in items {
+    println(i);
+    break;
+}
+println('done');

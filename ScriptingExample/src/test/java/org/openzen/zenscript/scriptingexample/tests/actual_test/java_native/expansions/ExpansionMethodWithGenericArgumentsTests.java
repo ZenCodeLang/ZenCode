@@ -5,9 +5,15 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
+import java.util.Collections;
 import java.util.List;
 
-public class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
+class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
+	@Override
+	public List<String> getRequiredStdLibModules() {
+		return Collections.singletonList("stdlib");
+	}
+
 	@Override
 	public List<Class<?>> getRequiredClasses() {
 		List<Class<?>> requiredClasses = super.getRequiredClasses();
@@ -29,11 +35,28 @@ public class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 		);
 	}
 
-	@ZenCodeType.Name("test_module.ExpandedClass")
-	public static class ExpandedClass {
+	@Test
+	void canUseVirtualExpansionMethodWithGenericArguments() {
+		ScriptBuilder.create()
+				.add("import test_module.ExpandedClass;")
+				.add("var result = new ExpandedClass().nameOf<int?>();")
+				.add("println(result);")
+				.execute(this);
+
+		logger.printlnOutputs().assertLinesInOrder(
+				"java.lang.Integer"
+		);
 	}
 
-	@ZenCodeType.Expansion("test_module.ExpandedClass")
+	@ZenCodeType.Name("test_module.ExpandedClass")
+	public static class ExpandedClass {
+		@ZenCodeType.Constructor
+		public ExpandedClass() {
+			// default .ctor
+		}
+	}
+
+	@ZenCodeType.Expansion(".ExpandedClass")
 	public static class ExpansionUnderTest {
 
 		// ToDo: What signature should be used here?
@@ -41,7 +64,7 @@ public class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 		// <T> (Class<T>, String, String) => T
 		@SuppressWarnings("unchecked")
 		@ZenCodeType.StaticExpansionMethod
-		public static <T> T parseValue(String value, String type) {
+		public static <T> T parseValue(Class<T> typeOfT, String value, String type) {
 			switch (type) {
 				case "int":
 					return (T) Integer.valueOf(value);
@@ -52,6 +75,11 @@ public class ExpansionMethodWithGenericArgumentsTests extends ZenCodeTest {
 				default:
 					throw new IllegalArgumentException("Unknown type: " + type);
 			}
+		}
+
+		@ZenCodeType.Method
+		public static <T> String nameOf(ExpandedClass expandedObj, Class<T> typeOfT) {
+			return typeOfT.getCanonicalName();
 		}
 	}
 }

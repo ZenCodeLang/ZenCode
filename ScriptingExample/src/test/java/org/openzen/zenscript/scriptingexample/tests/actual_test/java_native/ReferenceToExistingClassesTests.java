@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ReferenceToExistingClassesTests extends ZenCodeTest {
+class ReferenceToExistingClassesTests extends ZenCodeTest {
 
 	@Override
 	public List<Class<?>> getRequiredClasses() {
@@ -19,7 +19,7 @@ public class ReferenceToExistingClassesTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void canCallConstructor() {
+	void canCallConstructor() {
 		ScriptBuilder.create()
 				.add("import test_module.some.subpackage.MyExposedClass;")
 				.add("var myExposedClass = new MyExposedClass('test');")
@@ -32,7 +32,7 @@ public class ReferenceToExistingClassesTests extends ZenCodeTest {
 	}
 
 	@Test
-	public void canCallStaticMethod() {
+	void canCallStaticMethod() {
 		ScriptBuilder.create()
 				.add("import test_module.some.subpackage.MyExposedClass;")
 				.add("var repeated = MyExposedClass.repeat('test', 3);")

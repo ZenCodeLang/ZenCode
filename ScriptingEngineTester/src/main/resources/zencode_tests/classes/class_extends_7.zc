@@ -1,0 +1,16 @@
+#error: 9:CONSTRUCTOR_FORWARD_MISSING
+
+public abstract virtual class MySuperClass {
+    public this(someInput as string){}
+    public abstract print() as void;
+}
+
+public class MyChildClass : MySuperClass {
+    public this() {}
+
+    public print() as void {
+        println('Hello from MyChildClass');
+    }
+}
+
+new MyChildClass().print();

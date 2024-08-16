@@ -61,12 +61,12 @@ public class TypeofGlobal implements IGlobal {
 
 		@Override
 		public void collect(SSAVariableCollector collector) {
-
+			// No-Op since typeof does not create new variables
 		}
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-
+			// No-Op since typeof does not create new variables
 		}
 
 		@Override

@@ -1,0 +1,19 @@
+#disabled: Disabled since currently the parser fails with a "Type Expected" at the closing }
+#output: Hello World
+
+public variant Optional<T> {
+	Present(T),
+	Empty;
+}
+
+var opt as Optional<string> = Present('Hello World');
+
+switch opt {
+	case Present(value):
+		println(value);
+		break;
+	case Empty:
+		println("Empty");
+		break;
+	}
+}

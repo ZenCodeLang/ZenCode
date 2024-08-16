@@ -1,5 +1,18 @@
-#output: TestException
+#disabled: Not part of the refactor
+#disabled: The parser does not yet support "AS" in Catch clauses
+
+#output: TestException1
 #output: test
+
+import testsupport.TestException;
+
+public class TestException1 : TestException {
+    this(message: string) => super(message);
+}
+
+public class TestException2 : TestException {
+    this(message: string) => super(message);
+}
 
 try {
 	if true {

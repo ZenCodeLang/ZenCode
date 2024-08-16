@@ -12,5 +12,6 @@ class TestClass {
 	}
 }
 
-// ToDo: Currently fails with an IncompatibleClassChangeError due to a missing CheckCast(Test) before the invokeInterface
+// ToDo: Currently fails with an IncompatibleClassChangeError due to calling invokeInterface
+//  on "script_tests.interfaces.TestClass.println()" instead of "script_tests.interfaces.Test.print()"
 new TestClass().print();

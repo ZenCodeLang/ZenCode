@@ -1,3 +1,4 @@
+#dependency: stdlib
 #output: [1, 2, 3, 4, 5]
 
 val a = [5, 1, 2, 4, 3];

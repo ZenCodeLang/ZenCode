@@ -32,11 +32,10 @@ public class GetterMember extends FunctionalMember {
 		this.body = body;
 
 		if (type == BasicTypeID.UNDETERMINED) {
-			TypeID returnType = body.getReturnType();
-			if (returnType != null) {
+			body.getReturnType().ifPresent(returnType -> {
 				this.type = returnType;
 				this.header = new FunctionHeader(type);
-			}
+			});
 		}
 	}
 

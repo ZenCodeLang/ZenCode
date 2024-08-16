@@ -1,0 +1,39 @@
+#dependency: stdlib
+#output: Generation 0
+#output: Number of alive cells: 4
+#output: Generation 1
+#output: Number of alive cells: 7
+#output: Generation 2
+#output: Number of alive cells: 6
+#output: Generation 3
+#output: Number of alive cells: 6
+#output: Generation 4
+#output: Number of alive cells: 8
+#output: Generation 5
+#output: Number of alive cells: 8
+#output: Generation 6
+#output: Number of alive cells: 12
+#output: Generation 7
+#output: Number of alive cells: 12
+#output: Generation 8
+#output: Number of alive cells: 20
+#output: Generation 9
+#output: Number of alive cells: 12
+
+
+var height = 25;
+var width = 25;
+
+var conwayGrid = new ConwayGrid(height, width);
+
+conwayGrid[4,5] = true;
+conwayGrid[5,4] = true;
+conwayGrid[5,5] = true;
+conwayGrid[5,6] = true;
+
+
+for i in 0 .. 10 {
+    println("Generation " + i);
+    println("Number of alive cells: " + conwayGrid.totalNumberOfAliveCells);
+    conwayGrid.update();
+}

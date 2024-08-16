@@ -512,7 +512,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 				parser.next();
 				IParsedType type = IParsedType.parse(parser);
 				ParsedCallArguments newArguments = ParsedCallArguments.NONE;
-				if (parser.isNext(ZSTokenType.T_BROPEN) || parser.isNext(ZSTokenType.T_LESS))
+				if (parser.isNext(ZSTokenType.T_BROPEN))
 					newArguments = ParsedCallArguments.parse(parser);
 
 				return new ParsedNewExpression(position, type, newArguments);

@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ForeachStatement extends LoopStatement {
@@ -65,7 +66,7 @@ public class ForeachStatement extends LoopStatement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
+	public Optional<TypeID> getReturnType() {
 		return content.getReturnType();
 	}
 }

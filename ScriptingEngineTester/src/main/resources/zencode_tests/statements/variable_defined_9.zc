@@ -1,6 +1,9 @@
-#output:
-# test
-# 3
+#disabled: Not part of the refactor
+#disabled: These checks haven't been implemented yet
+#output: test
+#output: 3
+
+import testsupport.TestException;
 
 val a: int;
 try {

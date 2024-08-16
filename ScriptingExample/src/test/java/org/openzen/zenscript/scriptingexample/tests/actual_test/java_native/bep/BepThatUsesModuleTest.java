@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BepThatUsesModuleTest extends ZenCodeTest {
+class BepThatUsesModuleTest extends ZenCodeTest {
 	@Override
 	public BracketExpressionParser getBEP() {
 		return new Parser();

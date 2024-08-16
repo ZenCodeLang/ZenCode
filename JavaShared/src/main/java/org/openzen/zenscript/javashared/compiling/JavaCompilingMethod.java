@@ -16,6 +16,13 @@ public class JavaCompilingMethod {
 		this.compile = true;
 	}
 
+	public JavaCompilingMethod(JavaClass class_, JavaNativeMethod compiled, String signature, boolean compile) {
+		this.class_ = class_;
+		this.compiled = compiled;
+		this.signature = signature;
+		this.compile = compile;
+	}
+
 	public JavaCompilingMethod(JavaClass class_, String signature) {
 		this.class_ = class_;
 		this.compiled = null;

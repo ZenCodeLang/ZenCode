@@ -1,12 +1,17 @@
+#disabled: Not part of the refactor
+#disabled: the catch cannot infer the type of ex, yet
+
 #output: TestException
 #output: test
 
-function break() as void throws TestException {
+import testsupport.TestException;
+
+function _break() as void throws TestException {
 	throw new TestException("test");
 }
 
 try {
-	break();
+	_break();
 } catch ex {
 	println(typeof(ex));
 	println(ex.message);

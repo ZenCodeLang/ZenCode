@@ -42,14 +42,14 @@ public abstract class ZenCodeTest {
 				getRequiredStdLibModules().toArray(new String[0])
 		);
 		engine.debug = true;
-		JavaNativeModuleBuilder testModule = engine.createNativeModule("test_module", "org.openzen.zenscript.scriptingexample.tests");
+		JavaNativeModuleBuilder testModuleBuilder = engine.createNativeModule("test_module", "org.openzen.zenscript.scriptingexample.tests");
 		SharedGlobals.currentlyActiveLogger = logger;
 
 		getRequiredClasses().stream().distinct().forEach(requiredClass -> {
-			testModule.addGlobals(requiredClass);
-			testModule.addClass(requiredClass);
+			testModuleBuilder.addGlobals(requiredClass);
+			testModuleBuilder.addClass(requiredClass);
 		});
-		this.testModule = testModule.complete();
+		this.testModule = testModuleBuilder.complete();
 	}
 
 	public void executeEngine() {
@@ -59,9 +59,9 @@ public abstract class ZenCodeTest {
 	public void executeEngine(boolean allowError) {
 		try {
 			final FunctionParameterList parameters = getParameters();
-			final SemanticModule script_tests = engine.createScriptedModule("script_tests", sourceFiles
+			final SemanticModule scriptTests = engine.createScriptedModule("script_tests", sourceFiles
 					.toArray(new SourceFile[0]), getBEP(), parameters.getParameters());
-			final boolean scriptsValid = script_tests.isValid();
+			final boolean scriptsValid = scriptTests.isValid();
 			if (allowError) {
 				if (!scriptsValid) {
 					logger.setEngineComplete();
@@ -70,10 +70,9 @@ public abstract class ZenCodeTest {
 			} else {
 				Assertions.assertTrue(scriptsValid, "Scripts are not valid!");
 			}
-			engine.registerCompiled(script_tests);
+			engine.registerCompiled(scriptTests);
 			engine.run(parameters.getParameterMap());
 		} catch (ParseException e) {
-			e.printStackTrace();
 			Assertions.fail("Error in Engine execution", e);
 		}
 		logger.setEngineComplete();

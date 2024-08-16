@@ -1,0 +1,9 @@
+#dependency: uuid
+#output: 36
+
+import uuid.UUID;
+
+var random = UUID.random();
+var randomString = random as string;
+
+println(randomString.length);

@@ -1,0 +1,5 @@
+#output: Hello World!
+
+var x = 'Hello';
+x ~= ' World!';
+println(x);

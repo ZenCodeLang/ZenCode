@@ -1,0 +1,16 @@
+// Test implicitly calling super does not work if there is more than one ctor to forward to
+#error: 10:CONSTRUCTOR_FORWARD_MISSING
+
+public abstract virtual class MySuperClass {
+    public this(someInput as string){}
+    public this(someInput as int){}
+    public abstract print() as void;
+}
+
+public class MyChildClass : MySuperClass {
+    public print() as void {
+        println('Hello from MyChildClass');
+    }
+}
+
+new MyChildClass().print();

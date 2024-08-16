@@ -7,10 +7,10 @@ import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.List;
 
-public class TypeInferenceBlockingTest extends ZenCodeTest {
+class TypeInferenceBlockingTest extends ZenCodeTest {
 
 	@Test
-	public void doTheTest() {
+	void doTheTest() {
 		ScriptBuilder.create()
 				.add("public class MyClass {")
 				.add("		public this(thing as test_module.MyEnum) {")

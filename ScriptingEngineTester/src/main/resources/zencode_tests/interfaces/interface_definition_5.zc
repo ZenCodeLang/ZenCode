@@ -6,7 +6,7 @@ interface Test {
 
 class TestClass {
 	implements Test {
-		private helper() {
+		private helper(): void {
 			println("hello");
 		}
 		

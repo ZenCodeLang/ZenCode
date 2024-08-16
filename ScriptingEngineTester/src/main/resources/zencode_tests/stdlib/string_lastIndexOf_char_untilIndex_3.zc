@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: null
+
+println("hello".lastIndexOf('l', 0));

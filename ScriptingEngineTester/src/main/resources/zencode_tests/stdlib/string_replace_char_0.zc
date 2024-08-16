@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: Hewwo
+
+println("Hello".replace('l', 'w'));

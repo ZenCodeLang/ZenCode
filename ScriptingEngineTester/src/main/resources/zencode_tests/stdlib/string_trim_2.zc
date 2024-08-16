@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: hello world
+
+println("\rhello world\n  ".trim());

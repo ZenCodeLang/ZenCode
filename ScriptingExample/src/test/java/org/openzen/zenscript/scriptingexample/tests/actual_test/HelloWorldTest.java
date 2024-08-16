@@ -3,10 +3,10 @@ package org.openzen.zenscript.scriptingexample.tests.actual_test;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-public class HelloWorldTest extends ZenCodeTest {
+class HelloWorldTest extends ZenCodeTest {
 
 	@Test
-	public void helloWorld() {
+	void helloWorld() {
 		addScript("println('hello world');");
 		executeEngine();
 
@@ -17,7 +17,7 @@ public class HelloWorldTest extends ZenCodeTest {
 	}
 
 	@Test
-	public void helloVariables() {
+	void helloVariables() {
 		addScript("var x = 'hello'; println(x);");
 		executeEngine();
 
@@ -28,7 +28,7 @@ public class HelloWorldTest extends ZenCodeTest {
 	}
 
 	@Test
-	public void helloVariables2() {
+	void helloVariables2() {
 		addScript("var x = 'hello'; println(x + ' world');");
 		executeEngine();
 
@@ -39,7 +39,7 @@ public class HelloWorldTest extends ZenCodeTest {
 	}
 
 	@Test
-	public void helloVariables3() {
+	void helloVariables3() {
 		addScript("var x = 'hello'; x += ' world'; println(x);");
 		executeEngine();
 

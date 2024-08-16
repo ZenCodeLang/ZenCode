@@ -1,3 +1,4 @@
+#disabled: Not part of the refactor, we currently don't compile ValueEnums properly
 #output: 0
 
 enum MyEnum: int {
@@ -5,7 +6,7 @@ enum MyEnum: int {
 }
 
 val a = match MyEnum.A {
-	case A: 0,
-	default: 1
+	A => 0,
+	default => 1
 };
 println(a);

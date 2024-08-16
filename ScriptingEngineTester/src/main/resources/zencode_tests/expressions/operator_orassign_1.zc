@@ -1,0 +1,6 @@
+#output: 3
+
+var x = 0b0001;
+x |= 0b0010;
+println(x);
+

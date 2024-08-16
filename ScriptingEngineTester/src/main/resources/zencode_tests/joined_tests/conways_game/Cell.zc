@@ -1,0 +1,36 @@
+public class Cell {
+
+    public var alive as bool : get, set;
+    private var row as usize;
+    private var column as usize;
+
+    public this(row as usize, column as usize) {
+        this(row, column, false);
+    }
+
+    public this(row as usize, column as usize, alive as bool) {
+            this.row = row;
+            this.column = column;
+            this.alive = alive;
+    }
+
+    public getCellNextTick(currentGrid as ConwayGrid) as Cell {
+        //+2 because upperbound exclusive
+        var range = currentGrid[(row - 1) .. (row + 2), (column - 1) .. (column + 2)];
+        var aliveCellsIn3x3Grid = range.filter(element => element.alive).length;
+
+
+        if(!alive) {
+            // 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+            return new Cell(row, column, aliveCellsIn3x3Grid == 3);
+        }
+
+        // This cell itself is alive, we only want the number of neighbors
+        aliveCellsIn3x3Grid--;
+
+        // 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+        // 2. Any live cell with two or three live neighbours lives on to the next generation.
+        // 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+        return new Cell(row, column, aliveCellsIn3x3Grid == 2 || aliveCellsIn3x3Grid == 3);
+    }
+}

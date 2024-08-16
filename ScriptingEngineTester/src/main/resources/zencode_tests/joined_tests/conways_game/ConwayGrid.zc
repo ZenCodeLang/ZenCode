@@ -1,0 +1,31 @@
+public class ConwayGrid {
+    public var cells as Cell[,] : get, protected set;
+    private var width as usize;
+    private var height as usize;
+
+    public this(width as usize, height as usize) {
+        this.cells = new Cell[,](width, height, (row, column) => new Cell(row, column));
+        this.width = width;
+        this.height = height;
+    }
+
+    public []=(row as int, column as int, alive as bool) as void {
+        cells[row, column].alive = alive;
+    }
+
+    public update() as void {
+        cells = new Cell[,](width, height, (row, column) => cells[row, column].getCellNextTick(this));
+    }
+
+    public [](rows as usize .. usize, columns as usize .. usize) as Cell[] {
+        var usedRows = rows.withBounds(0 .. height);
+        var usedColumns = columns.withBounds(0 .. width);
+
+        var rowSpan = usedRows.to - usedRows.from;
+        var columnSpan = usedColumns.to - usedColumns.from;
+        var cells = this.cells;
+        return new Cell[](rowSpan * columnSpan, cellNo => cells[usedRows.from + (cellNo / columnSpan), usedColumns.from + (cellNo % columnSpan)]);
+    }
+
+    public get totalNumberOfAliveCells as usize => this[0 .. height + 1, 0 .. width + 1].filter(element => element.alive).length;
+}

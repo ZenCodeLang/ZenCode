@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: xxxxxxxxxx
+
+println("".rpad(10, 'x'));

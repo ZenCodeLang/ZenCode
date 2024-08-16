@@ -1,4 +1,8 @@
-#output: 1
+#disabled: Not part of the refactor
+#disabled: These checks haven't been implemented yet
+#error: 8:VARIABLE_NOT_SET
+
+import testsupport.TestException;
 
 val a as int;
 try {

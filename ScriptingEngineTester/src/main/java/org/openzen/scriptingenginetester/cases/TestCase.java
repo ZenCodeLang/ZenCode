@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,5 +89,18 @@ public class TestCase {
 
 		int index = filename.lastIndexOf('.');
 		return index <= 0 ? filename : filename.substring(0, index);
+	}
+
+	public Optional<String> getDisabledReason() {
+		Optional<String> disabledReasonFromAnnotation = annotations.getDisabledReason();
+		if(disabledReasonFromAnnotation.isPresent()) {
+			return disabledReasonFromAnnotation;
+		}
+
+		if (getSourceFiles().stream().anyMatch(sourceFile -> sourceFile.getFilename().endsWith(".disabled"))) {
+			return Optional.of("Some of the source files were disabled (filename ended with .disabled)");
+		}
+
+		return Optional.empty();
 	}
 }

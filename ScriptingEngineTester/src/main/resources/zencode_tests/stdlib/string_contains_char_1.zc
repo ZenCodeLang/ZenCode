@@ -1,0 +1,4 @@
+#dependency: stdlib
+#output: false
+
+println('z' in 'hello');

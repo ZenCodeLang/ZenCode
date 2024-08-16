@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class IfStatement extends Statement {
@@ -63,16 +64,17 @@ public class IfStatement extends Statement {
 	}
 
 	@Override
-	public TypeID getReturnType() {
-		final TypeID thenType = onThen.getReturnType();
-		if (onElse == null)
-			return thenType;
-		final TypeID elseType = onElse.getReturnType();
-		if (thenType == elseType)
-			return thenType;
+	public Optional<TypeID> getReturnType() {
+		final Optional<TypeID> thenType = onThen.getReturnType();
 
-		if (thenType == null)
-			return elseType;
-		return thenType;
+		if (onElse == null) {
+			return thenType;
+		}
+
+		final Optional<TypeID> elseType = onElse.getReturnType();
+		if (thenType.equals(elseType)) {
+			return thenType;
+		}
+		return thenType.isPresent() ? thenType : elseType;
 	}
 }

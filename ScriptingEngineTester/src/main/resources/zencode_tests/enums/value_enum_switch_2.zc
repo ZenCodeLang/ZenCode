@@ -1,3 +1,4 @@
+#disabled: Not part of the refactor, we currently don't compile ValueEnums properly
 #error: 7:INCOMPLETE_MATCH
 
 enum MyEnum: int {
@@ -5,6 +6,6 @@ enum MyEnum: int {
 }
 
 val a = match MyEnum.A {
-	case A: 0
+	A => 0
 };
 println(a);

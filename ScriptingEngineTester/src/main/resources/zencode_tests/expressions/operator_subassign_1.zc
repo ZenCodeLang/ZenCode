@@ -1,0 +1,6 @@
+#output: 5
+
+var x = 10;
+x -= 5;
+println(x);
+
