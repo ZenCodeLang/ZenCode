@@ -115,6 +115,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		Expression eval(ExpressionBuilder builder, T method, CallArguments arguments);
 	}
 
+
 	private static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
 			CodePosition position,
@@ -125,59 +126,21 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	) {
 		TypeID[] expansionTypeArguments = method.asMethod().map(MethodInstance::getExpansionTypeArguments).orElse(TypeID.NONE);
 
-		if (!method.getHeader().accepts(arguments.length))
+		if (!method.getHeader().accepts(arguments.length)) {
 			return new MatchedCallArguments<>(method, new CallArguments(
 					CastedExpression.Level.INVALID,
 					expansionTypeArguments,
 					typeArguments,
 					Expression.NONE));
-
-		if ((typeArguments == null || typeArguments.length == 0) && method.getHeader().typeParameters.length > 0) {
-			// attempt to infer type arguments from the return type
-			final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
-			if (result != null) {
-				typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result));
-			}
-
-			// create a mapping with everything found so far
-			// NOTE - this means that inference is sensitive to order of parameters
-			GenericMapper mapper = new GenericMapper(typeArgumentMap, expansionTypeArguments);
-
-			// now try to infer type arguments from the arguments
-			for (int i = 0; i < arguments.length; i++) {
-				CompilingExpression argument = arguments[i];
-				Expression evaluated = argument.eval();
-				if (evaluated.type != BasicTypeID.UNDETERMINED) {
-					TypeID parameterType = mapper.map(method.getHeader().parameters[i].type);
-					Map<TypeParameter, TypeID> mapping = parameterType.inferTypeParameters(evaluated.type);
-					if (mapping != null)
-						typeArgumentMap.putAll(mapping);
-				}
-			}
-
-			TypeID[] typeArguments2 = new TypeID[method.getHeader().typeParameters.length];
-			for (int i = 0; i < method.getHeader().typeParameters.length; i++) {
-				typeArguments2[i] = typeArgumentMap.get(method.getHeader().typeParameters[i]);
-			}
-
-			boolean hasUnknowns = false;
-			for (int i = 0; i < typeArguments2.length; i++) {
-				if (typeArguments2[i] == null) {
-					hasUnknowns = true;
-					break;
-				}
-			}
-			if (hasUnknowns) {
-				// TODO: improve type inference
-				return new MatchedCallArguments<>(
-						method,
-						new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE));
-			}
-
-			typeArguments = typeArguments2;
-		} else if (typeArguments == null && method.getHeader().typeParameters.length == 0) {
-			typeArguments = TypeID.NONE;
 		}
+
+		// Type inference
+		Either<TypeID[], MatchedCallArguments<T>> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, arguments);
+		if(inferred.isRight()) {
+			return inferred.getRight();
+		}
+
+		typeArguments = inferred.getLeft();
 
 		GenericMapper mapper = GenericMapper.create(method.getHeader().typeParameters, typeArguments);
 		T instancedMethod = (T) method.withGenericArguments(mapper);
@@ -254,5 +217,68 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			levelNormalCall = levelVarargCall;
 		}
 		return new MatchedCallArguments<>(instancedMethod, new CallArguments(levelNormalCall, expansionTypeArguments, typeArguments, cArguments));
+	}
+
+
+	private static <T extends AnyMethod> Either<TypeID[], MatchedCallArguments<T>> inferTypeArguments(
+			TypeID[] expansionTypeArguments,
+			T method,
+			TypeID result,
+			TypeID[] typeArguments,
+			CompilingExpression... arguments
+
+	) {
+		int providedTypeArguments = typeArguments == null ? 0 : typeArguments.length;
+
+		if(providedTypeArguments == 0 && method.getHeader().typeParameters.length == 0) {
+			return Either.left(TypeID.NONE);
+		}
+
+		if(providedTypeArguments != 0) {
+			return Either.left(typeArguments);
+		}
+
+		if (method.getHeader().typeParameters.length == 0) {
+			return Either.left(typeArguments);
+		}
+
+
+		// attempt to infer type arguments from the return type
+		final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
+		if (result != null) {
+			typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result));
+		}
+
+		// create a mapping with everything found so far
+		// NOTE - this means that inference is sensitive to order of parameters
+		GenericMapper mapper = new GenericMapper(typeArgumentMap, expansionTypeArguments);
+
+		// now try to infer type arguments from the arguments
+		for (int i = 0; i < arguments.length; i++) {
+			CompilingExpression argument = arguments[i];
+			Expression evaluated = argument.eval();
+			if (evaluated.type != BasicTypeID.UNDETERMINED) {
+				TypeID parameterType = mapper.map(method.getHeader().parameters[i].type);
+				Map<TypeParameter, TypeID> mapping = parameterType.inferTypeParameters(evaluated.type);
+				if (mapping != null)
+					typeArgumentMap.putAll(mapping);
+			}
+		}
+
+		TypeID[] typeArguments2 = Arrays.stream(method.getHeader().typeParameters)
+				.map(typeArgumentMap::get)
+				.toArray(TypeID[]::new);
+
+		boolean allTypesResolved = Arrays.stream(typeArguments2).noneMatch(Objects::isNull);
+		if (allTypesResolved) {
+			return Either.left(typeArguments2);
+		}
+
+		// TODO: improve type inference
+		MatchedCallArguments<T> matchedCallArguments = new MatchedCallArguments<>(
+				method,
+				new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE));
+		return Either.right(matchedCallArguments);
+
 	}
 }
