@@ -166,7 +166,7 @@ public class SubclassResolvedType implements ResolvedType {
 
 		@Override
 		public Modifiers getModifiers() {
-			return Modifiers.PUBLIC;
+			return Modifiers.PUBLIC.withImplicit();
 		}
 
 		@Override
