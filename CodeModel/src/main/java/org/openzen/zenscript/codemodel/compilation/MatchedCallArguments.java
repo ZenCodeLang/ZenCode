@@ -226,9 +226,11 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				.max(Comparator.naturalOrder())
 				.orElse(CastedExpression.Level.EXACT);
 
+		boolean containsNull = Stream.of(expressions).anyMatch(Objects::isNull);
+
 		return new MatchedCallArguments<>(
 				instancedMethod,
-				new CallArguments(level, expansionTypeArguments, typeArguments, expressions)
+				new CallArguments(containsNull ? CastedExpression.Level.INVALID : level, expansionTypeArguments, typeArguments, expressions)
 		);
 	}
 
@@ -251,10 +253,10 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				.toArray(CastedExpression[]::new);
 
 		Expression[] expressions = new Expression[header.parameters.length];
-		Expression[] varargExpressions = new Expression[arguments.length - header.parameters.length];
+		Expression[] varargExpressions = new Expression[arguments.length - (header.parameters.length - 1)];
 		IntStream.range(0, header.parameters.length - 1).forEach(i -> expressions[i] = castedExpressions[i].value);
-		IntStream.range(header.parameters.length, arguments.length).forEach(i -> varargExpressions[i - header.parameters.length] = castedExpressions[i].value);
-		expressions[header.parameters.length - 1] = new ArrayExpression(position, varargExpressions, header.getVariadicParameterType().map(ArrayTypeID::new).orElseThrow(IllegalStateException::new));
+		IntStream.range(header.parameters.length - 1, arguments.length).forEach(i -> varargExpressions[i - (header.parameters.length - 1)] = castedExpressions[i].value);
+		expressions[header.parameters.length - 1] = new ArrayExpression(position, varargExpressions, header.getVariadicParameterType().orElseThrow(IllegalStateException::new));
 
 		CastedExpression.Level level = Stream.of(castedExpressions)
 				.map(e -> e.level)
