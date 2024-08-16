@@ -1,5 +1,5 @@
-#output: true
 #output: false
+#output: true
 
 public class A {
     private val value as string;
