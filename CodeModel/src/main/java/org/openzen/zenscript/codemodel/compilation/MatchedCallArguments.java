@@ -4,13 +4,11 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -267,110 +265,6 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				instancedMethod,
 				new CallArguments(level, expansionTypeArguments, typeArguments, expressions)
 		);
-	}
-
-
-	private static <T extends AnyMethod> MatchedCallArguments<T> match(
-			ExpressionCompiler compiler,
-			CodePosition position,
-			T method,
-			TypeID result,
-			TypeID[] typeArguments,
-			CompilingExpression... arguments
-	) {
-		TypeID[] expansionTypeArguments = method.asMethod().map(MethodInstance::getExpansionTypeArguments).orElse(TypeID.NONE);
-
-		if (!method.getHeader().accepts(arguments.length)) {
-			return new MatchedCallArguments<>(method, new CallArguments(
-					CastedExpression.Level.INVALID,
-					expansionTypeArguments,
-					typeArguments,
-					Expression.NONE));
-		}
-
-		// Type inference
-		Either<TypeID[], MatchedCallArguments<T>> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, arguments);
-		if (inferred.isRight()) {
-			return inferred.getRight();
-		}
-
-		typeArguments = inferred.getLeft();
-
-		GenericMapper mapper = GenericMapper.create(method.getHeader().typeParameters, typeArguments);
-		T instancedMethod = (T) method.withGenericArguments(mapper);
-		FunctionHeader header = instancedMethod.getHeader();
-
-		// Use Parameters.length instead of maxParameters to get number of declared parameters
-		// We could be variadic if we have 0 vararg parameters (=#parameters-1 arguments), 1 (=#parameters arguments) or more
-		// We could be "normal" if we have as many args as parameters, or less (for optionals)
-		boolean couldBeVariadic = header.isVariadic() && arguments.length >= header.parameters.length - 1;
-		TypeID variadicType = header.getVariadicParameterType().orElse(null);
-
-		Expression[] cArguments = new Expression[header.parameters.length];
-		List<Expression> varargArguments = new ArrayList<>();
-		CastedExpression.Level levelNormalCall = CastedExpression.Level.EXACT;
-		CastedExpression.Level levelVarargCall = null;
-		boolean hasInvalidArguments = false;
-
-		for (int i = 0; i < cArguments.length; i++) {
-			if (couldBeVariadic && i >= header.parameters.length - 1) {
-				if (levelVarargCall == null)
-					levelVarargCall = levelNormalCall;
-
-				CastedExpression cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, variadicType));
-				varargArguments.add(cArgument.value);
-				levelVarargCall = levelVarargCall.max(cArgument.level);
-				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
-			} else {
-				TypeID parameterType = header.getParameterType(false, i);
-				CastedExpression cArgument;
-
-				// Handle default values (if header has more args than we provided, and we got here -> use default value)
-				if (i >= arguments.length) {
-					Expression defaultValue = Optional.ofNullable(header.getParameter(false, i).defaultValue)
-							.orElse(parameterType.getDefaultValue());
-
-					if (defaultValue == null) {
-						hasInvalidArguments = true;
-						cArgument = CastedExpression.invalid(
-								compiler.at(position).invalid(CompileErrors.invalidNumberOfArguments(arguments.length, header.parameters.length)));
-					} else {
-						cArgument = new WrappedCompilingExpression(compiler, defaultValue)
-								.cast(CastedEval.implicit(compiler, position, parameterType));
-					}
-				} else {
-					cArgument = arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
-				}
-				cArguments[i] = cArgument.value;
-				levelNormalCall = levelNormalCall.max(cArgument.level);
-				hasInvalidArguments |= cArgument.level == CastedExpression.Level.INVALID;
-			}
-		}
-		if (hasInvalidArguments) {
-			return new MatchedCallArguments<>(instancedMethod, new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, cArguments));
-		}
-
-		if (method.hasWideningConversions()) {
-			if (levelNormalCall == CastedExpression.Level.EXACT)
-				levelNormalCall = CastedExpression.Level.WIDENING;
-
-			FunctionHeader originalHeader = method.asMethod().map(instance -> instance.method.getHeader()).orElse(header);
-
-			for (int i = 0; i < originalHeader.parameters.length; i++) {
-				if (!cArguments[i].type.equals(originalHeader.parameters[i].type)) {
-					int finali = i;
-					cArguments[i] = compiler.resolve(cArguments[i].type).findCaster(originalHeader.parameters[i].type)
-							.map(caster -> caster.call(compiler.at(position), cArguments[finali], CallArguments.EMPTY))
-							.orElse(cArguments[i]);
-				}
-			}
-		}
-
-		if (levelVarargCall != null && levelVarargCall.min(levelNormalCall) == levelVarargCall) {
-			cArguments[cArguments.length - 1] = compiler.at(position).newArray(new ArrayTypeID(variadicType), varargArguments.toArray(Expression.NONE));
-			levelNormalCall = levelVarargCall;
-		}
-		return new MatchedCallArguments<>(instancedMethod, new CallArguments(levelNormalCall, expansionTypeArguments, typeArguments, cArguments));
 	}
 
 

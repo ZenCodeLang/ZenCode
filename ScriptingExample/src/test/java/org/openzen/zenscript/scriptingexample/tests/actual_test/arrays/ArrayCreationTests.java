@@ -32,6 +32,17 @@ class ArrayCreationTests extends ZenCodeTest {
 	}
 
 	@Test
+	void varargCreationShouldUseProperTypeParents() {
+		ScriptBuilder.create()
+				.add("var result = useSuperClass(createSuperClass(), createSuperClass());")
+				.add("println(result);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "[SuperClass, SuperClass]");
+	}
+
+	@Test
 	void varargExplicitArrayShouldUseProperType() {
 		ScriptBuilder.create()
 				.add("var result = useSuperClass([createChildClass(), createChildClass()]);")
@@ -65,7 +76,7 @@ class ArrayCreationTests extends ZenCodeTest {
 	}
 
 
-	@ZenCodeType.Name("SuperClass")
+	@ZenCodeType.Name(".SuperClass")
 	public static class SuperClass {
 
 		@ZenCodeType.Getter("type")
@@ -73,7 +84,7 @@ class ArrayCreationTests extends ZenCodeTest {
 			return "SuperClass";
 		}
 	}
-	@ZenCodeType.Name("ChildClass")
+	@ZenCodeType.Name(".ChildClass")
 	public static class ChildClass extends SuperClass{
 
 		@Override
@@ -82,21 +93,19 @@ class ArrayCreationTests extends ZenCodeTest {
 		}
 	}
 
-	@ZenCodeType.Name("UsingClass")
+	@ZenCodeType.Name(".UsingClass")
 	public static final class UsingClass {
 		@ZenCodeGlobals.Global
-		public static String useSuperClass( SuperClass... args) {
+		public static String useSuperClass(SuperClass... args) {
 			return Arrays.stream(args).map(SuperClass::getType).collect(Collectors.joining(", ", "[", "]"));
 		}
 
 		@ZenCodeGlobals.Global
-		@ZenCodeType.Method
 		public static SuperClass createSuperClass() {
 			return new SuperClass();
 		}
 
 		@ZenCodeGlobals.Global
-		@ZenCodeType.Method
 		public static ChildClass createChildClass() {
 			return new ChildClass();
 		}
