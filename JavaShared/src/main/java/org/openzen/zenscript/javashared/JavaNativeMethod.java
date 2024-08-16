@@ -112,7 +112,7 @@ public class JavaNativeMethod implements JavaMethod {
 
 	@Override
 	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
-		return new JavaCompilingMethod(compiled, this, signature);
+		return new JavaCompilingMethod(compiled, this, signature, compile);
 	}
 
 	public boolean isAbstract() {

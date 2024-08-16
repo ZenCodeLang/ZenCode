@@ -131,23 +131,23 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass string = new JavaClass("java.lang", "String", JavaClass.Kind.CLASS);
 			JavaNativeClass cls = new JavaNativeClass(string);
-			//cls.addMethod("contains", JavaSpecialMethod.CONTAINS_AS_INDEXOF);
+			cls.addMethod("contains", JavaSpecialMethod.CONTAINS_AS_INDEXOF);
 			cls.addInstanceMethod("compareToIgnoreCase","compareToIgnoreCase", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("equalsIgnoreCase","equalsIgnoreCase", "(Ljava/lang/String;)Z");
 
-			//cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
-			//cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
-			//cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
-			//cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
+			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
+			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
+			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
+			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
 			cls.addInstanceMethod("indexOfString", "indexOf", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("indexOfStringFrom", "indexOf", "(Ljava/lang/String;I)I");
 			cls.addInstanceMethod("lastIndexOfString", "lastIndexOf", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("lastIndexOfStringFrom", "lastIndexOf", "(Ljava/lang/String;I)I");
 
 			cls.addInstanceMethod("replace", "replace", "(CC)Ljava/lang/String;");
-			//cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
-			//cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
-			//cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
+			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
+			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
+			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
 			cls.addMethod("fromAsciiBytes", JavaSpecialMethod.BYTES_ASCII_TO_STRING);
 			cls.addMethod("fromUTF8Bytes", JavaSpecialMethod.BYTES_UTF8_TO_STRING);
 			cls.addMethod("toAsciiBytes", JavaSpecialMethod.STRING_TO_ASCII);
