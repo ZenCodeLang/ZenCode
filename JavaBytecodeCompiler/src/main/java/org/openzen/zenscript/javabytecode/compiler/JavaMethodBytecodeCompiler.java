@@ -2,6 +2,7 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.compilation.CastedExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
@@ -1574,6 +1575,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTES_ASCII_TO_STRING: {
 				Expression value = arguments[0];
 				value.accept(expressionVisitor);
+				intArrayToByteArray();
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
 				final JavaNativeField charset = new JavaNativeField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
@@ -1588,6 +1590,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			case BYTES_UTF8_TO_STRING: {
 				Expression value = arguments[0];
 				value.accept(expressionVisitor);
+				intArrayToByteArray();
 
 				final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
 				final JavaNativeField charset = new JavaNativeField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
@@ -1602,5 +1605,31 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		}
 
 		return null;
+	}
+
+	private void intArrayToByteArray() {
+		Type intArray = Type.getType("[I");
+		ArrayTypeID sByteArray = new ArrayTypeID(BasicTypeID.SBYTE);
+
+		javaWriter.dup();
+		int uBytes = javaWriter.local(intArray);
+		javaWriter.store(intArray, uBytes);
+		javaWriter.dup();
+		javaWriter.arrayLength();
+		int size = javaWriter.local(Type.INT_TYPE);
+		javaWriter.store(Type.INT_TYPE, size);
+
+		new ArrayInitializerHelper(context).visitMultiDimArray(
+				javaWriter,
+				new int[]{size},
+				new int[1], 1,
+				new ArrayHelperType(sByteArray, context),
+				sByteArray,
+				(elementType, counterLocations) -> {
+					javaWriter.load(intArray, uBytes);
+					javaWriter.loadInt(counterLocations[0]);
+					javaWriter.arrayLoad(Type.INT_TYPE);
+					javaWriter.i2b();
+				});
 	}
 }
