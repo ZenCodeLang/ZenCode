@@ -18,6 +18,8 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
+import java.util.Optional;
+
 /**
  * @author Hoofdgebruiker
  */
@@ -255,8 +257,9 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		header.getReturnType().accept(typePreparer);
 
 		int modifiers = class_.compiled.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
-		if (member.getOverrides().isPresent()) {
-			MethodInstance base = member.getOverrides().get();
+		Optional<MethodInstance> overrides = member.getOverrides();
+		if (overrides.isPresent()) {
+			MethodInstance base = overrides.get();
 			JavaNativeMethod baseMethod = (JavaNativeMethod) context.getJavaMethod(base);
 
 			// ToDo: Signature of base method vs. overridden method?
@@ -321,6 +324,10 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 		class_.empty = false;
 
-		class_.addMethod(member, method);
+		if (overrides.isPresent()) {
+			class_.addMethod(member, method, context.getJavaMethod(overrides.get()));
+		} else {
+			class_.addMethod(member, method);
+		}
 	}
 }
