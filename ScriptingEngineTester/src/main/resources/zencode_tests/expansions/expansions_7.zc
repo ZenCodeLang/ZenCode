@@ -4,16 +4,13 @@
 #output: 5
 #output: 5
 #output: 5
+#output: 5
 
 // One of the tests required to make StdLib (Arrays.zs) work
 public expand <T> T[] {
 	public map<U>(projection as function(value as T) as U) as U[] {
-	    var result = new U[](this.length);
-	    for i in 0 .. this.length {
-	        result[i] = projection(this[i]);
-	    }
-	    return result;
-	}
+    	return new U[](length, i => projection(this[i]));
+    }
 }
 
 
