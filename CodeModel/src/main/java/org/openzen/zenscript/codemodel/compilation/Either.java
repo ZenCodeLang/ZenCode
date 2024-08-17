@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel.compilation;
 
+import java.util.Objects;
+
 public class Either<L, R> {
 	private final L left;
 	private final R right;
@@ -10,11 +12,11 @@ public class Either<L, R> {
 	}
 
 	public static <L, R> Either<L, R> left(L left) {
-		return new Either<>(left, null);
+		return new Either<>(Objects.requireNonNull(left), null);
 	}
 
 	public static <L, R> Either<L, R> right(R right) {
-		return new Either<>(null, right);
+		return new Either<>(null, Objects.requireNonNull(right));
 	}
 
 	public boolean isLeft() {

@@ -30,7 +30,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			CompilingExpression... arguments
 	) {
 		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = overloads.stream()
-				.map(method -> match2(compiler, position, method, asType, typeArguments, arguments))
+				.map(method -> match(compiler, position, method, asType, typeArguments, arguments))
 				.collect(Collectors.groupingBy(matched -> matched.arguments.level, Collectors.toList()));
 
 		for (final CastedExpression.Level level : candidateLevelsInOrderOfPriority) {
@@ -116,7 +116,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		Expression eval(ExpressionBuilder builder, T method, CallArguments arguments);
 	}
 
-	private static <T extends AnyMethod> MatchedCallArguments<T> match2(
+	private static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
 			CodePosition position,
 			T method,
@@ -143,6 +143,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		typeArguments = inferred.getLeft();
 
 		GenericMapper mapper = GenericMapper.create(method.getHeader().typeParameters, typeArguments);
+		@SuppressWarnings("unchecked")
 		T instancedMethod = (T) method.withGenericArguments(mapper);
 
 		MatchedCallArguments<T> matchedVarArg = matchVarArg(expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments, arguments);
@@ -282,11 +283,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			return Either.left(TypeID.NONE);
 		}
 
-		if (providedTypeArguments != 0) {
-			return Either.left(typeArguments);
-		}
-
-		if (method.getHeader().typeParameters.length == 0) {
+		if (providedTypeArguments != 0 || method.getHeader().typeParameters.length == 0) {
 			return Either.left(typeArguments);
 		}
 
