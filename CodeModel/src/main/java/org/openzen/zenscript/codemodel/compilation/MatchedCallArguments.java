@@ -3,10 +3,12 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -155,7 +157,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 
-		return Stream.of(matchedWidening, matchedVarArg).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
+		return Stream.of(matchedVarArg, matchedWidening).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
 	}
 
 	private static <T extends AnyMethod> MatchedCallArguments<T> applyWidening(MatchedCallArguments<T> matchedNormal, TypeID[] expansionTypeArguments, ExpressionCompiler compiler, CodePosition position, T method, T instancedMethod, TypeID[] typeArguments, CompilingExpression[] arguments) {
@@ -255,7 +257,9 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		Expression[] varargExpressions = new Expression[arguments.length - (header.parameters.length - 1)];
 		IntStream.range(0, header.parameters.length - 1).forEach(i -> expressions[i] = castedExpressions[i].value);
 		IntStream.range(header.parameters.length - 1, arguments.length).forEach(i -> varargExpressions[i - (header.parameters.length - 1)] = castedExpressions[i].value);
-		expressions[header.parameters.length - 1] = new ArrayExpression(position, varargExpressions, header.getVariadicParameterType().orElseThrow(IllegalStateException::new));
+
+		CodePosition arrayPosition = Stream.of(varargExpressions).map(e -> e.position).reduce(CodePosition::merge).orElse(position);
+		expressions[header.parameters.length - 1] = new ArrayExpression(arrayPosition, varargExpressions, header.getVariadicParameterType().orElseThrow(IllegalStateException::new));
 
 		CastedExpression.Level level = Stream.of(castedExpressions)
 				.map(e -> e.level)

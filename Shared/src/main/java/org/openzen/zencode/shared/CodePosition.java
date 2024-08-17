@@ -40,6 +40,23 @@ public final class CodePosition {
 		return new CodePosition(file, fromLine, fromLineOffset, to.toLine, to.toLineOffset);
 	}
 
+	public CodePosition merge(CodePosition to) {
+		if (!(file == to.file))
+			throw new AssertionError("From and to positions must be in the same file!");
+
+
+		CodePosition earlier;
+		if(this.fromLine == to.fromLine) {
+			earlier = this.fromLineOffset <= to.fromLineOffset ? this : to;
+		} else {
+			earlier = this.fromLine < to.fromLine ? this : to;
+		}
+
+		CodePosition later = earlier == this ? to : this;
+
+		return new CodePosition(file, earlier.fromLine, earlier.fromLineOffset, later.toLine, later.toLineOffset);
+	}
+
 	public CodePosition withLength(int characters) {
 		return new CodePosition(file, fromLine, fromLineOffset, fromLine, fromLineOffset + characters);
 	}
