@@ -1,0 +1,13 @@
+#dependency: stdlib
+#output: Hello world
+
+import stdlib.Exception;
+
+public virtual class MyException : Exception {
+   public this(message: string) {
+       super(message);
+   }
+}
+
+var x = new MyException("Message");
+println("Hello world");
