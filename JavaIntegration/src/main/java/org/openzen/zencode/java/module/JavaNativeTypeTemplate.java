@@ -134,6 +134,7 @@ public class JavaNativeTypeTemplate {
 			Collection<MethodID> ids = new LinkedList<>();
 			boolean isStaticExpansion = false;
 			boolean implicit = false;
+			boolean isStaticMethod = false;
 			if (method.isAnnotationPresent(ZenCodeType.Operator.class)) {
 				ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 				MethodID id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
@@ -160,7 +161,10 @@ public class JavaNativeTypeTemplate {
 			if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				MethodID id = JavaModifiers.isStatic(method.getModifiers()) && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				boolean hasStaticModifier = JavaModifiers.isStatic(method.getModifiers());
+				MethodID id = hasStaticModifier && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				implicit |= methodAnnotation.implicit();
+				isStaticMethod |= hasStaticModifier;
 				ids.add(id);
 			}
 			if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
@@ -170,7 +174,7 @@ public class JavaNativeTypeTemplate {
 				ids.add(id);
 				isStaticExpansion = true;
 			}
-			if(method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
+			if (!isStaticMethod && method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
 				ZenCodeGlobals.Global methodAnnotation = method.getAnnotation(ZenCodeGlobals.Global.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				MethodID id = MethodID.staticMethod(name);

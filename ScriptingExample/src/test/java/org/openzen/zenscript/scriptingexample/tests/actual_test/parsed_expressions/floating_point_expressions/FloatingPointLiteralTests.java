@@ -68,7 +68,7 @@ class FloatingPointLiteralTests extends ZenCodeTest {
 			this.value = value;
 		}
 
-		@ZenCodeType.Method
+		@ZenCodeType.Method(implicit = true)
 		public static FloatDataClass Data(double value) {
 			return new FloatDataClass(value);
 		}

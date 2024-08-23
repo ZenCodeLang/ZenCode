@@ -91,6 +91,8 @@ public interface ZenCodeType {
 	@Target(ElementType.METHOD)
 	@interface Method {
 		String value() default "";
+
+		boolean implicit() default false;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
