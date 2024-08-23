@@ -257,25 +257,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		header.getReturnType().accept(typePreparer);
 
 		int modifiers = class_.compiled.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
-		Optional<MethodInstance> overrides = member.getOverrides();
-		if (overrides.isPresent()) {
-			MethodInstance base = overrides.get();
-			JavaNativeMethod baseMethod = (JavaNativeMethod) context.getJavaMethod(base);
-
-			// ToDo: Signature of base method vs. overridden method?
-			final String signature = context.getMethodSignature(header);
-
-			method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
-					class_.compiled,
-					baseMethod.kind,
-					baseMethod.name,
-					true,
-					context.getMethodDescriptor(header),
-					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					context.isGenericReturn(header.getReturnType()),
-					header.useTypeParameters()),
-					signature);
-		} else if (method == null) {
+		if (method == null) {
 			if (member instanceof ConstructorMember) {
                 if(member.isImplicit()) {
 					final String signature = context.getMethodSignature(header, true);
@@ -323,11 +305,6 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			context.logger.trace("Class " + class_.compiled.fullName + " not empty because of " + member.describe());
 
 		class_.empty = false;
-
-		if (overrides.isPresent()) {
-			class_.addMethod(member, method, context.getJavaMethod(overrides.get()));
-		} else {
-			class_.addMethod(member, method);
-		}
+		class_.addMethod(member, method);
 	}
 }

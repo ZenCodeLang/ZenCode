@@ -707,7 +707,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		if (modifiers.isPrivate()) {
 			return definition == scope.getDefinition();
 		}
-		if (modifiers.isProtected()) {
+		if (modifiers.isProtected() && scope.getDefinition() != null) {
 			return definition == scope.getDefinition() || definition.asType()
 					.map(type -> DefinitionTypeID.createThis(scope.getDefinition()).extendsOrImplements(DefinitionTypeID.createThis(type)))
 					.orElse(false);

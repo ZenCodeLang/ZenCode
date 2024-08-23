@@ -14,6 +14,7 @@ import java.util.List;
 public class EngineTestLogger extends ScriptingEngineStreamLogger implements PrintLogger {
 	private final List<String> printOutput = new ArrayList<>();
 	private final List<CompileException> exceptions = new ArrayList<>();
+	private final List<Throwable> runtimeExceptions = new ArrayList<>();
 
 	@Override
 	public void logCompileException(CompileException exception) {
@@ -29,7 +30,7 @@ public class EngineTestLogger extends ScriptingEngineStreamLogger implements Pri
 
 	@Override
 	public void logParseException(ParseException exception) {
-		super.logParseException(exception);
+		super.throwingErr("Parser Exception @ " + exception.position.toString() + " : " + exception.message, exception);
 		exceptions.add(new CompileException(exception.position, CompileErrors.parseError(exception.message)));
 	}
 
@@ -39,7 +40,13 @@ public class EngineTestLogger extends ScriptingEngineStreamLogger implements Pri
 		info(line);
 	}
 
+	@Override
+	public void throwingErr(String message, Throwable throwable) {
+		super.throwingErr(message, throwable);
+		runtimeExceptions.add(throwable);
+	}
+
 	public TestOutput getOutput() {
-		return new TestOutput(printOutput, exceptions);
+		return new TestOutput(printOutput, exceptions, runtimeExceptions);
 	}
 }

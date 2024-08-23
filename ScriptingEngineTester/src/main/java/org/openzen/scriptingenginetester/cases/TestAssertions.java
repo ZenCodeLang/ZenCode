@@ -2,13 +2,7 @@ package org.openzen.scriptingenginetester.cases;
 
 import org.junit.jupiter.api.Assertions;
 import org.openzen.scriptingenginetester.TestOutput;
-import org.openzen.zencode.shared.CompileExceptionCode;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -24,11 +18,6 @@ public class TestAssertions {
 	public void validate(TestOutput output) {
 		validateErrors(output);
 		validateOutput(output);
-		// doesn't output very nicely
-		/*Assertions.assertAll(
-				() -> validateOutput(output),
-				() -> validateErrors(output)
-		);*/
 	}
 
 	private void validateErrors(TestOutput output) {
@@ -48,7 +37,9 @@ public class TestAssertions {
 						actualError.getPosition().getFromLine(),
 						actualError.error.code.name())
 				);
+
 		Assertions.assertLinesMatch(expectedErrors, actualErrors, "Test must throw errors exactly as specified as '#error:' Preprocessors");
+		Assertions.assertTrue(output.runtimeExceptions.isEmpty(), "There must be no runtime exceptions");
 	}
 
 	private void validateOutput(TestOutput output) {

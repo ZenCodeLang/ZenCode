@@ -44,16 +44,8 @@ public final class CodePosition {
 		if (!(file == to.file))
 			throw new AssertionError("From and to positions must be in the same file!");
 
-
-		CodePosition earlier;
-		if(this.fromLine == to.fromLine) {
-			earlier = this.fromLineOffset <= to.fromLineOffset ? this : to;
-		} else {
-			earlier = this.fromLine < to.fromLine ? this : to;
-		}
-
+		CodePosition earlier = this.compareStart(to) < 0 ? this : to;
 		CodePosition later = earlier == this ? to : this;
-
 		return new CodePosition(file, earlier.fromLine, earlier.fromLineOffset, later.toLine, later.toLineOffset);
 	}
 
@@ -83,5 +75,15 @@ public final class CodePosition {
 
 	public int getToLineOffset() {
 		return toLineOffset;
+	}
+
+	public int compareStart(CodePosition other) {
+		int fileComparison = file.getFilename().compareTo(other.file.getFilename());
+		if (fileComparison != 0)
+			return fileComparison;
+
+		if (fromLine != other.fromLine)
+			return fromLine - other.fromLine;
+		return fromLineOffset - other.fromLineOffset;
 	}
 }

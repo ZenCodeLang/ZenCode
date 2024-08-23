@@ -3,12 +3,10 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -137,12 +135,14 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 		// Type inference
-		Either<TypeID[], MatchedCallArguments<T>> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, arguments);
-		if (inferred.isRight()) {
-			return inferred.getRight();
+		Optional<TypeID[]> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, arguments);
+		if (!inferred.isPresent()) {
+			return new MatchedCallArguments<>(
+					method,
+					new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE));
 		}
 
-		typeArguments = inferred.getLeft();
+		typeArguments = inferred.get();
 
 		GenericMapper mapper = GenericMapper.create(method.getHeader().typeParameters, typeArguments);
 		@SuppressWarnings("unchecked")
@@ -153,42 +153,43 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		MatchedCallArguments<T> matchedWidening;
 		{
 			MatchedCallArguments<T> matchedNormal = matchNormal(expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments, arguments);
-			matchedWidening = applyWidening(matchedNormal, expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments, arguments);
+			matchedWidening = applyWidening(matchedNormal, expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments);
 		}
 
 
 		return Stream.of(matchedVarArg, matchedWidening).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
 	}
 
-	private static <T extends AnyMethod> MatchedCallArguments<T> applyWidening(MatchedCallArguments<T> matchedNormal, TypeID[] expansionTypeArguments, ExpressionCompiler compiler, CodePosition position, T method, T instancedMethod, TypeID[] typeArguments, CompilingExpression[] arguments) {
+	private static <T extends AnyMethod> MatchedCallArguments<T> applyWidening(
+			MatchedCallArguments<T> matchedNormal,
+			TypeID[] expansionTypeArguments,
+			ExpressionCompiler compiler,
+			CodePosition position,
+			T method,
+			T instancedMethod,
+			TypeID[] typeArguments
+	) {
 		FunctionHeader header = instancedMethod.getHeader();
 
 		if (matchedNormal.arguments.level != CastedExpression.Level.EXACT || !method.hasWideningConversions()) {
 			return matchedNormal;
 		}
 
-		CastedExpression[] array = IntStream.range(0, arguments.length)
-				.mapToObj(i -> {
-					final TypeID parameterType = header.getParameterType(false, i);
-					return arguments[i].cast(CastedEval.implicit(compiler, position, parameterType));
-				}).toArray(CastedExpression[]::new);
-
 		FunctionHeader originalHeader = method.asMethod().map(instance -> instance.method.getHeader()).orElse(header);
-		Expression[] expressions = IntStream.range(0, array.length)
-				.mapToObj(i -> {
-					final CastedExpression castedExpression = array[i];
-					final Expression value = castedExpression.value;
 
-					final TypeID parameterType = originalHeader.getParameterType(false, i);
-					if(value.type.equals(parameterType)) {
+		Expression[] expressions = IntStream.range(0, matchedNormal.arguments.arguments.length)
+				.mapToObj(i -> {
+					final Expression value = matchedNormal.arguments.arguments[i];
+
+					final TypeID originalParameterType = originalHeader.getParameterType(false, i);
+					if (value.type.equals(originalParameterType)) {
 						return value;
 					}
 
 					return compiler.resolve(value.type).findCaster(originalHeader.parameters[i].type)
 							.map(caster -> caster.call(compiler.at(position), value, CallArguments.EMPTY))
 							.orElse(value);
-				})
-				.toArray(Expression[]::new);
+				}).toArray(Expression[]::new);
 
 		if (Stream.of(expressions).anyMatch(e -> e.type == BasicTypeID.INVALID)) {
 			return new MatchedCallArguments<>(
@@ -203,7 +204,15 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		);
 	}
 
-	private static <T extends AnyMethod> MatchedCallArguments<T> matchNormal(TypeID[] expansionTypeArguments, ExpressionCompiler compiler, CodePosition position, T method, T instancedMethod, TypeID[] typeArguments, CompilingExpression[] arguments) {
+	private static <T extends AnyMethod> MatchedCallArguments<T> matchNormal(
+			TypeID[] expansionTypeArguments,
+			ExpressionCompiler compiler,
+			CodePosition position,
+			T method,
+			T instancedMethod,
+			TypeID[] typeArguments,
+			CompilingExpression[] arguments
+	) {
 		FunctionHeader header = instancedMethod.getHeader();
 
 		// skip vararg calls here (handled in matchVarArg)
@@ -216,7 +225,6 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		CastedExpression[] providedArguments = IntStream.range(0, arguments.length)
 				.mapToObj(i -> arguments[i].cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i))))
 				.toArray(CastedExpression[]::new);
-
 
 		Expression[] expressions = new Expression[header.parameters.length];
 		IntStream.range(0, providedArguments.length).forEach(i -> expressions[i] = providedArguments[i].value);
@@ -235,7 +243,15 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		);
 	}
 
-	private static <T extends AnyMethod> MatchedCallArguments<T> matchVarArg(TypeID[] expansionTypeArguments, ExpressionCompiler compiler, CodePosition position, T method, T instancedMethod, TypeID[] typeArguments, CompilingExpression[] arguments) {
+	private static <T extends AnyMethod> MatchedCallArguments<T> matchVarArg(
+			TypeID[] expansionTypeArguments,
+			ExpressionCompiler compiler,
+			CodePosition position,
+			T method,
+			T instancedMethod,
+			TypeID[] typeArguments,
+			CompilingExpression[] arguments
+	) {
 		FunctionHeader header = instancedMethod.getHeader();
 
 		// We only check vararg calls
@@ -273,24 +289,22 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	}
 
 
-	private static <T extends AnyMethod> Either<TypeID[], MatchedCallArguments<T>> inferTypeArguments(
+	private static <T extends AnyMethod> Optional<TypeID[]> inferTypeArguments(
 			TypeID[] expansionTypeArguments,
 			T method,
 			TypeID result,
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
-
 	) {
 		int providedTypeArguments = typeArguments == null ? 0 : typeArguments.length;
 
 		if (providedTypeArguments == 0 && method.getHeader().typeParameters.length == 0) {
-			return Either.left(TypeID.NONE);
+			return Optional.of(TypeID.NONE);
 		}
 
 		if (providedTypeArguments != 0 || method.getHeader().typeParameters.length == 0) {
-			return Either.left(typeArguments);
+			return Optional.of(typeArguments == null ? TypeID.NONE : typeArguments);
 		}
-
 
 		// attempt to infer type arguments from the return type
 		final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
@@ -320,13 +334,10 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 		boolean allTypesResolved = Arrays.stream(typeArguments2).noneMatch(Objects::isNull);
 		if (allTypesResolved) {
-			return Either.left(typeArguments2);
+			return Optional.of(typeArguments2);
 		}
 
 		// TODO: improve type inference
-		MatchedCallArguments<T> matchedCallArguments = new MatchedCallArguments<>(
-				method,
-				new CallArguments(CastedExpression.Level.INVALID, TypeID.NONE, typeArguments, Expression.NONE));
-		return Either.right(matchedCallArguments);
+		return Optional.empty();
 	}
 }

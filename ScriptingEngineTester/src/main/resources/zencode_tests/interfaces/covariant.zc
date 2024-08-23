@@ -1,0 +1,32 @@
+#disabled: Not supported yet
+#output: foo
+
+virtual class Bar {
+	print(): void {
+		println("bar");
+	}
+}
+
+class Foo : Bar {
+	override print() {
+		println("foo");
+	}
+}
+
+interface Test {
+	getIt(): Bar;
+}
+
+class TestClass {
+	implements Test {
+		getIt(): Foo {
+			return new Foo();
+		}
+	}
+}
+
+val x = new TestClass().getIt();
+x.print();
+
+val instance: Test = new TestClass();
+instance.getIt().print();
