@@ -1,0 +1,8 @@
+#dependency: stdlib
+#output: Hello world
+
+import stdlib.Exception;
+
+// Exception currently has no getters, so for the test we only check if we can construct an exception at all
+var x = new Exception("Message");
+println("Hello world");

@@ -21,7 +21,7 @@ class VarargTests extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.methods.ClassWithVararg;")
 				.add("var result = ClassWithVararg.join();")
-				.add("print(result);")
+				.add("println(result);")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
@@ -34,7 +34,7 @@ class VarargTests extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.methods.ClassWithVararg;")
 				.add("var result = ClassWithVararg.join('one');")
-				.add("print(result);")
+				.add("println(result);")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
@@ -47,7 +47,7 @@ class VarargTests extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.methods.ClassWithVararg;")
 				.add("var result = ClassWithVararg.join('one', 'two', 'three');")
-				.add("print(result);")
+				.add("println(result);")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
@@ -60,7 +60,7 @@ class VarargTests extends ZenCodeTest {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.methods.ClassWithVararg;")
 				.add("var result = ClassWithVararg.join(['one', 'two', 'three']);")
-				.add("print(result);")
+				.add("println(result);")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(

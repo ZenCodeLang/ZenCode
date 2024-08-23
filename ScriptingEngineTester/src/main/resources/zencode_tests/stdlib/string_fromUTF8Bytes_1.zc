@@ -1,0 +1,5 @@
+#dependency: stdlib
+#output: 你好
+
+var x = string.fromUTF8Bytes([228, 189, 160, 229, 165, 189]);
+println(x);

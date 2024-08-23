@@ -1,7 +1,11 @@
+#output: ========
 #output: a
+#output: ========
 
-function test(args...: string) {
-	println(args.join(','));
+function test(args...: string[]): void {
+	for item in args println(item);
 }
 
+println("========");
 test("a");
+println("========");

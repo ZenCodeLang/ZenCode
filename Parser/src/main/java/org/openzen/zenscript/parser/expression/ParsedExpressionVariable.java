@@ -177,7 +177,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 			TypeID type = cast.type.simplified();
 			return compiler.resolve(type).getContextMember(name)
 						.map(member -> member.compile(compiler).cast(cast))
-						.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
+						.orElseGet(() -> cast.invalid(CompileErrors.noSuchVariable(compiler, name)));
 		}
 
 		@Override
@@ -223,7 +223,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					.map(member -> member.compile(compiler).call()
 							.map(c -> c.casted(position, cast, arguments))
 							.orElseGet(() -> cast.invalid(CompileErrors.cannotCall())))
-					.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
+					.orElseGet(() -> cast.invalid(CompileErrors.noSuchVariable(compiler, name)));
 		}
 	}
 
