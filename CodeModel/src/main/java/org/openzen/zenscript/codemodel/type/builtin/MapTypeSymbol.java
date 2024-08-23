@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -13,6 +14,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
+import java.util.List;
 import java.util.Optional;
 
 public class MapTypeSymbol implements TypeSymbol {
@@ -70,7 +72,7 @@ public class MapTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments) {
+	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		AssocTypeID type = new AssocTypeID(typeArguments[0], typeArguments[1]);
 

@@ -3,16 +3,20 @@ package org.openzen.zencode.java.module;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
 import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 import org.openzen.zenscript.javashared.JavaClass;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
@@ -26,19 +30,21 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments) {
-		ResolvedType resolved = new JavaNativeTypeMembers(getTemplate(), DefinitionTypeID.create(this, typeArguments), GenericMapper.create(getTypeParameters(), typeArguments));
+	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+		TypeID type = DefinitionTypeID.create(this, typeArguments);
+		ResolvedType resolved = new JavaNativeTypeMembers(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
 		Optional<TypeID> superType = getSupertype(typeArguments);
 		if (superType.isPresent()) {
-			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
+			resolved = new SubclassResolvedType(superType.get().resolve(expansions), resolved, superType.get());
 		}
 
 		Collection<TypeID> interfaces = getInterfaces(typeArguments);
 		if (!interfaces.isEmpty()) {
-			resolved = new InterfaceResolvedType(resolved, interfaces);
+			resolved = new InterfaceResolvedType(resolved, interfaces, expansions);
 		}
 
-		return resolved;
+		List<ResolvedType> expansionsResolved = expansions.stream().map(expansion -> expansion.resolve(type)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+		return ExpandedResolvedType.of(resolved, expansionsResolved);
 	}
 
 	@Override

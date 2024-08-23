@@ -148,7 +148,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		@SuppressWarnings("unchecked")
 		T instancedMethod = (T) method.withGenericArguments(mapper);
 
-		MatchedCallArguments<T> matchedVarArg = matchVarArg(expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments, arguments);
+		Optional<MatchedCallArguments<T>> matchedVarArg = matchVarArg(expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments, arguments);
 
 		MatchedCallArguments<T> matchedWidening;
 		{
@@ -156,8 +156,11 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			matchedWidening = applyWidening(matchedNormal, expansionTypeArguments, compiler, position, method, instancedMethod, typeArguments);
 		}
 
-
-		return Stream.of(matchedVarArg, matchedWidening).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
+		if (!matchedVarArg.isPresent()) {
+			return matchedWidening;
+		} else {
+			return Stream.of(matchedVarArg.get(), matchedWidening).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
+		}
 	}
 
 	private static <T extends AnyMethod> MatchedCallArguments<T> applyWidening(
@@ -243,7 +246,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		);
 	}
 
-	private static <T extends AnyMethod> MatchedCallArguments<T> matchVarArg(
+	private static <T extends AnyMethod> Optional<MatchedCallArguments<T>> matchVarArg(
 			TypeID[] expansionTypeArguments,
 			ExpressionCompiler compiler,
 			CodePosition position,
@@ -260,9 +263,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		if (!header.isVariadic()
 				|| (arguments.length < header.parameters.length - 1 && header.getVariadicParameter().map(p -> p.defaultValue).isPresent())
 		) {
-			return new MatchedCallArguments<>(
-					method,
-					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, Expression.NONE));
+			return Optional.empty();
 		}
 
 		CastedExpression[] castedExpressions = IntStream.range(0, arguments.length)
@@ -282,10 +283,10 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				.max(Comparator.naturalOrder())
 				.orElse(CastedExpression.Level.EXACT);
 
-		return new MatchedCallArguments<>(
+		return Optional.of(new MatchedCallArguments<>(
 				instancedMethod,
 				new CallArguments(level, expansionTypeArguments, typeArguments, expressions)
-		);
+		));
 	}
 
 

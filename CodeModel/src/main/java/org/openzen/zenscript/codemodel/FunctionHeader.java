@@ -267,7 +267,7 @@ public class FunctionHeader {
 				return false;
 			if (other.parameters[i].type.equals(parameters[i].type))
 				continue;
-			if (!other.parameters[i].type.resolve().canCastImplicitlyTo(parameters[i].type))
+			if (!resolver.resolve(other.parameters[i].type).canCastImplicitlyTo(parameters[i].type))
 				return false;
 		}
 

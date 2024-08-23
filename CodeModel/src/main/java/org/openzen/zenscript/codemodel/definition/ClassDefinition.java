@@ -17,10 +17,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,7 +43,7 @@ public class ClassDefinition extends HighLevelDefinition {
 		boolean hasNoConstructor = members.stream().noneMatch(IDefinitionMember::isConstructor);
 
 		Optional<MethodInstance> superConstructor = Optional.ofNullable(getSuperType())
-				.flatMap(t -> t.resolve().getConstructor().getSingleOverload())
+				.flatMap(t -> t.resolve(Collections.emptyList()).getConstructor().getSingleOverload())
 				.flatMap(AnyMethod::asMethod);
 
 		if (hasNoConstructor) {

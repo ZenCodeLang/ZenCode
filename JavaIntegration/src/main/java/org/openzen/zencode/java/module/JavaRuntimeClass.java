@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 
@@ -20,6 +19,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -84,7 +84,7 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	}
 
 	@Override
-	public abstract ResolvedType resolve(TypeID[] typeArguments);
+	public abstract ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions);
 
 	@Override
 	public TypeParameter[] getTypeParameters() {

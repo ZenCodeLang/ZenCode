@@ -4,8 +4,13 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Collections;
+import java.util.List;
 
 public interface IDefinitionMember {
 	CodePosition getPosition();
@@ -21,6 +26,10 @@ public interface IDefinitionMember {
 	String describe();
 
 	void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper);
+
+	default List<ResolvedType> resolveExpansions(List<ExpansionSymbol> expansions) {
+		return Collections.emptyList();
+	}
 
 	<T> T accept(MemberVisitor<T> visitor);
 

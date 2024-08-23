@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -14,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
 
@@ -142,12 +144,16 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments) {
+	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
 		MemberSet.Builder members = MemberSet.create();
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		TypeID type = DefinitionTypeID.create(this, typeArguments);
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(type, members, mapper);
+		}
+		List<ResolvedType> interfaceExpansions = new ArrayList<>();
+		for (IDefinitionMember member : this.members) {
+			interfaceExpansions.addAll(member.resolveExpansions(expansions));
 		}
 
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
@@ -157,11 +163,11 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 
 		if (superType != null) {
 			TypeID instancedSuperType = mapper.map(superType);
-			ResolvedType superResolved = instancedSuperType.resolve();
+			ResolvedType superResolved = instancedSuperType.resolve(expansions);
 			resolved = new SubclassResolvedType(superResolved, resolved, superType);
 		}
 
-		return resolved;
+		return ExpandedResolvedType.of(resolved, interfaceExpansions);
 	}
 
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {}

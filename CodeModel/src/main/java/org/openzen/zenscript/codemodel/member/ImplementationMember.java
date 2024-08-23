@@ -5,13 +5,16 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ImplementationMember extends DefinitionMember {
 	public final TypeID type;
@@ -42,6 +45,15 @@ public class ImplementationMember extends DefinitionMember {
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(targetType, members, mapper);
 		}
+	}
+
+	@Override
+	public List<ResolvedType> resolveExpansions(List<ExpansionSymbol> expansions) {
+		return expansions.stream()
+				.map(expansion -> expansion.resolve(type))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toList());
 	}
 
 	@Override

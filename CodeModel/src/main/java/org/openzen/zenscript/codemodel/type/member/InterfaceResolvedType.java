@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.member.InterfaceCaster;
@@ -20,10 +21,12 @@ import java.util.stream.Stream;
 public class InterfaceResolvedType implements ResolvedType {
 	private final ResolvedType baseType;
 	private final Collection<TypeID> implementedInterfaces;
+	private final List<ExpansionSymbol> expansions;
 
-	public InterfaceResolvedType(ResolvedType baseType, Collection<TypeID> implementedInterfaces) {
+	public InterfaceResolvedType(ResolvedType baseType, Collection<TypeID> implementedInterfaces, List<ExpansionSymbol> expansions) {
 		this.baseType = baseType;
 		this.implementedInterfaces = implementedInterfaces;
+		this.expansions = expansions;
 	}
 
 
@@ -111,7 +114,7 @@ public class InterfaceResolvedType implements ResolvedType {
 	public List<Comparator> comparators() {
 		return Stream.concat(
 						Stream.of(baseType),
-						implementedInterfaces.stream().map(TypeID::resolve)
+						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
 				).flatMap(type -> type.comparators().stream())
 				.collect(Collectors.toList());
 	}
@@ -129,7 +132,7 @@ public class InterfaceResolvedType implements ResolvedType {
 	private <T> Optional<T> findFirstInLocalOrImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper) {
 		return Stream.concat(
 						Stream.of(baseType),
-						implementedInterfaces.stream().map(TypeID::resolve)
+						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
 				)
 				.map(mapper)
 				.filter(Optional::isPresent)
@@ -140,7 +143,7 @@ public class InterfaceResolvedType implements ResolvedType {
 	private <T> Optional<T> mergeLocalWithImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper, BinaryOperator<T> combiner) {
 		return Stream.concat(
 						Stream.of(baseType),
-						implementedInterfaces.stream().map(TypeID::resolve)
+						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
 				)
 				.map(mapper)
 				.filter(Optional::isPresent)

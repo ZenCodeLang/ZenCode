@@ -1,0 +1,21 @@
+#output: hello2
+
+interface Test {
+	print(): void;
+}
+
+expand Test {
+	print2(): void {
+		println("hello2");
+	}
+}
+
+class TestClass {
+	implements Test {
+		print() {
+			println("hello");
+		}
+	}
+}
+
+new TestClass().print2();

@@ -11,17 +11,14 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.ssa.CodeBlock;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.TypeContext;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
@@ -119,7 +116,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		validateThrow(member, member.header, body);
 
 		if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
-			if (member.definition.getSuperType().resolve().getConstructor().acceptsZeroArguments()) {
+			if (member.definition.getSuperType().resolve(Collections.emptyList()).getConstructor().acceptsZeroArguments()) {
 				return;
 			}
 

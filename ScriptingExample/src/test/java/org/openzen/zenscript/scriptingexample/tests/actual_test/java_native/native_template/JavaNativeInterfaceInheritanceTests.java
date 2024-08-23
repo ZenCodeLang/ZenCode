@@ -118,12 +118,13 @@ class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 	void expansionFromParentInterfaceAvailableOnChild() {
 		ScriptBuilder.create()
 				.add("import test_module.java_native.native_template.ChildClass;")
-				.add("var child = new ChildClass();")
-				.add("println(child.getInfo());")
+				.add("val child = new ChildClass();")
+				.add("val info = child.getInfo();")
+				.add("println(info);")
 				.execute(this);
 
 		logger.printlnOutputs().assertLinesInOrder(
-				"Info for Grandparent"
+				"Info for Expansion"
 		);
 	}
 
@@ -183,7 +184,7 @@ class JavaNativeInterfaceInheritanceTests extends ZenCodeTest {
 
 		@ZenCodeType.Method
 		public static String getInfo(ParentInterface value) {
-			return "Info for Parent";
+			return "Info for Expansion";
 		}
 	}
 }

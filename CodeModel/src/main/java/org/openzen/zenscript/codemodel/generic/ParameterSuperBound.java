@@ -2,8 +2,10 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 public final class ParameterSuperBound implements TypeParameterBound {
@@ -19,7 +21,7 @@ public final class ParameterSuperBound implements TypeParameterBound {
 	}
 
 	@Override
-	public Optional<ResolvedType> resolveMembers() {
+	public Optional<ResolvedType> resolveMembers(List<ExpansionSymbol> expansions) {
 		return Optional.empty();
 	}
 

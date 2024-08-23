@@ -15,10 +15,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ParsedFileCompiler implements DefinitionCompiler {
 	private final CompileContext context;
@@ -76,7 +73,7 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 			if (imports.containsKey(name.get(0).name)) {
 				TypeID type = DefinitionTypeID.create(imports.get(name.get(0).name), name.get(0).arguments);
 				for (int i = 1; i < name.size(); i++) {
-					Optional<TypeSymbol> inner = type.resolve().findInnerType(name.get(i).name);
+					Optional<TypeSymbol> inner = type.resolve(Collections.emptyList()).findInnerType(name.get(i).name);
 					if (inner.isPresent()) {
 						type = DefinitionTypeID.create(inner.get(), name.get(i).arguments);
 					} else {

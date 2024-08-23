@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
 import java.util.Optional;
 
 public class LocalTypeImpl implements LocalType {
@@ -45,7 +46,7 @@ public class LocalTypeImpl implements LocalType {
 			return Optional.empty();
 
 		if (resolvedSuper == null)
-			resolvedSuper = thisType.getSuperType().resolve();
+			resolvedSuper = thisType.getSuperType().resolve(Collections.emptyList());
 
 		return Optional.ofNullable(resolvedSuper)
 				.map(super_ -> super_.getConstructor().map(constructor -> new SuperCallable(thisType.getSuperType(), constructor)));
