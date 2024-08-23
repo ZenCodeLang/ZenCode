@@ -307,12 +307,12 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	) {
 		int providedTypeArguments = typeArguments == null ? 0 : typeArguments.length;
 
-		if (providedTypeArguments == 0 && method.getHeader().typeParameters.length == 0) {
-			return Optional.of(TypeID.NONE);
+		if (providedTypeArguments == method.getHeader().typeParameters.length) {
+			return Optional.of(typeArguments != null ? typeArguments : TypeID.NONE);
 		}
 
-		if (providedTypeArguments != 0 || method.getHeader().typeParameters.length == 0) {
-			return Optional.of(typeArguments == null ? TypeID.NONE : typeArguments);
+		if(providedTypeArguments != 0 && providedTypeArguments != method.getHeader().typeParameters.length) {
+			return Optional.empty();
 		}
 
 		// attempt to infer type arguments from the return type
