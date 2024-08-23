@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -225,24 +226,31 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, Expression.NONE));
 		}
 
-		CastedExpression[] providedArguments = IntStream.range(0, arguments.length)
-				.mapToObj(i -> arguments[i].cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i))))
+		CastedExpression[] providedArguments = IntStream.range(0, header.parameters.length)
+				.mapToObj(i -> {
+					CompilingExpression argument;
+					if (i < arguments.length) {
+						// parameter provided
+						argument = arguments[i];
+					} else if (header.getParameter(false, i).defaultValue != null) {
+						// default value
+						argument = new WrappedCompilingExpression(compiler, header.getParameter(false, i).defaultValue);
+					} else {
+						// invalid
+						return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.missingParameter(header.getParameter(false, i).name)));
+					}
+					return argument.cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i)));
+				})
 				.toArray(CastedExpression[]::new);
-
-		Expression[] expressions = new Expression[header.parameters.length];
-		IntStream.range(0, providedArguments.length).forEach(i -> expressions[i] = providedArguments[i].value);
-		IntStream.range(providedArguments.length, header.parameters.length).forEach(i -> expressions[i] = header.getParameter(false, i).defaultValue);
 
 		CastedExpression.Level level = Stream.of(providedArguments)
 				.map(e -> e.level)
 				.max(Comparator.naturalOrder())
 				.orElse(CastedExpression.Level.EXACT);
 
-		boolean containsNull = Stream.of(expressions).anyMatch(Objects::isNull);
-
 		return new MatchedCallArguments<>(
 				instancedMethod,
-				new CallArguments(containsNull ? CastedExpression.Level.INVALID : level, expansionTypeArguments, typeArguments, expressions)
+				new CallArguments(level, expansionTypeArguments, typeArguments, Stream.of(providedArguments).map(casted -> casted.value).toArray(Expression[]::new))
 		);
 	}
 
