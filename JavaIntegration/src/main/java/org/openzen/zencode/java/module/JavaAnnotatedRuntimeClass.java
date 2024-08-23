@@ -66,11 +66,18 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 
 	private JavaNativeTypeTemplate getTemplate() {
 		if (this.template == null) {
-			TypeID target = this.target;
-			if (target == null)
-				target = DefinitionTypeID.createThis(this);
-			this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
+			this.template = buildTemplate();
 		}
 		return template;
+	}
+
+	/**
+	 * Called to build a new template to be cached
+	 */
+	protected JavaNativeTypeTemplate buildTemplate() {
+		TypeID target = this.target;
+		if (target == null)
+			target = DefinitionTypeID.createThis(this);
+		return new JavaNativeTypeTemplate(target, this, context, isExpansion());
 	}
 }
