@@ -1517,7 +1517,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			}
 			case ARRAY_COPY_RESIZE: {
 				Expression value = arguments[0];
-				value.accept(expressionVisitor);
+				value.accept(expressionVisitor); // array
+				arguments[1].accept(expressionVisitor); // new size
 
 				final TypeID elementType = ((ArrayTypeID) value.type).elementType;
 				final boolean primitive = CompilerUtils.isPrimitive(elementType);
