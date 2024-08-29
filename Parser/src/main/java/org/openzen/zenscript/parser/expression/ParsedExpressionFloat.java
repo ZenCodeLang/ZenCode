@@ -71,7 +71,10 @@ public class ParsedExpressionFloat extends ParsedExpression {
 			if (suffix.isEmpty()) {
 				return resolvedType.findImplicitConstructor()
 						.map(constructor -> constructor.casted(compiler, position, cast, null, this))
-						.orElseGet(() -> cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type)));
+						.orElseGet(() -> {
+							CastedExpression castedExpression = cast.of(eval());
+							return castedExpression.isFailed() ? cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type)) : castedExpression;
+						});
 			} else {
 				return resolvedType.findSuffixConstructor(suffix)
 						.map(method -> method.casted(compiler, position, cast, null, this))
@@ -81,12 +84,12 @@ public class ParsedExpressionFloat extends ParsedExpression {
 
 		@Override
 		public void collect(SSAVariableCollector collector) {
-
+			// No vars to collect in a literal
 		}
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-
+			// No vars to link in a literal
 		}
 	}
 }
