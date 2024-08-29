@@ -80,6 +80,12 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	@Override
 	public ResolvedType resolve(TypeID type) {
 		ResolvedType base = type.resolve(expansions);
+		if(base instanceof ExpandedResolvedType) {
+			// ToDo: If the type already resolved its expansions, then we shouldn't add them a 2nd time
+			// JavaAnnotatedRuntimeClass already resolves them (and we need that to inherit expansions on parent classes)
+			return base;
+		}
+
 		List<ResolvedType> resolutions = new ArrayList<>();
 		for (ExpansionSymbol expansion : expansions) {
 			expansion.resolve(type).ifPresent(resolutions::add);
