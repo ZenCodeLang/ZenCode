@@ -233,6 +233,10 @@ public class MemberSet implements ResolvedType {
 		public Resolving build() {
 			return new Resolving(target);
 		}
+
+		public ResolvedType buildWithoutExpansions() {
+			return build().withExpansions(Collections.emptyList());
+		}
 	}
 
 	public static class Resolving implements ResolvingType {

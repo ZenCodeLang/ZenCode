@@ -154,7 +154,7 @@ public interface TypeID {
 
 	ResolvingType resolve();
 
-	default ResolvedType resolveIgnoringExpansions() {
+	default ResolvedType resolveWithoutExpansions() {
 		return this.resolve().withExpansions(Collections.emptyList());
 	}
 

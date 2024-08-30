@@ -34,7 +34,7 @@ public class OptionalResolvedType implements ResolvedType {
 				BuiltinMethodSymbol.OPTIONAL_IS_NOT_NULL,
 				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
 				type));
-		this.optionalMembers = optionalMembersBuilder.build().withExpansions(Collections.emptyList());
+		this.optionalMembers = optionalMembersBuilder.buildWithoutExpansions();
 	}
 
 	@Override

@@ -55,6 +55,6 @@ public class ExpansionDefinition extends HighLevelDefinition implements Expansio
 		for (IDefinitionMember member : members)
 			member.registerTo(expandingType, resolution, mapper);
 
-		return Optional.of(resolution.build().withExpansions(Collections.emptyList()));
+		return Optional.of(resolution.buildWithoutExpansions());
 	}
 }

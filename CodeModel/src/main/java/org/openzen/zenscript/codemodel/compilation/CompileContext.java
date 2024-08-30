@@ -102,7 +102,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 				.flatMap(t -> t.getType(position, this, name.get(0).arguments))
 				.flatMap(t -> {
 					for (int i = 1; i < name.size(); i++) {
-						Optional<TypeSymbol> inner = t.resolveIgnoringExpansions().findInnerType(name.get(i).name);
+						Optional<TypeSymbol> inner = t.resolveWithoutExpansions().findInnerType(name.get(i).name);
 						if (inner.isPresent()) {
 							t = DefinitionTypeID.create(inner.get(), name.get(i).arguments);
 						} else {
