@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -12,7 +11,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ExpandedResolvedType implements ResolvedType {
 	public static ResolvedType of(ResolvedType base, List<ResolvedType> resolutions) {
@@ -198,18 +196,4 @@ public class ExpandedResolvedType implements ResolvedType {
 		return base.findIterator(variables);
 	}
 
-	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> {
-			List<ResolvedType> resolutions = new ArrayList<>();
-			for (ExpansionSymbol expansion1 : expansions) {
-				expansion1.resolve(expansion.getType()).ifPresent(resolutions::add);
-			}
-			return of(expansion, resolutions);
-		}).collect(Collectors.toList());
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(base.getType()).ifPresent(resolutions::add);
-		}
-		return ExpandedResolvedType.of(of(base, resolutions), newExpansions);
-	}
 }

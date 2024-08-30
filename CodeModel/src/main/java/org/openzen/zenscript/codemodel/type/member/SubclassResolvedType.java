@@ -8,7 +8,6 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -128,18 +127,6 @@ public class SubclassResolvedType implements ResolvedType {
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
 		return or(resolved.findIterator(variables), () -> superclass.findIterator(variables));
-	}
-
-	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(resolved.getType()).ifPresent(resolutions::add);
-		}
-		List<ResolvedType> resolutions1 = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(superclass.getType()).ifPresent(resolutions1::add);
-		}
-		return new SubclassResolvedType(ExpandedResolvedType.of(superclass, resolutions1), ExpandedResolvedType.of(resolved, resolutions), supertype);
 	}
 
 	private static <T> Optional<T> or(Optional<T> value, Supplier<Optional<T>> other) {

@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.member.InterfaceCaster;
@@ -126,22 +125,6 @@ public class InterfaceResolvedType implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return baseType.findStaticOperator(operator);
-	}
-
-	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> interfaceExpansions = implementedInterfaces.stream()
-				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
-				.collect(Collectors.toList());
-
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(baseType.getType()).ifPresent(resolutions::add);
-		}
-		return new InterfaceResolvedType(
-				ExpandedResolvedType.of(
-						ExpandedResolvedType.of(baseType, resolutions),
-					interfaceExpansions),
-				Collections.emptyList());
 	}
 
 	private <T> Optional<T> findFirstInLocalOrImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper) {
