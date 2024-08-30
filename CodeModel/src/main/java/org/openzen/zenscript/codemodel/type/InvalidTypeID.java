@@ -3,7 +3,7 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -44,7 +44,7 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		return new MemberSet(this);
 	}
 

@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -89,7 +89,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(parameters[0], baseType);
 

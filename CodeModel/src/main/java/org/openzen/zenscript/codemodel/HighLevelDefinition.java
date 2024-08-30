@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -13,10 +14,7 @@ import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
-import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
-import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
-import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
+import org.openzen.zenscript.codemodel.type.member.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +142,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
 		MemberSet.Builder members = MemberSet.create(type);
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		for (IDefinitionMember member : this.members) {
@@ -155,18 +153,18 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		resolveAdditional(type, members, mapper);
-		ResolvedType resolved = members.build();
+		ResolvingType resolved = members.build();
 
 		if (superType != null) {
 			TypeID instancedSuperType = mapper.map(superType);
-			ResolvedType superResolved = instancedSuperType.resolve();
-			resolved = new SubclassResolvedType(superResolved, resolved, superType);
+			ResolvingType superResolved = instancedSuperType.resolve();
+			resolved = new SubclassResolvingType(superResolved, resolved, superType);
 		}
 
 		if (interfaces.isEmpty()) {
 			return resolved;
 		} else {
-			return new InterfaceResolvedType(resolved, interfaces);
+			return new InterfaceResolvingType(resolved, interfaces);
 		}
 	}
 

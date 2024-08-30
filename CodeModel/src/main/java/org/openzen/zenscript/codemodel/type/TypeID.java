@@ -3,13 +3,11 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public interface TypeID {
 	TypeID[] NONE = new TypeID[0];
@@ -154,7 +152,11 @@ public interface TypeID {
 		return Optional.empty();
 	}
 
-	ResolvedType resolve();
+	ResolvingType resolve();
+
+	default ResolvedType resolveIgnoringExpansions() {
+		return this.resolve().withExpansions(Collections.emptyList());
+	}
 
 	default boolean extendsOrImplements(TypeID type) {
 		return false;

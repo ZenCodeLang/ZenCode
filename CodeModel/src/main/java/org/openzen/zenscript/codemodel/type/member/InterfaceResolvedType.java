@@ -10,9 +10,7 @@ import org.openzen.zenscript.codemodel.member.InterfaceCaster;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,10 +21,10 @@ public class InterfaceResolvedType implements ResolvedType {
 	private final List<ResolvedType> implementations;
 	private final Collection<TypeID> implementedInterfaces;
 
-	public InterfaceResolvedType(ResolvedType baseType, Collection<TypeID> implementedInterfaces) {
+	public InterfaceResolvedType(ResolvedType baseType, Collection<ResolvedType> implementedInterfaces) {
 		this.baseType = baseType;
-		implementations = Stream.concat(Stream.of(baseType), implementedInterfaces.stream().map(TypeID::resolve)).collect(Collectors.toList());
-		this.implementedInterfaces = implementedInterfaces;
+		implementations = Stream.concat(Stream.of(baseType), implementedInterfaces.stream()).collect(Collectors.toList());
+		this.implementedInterfaces = implementedInterfaces.stream().map(ResolvedType::getType).collect(Collectors.toList());
 	}
 
 	@Override
@@ -130,17 +128,20 @@ public class InterfaceResolvedType implements ResolvedType {
 		return baseType.findStaticOperator(operator);
 	}
 
-	@Override
 	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
 		List<ResolvedType> interfaceExpansions = implementedInterfaces.stream()
 				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
 				.collect(Collectors.toList());
 
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(baseType.getType()).ifPresent(resolutions::add);
+		}
 		return new InterfaceResolvedType(
 				ExpandedResolvedType.of(
-					baseType.withExpansions(expansions),
+						ExpandedResolvedType.of(baseType, resolutions),
 					interfaceExpansions),
-				implementedInterfaces);
+				Collections.emptyList());
 	}
 
 	private <T> Optional<T> findFirstInLocalOrImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper) {

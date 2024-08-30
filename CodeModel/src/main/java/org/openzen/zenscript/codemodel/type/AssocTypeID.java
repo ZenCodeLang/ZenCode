@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.builtin.MapTypeSymbol;
 
@@ -53,7 +53,7 @@ public class AssocTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		return MapTypeSymbol.INSTANCE.resolve(this, new TypeID[] { keyType, valueType });
 	}
 

@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
@@ -12,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MemberSet implements ResolvedType {
+public class MemberSet implements ResolvedType, ResolvingType {
 	public static Builder create(TypeID type) {
 		MemberSet members = new MemberSet(type);
 		return new Builder(members);
@@ -112,6 +113,15 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return findStatic(MethodID.staticOperator(operator));
+	}
+
+	@Override
+	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(getType()).ifPresent(resolutions::add);
+		}
+		return ExpandedResolvedType.of(this, resolutions);
 	}
 
 	@Override

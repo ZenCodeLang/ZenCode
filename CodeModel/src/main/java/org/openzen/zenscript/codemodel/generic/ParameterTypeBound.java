@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -22,7 +22,7 @@ public final class ParameterTypeBound implements TypeParameterBound {
 	}
 
 	@Override
-	public Optional<ResolvedType> resolveMembers() {
+	public Optional<ResolvingType> resolveMembers() {
 		return Optional.of(type.resolve());
 	}
 

@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -53,7 +53,7 @@ public class DefinitionTypeID implements TypeID {
 	 *
 	 * @return base type members
 	 */
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		return definition.resolve(this, typeArguments);
 	}
 

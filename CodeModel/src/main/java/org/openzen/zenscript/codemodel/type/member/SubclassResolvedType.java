@@ -130,9 +130,16 @@ public class SubclassResolvedType implements ResolvedType {
 		return or(resolved.findIterator(variables), () -> superclass.findIterator(variables));
 	}
 
-	@Override
 	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		return new SubclassResolvedType(superclass.withExpansions(expansions), resolved.withExpansions(expansions), supertype);
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(resolved.getType()).ifPresent(resolutions::add);
+		}
+		List<ResolvedType> resolutions1 = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(superclass.getType()).ifPresent(resolutions1::add);
+		}
+		return new SubclassResolvedType(ExpandedResolvedType.of(superclass, resolutions1), ExpandedResolvedType.of(resolved, resolutions), supertype);
 	}
 
 	private static <T> Optional<T> or(Optional<T> value, Supplier<Optional<T>> other) {

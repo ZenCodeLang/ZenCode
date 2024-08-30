@@ -198,9 +198,18 @@ public class ExpandedResolvedType implements ResolvedType {
 		return base.findIterator(variables);
 	}
 
-	@Override
 	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> expansion.withExpansions(expansions)).collect(Collectors.toList());
-		return ExpandedResolvedType.of(base.withExpansions(expansions), newExpansions);
+		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> {
+			List<ResolvedType> resolutions = new ArrayList<>();
+			for (ExpansionSymbol expansion1 : expansions) {
+				expansion1.resolve(expansion.getType()).ifPresent(resolutions::add);
+			}
+			return of(expansion, resolutions);
+		}).collect(Collectors.toList());
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(base.getType()).ifPresent(resolutions::add);
+		}
+		return ExpandedResolvedType.of(of(base, resolutions), newExpansions);
 	}
 }

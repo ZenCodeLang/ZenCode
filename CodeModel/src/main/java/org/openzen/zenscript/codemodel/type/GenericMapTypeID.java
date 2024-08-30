@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.builtin.GenericMapTypeSymbol;
 
@@ -42,7 +42,7 @@ public class GenericMapTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		return GenericMapTypeSymbol.INSTANCE.resolve(this, new TypeID[] { new GenericTypeID(key), value });
 	}
 

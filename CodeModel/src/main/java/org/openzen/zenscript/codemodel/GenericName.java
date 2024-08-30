@@ -27,7 +27,7 @@ public class GenericName {
 	public static Optional<TypeID> getInnerType(TypeID type, List<GenericName> name, int index, List<ExpansionSymbol> expansions) {
 		while (index < name.size()) {
 			GenericName innerName = name.get(index++);
-			ResolvedType members = type.resolve();
+			ResolvedType members = type.resolve().withExpansions(expansions);
 			Optional<TypeID> inner = members
 					.findInnerType(innerName.name)
 					.map(t -> DefinitionTypeID.create(t, innerName.arguments));

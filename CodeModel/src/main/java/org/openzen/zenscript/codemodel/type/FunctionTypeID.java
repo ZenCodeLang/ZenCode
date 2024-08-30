@@ -3,7 +3,7 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.builtin.FunctionTypeSymbol;
 
@@ -56,7 +56,7 @@ public class FunctionTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		return type.resolve(this, TypeID.NONE);
 	}
 
