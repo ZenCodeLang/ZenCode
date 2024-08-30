@@ -75,7 +75,7 @@ public class GenericTypeID implements TypeID {
 		for (TypeParameterBound bound : parameter.bounds) {
 			bound.resolveMembers().ifPresent(fromBounds::add);
 		}
-		return ExpandedResolvedType.of(new MemberSet(), fromBounds);
+		return ExpandedResolvedType.of(new MemberSet(this), fromBounds);
 	}
 
 	@Override

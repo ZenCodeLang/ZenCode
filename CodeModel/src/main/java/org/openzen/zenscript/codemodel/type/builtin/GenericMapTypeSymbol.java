@@ -77,7 +77,7 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 		TypeParameter parameter = ((GenericTypeID)typeArguments[0]).parameter;
 		TypeID value = typeArguments[1];
 
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 		Map<TypeParameter, TypeID> parameterFilled = new HashMap<>();
 		parameterFilled.put(PARAMETER, typeArguments[0]);
 		parameterFilled.put(VALUE, value);

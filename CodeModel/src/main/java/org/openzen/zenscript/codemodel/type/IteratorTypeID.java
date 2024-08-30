@@ -37,7 +37,7 @@ public class IteratorTypeID implements TypeID {
 
 	@Override
 	public ResolvedType resolve() {
-		return new MemberSet(); // no members yet
+		return new MemberSet(this); // no members yet
 	}
 
 	@Override

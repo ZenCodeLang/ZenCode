@@ -49,7 +49,7 @@ public class ExpansionDefinition extends HighLevelDefinition implements Expansio
 			return Optional.empty();
 
 		TypeID[] expansionTypeArguments = Stream.of(typeParameters).map(mapping::get).toArray(TypeID[]::new);
-		MemberSet.Builder resolution = MemberSet.create();
+		MemberSet.Builder resolution = MemberSet.create(expandingType);
 		GenericMapper mapper = new GenericMapper(mapping, expansionTypeArguments);
 		for (IDefinitionMember member : members)
 			member.registerTo(expandingType, resolution, mapper);

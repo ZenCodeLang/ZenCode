@@ -74,7 +74,7 @@ public class MapTypeSymbol implements TypeSymbol {
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		AssocTypeID type = (AssocTypeID) type_;
 
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 
 		members.constructor(new MethodInstance(BuiltinMethodSymbol.ASSOC_CONSTRUCTOR));
 		members.method(mapper.map(type, BuiltinMethodSymbol.ASSOC_INDEXGET));

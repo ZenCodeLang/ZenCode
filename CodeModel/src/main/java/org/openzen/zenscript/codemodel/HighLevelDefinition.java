@@ -145,7 +145,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 
 	@Override
 	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(type, members, mapper);

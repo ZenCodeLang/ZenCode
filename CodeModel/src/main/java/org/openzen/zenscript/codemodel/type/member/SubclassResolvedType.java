@@ -31,6 +31,11 @@ public class SubclassResolvedType implements ResolvedType {
 	}
 
 	@Override
+	public TypeID getType() {
+		return resolved.getType();
+	}
+
+	@Override
 	public StaticCallable getConstructor() {
 		return resolved.getConstructor();
 	}
@@ -126,8 +131,8 @@ public class SubclassResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public ResolvedType withExpansions(TypeID type, List<ExpansionSymbol> expansions) {
-		return new SubclassResolvedType(superclass.withExpansions(supertype, expansions), resolved.withExpansions(type, expansions), supertype);
+	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+		return new SubclassResolvedType(superclass.withExpansions(expansions), resolved.withExpansions(expansions), supertype);
 	}
 
 	private static <T> Optional<T> or(Optional<T> value, Supplier<Optional<T>> other) {

@@ -18,7 +18,6 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import java.util.Optional;
 
 public class BasicTypeMembers {
-	private static final MemberSet NO_MEMBERS = new MemberSet();
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	private static final MethodID COMPARE = MethodID.operator(OperatorType.COMPARE);
 
@@ -28,9 +27,9 @@ public class BasicTypeMembers {
 			case NULL:
 			case UNDETERMINED:
 			case INVALID:
-				return NO_MEMBERS;
+				return new MemberSet(type);
 			default:
-				MemberSet.Builder builder = MemberSet.create();
+				MemberSet.Builder builder = MemberSet.create(type);
 				setup(builder, type);
 				return builder.build();
 		}

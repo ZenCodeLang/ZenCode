@@ -25,7 +25,7 @@ public class OptionalResolvedType implements ResolvedType {
 		this.type = type;
 		this.baseType = baseType;
 
-		MemberSet.Builder optionalMembers = MemberSet.create();
+		MemberSet.Builder optionalMembers = MemberSet.create(type);
 		optionalMembers.method(new MethodInstance(
 				BuiltinMethodSymbol.OPTIONAL_IS_NULL,
 				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
@@ -35,6 +35,11 @@ public class OptionalResolvedType implements ResolvedType {
 				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
 				type));
 		this.optionalMembers = optionalMembers.build();
+	}
+
+	@Override
+	public TypeID getType() {
+		return type;
 	}
 
 	@Override

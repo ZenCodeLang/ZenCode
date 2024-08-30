@@ -78,7 +78,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 
 	@Override
 	public ResolvedType resolve(TypeID type) {
-		return type.resolve().withExpansions(type, expansions);
+		return type.resolve().withExpansions(expansions);
 	}
 
 	@Override

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ResolvedType {
+	TypeID getType();
+
 	StaticCallable getConstructor();
 
 	Optional<StaticCallable> findImplicitConstructor();
@@ -76,10 +78,10 @@ public interface ResolvedType {
 
 	Optional<StaticCallable> findStaticOperator(OperatorType operator);
 
-	default ResolvedType withExpansions(TypeID type, List<ExpansionSymbol> expansions) {
+	default ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
 		List<ResolvedType> resolutions = new ArrayList<>();
 		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(type).ifPresent(resolutions::add);
+			expansion.resolve(getType()).ifPresent(resolutions::add);
 		}
 		return ExpandedResolvedType.of(this, resolutions);
 	}

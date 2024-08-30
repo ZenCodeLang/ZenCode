@@ -28,10 +28,6 @@ public interface IDefinitionMember {
 
 	void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper);
 
-	default List<ResolvedType> resolveExpansions(List<ExpansionSymbol> expansions) {
-		return Collections.emptyList();
-	}
-
 	default Optional<TypeID> asImplementation() {
 		return Optional.empty();
 	}

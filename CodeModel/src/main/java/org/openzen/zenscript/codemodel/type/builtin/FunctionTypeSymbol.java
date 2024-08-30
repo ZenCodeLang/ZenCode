@@ -66,7 +66,7 @@ public class FunctionTypeSymbol implements TypeSymbol {
 
 	@Override
 	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
-		return MemberSet.create().method(new MethodInstance(caller)).build();
+		return MemberSet.create(type).method(new MethodInstance(caller)).build();
 	}
 
 	@Override

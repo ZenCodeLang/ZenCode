@@ -70,7 +70,7 @@ public class RangeTypeSymbol implements TypeSymbol {
 		GenericMapper mapper = GenericMapper.single(PARAMETER, baseType);
 		RangeTypeID type = (RangeTypeID) type_;
 
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));
 		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_TO));
 

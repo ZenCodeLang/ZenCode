@@ -32,6 +32,11 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
+	public TypeID getType() {
+		return base.getType();
+	}
+
+	@Override
 	public StaticCallable getConstructor() {
 		return base.getConstructor();
 	}
@@ -194,8 +199,8 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public ResolvedType withExpansions(TypeID type, List<ExpansionSymbol> expansions) {
-		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> expansion.withExpansions(type, expansions)).collect(Collectors.toList());
-		return ExpandedResolvedType.of(base.withExpansions(type, expansions), newExpansions);
+	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> expansion.withExpansions(expansions)).collect(Collectors.toList());
+		return ExpandedResolvedType.of(base.withExpansions(expansions), newExpansions);
 	}
 }

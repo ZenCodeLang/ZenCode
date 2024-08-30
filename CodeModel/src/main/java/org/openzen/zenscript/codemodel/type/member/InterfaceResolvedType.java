@@ -30,6 +30,11 @@ public class InterfaceResolvedType implements ResolvedType {
 	}
 
 	@Override
+	public TypeID getType() {
+		return baseType.getType();
+	}
+
+	@Override
 	public StaticCallable getConstructor() {
 		return baseType.getConstructor();
 	}
@@ -126,14 +131,14 @@ public class InterfaceResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public ResolvedType withExpansions(TypeID type, List<ExpansionSymbol> expansions) {
+	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
 		List<ResolvedType> interfaceExpansions = implementedInterfaces.stream()
 				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
 				.collect(Collectors.toList());
 
 		return new InterfaceResolvedType(
 				ExpandedResolvedType.of(
-					baseType.withExpansions(type, expansions),
+					baseType.withExpansions(expansions),
 					interfaceExpansions),
 				implementedInterfaces);
 	}

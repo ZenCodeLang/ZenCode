@@ -93,7 +93,7 @@ public class ArrayTypeSymbol implements TypeSymbol {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(parameters[0], baseType);
 
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < indexGetParameters.length; i++)
