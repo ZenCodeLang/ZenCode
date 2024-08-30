@@ -3,7 +3,6 @@ package org.openzen.zencode.java.module;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
@@ -30,21 +29,19 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
-		TypeID type = DefinitionTypeID.create(this, typeArguments);
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
 		ResolvedType resolved = new JavaNativeTypeMembers(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
 		Optional<TypeID> superType = getSupertype(typeArguments);
 		if (superType.isPresent()) {
-			resolved = new SubclassResolvedType(superType.get().resolve(expansions), resolved, superType.get());
+			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
 		}
 
 		Collection<TypeID> interfaces = getInterfaces(typeArguments);
 		if (!interfaces.isEmpty()) {
-			resolved = new InterfaceResolvedType(resolved, interfaces, expansions);
+			resolved = new InterfaceResolvedType(resolved, interfaces);
 		}
 
-		List<ResolvedType> expansionsResolved = expansions.stream().map(expansion -> expansion.resolve(type)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-		return ExpandedResolvedType.of(resolved, expansionsResolved);
+		return resolved;
 	}
 
 	@Override
@@ -66,11 +63,18 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 
 	private JavaNativeTypeTemplate getTemplate() {
 		if (this.template == null) {
-			TypeID target = this.target;
-			if (target == null)
-				target = DefinitionTypeID.createThis(this);
-			this.template = new JavaNativeTypeTemplate(target, this, context, isExpansion());
+			this.template = buildTemplate();
 		}
 		return template;
+	}
+
+	/**
+	 * Called to build a new template to be cached
+	 */
+	protected JavaNativeTypeTemplate buildTemplate() {
+		TypeID target = this.target;
+		if (target == null)
+			target = DefinitionTypeID.createThis(this);
+		return new JavaNativeTypeTemplate(target, this, context, isExpansion());
 	}
 }

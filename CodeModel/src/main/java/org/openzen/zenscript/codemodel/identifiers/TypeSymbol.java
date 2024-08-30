@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,7 +19,7 @@ public interface TypeSymbol extends DefinitionSymbol {
 
 	String getName();
 
-	ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions);
+	ResolvedType resolve(TypeID type, TypeID[] typeArguments);
 
 	Optional<TypeSymbol> getOuter();
 

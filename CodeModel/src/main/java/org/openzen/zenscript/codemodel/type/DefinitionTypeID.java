@@ -6,7 +6,6 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 import java.util.*;
@@ -54,8 +53,8 @@ public class DefinitionTypeID implements TypeID {
 	 *
 	 * @return base type members
 	 */
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return definition.resolve(typeArguments, expansions);
+	public ResolvedType resolve() {
+		return definition.resolve(this, typeArguments);
 	}
 
 	public boolean hasTypeParameters() {

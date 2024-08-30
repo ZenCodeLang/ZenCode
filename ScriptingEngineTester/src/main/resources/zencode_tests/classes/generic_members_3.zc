@@ -1,0 +1,22 @@
+// Overloaded method with and without generic arguments can coexist
+#output: printMe(string) was called
+#output: printMe<T>() vas called
+#output: printMe<T, U>(long) vas called
+
+public class MyClass {
+	public static printMe(test: string): void {
+	    println("printMe(string) was called");
+	}
+
+	public static printMe<T>(): void {
+	    println("printMe<T>() vas called");
+	}
+
+	public static printMe<T, U>(x: long): void {
+		println("printMe<T, U>(long) vas called");
+    }
+}
+
+MyClass.printMe("Some String");
+MyClass.printMe<int>();
+MyClass.printMe<int, long>(123L);

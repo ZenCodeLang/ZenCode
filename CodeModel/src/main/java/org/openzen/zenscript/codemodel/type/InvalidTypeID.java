@@ -5,7 +5,6 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
@@ -45,8 +44,8 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return new MemberSet();
+	public ResolvedType resolve() {
+		return new MemberSet(this);
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.RangeTypeSymbol;
 
 import java.util.List;
@@ -38,8 +37,8 @@ public class RangeTypeID implements TypeID {
 	public Optional<RangeTypeID> asRange() { return Optional.of(this); }
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return RangeTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType }, expansions);
+	public ResolvedType resolve() {
+		return RangeTypeSymbol.INSTANCE.resolve(this, new TypeID[] { baseType });
 	}
 
 	@Override

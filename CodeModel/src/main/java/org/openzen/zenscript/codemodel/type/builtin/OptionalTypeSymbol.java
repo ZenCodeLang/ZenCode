@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -10,7 +9,6 @@ import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.OptionalResolvedType;
 
-import java.util.List;
 import java.util.Optional;
 
 public class OptionalTypeSymbol implements TypeSymbol {
@@ -59,9 +57,9 @@ public class OptionalTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
-		OptionalTypeID type = new OptionalTypeID(typeArguments[0]);
-		ResolvedType baseMembers = typeArguments[0].resolve(expansions);
+	public ResolvedType resolve(TypeID type_, TypeID[] typeArguments) {
+		OptionalTypeID type = (OptionalTypeID) type_;
+		ResolvedType baseMembers = typeArguments[0].resolve();
 		return new OptionalResolvedType(type, baseMembers);
 	}
 

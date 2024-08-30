@@ -13,11 +13,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MemberSet implements ResolvedType {
-	public static Builder create() {
-		MemberSet members = new MemberSet();
+	public static Builder create(TypeID type) {
+		MemberSet members = new MemberSet(type);
 		return new Builder(members);
 	}
 
+	private final TypeID type;
 	private final List<StaticCallableMethod> constructors = new ArrayList<>();
 	private final Map<MethodID, List<InstanceCallableMethod>> instanceMethods = new HashMap<>();
 	private final Map<MethodID, List<StaticCallableMethod>> staticMethods = new HashMap<>();
@@ -27,6 +28,15 @@ public class MemberSet implements ResolvedType {
 	private final Map<String, TypeSymbol> innerTypes = new HashMap<>();
 	private final List<IteratorInstance> iterators = new ArrayList<>();
 	private final List<Comparator> comparators = new ArrayList<>();
+
+	public MemberSet(TypeID type) {
+		this.type = type;
+	}
+
+	@Override
+	public TypeID getType() {
+		return type;
+	}
 
 	@Override
 	public StaticCallable getConstructor() {

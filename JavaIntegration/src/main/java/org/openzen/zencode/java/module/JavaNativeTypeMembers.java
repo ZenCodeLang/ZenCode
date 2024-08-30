@@ -28,6 +28,11 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
+	public TypeID getType() {
+		return type;
+	}
+
+	@Override
 	public StaticCallable getConstructor() {
 		return new StaticCallable(template.getConstructors().stream()
 				.map(c -> mapper.map(type, c))

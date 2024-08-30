@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public interface IDefinitionMember {
 	CodePosition getPosition();
@@ -27,8 +28,8 @@ public interface IDefinitionMember {
 
 	void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper);
 
-	default List<ResolvedType> resolveExpansions(List<ExpansionSymbol> expansions) {
-		return Collections.emptyList();
+	default Optional<TypeID> asImplementation() {
+		return Optional.empty();
 	}
 
 	<T> T accept(MemberVisitor<T> visitor);

@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.FunctionTypeSymbol;
 
 import java.util.Arrays;
@@ -57,8 +56,8 @@ public class FunctionTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return type.resolve(TypeID.NONE, expansions);
+	public ResolvedType resolve() {
+		return type.resolve(this, TypeID.NONE);
 	}
 
 	@Override

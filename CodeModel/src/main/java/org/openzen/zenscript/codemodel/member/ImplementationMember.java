@@ -48,12 +48,8 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public List<ResolvedType> resolveExpansions(List<ExpansionSymbol> expansions) {
-		return expansions.stream()
-				.map(expansion -> expansion.resolve(type))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toList());
+	public Optional<TypeID> asImplementation() {
+		return Optional.of(type);
 	}
 
 	@Override

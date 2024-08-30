@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -15,7 +14,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -75,12 +73,11 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
 		TypeParameter parameter = ((GenericTypeID)typeArguments[0]).parameter;
 		TypeID value = typeArguments[1];
-		GenericMapTypeID type = new GenericMapTypeID(value, parameter);
 
-		MemberSet.Builder members = MemberSet.create();
+		MemberSet.Builder members = MemberSet.create(type);
 		Map<TypeParameter, TypeID> parameterFilled = new HashMap<>();
 		parameterFilled.put(PARAMETER, typeArguments[0]);
 		parameterFilled.put(VALUE, value);

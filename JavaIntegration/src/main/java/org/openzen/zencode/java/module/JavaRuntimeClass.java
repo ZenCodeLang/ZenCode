@@ -19,7 +19,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -84,7 +83,7 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	}
 
 	@Override
-	public abstract ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions);
+	public abstract ResolvedType resolve(TypeID type, TypeID[] typeArguments);
 
 	@Override
 	public TypeParameter[] getTypeParameters() {

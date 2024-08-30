@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -10,7 +9,6 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.List;
 import java.util.Optional;
 
 public class ResultTypeSymbol implements TypeSymbol {
@@ -66,8 +64,8 @@ public class ResultTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
-		MemberSet members = new MemberSet();
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
+		MemberSet members = new MemberSet(type);
 		// TODO
 		return members;
 	}
