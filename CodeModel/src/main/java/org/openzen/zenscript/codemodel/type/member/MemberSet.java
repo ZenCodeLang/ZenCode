@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MemberSet implements ResolvedType, ResolvingType {
+public class MemberSet implements ResolvedType {
 	public static Builder create(TypeID type) {
 		MemberSet members = new MemberSet(type);
 		return new Builder(members);
@@ -113,15 +113,6 @@ public class MemberSet implements ResolvedType, ResolvingType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return findStatic(MethodID.staticOperator(operator));
-	}
-
-	@Override
-	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(getType()).ifPresent(resolutions::add);
-		}
-		return ExpandedResolvedType.of(this, resolutions);
 	}
 
 	@Override
@@ -239,8 +230,30 @@ public class MemberSet implements ResolvedType, ResolvingType {
 			return target.constructors.isEmpty();
 		}
 
-		public MemberSet build() {
-			return target;
+		public Resolving build() {
+			return new Resolving(target);
+		}
+	}
+
+	public static class Resolving implements ResolvingType {
+		private final MemberSet target;
+		public Resolving(MemberSet target) {
+			this.target = target;
+		}
+
+
+		@Override
+		public TypeID getType() {
+			return target.getType();
+		}
+
+		@Override
+		public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+			List<ResolvedType> resolutions = new ArrayList<>();
+			for (ExpansionSymbol expansion : expansions) {
+				expansion.resolve(getType()).ifPresent(resolutions::add);
+			}
+			return ExpandedResolvedType.of(target, resolutions);
 		}
 	}
 }

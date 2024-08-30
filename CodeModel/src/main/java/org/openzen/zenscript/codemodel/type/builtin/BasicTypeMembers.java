@@ -21,13 +21,13 @@ public class BasicTypeMembers {
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	private static final MethodID COMPARE = MethodID.operator(OperatorType.COMPARE);
 
-	public static MemberSet get(BasicTypeID type) {
+	public static MemberSet.Resolving get(BasicTypeID type) {
 		switch (type) {
 			case VOID:
 			case NULL:
 			case UNDETERMINED:
 			case INVALID:
-				return new MemberSet(type);
+				return MemberSet.create(type).build();
 			default:
 				MemberSet.Builder builder = MemberSet.create(type);
 				setup(builder, type);

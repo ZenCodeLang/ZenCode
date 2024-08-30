@@ -36,7 +36,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	INVALID("invalid");
 
 	public final String name;
-	private MemberSet members;
+	private ResolvingType members;
 
 	private Expression defaultValue = null;
 

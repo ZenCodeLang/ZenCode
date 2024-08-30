@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -54,6 +55,6 @@ public class ExpansionDefinition extends HighLevelDefinition implements Expansio
 		for (IDefinitionMember member : members)
 			member.registerTo(expandingType, resolution, mapper);
 
-		return Optional.of(resolution.build());
+		return Optional.of(resolution.build().withExpansions(Collections.emptyList()));
 	}
 }

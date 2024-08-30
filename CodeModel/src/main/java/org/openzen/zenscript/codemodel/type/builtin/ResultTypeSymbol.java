@@ -65,9 +65,9 @@ public class ResultTypeSymbol implements TypeSymbol {
 
 	@Override
 	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
-		MemberSet members = new MemberSet(type);
+		MemberSet.Builder members = MemberSet.create(type);
 		// TODO
-		return members;
+		return members.build();
 	}
 
 	@Override
