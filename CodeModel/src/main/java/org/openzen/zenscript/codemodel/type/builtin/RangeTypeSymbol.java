@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type.builtin;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -13,7 +12,6 @@ import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
@@ -67,10 +65,10 @@ public class RangeTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve(TypeID type_, TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(PARAMETER, baseType);
-		RangeTypeID type = new RangeTypeID(baseType);
+		RangeTypeID type = (RangeTypeID) type_;
 
 		MemberSet.Builder members = MemberSet.create();
 		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));

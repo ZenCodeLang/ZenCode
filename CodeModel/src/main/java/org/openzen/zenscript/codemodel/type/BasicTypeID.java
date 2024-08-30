@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.*;
@@ -76,7 +75,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve() {
 		if (members == null)
 			members = BasicTypeMembers.get(this);
 
@@ -184,7 +183,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
 		if (members == null)
 			members = BasicTypeMembers.get(this);
 

@@ -6,7 +6,6 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.OptionalTypeSymbol;
 
 import java.util.*;
@@ -35,8 +34,8 @@ public class OptionalTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return OptionalTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType }, expansions);
+	public ResolvedType resolve() {
+		return OptionalTypeSymbol.INSTANCE.resolve(this, new TypeID[] { baseType });
 	}
 
 	@Override

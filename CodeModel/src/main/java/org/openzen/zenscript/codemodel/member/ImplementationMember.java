@@ -57,6 +57,11 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
+	public Optional<TypeID> asImplementation() {
+		return Optional.of(type);
+	}
+
+	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitImplementation(this);
 	}

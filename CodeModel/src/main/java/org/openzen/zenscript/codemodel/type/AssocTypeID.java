@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.MapTypeSymbol;
 
 import java.util.List;
@@ -54,8 +53,8 @@ public class AssocTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return MapTypeSymbol.INSTANCE.resolve(new TypeID[] { keyType, valueType }, expansions);
+	public ResolvedType resolve() {
+		return MapTypeSymbol.INSTANCE.resolve(this, new TypeID[] { keyType, valueType });
 	}
 
 	@Override

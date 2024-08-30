@@ -20,15 +20,14 @@ import java.util.stream.Stream;
 
 public class InterfaceResolvedType implements ResolvedType {
 	private final ResolvedType baseType;
+	private final List<ResolvedType> implementations;
 	private final Collection<TypeID> implementedInterfaces;
-	private final List<ExpansionSymbol> expansions;
 
-	public InterfaceResolvedType(ResolvedType baseType, Collection<TypeID> implementedInterfaces, List<ExpansionSymbol> expansions) {
+	public InterfaceResolvedType(ResolvedType baseType, Collection<TypeID> implementedInterfaces) {
 		this.baseType = baseType;
+		implementations = Stream.concat(Stream.of(baseType), implementedInterfaces.stream().map(TypeID::resolve)).collect(Collectors.toList());
 		this.implementedInterfaces = implementedInterfaces;
-		this.expansions = expansions;
 	}
-
 
 	@Override
 	public StaticCallable getConstructor() {
@@ -72,22 +71,22 @@ public class InterfaceResolvedType implements ResolvedType {
 
 	@Override
 	public Optional<InstanceCallable> findMethod(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findMethod(name), InstanceCallable::union);
+		return mergeLocalWithImplementedInterfaces(type -> type.findMethod(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findGetter(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findGetter(name), InstanceCallable::union);
+		return mergeLocalWithImplementedInterfaces(type -> type.findGetter(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findSetter(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findSetter(name), InstanceCallable::union);
+		return mergeLocalWithImplementedInterfaces(type -> type.findSetter(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findOperator(OperatorType operator) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findOperator(operator), InstanceCallable::union);
+		return mergeLocalWithImplementedInterfaces(type -> type.findOperator(operator), InstanceCallable::merge);
 	}
 
 	@Override
@@ -112,10 +111,7 @@ public class InterfaceResolvedType implements ResolvedType {
 
 	@Override
 	public List<Comparator> comparators() {
-		return Stream.concat(
-						Stream.of(baseType),
-						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
-				).flatMap(type -> type.comparators().stream())
+		return implementations.stream().flatMap(type -> type.comparators().stream())
 				.collect(Collectors.toList());
 	}
 
@@ -129,11 +125,21 @@ public class InterfaceResolvedType implements ResolvedType {
 		return baseType.findStaticOperator(operator);
 	}
 
+	@Override
+	public ResolvedType withExpansions(TypeID type, List<ExpansionSymbol> expansions) {
+		List<ResolvedType> interfaceExpansions = implementedInterfaces.stream()
+				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
+				.collect(Collectors.toList());
+
+		return new InterfaceResolvedType(
+				ExpandedResolvedType.of(
+					baseType.withExpansions(type, expansions),
+					interfaceExpansions),
+				implementedInterfaces);
+	}
+
 	private <T> Optional<T> findFirstInLocalOrImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper) {
-		return Stream.concat(
-						Stream.of(baseType),
-						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
-				)
+		return implementations.stream()
 				.map(mapper)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -141,10 +147,7 @@ public class InterfaceResolvedType implements ResolvedType {
 	}
 
 	private <T> Optional<T> mergeLocalWithImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper, BinaryOperator<T> combiner) {
-		return Stream.concat(
-						Stream.of(baseType),
-						implementedInterfaces.stream().map(typeID -> typeID.resolve(expansions))
-				)
+		return implementations.stream()
 				.map(mapper)
 				.filter(Optional::isPresent)
 				.map(Optional::get)

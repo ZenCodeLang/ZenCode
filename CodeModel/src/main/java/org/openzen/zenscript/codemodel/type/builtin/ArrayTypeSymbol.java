@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -90,9 +89,8 @@ public class ArrayTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
-		TypeID type = new ArrayTypeID(baseType, dimension);
 		GenericMapper mapper = GenericMapper.single(parameters[0], baseType);
 
 		MemberSet.Builder members = MemberSet.create();

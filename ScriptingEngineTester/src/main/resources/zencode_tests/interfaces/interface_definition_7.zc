@@ -1,0 +1,28 @@
+#output: hello
+#output: hello2
+
+interface Test {
+	print(): void;
+}
+
+interface Test2 {
+	print(): void;
+}
+
+class TestClass {
+	implements Test {
+		print() {
+			println("hello");
+		}
+	}
+
+	implements Test2 {
+		print() {
+			println("hello2");
+		}
+	}
+}
+
+val testInstance = new TestClass();
+(testInstance as Test).print();
+(testInstance as Test2).print();

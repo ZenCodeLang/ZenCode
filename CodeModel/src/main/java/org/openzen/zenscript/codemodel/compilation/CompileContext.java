@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
 import java.util.*;
 
@@ -79,18 +78,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 
 	@Override
 	public ResolvedType resolve(TypeID type) {
-		ResolvedType base = type.resolve(expansions);
-		if(base instanceof ExpandedResolvedType) {
-			// ToDo: If the type already resolved its expansions, then we shouldn't add them a 2nd time
-			// JavaAnnotatedRuntimeClass already resolves them (and we need that to inherit expansions on parent classes)
-			return base;
-		}
-
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(type).ifPresent(resolutions::add);
-		}
-		return ExpandedResolvedType.of(base, resolutions);
+		return type.resolve().withExpansions(type, expansions);
 	}
 
 	@Override
@@ -114,7 +102,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 				.flatMap(t -> t.getType(position, this, name.get(0).arguments))
 				.flatMap(t -> {
 					for (int i = 1; i < name.size(); i++) {
-						Optional<TypeSymbol> inner = t.resolve(expansions).findInnerType(name.get(i).name);
+						Optional<TypeSymbol> inner = t.resolve().findInnerType(name.get(i).name);
 						if (inner.isPresent()) {
 							t = DefinitionTypeID.create(inner.get(), name.get(i).arguments);
 						} else {

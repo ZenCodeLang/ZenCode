@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -12,7 +11,6 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.List;
 import java.util.Optional;
 
 public class FunctionTypeSymbol implements TypeSymbol {
@@ -67,7 +65,7 @@ public class FunctionTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID[] typeArguments, List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
 		return MemberSet.create().method(new MethodInstance(caller)).build();
 	}
 

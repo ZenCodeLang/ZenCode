@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Arrays;
@@ -37,7 +36,7 @@ public class IteratorTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve() {
 		return new MemberSet(); // no members yet
 	}
 

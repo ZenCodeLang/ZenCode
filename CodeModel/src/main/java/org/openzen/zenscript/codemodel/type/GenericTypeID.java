@@ -4,8 +4,8 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
@@ -70,11 +70,10 @@ public class GenericTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
+	public ResolvedType resolve() {
 		List<ResolvedType> fromBounds = new ArrayList<>();
 		for (TypeParameterBound bound : parameter.bounds) {
-			// TODO: local expansions will not be applied here
-			bound.resolveMembers(expansions).ifPresent(fromBounds::add);
+			bound.resolveMembers().ifPresent(fromBounds::add);
 		}
 		return ExpandedResolvedType.of(new MemberSet(), fromBounds);
 	}

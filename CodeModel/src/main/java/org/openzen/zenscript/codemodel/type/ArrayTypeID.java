@@ -6,7 +6,6 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.ArrayTypeSymbol;
 
@@ -73,8 +72,8 @@ public class ArrayTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve(List<ExpansionSymbol> expansions) {
-		return type.resolve(new TypeID[] { elementType }, expansions);
+	public ResolvedType resolve() {
+		return type.resolve(this, new TypeID[] { elementType });
 	}
 
 	@Override

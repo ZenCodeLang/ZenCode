@@ -116,7 +116,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		validateThrow(member, member.header, body);
 
 		if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
-			if (member.definition.getSuperType().resolve(Collections.emptyList()).getConstructor().acceptsZeroArguments()) {
+			if (member.definition.getSuperType().resolve().getConstructor().acceptsZeroArguments()) {
 				return;
 			}
 

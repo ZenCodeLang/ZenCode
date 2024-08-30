@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 
 import java.util.HashMap;
 import java.util.List;
@@ -155,7 +154,7 @@ public interface TypeID {
 		return Optional.empty();
 	}
 
-	ResolvedType resolve(List<ExpansionSymbol> expansions);
+	ResolvedType resolve();
 
 	default boolean extendsOrImplements(TypeID type) {
 		return false;
