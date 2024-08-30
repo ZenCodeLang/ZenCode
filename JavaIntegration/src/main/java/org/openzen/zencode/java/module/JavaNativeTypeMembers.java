@@ -4,11 +4,13 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
 import java.util.Collections;
 import java.util.List;
@@ -182,6 +184,28 @@ public class JavaNativeTypeMembers implements ResolvedType {
 		@Override
 		public Expression setStatic(ExpressionBuilder builder, Expression value) {
 			return builder.setStaticField(field, value);
+		}
+	}
+
+	public static class Resolving implements ResolvingType {
+		private final JavaNativeTypeTemplate template;
+		private final TypeID type;
+		private final GenericMapper mapper;
+
+		public Resolving(JavaNativeTypeTemplate template, TypeID type, GenericMapper mapper) {
+			this.template = template;
+			this.type = type;
+			this.mapper = mapper;
+		}
+
+		@Override
+		public TypeID getType() {
+			return type;
+		}
+
+		@Override
+		public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+			return ExpandedResolvedType.resolve(new JavaNativeTypeMembers(template, type, mapper), expansions);
 		}
 	}
 }

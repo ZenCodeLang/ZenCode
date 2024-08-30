@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -13,6 +14,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class ExpandedResolvedType implements ResolvedType {
+	public static ResolvedType resolve(ResolvedType base, List<ExpansionSymbol> expansions) {
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(base.getType()).ifPresent(resolutions::add);
+		}
+		return ExpandedResolvedType.of(base, resolutions);
+	}
+
 	public static ResolvedType of(ResolvedType base, List<ResolvedType> resolutions) {
 		if (resolutions.isEmpty()) {
 			return base;

@@ -24,6 +24,7 @@ public class OptionalResolvingType implements ResolvingType {
 
 	@Override
 	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		return new OptionalResolvedType(type, baseType.withExpansions(expansions));
+		OptionalResolvedType baseWithExpansions = new OptionalResolvedType(type, baseType.withExpansions(expansions));
+		return ExpandedResolvedType.resolve(baseWithExpansions, expansions);
 	}
 }

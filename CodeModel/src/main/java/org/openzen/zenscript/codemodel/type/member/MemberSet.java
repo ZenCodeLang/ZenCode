@@ -249,11 +249,7 @@ public class MemberSet implements ResolvedType {
 
 		@Override
 		public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-			List<ResolvedType> resolutions = new ArrayList<>();
-			for (ExpansionSymbol expansion : expansions) {
-				expansion.resolve(getType()).ifPresent(resolutions::add);
-			}
-			return ExpandedResolvedType.of(target, resolutions);
+			return ExpandedResolvedType.resolve(target, expansions);
 		}
 	}
 }
