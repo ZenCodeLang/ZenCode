@@ -20,10 +20,17 @@ public class InterfaceResolvedType implements ResolvedType {
 	private final List<ResolvedType> implementations;
 	private final Collection<TypeID> implementedInterfaces;
 
-	public InterfaceResolvedType(ResolvedType baseType, Collection<ResolvedType> implementedInterfaces) {
+	private InterfaceResolvedType(ResolvedType baseType, Collection<ResolvedType> implementedInterfaces) {
 		this.baseType = baseType;
 		implementations = Stream.concat(Stream.of(baseType), implementedInterfaces.stream()).collect(Collectors.toList());
 		this.implementedInterfaces = implementedInterfaces.stream().map(ResolvedType::getType).collect(Collectors.toList());
+	}
+
+	public static ResolvedType of(ResolvedType baseType, Collection<ResolvedType> implementedInterfaces) {
+		if(implementedInterfaces.isEmpty())
+			return baseType;
+
+		return new InterfaceResolvedType(baseType, implementedInterfaces);
 	}
 
 	@Override

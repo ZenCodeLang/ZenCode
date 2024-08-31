@@ -14,10 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MemberSet implements ResolvedType {
-	public static Builder create(TypeID type) {
-		MemberSet members = new MemberSet(type);
-		return new Builder(members);
-	}
 
 	private final TypeID type;
 	private final List<StaticCallableMethod> constructors = new ArrayList<>();
@@ -30,8 +26,13 @@ public class MemberSet implements ResolvedType {
 	private final List<IteratorInstance> iterators = new ArrayList<>();
 	private final List<Comparator> comparators = new ArrayList<>();
 
-	public MemberSet(TypeID type) {
+	private MemberSet(TypeID type) {
 		this.type = type;
+	}
+
+	public static Builder create(TypeID type) {
+		MemberSet members = new MemberSet(type);
+		return new Builder(members);
 	}
 
 	@Override
@@ -230,7 +231,7 @@ public class MemberSet implements ResolvedType {
 			return target.constructors.isEmpty();
 		}
 
-		public Resolving build() {
+		public ResolvingType build() {
 			return new Resolving(target);
 		}
 
@@ -239,7 +240,7 @@ public class MemberSet implements ResolvedType {
 		}
 	}
 
-	public static class Resolving implements ResolvingType {
+	private static class Resolving implements ResolvingType {
 		private final MemberSet target;
 		public Resolving(MemberSet target) {
 			this.target = target;

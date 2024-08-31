@@ -15,7 +15,7 @@ public class InterfaceResolvingType implements ResolvingType {
 	private final Collection<TypeID> implementedInterfaces;
 
 	public static ResolvingType of(ResolvingType baseType, Collection<TypeID> implementedInterfaces) {
-		if(implementedInterfaces.isEmpty()){
+		if (implementedInterfaces.isEmpty()) {
 			return baseType;
 		}
 
@@ -40,10 +40,11 @@ public class InterfaceResolvingType implements ResolvingType {
 				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
 				.collect(Collectors.toList());
 
-		return new InterfaceResolvedType(
+		return InterfaceResolvedType.of(
 				ExpandedResolvedType.of(
 						baseType.withExpansions(expansions),
 						interfaceExpansions),
-				resolvedInterfaces);
+				resolvedInterfaces
+		);
 	}
 }
