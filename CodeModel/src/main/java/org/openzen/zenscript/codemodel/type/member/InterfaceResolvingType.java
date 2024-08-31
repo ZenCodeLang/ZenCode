@@ -14,7 +14,15 @@ public class InterfaceResolvingType implements ResolvingType {
 	private final ResolvingType baseType;
 	private final Collection<TypeID> implementedInterfaces;
 
-	public InterfaceResolvingType(ResolvingType baseType, Collection<TypeID> implementedInterfaces) {
+	public static ResolvingType of(ResolvingType baseType, Collection<TypeID> implementedInterfaces) {
+		if(implementedInterfaces.isEmpty()){
+			return baseType;
+		}
+
+		return new InterfaceResolvingType(baseType, implementedInterfaces);
+	}
+
+	private InterfaceResolvingType(ResolvingType baseType, Collection<TypeID> implementedInterfaces) {
 		this.baseType = baseType;
 		this.implementedInterfaces = implementedInterfaces;
 	}

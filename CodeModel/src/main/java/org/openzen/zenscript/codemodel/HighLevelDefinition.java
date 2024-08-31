@@ -163,11 +163,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 			resolved = new SubclassResolvingType(superResolved, resolved, superType);
 		}
 
-		if (interfaces.isEmpty()) {
-			return resolved;
-		} else {
-			return new InterfaceResolvingType(resolved, interfaces);
-		}
+		return InterfaceResolvingType.of(resolved, interfaces);
 	}
 
 	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {}

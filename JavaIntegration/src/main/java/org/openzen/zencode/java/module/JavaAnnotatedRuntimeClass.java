@@ -36,11 +36,7 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 		}
 
 		Collection<TypeID> interfaces = getInterfaces(typeArguments);
-		if (!interfaces.isEmpty()) {
-			resolved = new InterfaceResolvingType(resolved, interfaces);
-		}
-
-		return resolved;
+		return InterfaceResolvingType.of(resolved, interfaces);
 	}
 
 	@Override
