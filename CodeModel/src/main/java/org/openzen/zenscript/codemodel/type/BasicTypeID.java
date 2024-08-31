@@ -34,7 +34,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	UNDETERMINED("undetermined"),
 	INVALID("invalid");
 
-	public final String name;
+	private final String name;
 	private ResolvingType members;
 
 	private Expression defaultValue = null;
@@ -61,11 +61,6 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitBasic(context, this);
-	}
-
-	@Override
-	public boolean isOptional() {
-		return false;
 	}
 
 	@Override
@@ -96,7 +91,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-
+		// BasicTypeIDs don't have type parameters
 	}
 
 	private Expression generateDefaultValue() {
@@ -183,10 +178,11 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 
 	@Override
 	public ResolvingType resolve(TypeID[] typeArguments) {
-		if (members == null)
-			members = BasicTypeMembers.get(this);
+		if(typeArguments.length > 0) {
+			throw new IllegalArgumentException(this + " cannot have type arguments");
+		}
 
-		return members;
+		return this.resolve();
 	}
 
 	@Override

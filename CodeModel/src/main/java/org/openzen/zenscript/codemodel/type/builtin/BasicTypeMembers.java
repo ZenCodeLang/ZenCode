@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CastedEval;
 import org.openzen.zenscript.codemodel.compilation.CastedExpression;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
@@ -21,7 +22,7 @@ public class BasicTypeMembers {
 	private static final MethodID CONSTRUCTOR = MethodID.staticOperator(OperatorType.CONSTRUCTOR);
 	private static final MethodID COMPARE = MethodID.operator(OperatorType.COMPARE);
 
-	public static MemberSet.Resolving get(BasicTypeID type) {
+	public static ResolvingType get(BasicTypeID type) {
 		switch (type) {
 			case VOID:
 			case NULL:
@@ -600,9 +601,7 @@ public class BasicTypeMembers {
 						new MethodInstance(getComparator((BasicTypeID) typeID)),
 						type);
 				return new CastedExpression(CastedExpression.Level.EXACT, value);
-			}).orElseGet(() -> {
-				return new CastedExpression(CastedExpression.Level.INVALID, compiler.at(position).invalid(CompileErrors.cannotCompare(left.type, rightCompiled.type)));
-			});
+			}).orElseGet(() -> new CastedExpression(CastedExpression.Level.INVALID, compiler.at(position).invalid(CompileErrors.cannotCompare(left.type, rightCompiled.type))));
 		}));
 	}
 

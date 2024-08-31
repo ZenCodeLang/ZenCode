@@ -23,7 +23,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 
 	@Override
 	public String visitBasic(BasicTypeID basic) {
-		return basic.name;
+		return basic.getName();
 	}
 
 	@Override
