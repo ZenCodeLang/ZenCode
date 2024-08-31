@@ -65,10 +65,10 @@ public class RangeTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type_, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(PARAMETER, baseType);
-		RangeTypeID type = (RangeTypeID) type_;
+		RangeTypeID type = new RangeTypeID(baseType);
 
 		MemberSet.Builder members = MemberSet.create(type);
 		members.method(mapper.map(type, BuiltinMethodSymbol.RANGE_FROM));

@@ -38,7 +38,7 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return RangeTypeSymbol.INSTANCE.resolve(this, new TypeID[] { baseType });
+		return RangeTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
 	}
 
 	@Override
@@ -85,6 +85,6 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public String toString() {
-		return baseType.toString() + " .. " + baseType.toString();
+		return baseType + " .. " + baseType;
 	}
 }

@@ -43,7 +43,7 @@ public class GenericMapTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return GenericMapTypeSymbol.INSTANCE.resolve(this, new TypeID[] { new GenericTypeID(key), value });
+		return GenericMapTypeSymbol.INSTANCE.resolve(new TypeID[] { new GenericTypeID(key), value });
 	}
 
 	@Override
@@ -64,12 +64,11 @@ public class GenericMapTypeID implements TypeID {
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append(value.toStringSuffixed());
-		result.append("[<");
-		result.append(key.toString());
-		result.append(">]");
-		return result.toString();
+		String result = value.toStringSuffixed() +
+				"[<" +
+				key.toString() +
+				">]";
+		return result;
 	}
 
 	@Override

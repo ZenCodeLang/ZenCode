@@ -54,7 +54,7 @@ public class DefinitionTypeID implements TypeID {
 	 * @return base type members
 	 */
 	public ResolvingType resolve() {
-		return definition.resolve(this, typeArguments);
+		return definition.resolve(typeArguments);
 	}
 
 	public boolean hasTypeParameters() {

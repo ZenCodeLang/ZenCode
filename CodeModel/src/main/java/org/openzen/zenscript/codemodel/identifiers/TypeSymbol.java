@@ -19,7 +19,7 @@ public interface TypeSymbol extends DefinitionSymbol {
 
 	String getName();
 
-	ResolvingType resolve(TypeID type, TypeID[] typeArguments);
+	ResolvingType resolve(TypeID[] typeArguments);
 
 	Optional<TypeSymbol> getOuter();
 

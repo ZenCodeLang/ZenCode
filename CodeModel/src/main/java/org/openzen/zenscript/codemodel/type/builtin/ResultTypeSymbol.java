@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -64,7 +65,8 @@ public class ResultTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		TypeID type = DefinitionTypeID.create(this, typeArguments);
 		MemberSet.Builder members = MemberSet.create(type);
 		// TODO
 		return members.build();

@@ -9,7 +9,6 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.BasicTypeMembers;
-import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
 import java.util.Optional;
@@ -183,7 +182,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		if (members == null)
 			members = BasicTypeMembers.get(this);
 

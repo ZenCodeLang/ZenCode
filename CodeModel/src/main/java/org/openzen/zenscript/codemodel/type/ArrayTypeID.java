@@ -73,7 +73,7 @@ public class ArrayTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return type.resolve(this, new TypeID[] { elementType });
+		return type.resolve(new TypeID[] { elementType });
 	}
 
 	@Override

@@ -27,7 +27,8 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		TypeID type = DefinitionTypeID.create(this, typeArguments);
 		ResolvingType resolved = new JavaNativeTypeMembers.Resolving(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
 		Optional<TypeID> superType = getSupertype(typeArguments);
 		if (superType.isPresent()) {

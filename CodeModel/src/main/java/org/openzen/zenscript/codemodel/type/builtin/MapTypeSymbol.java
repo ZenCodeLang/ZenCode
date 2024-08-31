@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -70,9 +71,9 @@ public class MapTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type_, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
-		AssocTypeID type = (AssocTypeID) type_;
+		AssocTypeID type = new AssocTypeID(typeArguments[0], typeArguments[1]);
 
 		MemberSet.Builder members = MemberSet.create(type);
 

@@ -57,7 +57,7 @@ public class FunctionTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return type.resolve(this, TypeID.NONE);
+		return type.resolve(TypeID.NONE);
 	}
 
 	@Override

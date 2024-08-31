@@ -73,9 +73,10 @@ public class GenericMapTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		TypeParameter parameter = ((GenericTypeID)typeArguments[0]).parameter;
 		TypeID value = typeArguments[1];
+		GenericMapTypeID type = new GenericMapTypeID(value, parameter);
 
 		MemberSet.Builder members = MemberSet.create(type);
 		Map<TypeParameter, TypeID> parameterFilled = new HashMap<>();

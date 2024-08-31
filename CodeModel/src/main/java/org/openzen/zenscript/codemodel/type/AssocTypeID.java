@@ -54,7 +54,7 @@ public class AssocTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return MapTypeSymbol.INSTANCE.resolve(this, new TypeID[] { keyType, valueType });
+		return MapTypeSymbol.INSTANCE.resolve(new TypeID[] { keyType, valueType });
 	}
 
 	@Override

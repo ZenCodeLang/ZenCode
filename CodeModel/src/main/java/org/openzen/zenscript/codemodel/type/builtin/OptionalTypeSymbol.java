@@ -3,12 +3,10 @@ package org.openzen.zenscript.codemodel.type.builtin;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.OptionalResolvedType;
 import org.openzen.zenscript.codemodel.type.member.OptionalResolvingType;
 
 import java.util.Optional;
@@ -59,15 +57,15 @@ public class OptionalTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type_, TypeID[] typeArguments) {
-		OptionalTypeID type = (OptionalTypeID) type_;
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		OptionalTypeID type = new OptionalTypeID(typeArguments[0]);
 		ResolvingType baseMembers = typeArguments[0].resolve();
 		return new OptionalResolvingType(type, baseMembers);
 	}
 
 	@Override
 	public TypeParameter[] getTypeParameters() {
-		return new TypeParameter[0];
+		return TypeParameter.NONE;
 	}
 
 	@Override

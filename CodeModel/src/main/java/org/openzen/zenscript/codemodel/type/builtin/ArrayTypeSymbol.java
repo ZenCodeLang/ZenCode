@@ -89,9 +89,10 @@ public class ArrayTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvingType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(parameters[0], baseType);
+		TypeID type = new ArrayTypeID(baseType, dimension);
 
 		MemberSet.Builder members = MemberSet.create(type);
 

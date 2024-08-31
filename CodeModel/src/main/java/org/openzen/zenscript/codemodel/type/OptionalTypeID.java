@@ -35,7 +35,7 @@ public class OptionalTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		return OptionalTypeSymbol.INSTANCE.resolve(this, new TypeID[] { baseType });
+		return OptionalTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
 	}
 
 	@Override

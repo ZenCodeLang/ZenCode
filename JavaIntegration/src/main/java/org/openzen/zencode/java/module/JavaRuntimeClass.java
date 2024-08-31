@@ -83,7 +83,7 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	}
 
 	@Override
-	public abstract ResolvingType resolve(TypeID type, TypeID[] typeArguments);
+	public abstract ResolvingType resolve(TypeID[] typeArguments);
 
 	@Override
 	public TypeParameter[] getTypeParameters() {
