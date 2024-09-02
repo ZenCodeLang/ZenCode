@@ -159,8 +159,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 
 		if (superType != null) {
 			TypeID instancedSuperType = mapper.map(superType);
-			ResolvingType superResolved = instancedSuperType.resolve();
-			resolved = new SubclassResolvingType(superResolved, resolved, superType);
+			resolved = new SubclassResolvingType(resolved, instancedSuperType);
 		}
 
 		return InterfaceResolvingType.of(resolved, interfaces);
