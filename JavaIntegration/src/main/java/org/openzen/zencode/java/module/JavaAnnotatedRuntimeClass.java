@@ -32,7 +32,7 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 		ResolvingType resolved = new JavaNativeTypeMembers.Resolving(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
 		Optional<TypeID> superType = getSupertype(typeArguments);
 		if (superType.isPresent()) {
-			resolved = new SubclassResolvingType(superType.get().resolve(), resolved, superType.get());
+			resolved = new SubclassResolvingType(resolved, superType.get());
 		}
 
 		Collection<TypeID> interfaces = getInterfaces(typeArguments);

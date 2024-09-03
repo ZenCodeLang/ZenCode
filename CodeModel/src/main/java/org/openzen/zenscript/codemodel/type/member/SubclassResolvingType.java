@@ -10,12 +10,10 @@ import java.util.List;
 public class SubclassResolvingType implements ResolvingType {
 	private final ResolvingType superclass;
 	private final ResolvingType base;
-	private final TypeID supertype;
 
-	public SubclassResolvingType(ResolvingType superclass, ResolvingType base, TypeID supertype) {
-		this.superclass = superclass;
+	public SubclassResolvingType(ResolvingType base, TypeID superclass) {
+		this.superclass = superclass.resolve();
 		this.base = base;
-		this.supertype = supertype;
 	}
 
 	@Override
@@ -25,6 +23,6 @@ public class SubclassResolvingType implements ResolvingType {
 
 	@Override
 	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		return new SubclassResolvedType(superclass.withExpansions(expansions), base.withExpansions(expansions), supertype);
+		return SubtypeResolvedType.ofChildClass(base.withExpansions(expansions), superclass.withExpansions(expansions));
 	}
 }

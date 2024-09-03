@@ -40,7 +40,7 @@ public class InterfaceResolvingType implements ResolvingType {
 				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
 				.collect(Collectors.toList());
 
-		return InterfaceResolvedType.of(
+		return SubtypeResolvedType.ofImplementation(
 				ExpandedResolvedType.of(
 						baseType.withExpansions(expansions),
 						interfaceExpansions),
