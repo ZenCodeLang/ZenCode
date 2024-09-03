@@ -6,7 +6,7 @@ public class MyClass {
 	}
 
     public set valueSetter as string {
-        println("set value to ''" + $ + "'");
+        println("set value to '" + $ + "'");
     }
 }
 

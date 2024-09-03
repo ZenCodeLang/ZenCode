@@ -68,43 +68,34 @@ public class ClassDefinition extends HighLevelDefinition {
 				initializerStatements.add(superCall);
 			});
 
-			if (hasSuperParameters || !fields.isEmpty()) {
-				for (int i = 0; i < fields.size(); i++) {
-					FieldMember field = fields.get(i);
-					noUninitializedFields &= field.initializer != null;
-					FunctionParameter parameter = new FunctionParameter(field.getType(), field.name, field.initializer, false);
-					parameters.add(parameter);
+			for (int i = 0; i < fields.size(); i++) {
+				FieldMember field = fields.get(i);
+				noUninitializedFields &= field.initializer != null;
+				FunctionParameter parameter = new FunctionParameter(field.getType(), field.name, field.initializer, false);
+				parameters.add(parameter);
 
-					initializerStatements.add(new ExpressionStatement(
+				initializerStatements.add(new ExpressionStatement(
+						position,
+						new SetFieldExpression(
+								position,
+								new ThisExpression(position, thisType),
+								new FieldInstance(field, field.getType()),
+								new GetFunctionParameterExpression(position, parameter))));
+				if (field.initializer != null) {
+					defaultInitializerStatements.add(new ExpressionStatement(
 							position,
 							new SetFieldExpression(
 									position,
 									new ThisExpression(position, thisType),
 									new FieldInstance(field, field.getType()),
-									new GetFunctionParameterExpression(position, parameter))));
-					if (field.initializer != null) {
-						defaultInitializerStatements.add(new ExpressionStatement(
-								position,
-								new SetFieldExpression(
-										position,
-										new ThisExpression(position, thisType),
-										new FieldInstance(field, field.getType()),
-										field.initializer)));
-					}
+									field.initializer)));
 				}
-
-				ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PUBLIC, new FunctionHeader(thisType, parameters.toArray(FunctionParameter.NONE)));
-				BlockStatement block = new BlockStatement(position, initializerStatements.toArray(new Statement[0]));
-				constructor.setBody(block);
-				members.add(constructor);
 			}
 
-			if (noUninitializedFields) {
-				ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PUBLIC, new FunctionHeader(thisType));
-				BlockStatement block = new BlockStatement(position, defaultInitializerStatements.toArray(new Statement[0]));
-				constructor.setBody(block);
-				members.add(constructor);
-			}
+			ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PUBLIC, new FunctionHeader(thisType, parameters.toArray(FunctionParameter.NONE)));
+			BlockStatement block = new BlockStatement(position, initializerStatements.toArray(new Statement[0]));
+			constructor.setBody(block);
+			members.add(constructor);
 		}
 	}
 }

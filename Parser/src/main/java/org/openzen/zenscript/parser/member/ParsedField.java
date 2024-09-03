@@ -76,6 +76,21 @@ public class ParsedField extends ParsedDefinitionMember {
 					type.compile(compiler.types()),
 					autoGetter,
 					autoSetter);
+
+			if (expression != null) {
+				ExpressionCompiler initializerCompiler = compiler.forFieldInitializers();
+				if (compiled.getType() == BasicTypeID.UNDETERMINED) {
+					Expression initializer = expression.compile(initializerCompiler).eval();
+					compiled.setInitializer(initializer);
+					compiled.setType(initializer.type);
+				} else {
+					Expression initializer = expression
+							.compile(initializerCompiler)
+							.cast(CastedEval.implicit(initializerCompiler, position, compiled.getType()))
+							.value;
+					compiled.setInitializer(initializer);
+				}
+			}
 		}
 
 		@Override
@@ -92,20 +107,7 @@ public class ParsedField extends ParsedDefinitionMember {
 		public void compile(List<CompileException> errors) {
 			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
 
-			if (expression != null) {
-				ExpressionCompiler initializerCompiler = compiler.forFieldInitializers();
-				if (compiled.getType() == BasicTypeID.UNDETERMINED) {
-					Expression initializer = expression.compile(initializerCompiler).eval();
-					compiled.setInitializer(initializer);
-					compiled.setType(initializer.type);
-				} else {
-					Expression initializer = expression
-							.compile(initializerCompiler)
-							.cast(CastedEval.implicit(initializerCompiler, position, compiled.getType()))
-							.value;
-					compiled.setInitializer(initializer);
-				}
-			} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {
+			if (compiled.getType() == BasicTypeID.UNDETERMINED) {
 				errors.add(new CompileException(position, CompileErrors.fieldWithoutType()));
 			}
 		}

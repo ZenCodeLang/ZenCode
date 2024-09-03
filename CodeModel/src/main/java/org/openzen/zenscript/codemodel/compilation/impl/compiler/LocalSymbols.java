@@ -3,13 +3,11 @@ package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.CompilingVariable;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.*;
 import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatement;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.HashMap;
 import java.util.Map;

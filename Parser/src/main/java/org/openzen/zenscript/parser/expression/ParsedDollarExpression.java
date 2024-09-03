@@ -25,11 +25,8 @@ public class ParsedDollarExpression extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			return compiler.dollar().flatMap(array -> {
-				Expression targetArray = array.eval();
-				ResolvedType resolvedType = compiler.resolve(targetArray.type);
-				return resolvedType.findGetter("$").map(getter -> getter.call(compiler, position, targetArray, TypeID.NONE, CompilingExpression.NONE));
-			}).orElseGet(() -> compiler.at(position).invalid(CompileErrors.noDollarHere()));
+			return compiler.dollar().map(CompilingExpression::eval)
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noDollarHere()));
 		}
 
 		@Override

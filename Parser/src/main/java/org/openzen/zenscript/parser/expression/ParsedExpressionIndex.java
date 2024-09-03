@@ -28,7 +28,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	public CompilingExpression compile(ExpressionCompiler compiler) {
 		CompilingExpression value = this.value.compile(compiler);
 		CompilingExpression memoizedValue = new MemoizedCompilingExpression(compiler, position, value);
-		ExpressionCompiler indexCompiler = compiler.withDollar(memoizedValue);
+		ExpressionCompiler indexCompiler = compiler.withDollarTarget(memoizedValue);
 		return new Compiling(
 				compiler,
 				position,

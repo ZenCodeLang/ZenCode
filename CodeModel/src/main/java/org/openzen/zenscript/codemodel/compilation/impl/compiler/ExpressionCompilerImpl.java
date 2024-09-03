@@ -12,6 +12,8 @@ import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
+import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
+import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.*;
 
@@ -142,8 +144,34 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	}
 
 	@Override
-	public ExpressionCompiler withDollar(CompilingExpression array) {
-		LocalSymbols newLocals = locals.withDollar(array);
+	public ExpressionCompiler withDollarTarget(CompilingExpression target) {
+		CompilingExpression dollar = new AbstractCompilingExpression(this, CodePosition.UNKNOWN) {
+			@Override
+			public Expression eval() {
+				Expression targetArray = target.eval();
+				ResolvedType resolvedType = compiler.resolve(targetArray.type);
+				return resolvedType
+						.findGetter("$")
+						.map(getter -> getter.call(compiler, position, targetArray, TypeID.NONE, CompilingExpression.NONE))
+						.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noGetterInType(targetArray.type, "$")));
+			}
+
+			@Override
+			public void collect(SSAVariableCollector collector) {
+				target.collect(collector);
+			}
+
+			@Override
+			public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+				target.linkVariables(linker);
+			}
+		};
+		return withDollar(dollar);
+	}
+
+	@Override
+	public ExpressionCompiler withDollar(CompilingExpression value) {
+		LocalSymbols newLocals = locals.withDollar(value);
 		return new ExpressionCompilerImpl(context, localType, types, thrownType, newLocals, header);
 	}
 

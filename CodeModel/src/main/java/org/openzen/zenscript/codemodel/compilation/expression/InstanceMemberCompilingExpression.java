@@ -68,30 +68,17 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 	@Override
 	public CompilingExpression assign(CompilingExpression value) {
-		if (name.hasArguments())
-			return compiler.invalid(position, CompileErrors.typeArgumentsNotAllowedHere());
-
-		Expression instance = this.instance.eval();
-		ResolvedType resolvedType = compiler.resolve(instance.type);
-		Optional<CompilingExpression> result = resolvedType
-				.findSetter(name.name)
-				.map(setter -> new Setter(compiler, position, instance, setter, value));
-		if (!result.isPresent()) {
-			result = resolvedType.findField(name.name)
-					.map(field -> new FieldSetter(compiler, position, instance, field, value));
-		}
-
-		return result.orElseGet(() -> compiler.invalid(position, CompileErrors.noSetterInType(instance.type, name.name)));
+		return new CompilingAssignment(compiler, position, instance, name, value);
 	}
 
 	@Override
 	public void collect(SSAVariableCollector collector) {
-		// TODO
+		instance.collect(collector);
 	}
 
 	@Override
 	public void linkVariables(CodeBlockStatement.VariableLinker linker) {
-		// TODO
+		instance.linkVariables(linker);
 	}
 
 	private static class Setter extends AbstractCompilingExpression {
@@ -132,6 +119,57 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 
 		@Override
 		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			value.linkVariables(linker);
+		}
+	}
+
+	private static class CompilingAssignment extends AbstractCompilingExpression {
+		private final CompilingExpression instance;
+		private final GenericName name;
+		private final CompilingExpression value;
+
+		public CompilingAssignment(ExpressionCompiler compiler, CodePosition position, CompilingExpression instance, GenericName name, CompilingExpression value) {
+			super(compiler, position);
+
+			this.instance = instance;
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			if (name.hasArguments())
+				return compiler.at(position).invalid(CompileErrors.typeArgumentsNotAllowedHere());
+
+			Expression instance = this.instance.eval();
+			ResolvedType resolvedType = compiler.resolve(instance.type);
+			Optional<CompilingExpression> result = resolvedType
+					.findSetter(name.name)
+					.map(setter -> new Setter(compiler, position, instance, setter, value));
+			if (!result.isPresent()) {
+				result = resolvedType.findField(name.name)
+						.map(field -> new FieldSetter(compiler, position, instance, field, value));
+			}
+
+			return result
+					.map(CompilingExpression::eval)
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noSetterInType(instance.type, name.name)));
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+
+		@Override
+		public void collect(SSAVariableCollector collector) {
+			instance.collect(collector);
+			value.collect(collector);
+		}
+
+		@Override
+		public void linkVariables(CodeBlockStatement.VariableLinker linker) {
+			instance.linkVariables(linker);
 			value.linkVariables(linker);
 		}
 	}

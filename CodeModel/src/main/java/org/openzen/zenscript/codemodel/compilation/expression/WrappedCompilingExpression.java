@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 
-public class WrappedCompilingExpression extends AbstractCompilingExpression{
+public class WrappedCompilingExpression extends AbstractCompilingExpression {
 	private final Expression value;
 
 	public WrappedCompilingExpression(ExpressionCompiler compiler, Expression value) {
