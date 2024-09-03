@@ -45,7 +45,7 @@ public class LocalTypeImpl implements LocalType {
 			return Optional.empty();
 
 		if (resolvedSuper == null)
-			resolvedSuper = thisType.getSuperType().resolve();
+			resolvedSuper = thisType.getSuperType().resolveWithoutExpansions();
 
 		return Optional.ofNullable(resolvedSuper)
 				.map(super_ -> super_.getConstructor().map(constructor -> new SuperCallable(thisType.getSuperType(), constructor)));

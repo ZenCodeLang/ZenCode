@@ -12,9 +12,16 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ExpandedResolvedType implements ResolvedType {
+	public static ResolvedType resolve(ResolvedType base, List<ExpansionSymbol> expansions) {
+		List<ResolvedType> resolutions = new ArrayList<>();
+		for (ExpansionSymbol expansion : expansions) {
+			expansion.resolve(base.getType()).ifPresent(resolutions::add);
+		}
+		return ExpandedResolvedType.of(base, resolutions);
+	}
+
 	public static ResolvedType of(ResolvedType base, List<ResolvedType> resolutions) {
 		if (resolutions.isEmpty()) {
 			return base;
@@ -198,9 +205,4 @@ public class ExpandedResolvedType implements ResolvedType {
 		return base.findIterator(variables);
 	}
 
-	@Override
-	public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> newExpansions = this.expansions.stream().map(expansion -> expansion.withExpansions(expansions)).collect(Collectors.toList());
-		return ExpandedResolvedType.of(base.withExpansions(expansions), newExpansions);
-	}
 }

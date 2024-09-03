@@ -5,3 +5,6 @@ build
 
 out/
 .idea
+
+*.xslt
+*.xml

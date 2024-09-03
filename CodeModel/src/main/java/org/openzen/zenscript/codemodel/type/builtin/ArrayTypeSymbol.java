@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -20,7 +20,7 @@ import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.USIZE;
 
 public class ArrayTypeSymbol implements TypeSymbol {
-	private final Modifiers MODIFIERS = Modifiers.PUBLIC;
+	private static final Modifiers MODIFIERS = Modifiers.PUBLIC;
 
 	public static final TypeParameter ELEMENT = new TypeParameter(BUILTIN, "E");
 	public static final GenericTypeID ELEMENT_TYPE = new GenericTypeID(ELEMENT);
@@ -89,9 +89,10 @@ public class ArrayTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
 		TypeID baseType = typeArguments[0];
 		GenericMapper mapper = GenericMapper.single(parameters[0], baseType);
+		TypeID type = new ArrayTypeID(baseType, dimension);
 
 		MemberSet.Builder members = MemberSet.create(type);
 
@@ -113,19 +114,19 @@ public class ArrayTypeSymbol implements TypeSymbol {
 
 			if (baseType == BYTE)
 				members.method(new MethodInstance(BuiltinMethodSymbol.BYTE_ARRAY_AS_SBYTE_ARRAY));
-			if (baseType == SBYTE)
+			else if (baseType == SBYTE)
 				members.method(new MethodInstance(BuiltinMethodSymbol.SBYTE_ARRAY_AS_BYTE_ARRAY));
-			if (baseType == SHORT)
+			else if (baseType == SHORT)
 				members.method(new MethodInstance(BuiltinMethodSymbol.SHORT_ARRAY_AS_USHORT_ARRAY));
-			if (baseType == USHORT)
+			else if (baseType == USHORT)
 				members.method(new MethodInstance(BuiltinMethodSymbol.USHORT_ARRAY_AS_SHORT_ARRAY));
-			if (baseType == INT)
+			else if (baseType == INT)
 				members.method(new MethodInstance(BuiltinMethodSymbol.INT_ARRAY_AS_UINT_ARRAY));
-			if (baseType == UINT)
+			else if (baseType == UINT)
 				members.method(new MethodInstance(BuiltinMethodSymbol.UINT_ARRAY_AS_INT_ARRAY));
-			if (baseType == LONG)
+			else if (baseType == LONG)
 				members.method(new MethodInstance(BuiltinMethodSymbol.LONG_ARRAY_AS_ULONG_ARRAY));
-			if (baseType == ULONG)
+			else if (baseType == ULONG)
 				members.method(new MethodInstance(BuiltinMethodSymbol.ULONG_ARRAY_AS_LONG_ARRAY));
 		}
 

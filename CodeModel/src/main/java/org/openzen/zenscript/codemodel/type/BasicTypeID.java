@@ -3,13 +3,12 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.BasicTypeMembers;
-import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +34,8 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	UNDETERMINED("undetermined"),
 	INVALID("invalid");
 
-	public final String name;
-	private MemberSet members;
+	private final String name;
+	private ResolvingType members;
 
 	private Expression defaultValue = null;
 
@@ -65,17 +64,12 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
-	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
 	public boolean isValueType() {
 		return true;
 	}
 
 	@Override
-	public ResolvedType resolve() {
+	public ResolvingType resolve() {
 		if (members == null)
 			members = BasicTypeMembers.get(this);
 
@@ -97,7 +91,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-
+		// BasicTypeIDs don't have type parameters
 	}
 
 	private Expression generateDefaultValue() {
@@ -183,11 +177,12 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
-		if (members == null)
-			members = BasicTypeMembers.get(this);
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		if(typeArguments.length > 0) {
+			throw new IllegalArgumentException(this + " cannot have type arguments");
+		}
 
-		return members;
+		return this.resolve();
 	}
 
 	@Override

@@ -171,7 +171,7 @@ public final class JavaMangler {
 		return this.oneOf(
 				() -> this.mangleIf(EXP_TAR_MANGLE_ARRAY_ID, target::asArray, it -> Character.toString('D') + it.dimension + 'C' + this.mangleExpansionTarget(it.elementType)),
 				() -> this.mangleIf(EXP_TAR_MANGLE_ASSOC_ID, target::asAssoc, it -> this.mangleKv(this.mangleExpansionTarget(it.keyType), this.mangleExpansionTarget(it.valueType))),
-				() -> this.mangleIf(EXP_TAR_MANGLE_BASIC_ID, target, BasicTypeID.class, it -> it.name),
+				() -> this.mangleIf(EXP_TAR_MANGLE_BASIC_ID, target, BasicTypeID.class, BasicTypeID::getName),
 				() -> this.mangleIf(EXP_TAR_MANGLE_DEFINITION_ID, target::asDefinition, it -> {
 					final String name = it.definition.getName();
 					final int simpleNameBegin = name.lastIndexOf('.');

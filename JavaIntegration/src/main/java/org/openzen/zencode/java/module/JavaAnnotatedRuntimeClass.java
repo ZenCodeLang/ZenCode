@@ -2,20 +2,18 @@ package org.openzen.zencode.java.module;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
-import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
-import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
-import org.openzen.zenscript.codemodel.type.member.SubclassResolvedType;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvingType;
+import org.openzen.zenscript.codemodel.type.member.SubclassResolvingType;
 import org.openzen.zenscript.javashared.JavaClass;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
@@ -29,19 +27,16 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
-		ResolvedType resolved = new JavaNativeTypeMembers(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		TypeID type = DefinitionTypeID.create(this, typeArguments);
+		ResolvingType resolved = new JavaNativeTypeMembers.Resolving(getTemplate(), type, GenericMapper.create(getTypeParameters(), typeArguments));
 		Optional<TypeID> superType = getSupertype(typeArguments);
 		if (superType.isPresent()) {
-			resolved = new SubclassResolvedType(superType.get().resolve(), resolved, superType.get());
+			resolved = new SubclassResolvingType(superType.get().resolve(), resolved, superType.get());
 		}
 
 		Collection<TypeID> interfaces = getInterfaces(typeArguments);
-		if (!interfaces.isEmpty()) {
-			resolved = new InterfaceResolvedType(resolved, interfaces);
-		}
-
-		return resolved;
+		return InterfaceResolvingType.of(resolved, interfaces);
 	}
 
 	@Override

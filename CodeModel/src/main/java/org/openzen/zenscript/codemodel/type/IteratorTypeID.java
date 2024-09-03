@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -36,8 +36,8 @@ public class IteratorTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
-		return new MemberSet(this); // no members yet
+	public ResolvingType resolve() {
+		return MemberSet.create(this).build(); // no members yet
 	}
 
 	@Override

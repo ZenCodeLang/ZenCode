@@ -1,0 +1,13 @@
+#output: set value to 'Something else'
+
+public class MyClass {
+
+	public this() {
+	}
+
+    public set valueSetter as string {
+        println("set value to ''" + $ + "'");
+    }
+}
+
+new MyClass().valueSetter = "Something else";

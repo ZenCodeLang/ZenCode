@@ -2,7 +2,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -72,8 +72,8 @@ public class ArrayTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
-		return type.resolve(this, new TypeID[] { elementType });
+	public ResolvingType resolve() {
+		return type.resolve(new TypeID[] { elementType });
 	}
 
 	@Override

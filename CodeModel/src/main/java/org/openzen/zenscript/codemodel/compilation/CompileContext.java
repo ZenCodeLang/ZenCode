@@ -95,14 +95,14 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 			}
 			return Optional.of(DefinitionTypeID.create(definition.getDefinition(), name.get(name.size() - 1).arguments));
 		} else if (rootPackage.contains(name.get(0).name)) {
-			return rootPackage.getType(name, expansions);
+			return rootPackage.getType(name);
 		}
 
 		return Optional.ofNullable(globals.get(name.get(0).name))
 				.flatMap(t -> t.getType(position, this, name.get(0).arguments))
 				.flatMap(t -> {
 					for (int i = 1; i < name.size(); i++) {
-						Optional<TypeSymbol> inner = t.resolve().findInnerType(name.get(i).name);
+						Optional<TypeSymbol> inner = t.resolveWithoutExpansions().findInnerType(name.get(i).name);
 						if (inner.isPresent()) {
 							t = DefinitionTypeID.create(inner.get(), name.get(i).arguments);
 						} else {

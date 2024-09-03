@@ -5,9 +5,9 @@ import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -83,7 +83,7 @@ public abstract class JavaRuntimeClass implements TypeSymbol, ExpansionSymbol {
 	}
 
 	@Override
-	public abstract ResolvedType resolve(TypeID type, TypeID[] typeArguments);
+	public abstract ResolvingType resolve(TypeID[] typeArguments);
 
 	@Override
 	public TypeParameter[] getTypeParameters() {

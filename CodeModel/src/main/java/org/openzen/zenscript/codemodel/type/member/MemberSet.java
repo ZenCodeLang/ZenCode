@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
@@ -13,10 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MemberSet implements ResolvedType {
-	public static Builder create(TypeID type) {
-		MemberSet members = new MemberSet(type);
-		return new Builder(members);
-	}
 
 	private final TypeID type;
 	private final List<StaticCallableMethod> constructors = new ArrayList<>();
@@ -29,8 +26,13 @@ public class MemberSet implements ResolvedType {
 	private final List<IteratorInstance> iterators = new ArrayList<>();
 	private final List<Comparator> comparators = new ArrayList<>();
 
-	public MemberSet(TypeID type) {
+	private MemberSet(TypeID type) {
 		this.type = type;
+	}
+
+	public static Builder create(TypeID type) {
+		MemberSet members = new MemberSet(type);
+		return new Builder(members);
 	}
 
 	@Override
@@ -229,8 +231,30 @@ public class MemberSet implements ResolvedType {
 			return target.constructors.isEmpty();
 		}
 
-		public MemberSet build() {
-			return target;
+		public ResolvingType build() {
+			return new Resolving(target);
+		}
+
+		public ResolvedType buildWithoutExpansions() {
+			return build().withExpansions(Collections.emptyList());
+		}
+	}
+
+	private static class Resolving implements ResolvingType {
+		private final MemberSet target;
+		public Resolving(MemberSet target) {
+			this.target = target;
+		}
+
+
+		@Override
+		public TypeID getType() {
+			return target.getType();
+		}
+
+		@Override
+		public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+			return ExpandedResolvedType.resolve(target, expansions);
 		}
 	}
 }

@@ -19,22 +19,22 @@ import java.util.Optional;
 public class OptionalResolvedType implements ResolvedType {
 	private final OptionalTypeID type;
 	private final ResolvedType baseType;
-	private final MemberSet optionalMembers;
+	private final ResolvedType optionalMembers;
 
 	public OptionalResolvedType(OptionalTypeID type, ResolvedType baseType) {
 		this.type = type;
 		this.baseType = baseType;
 
-		MemberSet.Builder optionalMembers = MemberSet.create(type);
-		optionalMembers.method(new MethodInstance(
+		MemberSet.Builder optionalMembersBuilder = MemberSet.create(type);
+		optionalMembersBuilder.method(new MethodInstance(
 				BuiltinMethodSymbol.OPTIONAL_IS_NULL,
 				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
 				type));
-		optionalMembers.method(new MethodInstance(
+		optionalMembersBuilder.method(new MethodInstance(
 				BuiltinMethodSymbol.OPTIONAL_IS_NOT_NULL,
 				new FunctionHeader(BasicTypeID.BOOL, BasicTypeID.NULL),
 				type));
-		this.optionalMembers = optionalMembers.build();
+		this.optionalMembers = optionalMembersBuilder.buildWithoutExpansions();
 	}
 
 	@Override

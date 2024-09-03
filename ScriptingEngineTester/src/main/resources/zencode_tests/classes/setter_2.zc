@@ -1,0 +1,15 @@
+#output: Something Else
+
+public class MyClass {
+
+    public var value as string = "Hello World";
+
+    public set valueSetter as string {
+        this.value = $;
+    }
+}
+
+
+var instance as MyClass = new MyClass();
+instance.valueSetter = "Something else";
+println(instance.value);

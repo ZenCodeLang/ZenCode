@@ -6,13 +6,10 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,14 +74,6 @@ public interface ResolvedType {
     Optional<IteratorInstance> findIterator(int variables);
 
 	Optional<StaticCallable> findStaticOperator(OperatorType operator);
-
-	default ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
-		List<ResolvedType> resolutions = new ArrayList<>();
-		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(getType()).ifPresent(resolutions::add);
-		}
-		return ExpandedResolvedType.of(this, resolutions);
-	}
 
 	interface SwitchMember {
 		SwitchValue toSwitchValue(List<CompilingVariable> bindings);

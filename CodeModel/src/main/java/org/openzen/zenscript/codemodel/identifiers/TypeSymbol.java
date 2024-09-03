@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.identifiers;
 
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -19,7 +19,7 @@ public interface TypeSymbol extends DefinitionSymbol {
 
 	String getName();
 
-	ResolvedType resolve(TypeID type, TypeID[] typeArguments);
+	ResolvingType resolve(TypeID[] typeArguments);
 
 	Optional<TypeSymbol> getOuter();
 

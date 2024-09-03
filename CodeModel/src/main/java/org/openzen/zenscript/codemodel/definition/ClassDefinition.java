@@ -43,7 +43,7 @@ public class ClassDefinition extends HighLevelDefinition {
 		boolean hasNoConstructor = members.stream().noneMatch(IDefinitionMember::isConstructor);
 
 		Optional<MethodInstance> superConstructor = Optional.ofNullable(getSuperType())
-				.flatMap(t -> t.resolve().getConstructor().getSingleOverload())
+				.flatMap(t -> t.resolveWithoutExpansions().getConstructor().getSingleOverload())
 				.flatMap(AnyMethod::asMethod);
 
 		if (hasNoConstructor) {

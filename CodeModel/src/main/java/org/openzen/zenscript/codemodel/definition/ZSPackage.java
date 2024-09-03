@@ -52,8 +52,8 @@ public class ZSPackage {
 		return null;
 	}
 
-	public Optional<TypeID> getType(List<GenericName> nameParts, List<ExpansionSymbol> expansions) {
-		return getType(nameParts, 0, expansions);
+	public Optional<TypeID> getType(List<GenericName> nameParts) {
+		return getType(nameParts, 0);
 	}
 
 	public Optional<TypeID> getType(GenericName name) {
@@ -64,17 +64,17 @@ public class ZSPackage {
 		}
 	}
 
-	private Optional<TypeID> getType(List<GenericName> nameParts, int depth, List<ExpansionSymbol> expansions) {
+	private Optional<TypeID> getType(List<GenericName> nameParts, int depth) {
 		if (depth >= nameParts.size())
 			return Optional.empty();
 
 		GenericName name = nameParts.get(depth);
 		if (subPackages.containsKey(name.name) && name.hasNoArguments())
-			return subPackages.get(name.name).getType(nameParts, depth + 1, expansions);
+			return subPackages.get(name.name).getType(nameParts, depth + 1);
 
 		if (types.containsKey(name.name)) {
 			TypeID type = DefinitionTypeID.create(types.get(name.name), name.arguments);
-			return GenericName.getInnerType(type, nameParts, depth + 1, expansions);
+			return GenericName.getInnerType(type, nameParts, depth + 1);
 		}
 
 		return Optional.empty();

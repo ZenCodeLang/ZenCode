@@ -1,7 +1,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.builtin.RangeTypeSymbol;
 
@@ -37,8 +37,8 @@ public class RangeTypeID implements TypeID {
 	public Optional<RangeTypeID> asRange() { return Optional.of(this); }
 
 	@Override
-	public ResolvedType resolve() {
-		return RangeTypeSymbol.INSTANCE.resolve(this, new TypeID[] { baseType });
+	public ResolvingType resolve() {
+		return RangeTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
 	}
 
 	@Override
@@ -85,6 +85,6 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public String toString() {
-		return baseType.toString() + " .. " + baseType.toString();
+		return baseType + " .. " + baseType;
 	}
 }

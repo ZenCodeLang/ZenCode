@@ -2,15 +2,17 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
-import org.openzen.zenscript.codemodel.type.member.InterfaceResolvedType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GenericTypeID implements TypeID {
 	public final TypeParameter parameter;
@@ -70,12 +72,25 @@ public class GenericTypeID implements TypeID {
 	}
 
 	@Override
-	public ResolvedType resolve() {
-		List<ResolvedType> fromBounds = new ArrayList<>();
+	public ResolvingType resolve() {
+		List<ResolvingType> fromBounds = new ArrayList<>();
 		for (TypeParameterBound bound : parameter.bounds) {
 			bound.resolveMembers().ifPresent(fromBounds::add);
 		}
-		return ExpandedResolvedType.of(new MemberSet(this), fromBounds);
+
+		return new ResolvingType() {
+			@Override
+			public TypeID getType() {
+				return GenericTypeID.this;
+			}
+
+			@Override
+			public ResolvedType withExpansions(List<ExpansionSymbol> expansions) {
+				List<ResolvedType> newExpansions = fromBounds.stream().map(expansion -> expansion.withExpansions(expansions)).collect(Collectors.toList());
+				ResolvedType base = MemberSet.create(getType()).build().withExpansions(expansions);
+				return ExpandedResolvedType.of(base, newExpansions);
+			}
+		};
 	}
 
 	@Override

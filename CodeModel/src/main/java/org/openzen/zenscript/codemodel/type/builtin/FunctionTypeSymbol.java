@@ -2,8 +2,8 @@ package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
-import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -65,7 +65,8 @@ public class FunctionTypeSymbol implements TypeSymbol {
 	}
 
 	@Override
-	public ResolvedType resolve(TypeID type, TypeID[] typeArguments) {
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		TypeID type = new FunctionTypeID(header);
 		return MemberSet.create(type).method(new MethodInstance(caller)).build();
 	}
 
