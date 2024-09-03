@@ -265,7 +265,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 		@Override
 		public Expression getInstanceField(Expression target, FieldInstance field) {
-			return null;
+			return new GetFieldExpression(position, target, field);
 		}
 
 		@Override

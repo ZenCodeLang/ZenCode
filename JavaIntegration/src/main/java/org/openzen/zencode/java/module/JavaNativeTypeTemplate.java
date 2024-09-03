@@ -102,10 +102,10 @@ public class JavaNativeTypeTemplate {
 			final String zenCodeName;
 			if (field.isAnnotationPresent(ZenCodeType.Field.class)) {
 				ZenCodeType.Field fieldAnnotation = field.getAnnotation(ZenCodeType.Field.class);
-				zenCodeName = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
+				zenCodeName = fieldAnnotation.value().isEmpty() ? field.getName() : fieldAnnotation.value();
 			} else if (field.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(field.getModifiers())) {
 				ZenCodeGlobals.Global fieldAnnotation = field.getAnnotation(ZenCodeGlobals.Global.class);
-				zenCodeName = fieldAnnotation.value() == null ? field.getName() : fieldAnnotation.value();
+				zenCodeName = fieldAnnotation.value().isEmpty() ? field.getName() : fieldAnnotation.value();
 			} else if (field.isEnumConstant()) {
 				zenCodeName = field.getName();
 			} else {

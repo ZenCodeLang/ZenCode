@@ -29,10 +29,19 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 			return compiler.at(position).invalid(CompileErrors.typeArgumentsNotAllowedHere());
 
 		Expression instance = this.instance.eval();
-		return compiler.resolve(instance.type)
+		ResolvedType resolve = compiler.resolve(instance.type);
+
+		Optional<Expression> byGetter = resolve
 				.findGetter(name.name)
-				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE))
-				.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(instance.type, name.name)));
+				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE));
+
+		return byGetter.orElseGet(() -> resolve
+				.findField(name.name)
+				.map(field -> field.get(compiler.at(position), instance))
+				.orElseGet(
+						() -> compiler.at(position).invalid(CompileErrors.noMemberInType(instance.type, name.name))
+				));
+
 	}
 
 	@Override
