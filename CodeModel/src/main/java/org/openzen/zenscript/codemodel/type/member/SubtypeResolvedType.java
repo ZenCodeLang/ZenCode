@@ -24,12 +24,12 @@ import java.util.stream.Stream;
 public class SubtypeResolvedType implements ResolvedType {
 
 	private final ResolvedType thisType;
-	private final Collection<ResolvedType> superTypes;
+	private final Collection<ResolvedType> baseTypes;
 	private final Kind subtypeKind;
 
-	private SubtypeResolvedType(ResolvedType thisType, Collection<ResolvedType> superTypes, Kind subtypeKind) {
+	private SubtypeResolvedType(ResolvedType thisType, Collection<ResolvedType> baseTypes, Kind subtypeKind) {
 		this.thisType = thisType;
-		this.superTypes = superTypes;
+		this.baseTypes = baseTypes;
 		this.subtypeKind = subtypeKind;
 	}
 
@@ -71,7 +71,7 @@ public class SubtypeResolvedType implements ResolvedType {
 
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
-		Optional<InstanceCallableMethod> supertypeCaster = superTypes.stream()
+		Optional<InstanceCallableMethod> supertypeCaster = baseTypes.stream()
 				.filter(superType -> superType.getType().equals(toType))
 				.map(superType -> {
 					switch (subtypeKind) {
@@ -88,52 +88,52 @@ public class SubtypeResolvedType implements ResolvedType {
 			return supertypeCaster;
 		}
 
-		return findFirstInLocalOrImplementedInterfaces(resolvedType -> resolvedType.findCaster(toType));
+		return findFirstInLocalOrBaseTypes(resolvedType -> resolvedType.findCaster(toType));
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticMethod(String name) {
-		return thisType.findStaticMethod(name);
+		return mergeLocalWithBaseTypes(type -> type.findStaticMethod(name), StaticCallable::merge);
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticGetter(String name) {
-		return thisType.findStaticGetter(name);
+		return mergeLocalWithBaseTypes(type -> type.findStaticGetter(name), StaticCallable::merge);
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticSetter(String name) {
-		return thisType.findStaticSetter(name);
+		return mergeLocalWithBaseTypes(type -> type.findStaticSetter(name), StaticCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findMethod(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findMethod(name), InstanceCallable::merge);
+		return mergeLocalWithBaseTypes(type -> type.findMethod(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findGetter(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findGetter(name), InstanceCallable::merge);
+		return mergeLocalWithBaseTypes(type -> type.findGetter(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findSetter(String name) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findSetter(name), InstanceCallable::merge);
+		return mergeLocalWithBaseTypes(type -> type.findSetter(name), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<InstanceCallable> findOperator(OperatorType operator) {
-		return mergeLocalWithImplementedInterfaces(type -> type.findOperator(operator), InstanceCallable::merge);
+		return mergeLocalWithBaseTypes(type -> type.findOperator(operator), InstanceCallable::merge);
 	}
 
 	@Override
 	public Optional<Field> findField(String name) {
-		return findFirstInLocalOrImplementedInterfaces(type -> type.findField(name));
+		return findFirstInLocalOrBaseTypes(type -> type.findField(name));
 	}
 
 	@Override
 	public Optional<TypeSymbol> findInnerType(String name) {
-		return findFirstInLocalOrImplementedInterfaces(type -> type.findInnerType(name));
+		return findFirstInLocalOrBaseTypes(type -> type.findInnerType(name));
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class SubtypeResolvedType implements ResolvedType {
 
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
-		return findFirstInLocalOrImplementedInterfaces(type -> type.findIterator(variables));
+		return findFirstInLocalOrBaseTypes(type -> type.findIterator(variables));
 	}
 
 	@Override
@@ -163,7 +163,7 @@ public class SubtypeResolvedType implements ResolvedType {
 		return thisType.findStaticOperator(operator);
 	}
 
-	private <T> Optional<T> findFirstInLocalOrImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper) {
+	private <T> Optional<T> findFirstInLocalOrBaseTypes(Function<ResolvedType, Optional<T>> mapper) {
 		return streamAllTypes()
 				.map(mapper)
 				.filter(Optional::isPresent)
@@ -171,7 +171,7 @@ public class SubtypeResolvedType implements ResolvedType {
 				.findFirst();
 	}
 
-	private <T> Optional<T> mergeLocalWithImplementedInterfaces(Function<ResolvedType, Optional<T>> mapper, BinaryOperator<T> combiner) {
+	private <T> Optional<T> mergeLocalWithBaseTypes(Function<ResolvedType, Optional<T>> mapper, BinaryOperator<T> combiner) {
 		return streamAllTypes()
 				.map(mapper)
 				.filter(Optional::isPresent)
@@ -182,7 +182,7 @@ public class SubtypeResolvedType implements ResolvedType {
 	private Stream<ResolvedType> streamAllTypes() {
 		return Stream.concat(
 				Stream.of(thisType),
-				superTypes.stream()
+				baseTypes.stream()
 		);
 	}
 
