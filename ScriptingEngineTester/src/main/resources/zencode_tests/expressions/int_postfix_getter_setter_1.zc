@@ -1,0 +1,15 @@
+#output: 0
+#output: 1
+
+public class MyClass {
+   public var internalValue as int = 0;
+
+   public get value as int => internalValue;
+   public set value as int => this.internalValue = $;
+}
+
+var x = new MyClass();
+
+println(x.value);
+x.value++;
+println(x.value);

@@ -1,17 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaNativeField;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 /**
@@ -41,8 +40,7 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	private void modify(TypeID type) {
-		boolean large = type == BasicTypeID.DOUBLE || type == BasicTypeID.LONG;
-		modify(large);
+		modify(CompilerUtils.isLarge(type));
 	}
 
 	private void modify(boolean large) {
@@ -51,6 +49,34 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 		modification.run();
 		if (push == PushOption.AFTER)
 			javaWriter.dup(large);
+	}
+
+	private void modifyVirtualMethod(TypeID type) {
+		modifyVirtualMethod(CompilerUtils.isLarge(type));
+	}
+
+
+	/**
+	 * When we execute a prefix/postfix call on the member of some class (e.g. a virtual field),
+	 * then {@link #modify(boolean)} makes it harder to get the callee that we need to store the modified value afterward.
+	 * Therefore this implementation doesn't dup but dupX1/dupX2 so that the owner is higher on the stack than the result value
+	 * <br/>
+	 * On Stack:
+	 * <ul>
+	 *     <li>Before: [top, value_before, owner, ...rest_of_stack]</li>
+	 *     <li>After: [top, value_modified, owner, result_value_if_present, ...rest_of_stack]</li>
+	 * </ul>
+	 *
+	 * Therefore, after this call we can invoke virtual calls that consume (value_modified, owner) and return the result value.
+	 **/
+	private void modifyVirtualMethod(boolean large) {
+		if(push == PushOption.BEFORE) {
+			javaWriter.dupX1(false, large);
+		}
+		modification.run();
+		if(push == PushOption.AFTER) {
+			javaWriter.dupX1(true, large);
+		}
 	}
 
 	@Override
@@ -70,6 +96,26 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 
 	@Override
 	public Void visitCall(CallExpression expression) {
+
+		// ToDo: Scenario: We have a Getter and Setter on the type, how do we do a postfix call here?
+		//         Currently this is reached for every instance field since we always generate an auto getter and setter
+		if(expression.method.method instanceof GetterMember) {
+			GetterMember getter = (GetterMember) expression.method.method;
+			SetterMember setter = getter.getDefinition().members.stream()
+					.map(m -> m instanceof FieldMember ? ((FieldMember) m).autoSetter : m)
+					.filter(m -> m instanceof SetterMember && getter.name.equals(((SetterMember) m).name))
+					.map(m -> (SetterMember) m)
+					.findFirst()
+					.orElseThrow(() -> new UnsupportedOperationException("No matching member for " + getter.name));
+
+			expression.target.accept(expressionVisitor);
+			javaWriter.dup(context.getType(expression.target.type));
+			javaWriter.invokeVirtual((JavaNativeMethod) context.getJavaMethod(getter));
+			modifyVirtualMethod(setter.type);
+			javaWriter.invokeVirtual((JavaNativeMethod) context.getJavaMethod(setter));
+			return null;
+		}
+
 		throw new UnsupportedOperationException("Invalid lvalue: call");
 	}
 
@@ -212,8 +258,9 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	public Void visitGetField(GetFieldExpression expression) {
 		JavaNativeField field = (JavaNativeField) context.getJavaField(expression.field);
 		expression.target.accept(expressionVisitor);
+		javaWriter.dup();
 		javaWriter.getField(field);
-		modify(expression.field.getType());
+		modifyVirtualMethod(expression.field.getType());
 		javaWriter.putField(field);
 		return null;
 	}
