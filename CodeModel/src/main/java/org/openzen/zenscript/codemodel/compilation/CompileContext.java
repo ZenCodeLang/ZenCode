@@ -95,7 +95,7 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 			}
 			return Optional.of(DefinitionTypeID.create(definition.getDefinition(), name.get(name.size() - 1).arguments));
 		} else if (rootPackage.contains(name.get(0).name)) {
-			return rootPackage.getType(name, expansions);
+			return rootPackage.getType(name);
 		}
 
 		return Optional.ofNullable(globals.get(name.get(0).name))
