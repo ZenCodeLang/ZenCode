@@ -130,4 +130,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitVariantValue(C context, VariantValueExpression expression);
 
 	R visitWrapOptional(C context, WrapOptionalExpression expression);
+
+	R visitMemoized(C context, MemoizedExpression expression);
 }

@@ -506,4 +506,10 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		return expression.value.accept(this);
 	}
+
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		fallback(expression);
+		return null;
+	}
 }

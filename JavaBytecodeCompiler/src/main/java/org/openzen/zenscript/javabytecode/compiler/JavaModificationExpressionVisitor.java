@@ -431,6 +431,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 		throw new UnsupportedOperationException("Invalid lvalue: wrap optional");
 	}
 
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		throw new UnsupportedOperationException("Invalid lvalue: memoized");
+	}
+
 	public enum PushOption {
 		NONE, // don't push result
 		BEFORE, // push result before modification (eg. i++)

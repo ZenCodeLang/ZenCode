@@ -8,11 +8,13 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -636,13 +638,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		final Label label = new Label();
-		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.id);
-
-		tag.end = label;
-		javaWriter.load(tag.type, tag.local);
-		javaWriter.label(label);
-		return null;
+		return tagVariableAndUpdateLastUsage(expression.variable.id);
 	}
 
 	@Override
@@ -1332,6 +1328,47 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
 		expression.value.type.accept(expression.value.type, optionalWrappingTypeVisitor);
+		return null;
+	}
+
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		if (expression.wasAccessedOnlyOnce()) {
+			// we don't need to create a temp variable if nobody else is asking for it
+			return expression.target.accept(this);
+		}
+
+		if (expression.hasVariableID()) {
+			// We already created a temp variable for this -> reuse it
+			return tagVariableAndUpdateLastUsage(expression.getVariableID());
+		}
+
+		// first call evaluates it and stores it in a local variable called "memoized"
+		VariableID newVariable = new VariableID();
+		expression.setVariableID(newVariable);
+
+		expression.target.accept(this);
+		Type asmType = context.getType(expression.type);
+		int local = javaWriter.local(asmType);
+
+		Label start = new Label();
+		javaWriter.label(start);
+		JavaLocalVariableInfo memoized = new JavaLocalVariableInfo(asmType, local, start, "memoized");
+		javaWriter.setLocalVariable(newVariable, memoized);
+		javaWriter.addVariableInfo(memoized);
+
+		javaWriter.dup(asmType);
+		javaWriter.store(asmType, local);
+		return null;
+	}
+
+	private Void tagVariableAndUpdateLastUsage(VariableID id) {
+		final Label label = new Label();
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(id);
+
+		tag.end = label;
+		javaWriter.load(tag.type, tag.local);
+		javaWriter.label(label);
 		return null;
 	}
 

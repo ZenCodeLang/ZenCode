@@ -1,0 +1,9 @@
+#output: hello
+#output: 2
+
+function generate(): int[] {
+	println("hello");
+	return [1, 2, 3];
+}
+
+println(generate()[$ + $ - (2 as usize) * $ + 1]);

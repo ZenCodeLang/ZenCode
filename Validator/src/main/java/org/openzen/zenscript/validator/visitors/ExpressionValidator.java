@@ -683,6 +683,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		return null;
 	}
 
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		return expression.target.accept(this);
+	}
+
 	private void checkCorrectType(CodePosition position, TypeID expected, TypeID actual) {
 		if (actual == BasicTypeID.INVALID)
 			return; // in this case the underlying error will already by reported elsewhere

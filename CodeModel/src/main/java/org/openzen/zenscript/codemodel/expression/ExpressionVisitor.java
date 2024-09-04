@@ -134,4 +134,6 @@ public interface ExpressionVisitor<T> {
 	T visitVariantValue(VariantValueExpression expression);
 
 	T visitWrapOptional(WrapOptionalExpression expression);
+
+	T visitMemoized(MemoizedExpression expression);
 }
