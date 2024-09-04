@@ -835,6 +835,151 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
+	public void modify(Expression source, BuiltinMethodSymbol builtin, PushOption pushOption) {
+		switch (builtin) {
+			case BYTE_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(255);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case BYTE_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(255);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case SBYTE_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2b();
+				}, pushOption);
+				return;
+			case SBYTE_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2b();
+				}, pushOption);
+				return;
+			case SHORT_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2s();
+				}, pushOption);
+				return;
+			case SHORT_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2s();
+				}, pushOption);
+				return;
+			case USHORT_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case USHORT_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case INT_INC:
+			case UINT_INC:
+			case USIZE_INC:
+				if (source instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) source).variable.id);
+					if (pushOption == PushOption.BEFORE) {
+						javaWriter.load(local);
+					}
+					javaWriter.iinc(local.local);
+					if (pushOption == PushOption.AFTER) {
+						javaWriter.load(local);
+					}
+				} else {
+					modify(source, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+					}, pushOption);
+				}
+				return;
+			case INT_DEC:
+			case UINT_DEC:
+			case USIZE_DEC:
+				if (source instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) source).variable.id);
+					if (pushOption == PushOption.BEFORE) {
+						javaWriter.load(local);
+					}
+					javaWriter.idec(local.local);
+					if (pushOption == PushOption.AFTER) {
+						javaWriter.load(local);
+					}
+
+				} else {
+					modify(source, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+					}, pushOption);
+				}
+				return;
+			case LONG_INC:
+			case ULONG_INC:
+				modify(source, () -> {
+					javaWriter.constant(1L);
+					javaWriter.lAdd();
+				}, pushOption);
+				return;
+			case LONG_DEC:
+			case ULONG_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1L);
+					javaWriter.lSub();
+				}, pushOption);
+				return;
+			case FLOAT_INC:
+				modify(source, () -> {
+					javaWriter.constant(1f);
+					javaWriter.fAdd();
+				}, pushOption);
+				return;
+			case FLOAT_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1f);
+					javaWriter.fSub();
+				}, pushOption);
+				return;
+			case DOUBLE_INC:
+				modify(source, () -> {
+					javaWriter.constant(1d);
+					javaWriter.dAdd();
+				}, pushOption);
+				return;
+			case DOUBLE_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1d);
+					javaWriter.dSub();
+				}, pushOption);
+				return;
+			default:
+				throw new IllegalArgumentException("Unknown builtin: " + builtin);
+		}
+
+	}
+
 	private void modify(Expression source, Runnable modification, PushOption push) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
 	}
@@ -858,136 +1003,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitPostCall(PostCallExpression expression) {
 		if (expression.member.method instanceof BuiltinMethodSymbol) {
 			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) expression.member.method;
-			switch (builtin) {
-				case BYTE_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.constant(255);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case BYTE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.constant(255);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case SBYTE_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.i2b();
-					}, PushOption.BEFORE);
-					return null;
-				case SBYTE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.i2b();
-					}, PushOption.BEFORE);
-					return null;
-				case SHORT_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.i2s();
-					}, PushOption.BEFORE);
-					return null;
-				case SHORT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.i2s();
-					}, PushOption.BEFORE);
-					return null;
-				case USHORT_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.constant(0xFFFF);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case USHORT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.constant(0xFFFF);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case INT_INC:
-				case UINT_INC:
-				case USIZE_INC:
-					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
-						javaWriter.load(local);
-						javaWriter.iinc(local.local);
-					} else {
-						modify(expression.target, () -> {
-							javaWriter.iConst1();
-							javaWriter.iAdd();
-						}, PushOption.BEFORE);
-					}
-					return null;
-				case INT_DEC:
-				case UINT_DEC:
-				case USIZE_DEC:
-					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
-						javaWriter.load(local);
-						javaWriter.iinc(local.local, -1);
-					} else {
-						modify(expression.target, () -> {
-							javaWriter.iConst1();
-							javaWriter.iSub();
-						}, PushOption.BEFORE);
-					}
-					return null;
-				case LONG_INC:
-				case ULONG_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1L);
-						javaWriter.lAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case LONG_DEC:
-				case ULONG_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1L);
-						javaWriter.lSub();
-					}, PushOption.BEFORE);
-					return null;
-				case FLOAT_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1f);
-						javaWriter.fAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case FLOAT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1f);
-						javaWriter.fSub();
-					}, PushOption.BEFORE);
-					return null;
-				case DOUBLE_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1d);
-						javaWriter.dAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case DOUBLE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1d);
-						javaWriter.dSub();
-					}, PushOption.BEFORE);
-					return null;
-				default:
-					throw new IllegalArgumentException("Unknown postcall builtin: " + builtin);
-			}
+			modify(expression.target, builtin, PushOption.BEFORE);
+			return null;
 		}
 
 		modify(expression.target, () -> {

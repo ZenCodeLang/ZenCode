@@ -53,138 +53,34 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			javaWriter.pop(CompilerUtils.isLarge(expression.type));
 	}
 
-	private void modify(Expression source, Runnable modification) {
-		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, original, modification, PushOption.NONE));
-	}
-
 	private boolean compileIncrementOrDecrement(Expression target, BuiltinMethodSymbol builtin) {
 		if (builtin == null)
 			return false;
 
 		switch (builtin) {
 			case BYTE_INC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iAdd();
-					javaWriter.constant(255);
-					javaWriter.iAnd();
-				});
-				return true;
 			case BYTE_DEC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iSub();
-					javaWriter.constant(255);
-					javaWriter.iAnd();
-				});
-				return true;
 			case SBYTE_INC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iAdd();
-					javaWriter.i2b();
-				});
-				return true;
 			case SBYTE_DEC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iSub();
-					javaWriter.i2b();
-				});
-				return true;
 			case SHORT_INC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iAdd();
-					javaWriter.i2s();
-				});
-				return true;
 			case SHORT_DEC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iSub();
-					javaWriter.i2s();
-				});
-				return true;
 			case USHORT_INC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iAdd();
-					javaWriter.constant(0xFFFF);
-					javaWriter.iAnd();
-				});
-				return true;
 			case USHORT_DEC:
-				modify(target, () -> {
-					javaWriter.iConst1();
-					javaWriter.iSub();
-					javaWriter.constant(0xFFFF);
-					javaWriter.iAnd();
-				});
-				return true;
 			case INT_INC:
 			case UINT_INC:
 			case USIZE_INC:
-				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.id);
-					javaWriter.iinc(local.local);
-				} else {
-					modify(target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-					});
-				}
-				return true;
 			case INT_DEC:
 			case UINT_DEC:
 			case USIZE_DEC:
-				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.id);
-					javaWriter.iinc(local.local, -1);
-				} else {
-					modify(target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-					});
-				}
-				return true;
 			case LONG_INC:
 			case ULONG_INC:
-				modify(target, () -> {
-					javaWriter.constant(1l);
-					javaWriter.lAdd();
-				});
-				return true;
 			case LONG_DEC:
 			case ULONG_DEC:
-				modify(target, () -> {
-					javaWriter.constant(1l);
-					javaWriter.lSub();
-				});
-				return true;
 			case FLOAT_INC:
-				modify(target, () -> {
-					javaWriter.constant(1f);
-					javaWriter.fAdd();
-				});
-				return true;
 			case FLOAT_DEC:
-				modify(target, () -> {
-					javaWriter.constant(1f);
-					javaWriter.fSub();
-				});
-				return true;
 			case DOUBLE_INC:
-				modify(target, () -> {
-					javaWriter.constant(1d);
-					javaWriter.dAdd();
-				});
-				return true;
 			case DOUBLE_DEC:
-				modify(target, () -> {
-					javaWriter.constant(1d);
-					javaWriter.dSub();
-				});
+				original.modify(target, builtin, PushOption.NONE);
 				return true;
 			default:
 				return false;

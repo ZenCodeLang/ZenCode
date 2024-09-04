@@ -635,6 +635,31 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.label(exit);
 				return null;
 			}
+			case BYTE_INC:
+			case BYTE_DEC:
+			case SBYTE_INC:
+			case SBYTE_DEC:
+			case SHORT_INC:
+			case SHORT_DEC:
+			case USHORT_INC:
+			case USHORT_DEC:
+			case INT_INC:
+			case UINT_INC:
+			case USIZE_INC:
+			case INT_DEC:
+			case UINT_DEC:
+			case USIZE_DEC:
+			case LONG_INC:
+			case ULONG_INC:
+			case LONG_DEC:
+			case ULONG_DEC:
+			case FLOAT_INC:
+			case FLOAT_DEC:
+			case DOUBLE_INC:
+			case DOUBLE_DEC:
+				Expression target = arguments[0];
+				expressionVisitor.modify(target, method, JavaModificationExpressionVisitor.PushOption.AFTER);
+				return null;
 		}
 
 		for (Expression argument : arguments) {
