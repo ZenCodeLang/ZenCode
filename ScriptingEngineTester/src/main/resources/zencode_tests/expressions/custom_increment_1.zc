@@ -1,0 +1,33 @@
+#dependency: stdlib
+#output: testing ticket++
+#output: T-0000000008
+#output: T-0000000009
+#output: T-0000000010
+#output: testing ++ticket
+#output: T-0000000011
+#output: T-0000000012
+#output: T-0000000012
+
+public class TicketNumber {
+    private var num as int = 0;
+
+    public ++(): TicketNumber {
+        return new TicketNumber(num + 1);
+    }
+
+    public implicit as string => "T-" + (num as string).lpad(10, "0");
+}
+
+var ticket = new TicketNumber(8);
+println("testing ticket++");
+println(ticket++); // 8
+println(ticket); //9
+ticket++;
+println(ticket); // 10
+
+// ticket is now at 10
+println("testing ++ticket");
+++ticket;
+println(ticket); // 11
+println(++ticket); // 12
+println(ticket); // 12

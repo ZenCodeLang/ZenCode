@@ -1008,7 +1008,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		modify(expression.target, () -> {
-			context.getJavaMethod(expression.member).compileVirtual(methodCompiler, expression.type, expression, CallArguments.EMPTY);
+			context.getJavaMethod(expression.member).compileVirtual(methodCompiler, expression.type, expression.target, CallArguments.EMPTY);
 		}, PushOption.BEFORE);
 
 		return null;
