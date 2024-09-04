@@ -78,4 +78,8 @@ public enum OperatorType {
 		this.assignOperatorFor = assignOperatorFor;
 		this.widening = false;
 	}
+
+	public boolean canBePreOrPostCall() {
+		return this == INCREMENT || this == DECREMENT;
+	}
 }

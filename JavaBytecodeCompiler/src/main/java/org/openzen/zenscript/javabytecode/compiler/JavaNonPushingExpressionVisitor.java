@@ -6,8 +6,12 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
@@ -16,6 +20,8 @@ import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVis
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
+
+import java.util.Optional;
 
 /**
  * @author Hoofdgebruiker
@@ -53,38 +59,53 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			javaWriter.pop(CompilerUtils.isLarge(expression.type));
 	}
 
-	private boolean compileIncrementOrDecrement(Expression target, BuiltinMethodSymbol builtin) {
-		if (builtin == null)
-			return false;
+	private boolean compileIncrementOrDecrement(Expression target, TypeID returnType, MethodInstance methodInstance) {
+		MethodSymbol methodSymbol = methodInstance.method;
 
-		switch (builtin) {
-			case BYTE_INC:
-			case BYTE_DEC:
-			case SBYTE_INC:
-			case SBYTE_DEC:
-			case SHORT_INC:
-			case SHORT_DEC:
-			case USHORT_INC:
-			case USHORT_DEC:
-			case INT_INC:
-			case UINT_INC:
-			case USIZE_INC:
-			case INT_DEC:
-			case UINT_DEC:
-			case USIZE_DEC:
-			case LONG_INC:
-			case ULONG_INC:
-			case LONG_DEC:
-			case ULONG_DEC:
-			case FLOAT_INC:
-			case FLOAT_DEC:
-			case DOUBLE_INC:
-			case DOUBLE_DEC:
-				original.modify(target, builtin, PushOption.NONE);
-				return true;
-			default:
-				return false;
+		// try as builtin
+		if (methodSymbol instanceof BuiltinMethodSymbol) {
+
+
+			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) methodSymbol;
+			switch (builtin) {
+				case BYTE_INC:
+				case BYTE_DEC:
+				case SBYTE_INC:
+				case SBYTE_DEC:
+				case SHORT_INC:
+				case SHORT_DEC:
+				case USHORT_INC:
+				case USHORT_DEC:
+				case INT_INC:
+				case UINT_INC:
+				case USIZE_INC:
+				case INT_DEC:
+				case UINT_DEC:
+				case USIZE_DEC:
+				case LONG_INC:
+				case ULONG_INC:
+				case LONG_DEC:
+				case ULONG_DEC:
+				case FLOAT_INC:
+				case FLOAT_DEC:
+				case DOUBLE_INC:
+				case DOUBLE_DEC:
+					original.modify(target, builtin, PushOption.NONE);
+					return true;
+				default:
+					break;
+			}
 		}
+		// try as custom operator
+		Optional<OperatorType> operatorType = methodInstance.getID()
+				.getOperator()
+				.filter(OperatorType::canBePreOrPostCall);
+		if (operatorType.isPresent()) {
+			original.modifyCustomOperator(target, methodInstance.method, returnType, PushOption.NONE);
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -104,8 +125,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitCall(CallExpression expression) {
-		BuiltinMethodSymbol builtin = expression.method.method instanceof BuiltinMethodSymbol ? (BuiltinMethodSymbol) expression.method.method : null;
-		if (!compileIncrementOrDecrement(expression.target, builtin))
+		if (!compileIncrementOrDecrement(expression.target, expression.type, expression.method))
 			fallback(expression);
 
 		return null;
@@ -387,8 +407,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitPostCall(PostCallExpression expression) {
-		BuiltinMethodSymbol builtin = expression.member.method instanceof BuiltinMethodSymbol ? (BuiltinMethodSymbol) expression.member.method : null;
-		if (!compileIncrementOrDecrement(expression.target, builtin))
+		if (!compileIncrementOrDecrement(expression.target, expression.type, expression.member))
 			fallback(expression);
 
 		return null;

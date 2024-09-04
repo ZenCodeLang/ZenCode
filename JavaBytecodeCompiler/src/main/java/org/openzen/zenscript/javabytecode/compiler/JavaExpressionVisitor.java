@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.type.*;
@@ -234,6 +235,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCall(CallExpression expression) {
+		// Try to compile the call to a custom preCall (e.g. ++i)
+		Optional<OperatorType> operatorType = expression.method.getID()
+				.getOperator()
+				.filter(OperatorType::canBePreOrPostCall);
+		if (operatorType.isPresent() && !(expression.method.method instanceof BuiltinMethodSymbol)) {
+			modifyCustomOperator(expression.target, expression.method.method, expression.type, PushOption.AFTER);
+			return null;
+		}
+
+
 		ModuleSymbol module = expression.method.method.getDefiningType().getModule();
 		JavaCompiledModule javaCompiledModule = context.getJavaModule(module);
 		JavaMethod method = javaCompiledModule.getMethodInfo(expression.method.method);
@@ -980,7 +991,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	}
 
-	private void modify(Expression source, Runnable modification, PushOption push) {
+	public void modifyCustomOperator(Expression source, MethodSymbol methodSymbol, TypeID returnType, PushOption push) {
+		modify(
+				source,
+				() -> context.getJavaMethod(methodSymbol).compileVirtual(methodCompiler, returnType, source, CallArguments.EMPTY),
+				push
+		);
+	}
+
+	public void modify(Expression source, Runnable modification, PushOption push) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
 	}
 
