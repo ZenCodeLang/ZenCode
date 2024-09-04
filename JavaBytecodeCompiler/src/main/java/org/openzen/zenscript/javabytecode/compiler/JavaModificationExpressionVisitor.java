@@ -75,7 +75,7 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 		}
 		modification.run();
 		if(push == PushOption.AFTER) {
-			javaWriter.dupX1(true, large);
+			javaWriter.dupX1(false, large);
 		}
 	}
 
