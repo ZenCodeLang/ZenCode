@@ -1,4 +1,4 @@
-#error: 6:ENUM_CONSTANT_NOT_YET_INITIALIZED
+#error: 6:INVALID_CALL_ARGUMENT
 
 public enum MyEnum {
 	A('X1'),

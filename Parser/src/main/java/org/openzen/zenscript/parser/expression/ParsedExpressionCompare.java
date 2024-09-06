@@ -1,16 +1,19 @@
 package org.openzen.zenscript.parser.expression;
 
-import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 
 import java.util.Optional;
 
@@ -52,39 +55,7 @@ public class ParsedExpressionCompare extends ParsedExpression {
 
 		@Override
 		public Expression eval() {
-			Expression left = this.left.eval();
-			ResolvedType resolved = compiler.resolve(left.type);
-
-			if (type == CompareType.EQ) {
-				Optional<InstanceCallable> equals = resolved.findOperator(OperatorType.EQUALS);
-				if (equals.isPresent()) {
-					return equals.get().call(compiler, position, left, TypeID.NONE, right);
-				}
-			} else if (type == CompareType.NE) {
-				Optional<InstanceCallable> notEquals = resolved.findOperator(OperatorType.NOTEQUALS);
-				if (notEquals.isPresent()) {
-					return notEquals.get().call(compiler, position, left, TypeID.NONE, right);
-				}
-			}
-			CastedExpression result = resolved.comparators()
-					.stream()
-					.map(comparator -> comparator.compare(compiler, position, left, right, this.type))
-					.reduce((a, b) -> {
-						if (a.isFailed()) return b;
-						if (b.isFailed()) return a;
-
-						if (a.level.compareTo(b.level) == 0) {
-							return new CastedExpression(a.level, compiler.at(position).invalid(CompileErrors.ambiguousComparison(a.value.type, b.value.type)));
-						} else if (a.level.compareTo(b.level) > 0) {
-							return a;
-						} else {
-							return b;
-						}
-					})
-					.orElseGet(() -> CastedExpression.invalid(compiler.at(position).invalid(
-							CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE), //TODO Make error message more descriptive and include target type.
-							BasicTypeID.BOOL)));
-			return result.value;
+			return compiler.at(position).compare(left.eval(), right, type);
 		}
 
 		@Override
