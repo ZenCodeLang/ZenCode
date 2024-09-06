@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class JavaNativeTypeTemplate {
 	protected final JavaRuntimeClass class_;
@@ -51,6 +52,13 @@ public class JavaNativeTypeTemplate {
 			this.constructors = result;
 		}
 		return this.constructors;
+	}
+
+	public Stream<MethodSymbol> getAllMethods() {
+		if (methods == null) {
+			loadMethods();
+		}
+		return methods.values().stream().flatMap(List::stream);
 	}
 
 	public JavaNativeTypeTemplate(TypeID target, JavaRuntimeClass class_, TypeVariableContext typeVariableContext, boolean expansion) {
