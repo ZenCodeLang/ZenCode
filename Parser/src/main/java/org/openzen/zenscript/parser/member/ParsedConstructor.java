@@ -1,16 +1,20 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
+
+import java.util.List;
 
 public class ParsedConstructor extends ParsedFunctionalMember {
 	private final ParsedFunctionHeader header;
@@ -34,6 +38,12 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 		@Override
 		public void linkTypes() {
 			compiled = new ConstructorMember(position, definition, modifiers, header.compile(compiler.types()));
+		}
+
+		@Override
+		public void compile(List<CompileException> errors) {
+			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
+			compiled.setBody(body.compile(compiler.forMethod(compiled.header.withReturnType(BasicTypeID.VOID))));
 		}
 
 		@Override

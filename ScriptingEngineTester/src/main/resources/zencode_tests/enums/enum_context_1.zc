@@ -8,7 +8,7 @@ public enum MyEnum {
 }
 
 val x: MyEnum = B;
-val y: MyEnum;
+var y: MyEnum; // TODO: should also work with val since this is the first time it's set
 y = C;
 println(x.name);
 println(y.name);

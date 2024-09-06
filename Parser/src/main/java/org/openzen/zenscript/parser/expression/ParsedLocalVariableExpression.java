@@ -127,7 +127,7 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 
 		@Override
 		public CompilingExpression assign(CompilingExpression value) {
-			return new CompilingStaticAssign(compiler, position, field, value);
+			return new CompilingInstanceAssign(compiler, position, field, this_, value);
 		}
 
 		@Override
