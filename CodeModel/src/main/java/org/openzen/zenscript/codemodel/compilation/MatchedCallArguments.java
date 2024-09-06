@@ -47,7 +47,9 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			}
 		}
 
-		return methodsGroupedByMatchLevel.getOrDefault(CastedExpression.Level.INVALID, Collections.emptyList()).stream().findFirst()
+		return methodsGroupedByMatchLevel.getOrDefault(CastedExpression.Level.INVALID, Collections.emptyList()).stream()
+				.filter(i -> i.error != null)
+				.findFirst()
 				.orElseGet(() -> {
 					List<FunctionHeader> headers = overloads.stream().map(AnyMethod::getHeader).collect(Collectors.toList());
 					List<TypeID> types = Arrays.stream(arguments).map(CompilingExpression::eval).map(it -> it.type).collect(Collectors.toList());

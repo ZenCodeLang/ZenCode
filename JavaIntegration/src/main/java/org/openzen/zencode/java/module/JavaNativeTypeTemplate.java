@@ -210,8 +210,11 @@ public class JavaNativeTypeTemplate {
 		innerTypes = new HashMap<>();
 
 		for (Class<?> cls : class_.cls.getDeclaredClasses()) {
-			ZenCodeType.Inner innerType = cls.getAnnotation(ZenCodeType.Inner.class);
-			String name = innerType.value().isEmpty() ? cls.getSimpleName() : innerType.value();
+			String name = Optional.ofNullable(cls.getAnnotation(ZenCodeType.Inner.class))
+					.map(ZenCodeType.Inner::value)
+					.filter(innerName -> !innerName.isEmpty())
+					.orElseGet(cls::getSimpleName);
+
 			JavaClass.Kind kind = ConversionUtils.getKindFromAnnotations(cls);
 			JavaRuntimeClass innerClass = new JavaAnnotatedRuntimeClass(class_.module, cls, name, null, kind);
 			innerTypes.put(name, innerClass);
