@@ -21,12 +21,20 @@ public class MemoizedExpression extends Expression {
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitMemoized(this);
+		if (accessedOnlyOnce) {
+			return target.accept(visitor);
+		} else {
+			return visitor.visitMemoized(this);
+		}
 	}
 
 	@Override
 	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
-		return visitor.visitMemoized(context, this);
+		if (accessedOnlyOnce) {
+			return target.accept(context, visitor);
+		} else {
+			return visitor.visitMemoized(context, this);
+		}
 	}
 
 	@Override
@@ -54,15 +62,9 @@ public class MemoizedExpression extends Expression {
 		return target.evaluate();
 	}
 
-	public void setAccessedMoreThanOnce() {
+	public void markAccessedMoreThanOnce() {
 		accessedOnlyOnce = false;
 	}
-
-	public boolean wasAccessedOnlyOnce() {
-		return accessedOnlyOnce;
-	}
-
-
 
 	public void setVariableID(VariableID variableID) {
 		this.variableID = variableID;

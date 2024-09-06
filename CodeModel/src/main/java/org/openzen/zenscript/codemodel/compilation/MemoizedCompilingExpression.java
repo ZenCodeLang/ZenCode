@@ -22,7 +22,7 @@ public class MemoizedCompilingExpression extends AbstractCompilingExpression {
 		if (result == null) {
 			result = new MemoizedExpression(expression.eval());
 		} else {
-			result.setAccessedMoreThanOnce();
+			result.markAccessedMoreThanOnce();
 		}
 		return result;
 	}

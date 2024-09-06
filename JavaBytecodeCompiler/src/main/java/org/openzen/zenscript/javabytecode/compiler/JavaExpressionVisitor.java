@@ -1329,11 +1329,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitMemoized(MemoizedExpression expression) {
-		if (expression.wasAccessedOnlyOnce()) {
-			// we don't need to create a temp variable if nobody else is asking for it
-			return expression.target.accept(this);
-		}
-
 		if (expression.hasVariableID()) {
 			// We already created a temp variable for this -> reuse it
 			return tagVariableAndUpdateLastUsage(expression.getVariableID());
