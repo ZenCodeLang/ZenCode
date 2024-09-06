@@ -298,7 +298,7 @@ public class RustExpressionCompiler {
 		}
 
 		@Override
-		public ExpressionString visitPostCall(PostCallExpression expression) {
+		public ExpressionString visitModification(ModificationExpression expression) {
 			throw new UnsupportedOperationException("not yet supported");
 		}
 

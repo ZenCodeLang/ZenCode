@@ -10,7 +10,13 @@ import org.openzen.zenscript.codemodel.expression.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableInvalidExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableLocalVariableExpression;
 import org.openzen.zenscript.codemodel.ssa.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+
+import java.util.Optional;
 
 public class LocalVariableExpression implements LocalExpression {
 	private final CodePosition position;
@@ -62,6 +68,14 @@ public class LocalVariableExpression implements LocalExpression {
 		@Override
 		public CompilingExpression assign(CompilingExpression value) {
 			return new LocalVariableCompilingAssignment(compiler, position, variable, value);
+		}
+
+		@Override
+		public Optional<ModifiableExpression> asModifiable() {
+			if (variable.getActualType() == null)
+				return Optional.of(new ModifiableInvalidExpression(position, BasicTypeID.INVALID, CompileErrors.localVariableTypeUnknown(variable.name)));
+
+			return Optional.of(new ModifiableLocalVariableExpression(position, variable.eval()));
 		}
 
 		@Override

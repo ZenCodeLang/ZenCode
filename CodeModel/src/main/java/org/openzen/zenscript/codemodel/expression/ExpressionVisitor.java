@@ -103,7 +103,7 @@ public interface ExpressionVisitor<T> {
 
 	T visitPlatformSpecific(Expression expression);
 
-	T visitPostCall(PostCallExpression expression);
+	T visitModification(ModificationExpression expression);
 
 	T visitRange(RangeExpression expression);
 
@@ -134,4 +134,6 @@ public interface ExpressionVisitor<T> {
 	T visitVariantValue(VariantValueExpression expression);
 
 	T visitWrapOptional(WrapOptionalExpression expression);
+
+	T visitMemoized(MemoizedExpression expression);
 }

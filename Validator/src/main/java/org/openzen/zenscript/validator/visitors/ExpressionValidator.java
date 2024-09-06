@@ -534,12 +534,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
-	public Void visitPostCall(PostCallExpression expression) {
-		checkMemberAccess(expression.position, expression.member);
-		checkNotStatic(expression.position, expression.member);
+	public Void visitModification(ModificationExpression expression) {
+		checkMemberAccess(expression.position, expression.method);
+		checkNotStatic(expression.position, expression.method);
 
-		expression.target.accept(this);
-		// TODO: is target a valid increment target?
+		expression.target.accept(new ModifiableExpressionValidator(validator, scope, this));
 		return null;
 	}
 
@@ -681,6 +680,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			validator.logError(expression.position, CompileErrors.invalidOperand("expression value is already optional"));
 		}
 		return null;
+	}
+
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		return expression.target.accept(this);
 	}
 
 	private void checkCorrectType(CodePosition position, TypeID expected, TypeID actual) {

@@ -84,7 +84,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 				ResolvedType resolvedType = compiler.resolve(cast.type);
 				return resolvedType.findImplicitConstructor()
 						.map(constructor -> constructor.casted(compiler, position, cast, null, this))
-						.orElse(cast.invalid(CompileErrors.invalidArrayType(cast.type)));
+						.orElseGet(() -> cast.invalid(CompileErrors.invalidArrayType(cast.type)));
 			}
 
 			TypeID elementType = maybeArray.get().elementType;

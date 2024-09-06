@@ -99,7 +99,7 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitPlatformSpecific(C context, Expression expression);
 
-	R visitPostCall(C context, PostCallExpression expression);
+	R visitModification(C context, ModificationExpression expression);
 
 	R visitRange(C context, RangeExpression expression);
 
@@ -130,4 +130,6 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitVariantValue(C context, VariantValueExpression expression);
 
 	R visitWrapOptional(C context, WrapOptionalExpression expression);
+
+	R visitMemoized(C context, MemoizedExpression expression);
 }

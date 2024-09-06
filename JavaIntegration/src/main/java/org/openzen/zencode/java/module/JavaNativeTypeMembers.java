@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaNativeTypeMembers implements ResolvedType {
 	private final JavaNativeTypeTemplate template;
@@ -48,6 +49,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 				.filter(c -> c.getModifiers().isImplicit())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
+
 		return constructors.isEmpty() ? Optional.empty() : Optional.of(new StaticCallable(constructors));
 	}
 

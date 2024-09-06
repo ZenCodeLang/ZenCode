@@ -771,7 +771,7 @@ public class CodeReader implements CodeSerializationInput {
 			case ExpressionEncoding.TYPE_POST_CALL: {
 				Expression target = deserializeExpression(context);
 				MethodInstance member = (MethodInstance) readMember(context, target.type);
-				return new PostCallExpression(position, target, member, member.getHeader());
+				return new ModificationExpression(position, target, member, member.getHeader());
 			}
 			case ExpressionEncoding.TYPE_RANGE: {
 				Expression from = deserializeExpression(context);

@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceFieldCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
@@ -134,6 +135,11 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 
 		@Override
+		public Optional<ModifiableExpression> asModifiable() {
+			return resolved.asModifiable();
+		}
+
+			@Override
 		public CompilingExpression assign(CompilingExpression value) {
 			return resolved.assign(value);
 		}

@@ -1,0 +1,10 @@
+#output: 1
+#output: 2
+#output: 3
+
+var i = 1;
+println(i);
+++i;
+println(i);
+++i;
+println(i);

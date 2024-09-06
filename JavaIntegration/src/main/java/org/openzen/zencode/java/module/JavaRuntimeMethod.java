@@ -143,6 +143,11 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
+	public <T> T compileVirtualWithTargetOnTopOfStack(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
+		return compiler.nativeStaticMethod(method, returnType, arguments);
+	}
+
+	@Override
 	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
 		return compiler.nativeStaticMethod(method, returnType, arguments);
 	}

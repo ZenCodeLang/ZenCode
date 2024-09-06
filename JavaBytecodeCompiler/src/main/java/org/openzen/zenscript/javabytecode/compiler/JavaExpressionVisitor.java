@@ -9,9 +9,12 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -625,13 +628,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		final Label label = new Label();
-		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.id);
-
-		tag.end = label;
-		javaWriter.load(tag.type, tag.local);
-		javaWriter.label(label);
-		return null;
+		return tagVariableAndUpdateLastUsage(expression.variable.id);
 	}
 
 	@Override
@@ -835,7 +832,151 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	private void modify(Expression source, Runnable modification, PushOption push) {
+	private void modify(ModifiableExpression source, BuiltinMethodSymbol builtin, PushOption pushOption) {
+		switch (builtin) {
+			case BYTE_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(255);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case BYTE_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(255);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case SBYTE_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2b();
+				}, pushOption);
+				return;
+			case SBYTE_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2b();
+				}, pushOption);
+				return;
+			case SHORT_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2s();
+				}, pushOption);
+				return;
+			case SHORT_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2s();
+				}, pushOption);
+				return;
+			case USHORT_INC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case USHORT_DEC:
+				modify(source, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, pushOption);
+				return;
+			case INT_INC:
+			case UINT_INC:
+			case USIZE_INC:
+				if (source instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) source).variable.id);
+					if (pushOption == PushOption.BEFORE) {
+						javaWriter.load(local);
+					}
+					javaWriter.iinc(local.local);
+					if (pushOption == PushOption.AFTER) {
+						javaWriter.load(local);
+					}
+				} else {
+					modify(source, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+					}, pushOption);
+				}
+				return;
+			case INT_DEC:
+			case UINT_DEC:
+			case USIZE_DEC:
+				if (source instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) source).variable.id);
+					if (pushOption == PushOption.BEFORE) {
+						javaWriter.load(local);
+					}
+					javaWriter.idec(local.local);
+					if (pushOption == PushOption.AFTER) {
+						javaWriter.load(local);
+					}
+
+				} else {
+					modify(source, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+					}, pushOption);
+				}
+				return;
+			case LONG_INC:
+			case ULONG_INC:
+				modify(source, () -> {
+					javaWriter.constant(1L);
+					javaWriter.lAdd();
+				}, pushOption);
+				return;
+			case LONG_DEC:
+			case ULONG_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1L);
+					javaWriter.lSub();
+				}, pushOption);
+				return;
+			case FLOAT_INC:
+				modify(source, () -> {
+					javaWriter.constant(1f);
+					javaWriter.fAdd();
+				}, pushOption);
+				return;
+			case FLOAT_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1f);
+					javaWriter.fSub();
+				}, pushOption);
+				return;
+			case DOUBLE_INC:
+				modify(source, () -> {
+					javaWriter.constant(1d);
+					javaWriter.dAdd();
+				}, pushOption);
+				return;
+			case DOUBLE_DEC:
+				modify(source, () -> {
+					javaWriter.constant(1d);
+					javaWriter.dSub();
+				}, pushOption);
+				return;
+			default:
+				throw new IllegalArgumentException("Unknown builtin: " + builtin);
+		}
+	}
+
+	private void modify(ModifiableExpression source, Runnable modification, PushOption push) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
 	}
 
@@ -854,147 +995,34 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	@Override
-	public Void visitPostCall(PostCallExpression expression) {
-		if (expression.member.method instanceof BuiltinMethodSymbol) {
-			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) expression.member.method;
-			switch (builtin) {
-				case BYTE_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.constant(255);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case BYTE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.constant(255);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case SBYTE_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.i2b();
-					}, PushOption.BEFORE);
-					return null;
-				case SBYTE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.i2b();
-					}, PushOption.BEFORE);
-					return null;
-				case SHORT_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.i2s();
-					}, PushOption.BEFORE);
-					return null;
-				case SHORT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.i2s();
-					}, PushOption.BEFORE);
-					return null;
-				case USHORT_INC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iAdd();
-						javaWriter.constant(0xFFFF);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case USHORT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.iConst1();
-						javaWriter.iSub();
-						javaWriter.constant(0xFFFF);
-						javaWriter.iAnd();
-					}, PushOption.BEFORE);
-					return null;
-				case INT_INC:
-				case UINT_INC:
-				case USIZE_INC:
-					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
-						javaWriter.load(local);
-						javaWriter.iinc(local.local);
-					} else {
-						modify(expression.target, () -> {
-							javaWriter.iConst1();
-							javaWriter.iAdd();
-						}, PushOption.BEFORE);
-					}
-					return null;
-				case INT_DEC:
-				case UINT_DEC:
-				case USIZE_DEC:
-					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.id);
-						javaWriter.load(local);
-						javaWriter.iinc(local.local, -1);
-					} else {
-						modify(expression.target, () -> {
-							javaWriter.iConst1();
-							javaWriter.iSub();
-						}, PushOption.BEFORE);
-					}
-					return null;
-				case LONG_INC:
-				case ULONG_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1L);
-						javaWriter.lAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case LONG_DEC:
-				case ULONG_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1L);
-						javaWriter.lSub();
-					}, PushOption.BEFORE);
-					return null;
-				case FLOAT_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1f);
-						javaWriter.fAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case FLOAT_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1f);
-						javaWriter.fSub();
-					}, PushOption.BEFORE);
-					return null;
-				case DOUBLE_INC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1d);
-						javaWriter.dAdd();
-					}, PushOption.BEFORE);
-					return null;
-				case DOUBLE_DEC:
-					modify(expression.target, () -> {
-						javaWriter.constant(1d);
-						javaWriter.dSub();
-					}, PushOption.BEFORE);
-					return null;
-				default:
-					throw new IllegalArgumentException("Unknown postcall builtin: " + builtin);
-			}
+	private PushOption getPushOption(ModificationExpression.Modification modification) {
+		switch (modification) {
+			case PostDecrement:
+			case PostIncrement:
+				return PushOption.BEFORE;
+			case PreDecrement:
+			case PreIncrement:
+				return PushOption.AFTER;
+			default:
+				throw new IllegalArgumentException("Unknown modification: " + modification);
 		}
+	}
 
-		modify(expression.target, () -> {
-			context.getJavaMethod(expression.member).compileVirtual(methodCompiler, expression.type, expression, CallArguments.EMPTY);
-		}, PushOption.BEFORE);
-
+	@Override
+	public Void visitModification(ModificationExpression expression) {
+		modify(expression, getPushOption(expression.modification));
 		return null;
+	}
+
+	public void modify(ModificationExpression expression, PushOption pushOption) {
+		if (expression.method.method instanceof BuiltinMethodSymbol) {
+			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) expression.method.method;
+			modify(expression.target, builtin, pushOption);
+		} else {
+			modify(expression.target, () -> {
+				context.getJavaMethod(expression.method).compileVirtualWithTargetOnTopOfStack(methodCompiler, expression.type, CallArguments.EMPTY);
+			}, pushOption);
+		}
 	}
 
 	@Override
@@ -1296,6 +1324,42 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
 		expression.value.type.accept(expression.value.type, optionalWrappingTypeVisitor);
+		return null;
+	}
+
+	@Override
+	public Void visitMemoized(MemoizedExpression expression) {
+		if (expression.hasVariableID()) {
+			// We already created a temp variable for this -> reuse it
+			return tagVariableAndUpdateLastUsage(expression.getVariableID());
+		}
+
+		// first call evaluates it and stores it in a local variable called "memoized"
+		VariableID newVariable = new VariableID();
+		expression.setVariableID(newVariable);
+
+		expression.target.accept(this);
+		Type asmType = context.getType(expression.type);
+		int local = javaWriter.local(asmType);
+
+		Label start = new Label();
+		javaWriter.label(start);
+		JavaLocalVariableInfo memoized = new JavaLocalVariableInfo(asmType, local, start, "memoized");
+		javaWriter.setLocalVariable(newVariable, memoized);
+		javaWriter.addVariableInfo(memoized);
+
+		javaWriter.dup(asmType);
+		javaWriter.store(asmType, local);
+		return null;
+	}
+
+	private Void tagVariableAndUpdateLastUsage(VariableID id) {
+		final Label label = new Label();
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(id);
+
+		tag.end = label;
+		javaWriter.load(tag.type, tag.local);
+		javaWriter.label(label);
 		return null;
 	}
 

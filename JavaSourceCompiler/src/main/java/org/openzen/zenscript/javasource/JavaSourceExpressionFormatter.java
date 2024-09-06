@@ -476,7 +476,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	@Override
-	public ExpressionString visitPostCall(PostCallExpression expression) {
+	public ExpressionString visitModification(ModificationExpression expression) {
 		return unaryPostfix(expression.target, expression.member.getOperator() == OperatorType.INCREMENT ? JavaOperator.INCREMENT : JavaOperator.DECREMENT);
 	}
 

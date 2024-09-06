@@ -29,7 +29,7 @@ public class TypeCompilingExpression implements CompilingExpression {
 
 	@Override
 	public CastedExpression cast(CastedEval cast) {
-		return CastedExpression.invalid(eval());
+		return CastedExpression.invalid(position, CompileErrors.cannotUseTypeAsValue());
 	}
 
 	@Override

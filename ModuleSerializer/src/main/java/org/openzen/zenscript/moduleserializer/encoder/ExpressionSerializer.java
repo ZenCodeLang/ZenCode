@@ -568,7 +568,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
-	public Void visitPostCall(StatementSerializationContext context, PostCallExpression expression) {
+	public Void visitModification(StatementSerializationContext context, ModificationExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_POST_CALL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);

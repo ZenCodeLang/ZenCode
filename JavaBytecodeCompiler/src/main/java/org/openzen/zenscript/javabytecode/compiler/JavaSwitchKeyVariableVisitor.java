@@ -75,6 +75,7 @@ public class JavaSwitchKeyVariableVisitor implements SwitchValueVisitor<Void> {
 					caseEnd
 			);
 			javaWriter.setLocalVariable(binding.id, javaLocalVariableInfo);
+			javaWriter.addVariableInfo(javaLocalVariableInfo);
 			javaWriter.store(javaLocalVariableInfo);
 		}
 		return null;

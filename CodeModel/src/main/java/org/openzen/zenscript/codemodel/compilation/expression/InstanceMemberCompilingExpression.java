@@ -5,7 +5,10 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableInvalidExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiablePropertyExpression;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -29,10 +32,19 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 			return compiler.at(position).invalid(CompileErrors.typeArgumentsNotAllowedHere());
 
 		Expression instance = this.instance.eval();
-		return compiler.resolve(instance.type)
+		ResolvedType resolve = compiler.resolve(instance.type);
+
+		Optional<Expression> byGetter = resolve
 				.findGetter(name.name)
-				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE))
-				.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(instance.type, name.name)));
+				.map(getter -> getter.call(compiler, position, instance, TypeID.NONE, CompilingExpression.NONE));
+
+		return byGetter.orElseGet(() -> resolve
+				.findField(name.name)
+				.map(field -> field.get(compiler.at(position), instance))
+				.orElseGet(
+						() -> compiler.at(position).invalid(CompileErrors.noMemberInType(instance.type, name.name))
+				));
+
 	}
 
 	@Override
@@ -64,6 +76,27 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 		}
 
 		return Optional.of(result.orElseGet(() -> new InvalidCompilingExpression(compiler, position, CompileErrors.noMemberInType(instance.type, name.name))));
+	}
+
+	@Override
+	public Optional<ModifiableExpression> asModifiable() {
+		Expression instance = this.instance.eval();
+		ResolvedType resolvedType = compiler.resolve(instance.type);
+		Optional<InstanceCallable> getter = resolvedType.findGetter(name.name);
+		Optional<InstanceCallable> setter = resolvedType.findSetter(name.name);
+		if (getter.isPresent() && setter.isPresent()) {
+			Optional<MethodInstance> getterMethod = getter.get().asSingleMethod();
+			if (!getterMethod.isPresent()) {
+				return Optional.of(new ModifiableInvalidExpression(position, instance.type, CompileErrors.invalidPropertyGetter(instance.type, name.name)));
+			}
+			Optional<MethodInstance> setterMethod = setter.get().asSingleMethod();
+			if (!setterMethod.isPresent()) {
+				return Optional.of(new ModifiableInvalidExpression(position, instance.type, CompileErrors.invalidPropertySetter(instance.type, name.name)));
+			}
+			return Optional.of(new ModifiablePropertyExpression(instance, getterMethod.get(), setterMethod.get()));
+		} else {
+			return Optional.empty();
+		}
 	}
 
 	@Override

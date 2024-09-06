@@ -8,6 +8,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalThisExpression;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.globals.IGlobal;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -214,11 +215,6 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
-		public Expression callPostfix(MethodInstance method, Expression target) {
-			return new PostCallExpression(position, target, method);
-		}
-
-		@Override
 		public Expression coalesce(Expression left, Expression right) {
 			return new CoalesceExpression(position, left, right);
 		}
@@ -275,7 +271,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 		@Override
 		public Expression getInstanceField(Expression target, FieldInstance field) {
-			return null;
+			return new GetFieldExpression(position, target, field);
 		}
 
 		@Override
@@ -316,6 +312,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression lambda(LambdaClosure closure, FunctionHeader header, Statement body) {
 			return new FunctionExpression(position, closure, header, body);
+		}
+
+		@Override
+		public Expression modification(ModifiableExpression target, MethodInstance operator, ModificationExpression.Modification modification) {
+			return new ModificationExpression(position, target, operator, modification);
 		}
 
 		@Override

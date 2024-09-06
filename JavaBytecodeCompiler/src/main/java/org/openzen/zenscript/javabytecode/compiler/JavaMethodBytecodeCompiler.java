@@ -222,7 +222,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 		// This happens e.g. for Strings where compareTo is a static method in zencode but a virtual one in Java
 		boolean[] primitiveArguments = method.primitiveArguments;
-		if (method.kind == JavaNativeMethod.Kind.INSTANCE && asStatic) {
+		if (method.kind == JavaNativeMethod.Kind.INSTANCE && asStatic && arguments.arguments.length > 0) {
 			primitiveArguments = new boolean[arguments.arguments.length];
 			primitiveArguments[0] = method.cls.isPrimitive(); // Let's just assume they are all for object types
 			System.arraycopy(method.primitiveArguments, 0, primitiveArguments, 1, method.primitiveArguments.length);

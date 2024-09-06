@@ -1,0 +1,29 @@
+#disabled: currently broken because ZC cannot infer that the expansion for "<T extends Comparable<T>> T[]" is applicable to TicketNumber[]
+#dependency: stdlib
+#output: T-2
+#output: T-3
+#output: T-3
+#output: T-4
+#output: T-5
+
+import stdlib.Comparable;
+
+public class TicketNumber {
+   private var value as int;
+
+   public implements Comparable<TicketNumber> {
+       compareTo(other) => this.value - other.value;
+   }
+
+   public implicit as string => "T-" + value;
+}
+
+val a = [
+    new TicketNumber(5),
+    new TicketNumber(3),
+    new TicketNumber(3),
+    new TicketNumber(4),
+    new TicketNumber(2),
+];
+a.sort();
+for ticket in a println(ticket);

@@ -1,0 +1,13 @@
+#output: 1
+#output: 2
+
+public class MyClass {
+   public var value as int = 0;
+
+   public increment(): int => ++this.value;
+}
+
+var x = new MyClass();
+
+println(x.increment());
+println(x.increment());

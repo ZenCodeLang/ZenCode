@@ -83,8 +83,9 @@ public interface ZenCodeType {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.CONSTRUCTOR)
+	@Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 	@interface Constructor {
+		boolean implicit() default false;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

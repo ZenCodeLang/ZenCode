@@ -1,0 +1,12 @@
+#output: 0
+#output: 1
+
+public class MyClass {
+   public var value as int = 0;
+}
+
+var x = new MyClass();
+
+println(x.value);
+++x.value;
+println(x.value);

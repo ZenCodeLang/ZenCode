@@ -523,7 +523,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 
 	@Override
-	public ExpressionString visitPostCall(PostCallExpression expression) {
+	public ExpressionString visitModification(ModificationExpression expression) {
 		MethodID.Operator operator = (MethodID.Operator) expression.member.getID();
 		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, operator.operator == OperatorType.INCREMENT ? "++" : "--");
 	}

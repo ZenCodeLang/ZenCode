@@ -3,12 +3,14 @@ package org.openzen.zenscript.codemodel.identifiers.instances;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.AnyMethod;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
 import org.openzen.zenscript.codemodel.compilation.StaticCallableMethod;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ModificationExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -95,13 +97,13 @@ public class MethodInstance implements InstanceCallableMethod, StaticCallableMet
 	}
 
 	@Override
-	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
-		return builder.callPostfix(this, instance);
+	public Expression call(ExpressionBuilder builder, CallArguments arguments) {
+		return builder.callStatic(this, arguments);
 	}
 
 	@Override
-	public Expression call(ExpressionBuilder builder, CallArguments arguments) {
-		return builder.callStatic(this, arguments);
+	public Expression callModification(ExpressionBuilder builder, ModifiableExpression instance, ModificationExpression.Modification modification) {
+		return builder.modification(instance, this, modification);
 	}
 
 	@Override

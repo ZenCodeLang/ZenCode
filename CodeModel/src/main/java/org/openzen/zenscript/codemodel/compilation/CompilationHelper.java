@@ -57,9 +57,7 @@ public class CompilationHelper {
 						return b;
 					}
 				})
-				.orElseGet(() -> CastedExpression.invalid(compiler.at(position).invalid(
-						CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE), //TODO Make error message more descriptive and include target type.
-						BasicTypeID.BOOL)));
+				.orElseGet(() -> CastedExpression.invalid(position, CompileErrors.noOperatorInType(left.type, OperatorType.COMPARE)));
 		return result.value;
 	}
 }
