@@ -48,7 +48,6 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 		return methodsGroupedByMatchLevel.getOrDefault(CastedExpression.Level.INVALID, Collections.emptyList()).stream()
-				.filter(i -> i.error != null)
 				.findFirst()
 				.orElseGet(() -> {
 					List<FunctionHeader> headers = overloads.stream().map(AnyMethod::getHeader).collect(Collectors.toList());
@@ -82,6 +81,12 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		this.error = error;
 	}
 
+	private MatchedCallArguments(CompileError error, CallArguments arguments) {
+		this.method = null;
+		this.arguments = arguments;
+		this.error = error;
+	}
+
 	public boolean requiresWidenedInstance(TypeID instanceType) {
 		return method != null && method.hasWideningConversions() && method.asMethod().map(method -> !method.getTarget().equals(instanceType)).orElse(false);
 	}
@@ -100,7 +105,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 	public CastedExpression cast(ExpressionBuilder builder, CastedEval eval, CallEvaluator<T> evaluator) {
 		if (this.error != null) {
-			return eval.invalid(error);
+			return CastedExpression.invalid(builder.invalid(error));
 		} else {
 			return eval.of(evaluator.eval(builder, method, arguments));
 		}
@@ -239,7 +244,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 						argument = new WrappedCompilingExpression(compiler, header.getParameter(false, i).defaultValue);
 					} else {
 						// invalid
-						return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.missingParameter(header.getParameter(false, i).name)));
+						return CastedExpression.invalid(position, CompileErrors.missingParameter(header.getParameter(false, i).name));
 					}
 					return argument.cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i)));
 				})
@@ -249,6 +254,16 @@ public class MatchedCallArguments<T extends AnyMethod> {
 				.map(e -> e.level)
 				.max(Comparator.naturalOrder())
 				.orElse(CastedExpression.Level.EXACT);
+
+		if (level == CastedExpression.Level.INVALID) {
+			CastedExpression firstInvalid = Stream.of(providedArguments)
+					.filter(e -> e.level == CastedExpression.Level.INVALID)
+					.findFirst()
+					.orElseThrow(() -> new IllegalStateException("Should never happen"));
+
+			return new MatchedCallArguments<>(firstInvalid.error,
+					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, Expression.NONE));
+		}
 
 		return new MatchedCallArguments<>(
 				instancedMethod,

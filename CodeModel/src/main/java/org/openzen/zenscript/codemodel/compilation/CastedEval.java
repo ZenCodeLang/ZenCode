@@ -31,7 +31,7 @@ public class CastedEval {
 		if (value.type.equals(type) || type == BasicTypeID.UNDETERMINED)
 			return new CastedExpression(CastedExpression.Level.EXACT, value);
 		if (value.type.isInvalid())
-			return CastedExpression.invalid(value);
+			return CastedExpression.invalid(value.position, ((InvalidExpression)value).error);
 
 		ResolvedType resolvedTargetType = compiler.resolve(type);
 
@@ -77,18 +77,18 @@ public class CastedEval {
 				return new CastedExpression(CastedExpression.Level.EXPLICIT, casted.get());
 		}
 
-		return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.cannotCast(value.type, type, explicit)));
+		return CastedExpression.invalid(position, CompileErrors.cannotCast(value.type, type, explicit));
 	}
 
 	public CastedExpression of(CastedExpression.Level level, Expression value) {
 		if (level == CastedExpression.Level.EXPLICIT && !explicit)
-			return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.cannotCast(value.type, type, explicit)));
+			return CastedExpression.invalid(position, CompileErrors.cannotCast(value.type, type, explicit));
 
 		CastedExpression casted = of(value);
 		return new CastedExpression(level.max(casted.level), casted.value);
 	}
 
 	public CastedExpression invalid(CompileError error) {
-		return CastedExpression.invalid(compiler.at(position).invalid(error, type));
+		return CastedExpression.invalid(position, error);
 	}
 }

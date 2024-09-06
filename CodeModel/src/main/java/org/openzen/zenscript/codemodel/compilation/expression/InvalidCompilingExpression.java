@@ -56,6 +56,6 @@ public class InvalidCompilingExpression extends AbstractCompilingExpression impl
 
 	@Override
 	public CastedExpression casted(CodePosition position, CastedEval cast, CompilingExpression[] arguments) {
-		return CastedExpression.invalid(compiler.at(position).invalid(error));
+		return CastedExpression.invalid(position, error);
 	}
 }
