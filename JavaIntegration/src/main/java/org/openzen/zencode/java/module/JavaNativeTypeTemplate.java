@@ -43,22 +43,24 @@ public class JavaNativeTypeTemplate {
 
 	public List<MethodSymbol> getConstructors() {
 		if (constructors == null) {
-			List<MethodSymbol> result = new ArrayList<>();
-			for (Constructor<?> constructor : class_.cls.getConstructors()) {
-				if (constructor.isAnnotationPresent(ZenCodeType.Constructor.class)) {
-					result.add(loadJavaMethod(constructor));
-				}
-			}
-			this.constructors = result;
+			loadConstructors();
 		}
 		return this.constructors;
 	}
 
-	public Stream<MethodSymbol> getAllMethods() {
-		if (methods == null) {
-			loadMethods();
+	private void loadConstructors() {
+		List<MethodSymbol> result = new ArrayList<>();
+		for (Constructor<?> constructor : class_.cls.getConstructors()) {
+			if (constructor.isAnnotationPresent(ZenCodeType.Constructor.class)) {
+				result.add(loadJavaMethod(constructor, constructor.getAnnotation(ZenCodeType.Constructor.class).implicit()));
+			}
 		}
-		return methods.values().stream().flatMap(List::stream);
+		for (Method method : class_.cls.getMethods()) {
+			if (method.isAnnotationPresent(ZenCodeType.Constructor.class)) {
+				result.add(loadMethodAsConstructor(method, method.getAnnotation(ZenCodeType.Constructor.class).implicit()));
+			}
+		}
+		this.constructors = result;
 	}
 
 	public JavaNativeTypeTemplate(TypeID target, JavaRuntimeClass class_, TypeVariableContext typeVariableContext, boolean expansion) {
@@ -229,11 +231,20 @@ public class JavaNativeTypeTemplate {
 		return !method.getDeclaringClass().equals(cls) || method.isBridge();
 	}
 
-	protected MethodSymbol loadJavaMethod(Constructor<?> constructor) {
+	protected MethodSymbol loadJavaMethod(Constructor<?> constructor, boolean implicit) {
 		JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
 		FunctionHeader header = headerConverter.getHeader(typeVariableContext, constructor);
 		header.setReturnType(target); // In ZC, .ctors return the instantiated type
-		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, constructor, header, false);
+		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, constructor, header, implicit);
+		class_.module.getCompiled().setMethodInfo(method, method);
+		return method;
+	}
+
+	private MethodSymbol loadMethodAsConstructor(Method javaMethod, boolean implicit) {
+		JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
+		FunctionHeader header = headerConverter.getHeader(typeVariableContext, javaMethod);
+		header.setReturnType(target); // In ZC, .ctors return the instantiated type
+		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, javaMethod, MethodID.staticMethod(javaMethod.getName()), header, implicit);
 		class_.module.getCompiled().setMethodInfo(method, method);
 		return method;
 	}

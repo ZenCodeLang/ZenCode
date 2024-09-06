@@ -45,10 +45,8 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findImplicitConstructor() {
-		List<StaticCallableMethod> constructors = Stream.concat(
-						template.getConstructors().stream().filter(c -> c.getModifiers().isImplicit()),
-						template.getAllMethods().filter(c -> c.getModifiers().isStatic() && c.getModifiers().isImplicit() && c.getHeader().getReturnType().equals(getType()))
-				)
+		List<StaticCallableMethod> constructors = template.getConstructors().stream()
+				.filter(c -> c.getModifiers().isImplicit())
 				.map(c -> mapper.map(type, c))
 				.collect(Collectors.toList());
 

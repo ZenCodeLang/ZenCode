@@ -41,7 +41,7 @@ class ImplicitConstructorTests extends ZenCodeTest {
 			this.name = name;
 		}
 
-		@ZenCodeType.Method(implicit = true)
+		@ZenCodeType.Constructor(implicit = true)
 		public static MyClass create(String name) {
 			return new MyClass(name);
 		}
@@ -61,7 +61,7 @@ class ImplicitConstructorTests extends ZenCodeTest {
 			this.value = value;
 		}
 
-		@ZenCodeType.Method(implicit = true)
+		@ZenCodeType.Constructor(implicit = true)
 		public static AnotherType create(String value) {
 			return new AnotherType(value);
 		}
