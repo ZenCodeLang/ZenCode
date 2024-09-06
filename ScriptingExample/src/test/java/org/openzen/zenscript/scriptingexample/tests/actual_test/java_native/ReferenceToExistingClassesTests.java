@@ -32,6 +32,18 @@ class ReferenceToExistingClassesTests extends ZenCodeTest {
 	}
 
 	@Test
+	void canCallConstructorUsingFullyQualifiedName() {
+		ScriptBuilder.create()
+				.add("var myExposedClass = new test_module.some.subpackage.MyExposedClass('test');")
+				.add("println(myExposedClass.name);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "test");
+	}
+
+	@Test
 	void canCallStaticMethod() {
 		ScriptBuilder.create()
 				.add("import test_module.some.subpackage.MyExposedClass;")
@@ -44,6 +56,17 @@ class ReferenceToExistingClassesTests extends ZenCodeTest {
 		logger.assertPrintOutput(0, "testtesttest");
 	}
 
+	@Test
+	void canCallStaticMethodUsingFullyQualifiedName() {
+		ScriptBuilder.create()
+				.add("var repeated = test_module.some.subpackage.MyExposedClass.repeat('test', 3);")
+				.add("println(repeated);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "testtesttest");
+	}
 
 	@ZenCodeType.Name("test_module.some.subpackage.MyExposedClass")
 	public static final class MyExposedClass {
