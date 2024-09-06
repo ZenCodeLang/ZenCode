@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CompileError;
+import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.VariableDefinition;
@@ -31,6 +32,8 @@ public interface ExpressionBuilder {
 
 	Expression coalesce(Expression left, Expression right);
 
+	Expression compare(Expression left, CompilingExpression right, CompareType type);
+
 	Expression constant(boolean value);
 
 	Expression constant(String value);
@@ -38,6 +41,8 @@ public interface ExpressionBuilder {
 	Expression constant(float value);
 
 	Expression constant(double value);
+
+	Expression constant(int value);
 
 	Expression constantNull(TypeID type);
 
