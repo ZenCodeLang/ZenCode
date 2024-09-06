@@ -8,7 +8,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
@@ -238,10 +237,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCall(CallExpression expression) {
 		// Try to compile the call to a custom preCall (e.g. ++i)
-		Optional<OperatorType> operatorType = expression.method.getID()
-				.getOperator()
+		Optional<OperatorType> operatorType = Optional.of(expression.method)
+				.filter(methodInstance -> !(methodInstance.method instanceof BuiltinMethodSymbol))
+				.flatMap(methodInstance -> methodInstance.getID().getOperator())
 				.filter(OperatorType::canBePreOrPostCall);
-		if (operatorType.isPresent() && !(expression.method.method instanceof BuiltinMethodSymbol)) {
+		if (operatorType.isPresent()) {
 			modifyCustomOperator(expression.target, expression.method.method, expression.type, PushOption.AFTER);
 			return null;
 		}
