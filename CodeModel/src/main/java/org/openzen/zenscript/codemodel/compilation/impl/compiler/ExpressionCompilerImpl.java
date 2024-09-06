@@ -224,6 +224,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression compare(Expression left, CompilingExpression right, CompareType type) {
+			return new CompilationHelper(ExpressionCompilerImpl.this, position).compare(left, right, type);
+		}
+
+		@Override
 		public Expression constant(boolean value) {
 			return new ConstantBoolExpression(position, value);
 		}
@@ -241,6 +246,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression constant(double value) {
 			return new ConstantDoubleExpression(position, value);
+		}
+
+		@Override
+		public Expression constant(int value) {
+			return new ConstantIntExpression(position, value);
 		}
 
 		@Override

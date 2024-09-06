@@ -3,6 +3,7 @@ package org.openzen.zencode.java.module;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.impl.ComparisonOperator;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
@@ -127,7 +128,9 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public List<Comparator> comparators() {
-		return Collections.emptyList();
+		return findOperator(OperatorType.COMPARE)
+				.<List<Comparator>>map(c -> Collections.singletonList(new ComparisonOperator(c)))
+				.orElse(Collections.emptyList());
 	}
 
 	@Override
