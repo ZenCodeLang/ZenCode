@@ -1,16 +1,19 @@
 package org.openzen.zenscript.parser.expression;
 
-import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 
 import java.util.Optional;
 
@@ -64,6 +67,12 @@ public class ParsedExpressionCompare extends ParsedExpression {
 				Optional<InstanceCallable> notEquals = resolved.findOperator(OperatorType.NOTEQUALS);
 				if (notEquals.isPresent()) {
 					return notEquals.get().call(compiler, position, left, TypeID.NONE, right);
+				} else {
+					Optional<InstanceCallable> equals = resolved.findOperator(OperatorType.EQUALS);
+					if (equals.isPresent()) {
+						Expression value = equals.get().call(compiler, position, left, TypeID.NONE, right);
+						return new CallExpression(position, value, new MethodInstance(BuiltinMethodSymbol.BOOL_NOT), CallArguments.EMPTY);
+					}
 				}
 			}
 			CastedExpression result = resolved.comparators()
