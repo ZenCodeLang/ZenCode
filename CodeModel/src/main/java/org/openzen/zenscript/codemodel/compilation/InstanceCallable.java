@@ -5,6 +5,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ModificationExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -72,11 +74,11 @@ public final class InstanceCallable {
 		return instance;
 	}
 
-	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+	public Expression callModification(ExpressionBuilder builder, ModifiableExpression instance, ModificationExpression.Modification modification) {
 		if (overloads.size() != 1) {
 			return builder.invalid(CompileErrors.invalidPostfix());
 		} else {
-			return overloads.get(0).callPostfix(builder, instance);
+			return overloads.get(0).callModification(builder, instance, modification);
 		}
 	}
 
@@ -106,5 +108,12 @@ public final class InstanceCallable {
 		}
 
 		return Optional.empty();
+	}
+
+	public Optional<MethodInstance> asSingleMethod() {
+		if (overloads.size() != 1)
+			return Optional.empty();
+
+		return overloads.get(0).asMethod();
 	}
 }

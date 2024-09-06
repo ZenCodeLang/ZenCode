@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -236,17 +237,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCall(CallExpression expression) {
-		// Try to compile the call to a custom preCall (e.g. ++i)
-		Optional<OperatorType> operatorType = Optional.of(expression.method)
-				.filter(methodInstance -> !(methodInstance.method instanceof BuiltinMethodSymbol))
-				.flatMap(methodInstance -> methodInstance.getID().getOperator())
-				.filter(OperatorType::canBePreOrPostCall);
-		if (operatorType.isPresent()) {
-			modifyCustomOperator(expression.target, expression.method.method, expression.type, PushOption.AFTER);
-			return null;
-		}
-
-
 		ModuleSymbol module = expression.method.method.getDefiningType().getModule();
 		JavaCompiledModule javaCompiledModule = context.getJavaModule(module);
 		JavaMethod method = javaCompiledModule.getMethodInfo(expression.method.method);
@@ -842,7 +832,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	public void modify(Expression source, BuiltinMethodSymbol builtin, PushOption pushOption) {
+	private void modify(ModifiableExpression source, BuiltinMethodSymbol builtin, PushOption pushOption) {
 		switch (builtin) {
 			case BYTE_INC:
 				modify(source, () -> {
@@ -984,18 +974,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			default:
 				throw new IllegalArgumentException("Unknown builtin: " + builtin);
 		}
-
 	}
 
-	public void modifyCustomOperator(Expression source, MethodSymbol methodSymbol, TypeID returnType, PushOption push) {
-		modify(
-				source,
-				() -> context.getJavaMethod(methodSymbol).compileVirtual(methodCompiler, returnType, source, CallArguments.EMPTY),
-				push
-		);
-	}
-
-	public void modify(Expression source, Runnable modification, PushOption push) {
+	private void modify(ModifiableExpression source, Runnable modification, PushOption push) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
 	}
 
@@ -1014,19 +995,34 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	@Override
-	public Void visitPostCall(PostCallExpression expression) {
-		if (expression.member.method instanceof BuiltinMethodSymbol) {
-			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) expression.member.method;
-			modify(expression.target, builtin, PushOption.BEFORE);
-			return null;
+	private PushOption getPushOption(ModificationExpression.Modification modification) {
+		switch (modification) {
+			case PostDecrement:
+			case PostIncrement:
+				return PushOption.BEFORE;
+			case PreDecrement:
+			case PreIncrement:
+				return PushOption.AFTER;
+			default:
+				throw new IllegalArgumentException("Unknown modification: " + modification);
 		}
+	}
 
-		modify(expression.target, () -> {
-			context.getJavaMethod(expression.member).compileVirtual(methodCompiler, expression.type, expression.target, CallArguments.EMPTY);
-		}, PushOption.BEFORE);
-
+	@Override
+	public Void visitModification(ModificationExpression expression) {
+		modify(expression, getPushOption(expression.modification));
 		return null;
+	}
+
+	public void modify(ModificationExpression expression, PushOption pushOption) {
+		if (expression.method.method instanceof BuiltinMethodSymbol) {
+			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) expression.method.method;
+			modify(expression.target, builtin, pushOption);
+		} else {
+			modify(expression.target, () -> {
+				context.getJavaMethod(expression.method).compileVirtualWithTargetOnTopOfStack(methodCompiler, expression.type, CallArguments.EMPTY);
+			}, pushOption);
+		}
 	}
 
 	@Override

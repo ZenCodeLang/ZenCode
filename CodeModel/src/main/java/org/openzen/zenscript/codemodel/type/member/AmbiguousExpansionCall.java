@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ModificationExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 
 import java.util.List;
@@ -46,7 +48,7 @@ public class AmbiguousExpansionCall implements InstanceCallableMethod, StaticCal
 	}
 
 	@Override
-	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
+	public Expression callModification(ExpressionBuilder builder, ModifiableExpression instance, ModificationExpression.Modification modification) {
 		return builder.invalid(CompileErrors.ambiguousExpansionCall(methods));
 	}
 

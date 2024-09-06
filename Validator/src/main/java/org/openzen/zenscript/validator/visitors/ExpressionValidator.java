@@ -534,12 +534,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
-	public Void visitPostCall(PostCallExpression expression) {
-		checkMemberAccess(expression.position, expression.member);
-		checkNotStatic(expression.position, expression.member);
+	public Void visitModification(ModificationExpression expression) {
+		checkMemberAccess(expression.position, expression.method);
+		checkNotStatic(expression.position, expression.method);
 
-		expression.target.accept(this);
-		// TODO: is target a valid increment target?
+		expression.target.accept(new ModifiableExpressionValidator(validator, scope, this));
 		return null;
 	}
 

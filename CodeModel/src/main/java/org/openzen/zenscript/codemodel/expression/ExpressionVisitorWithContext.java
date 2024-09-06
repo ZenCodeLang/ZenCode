@@ -99,7 +99,7 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitPlatformSpecific(C context, Expression expression);
 
-	R visitPostCall(C context, PostCallExpression expression);
+	R visitModification(C context, ModificationExpression expression);
 
 	R visitRange(C context, RangeExpression expression);
 

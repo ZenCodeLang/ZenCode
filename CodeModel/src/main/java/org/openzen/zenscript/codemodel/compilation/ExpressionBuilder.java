@@ -6,12 +6,11 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.VariableDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
-import org.openzen.zenscript.codemodel.ssa.SSAVariable;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -27,8 +26,6 @@ public interface ExpressionBuilder {
 	Expression callVirtual(MethodInstance method, Expression target, CallArguments arguments);
 
 	Expression callSuper(MethodInstance method, Expression target, CallArguments arguments);
-
-	Expression callPostfix(MethodInstance method, Expression target);
 
 	Expression coalesce(Expression left, Expression right);
 
@@ -79,6 +76,8 @@ public interface ExpressionBuilder {
 	Expression newRange(Expression from, Expression to);
 
 	Expression match(Expression value, TypeID resultingType, MatchExpression.Case[] cases);
+
+	Expression modification(ModifiableExpression target, MethodInstance operator, ModificationExpression.Modification modification);
 
 	Expression orOr(Expression left, Expression right);
 

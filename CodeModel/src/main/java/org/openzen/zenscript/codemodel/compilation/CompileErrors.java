@@ -299,7 +299,7 @@ public class CompileErrors {
 	}
 
 	public static CompileError overriddenMethodNotFound(MethodID method, FunctionHeader header) {
-		return new CompileError(CompileExceptionCode.OVERRIDEN_METHOD_NOT_FOUND, "Could not find the base method for " + method + header);
+		return new CompileError(CompileExceptionCode.OVERRIDDEN_METHOD_NOT_FOUND, "Could not find the base method for " + method + header);
 	}
 
 	public static CompileError fieldWithoutType() {
@@ -542,5 +542,21 @@ public class CompileErrors {
 
 	public static CompileError parseError(String message) {
 		return new CompileError(CompileExceptionCode.PARSE_ERROR, message);
+	}
+
+	public static CompileError invalidModificationTarget() {
+		return new CompileError(CompileExceptionCode.INVALID_MODIFICATION_TARGET, "Invalid target for increment or decrement operators");
+	}
+
+	public static CompileError invalidPropertyGetter(TypeID type, String name) {
+		return new CompileError(CompileExceptionCode.INVALID_PROPERTY_GETTER, "Invalid getter for property " + name + " in type " + type);
+	}
+
+	public static CompileError invalidPropertySetter(TypeID type, String name) {
+		return new CompileError(CompileExceptionCode.INVALID_PROPERTY_SETTER, "Invalid setter for property " + name + " in type " + type);
+	}
+
+	public static CompileError invalidPropertyPair(TypeID type, String name) {
+		return new CompileError(CompileExceptionCode.INVALID_PROPERTY_PAIR, "Setter and getter of property " + name  + " in type " + type + " have different types");
 	}
 }

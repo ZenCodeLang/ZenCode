@@ -30,6 +30,11 @@ public enum JavaSpecialMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileVirtualWithTargetOnTopOfStack(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
+		return compiler.specialStaticMethod(this, arguments);
+	}
+
+	@Override
 	public <T> T compileStatic(JavaMethodCompiler<T> compiler, TypeID returnType, CallArguments arguments) {
 		return compiler.specialStaticMethod(this, arguments);
 	}

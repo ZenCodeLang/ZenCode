@@ -247,7 +247,7 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitPostCall(PostCallExpression expression) {
+	public Boolean visitModification(ModificationExpression expression) {
 		return true;
 	}
 

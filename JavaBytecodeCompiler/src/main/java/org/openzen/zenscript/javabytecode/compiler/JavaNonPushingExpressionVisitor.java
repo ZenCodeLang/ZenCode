@@ -59,55 +59,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			javaWriter.pop(CompilerUtils.isLarge(expression.type));
 	}
 
-	private boolean compileIncrementOrDecrement(Expression target, TypeID returnType, MethodInstance methodInstance) {
-		MethodSymbol methodSymbol = methodInstance.method;
-
-		// try as builtin
-		if (methodSymbol instanceof BuiltinMethodSymbol) {
-
-
-			BuiltinMethodSymbol builtin = (BuiltinMethodSymbol) methodSymbol;
-			switch (builtin) {
-				case BYTE_INC:
-				case BYTE_DEC:
-				case SBYTE_INC:
-				case SBYTE_DEC:
-				case SHORT_INC:
-				case SHORT_DEC:
-				case USHORT_INC:
-				case USHORT_DEC:
-				case INT_INC:
-				case UINT_INC:
-				case USIZE_INC:
-				case INT_DEC:
-				case UINT_DEC:
-				case USIZE_DEC:
-				case LONG_INC:
-				case ULONG_INC:
-				case LONG_DEC:
-				case ULONG_DEC:
-				case FLOAT_INC:
-				case FLOAT_DEC:
-				case DOUBLE_INC:
-				case DOUBLE_DEC:
-					original.modify(target, builtin, PushOption.NONE);
-					return true;
-				default:
-					break;
-			}
-		}
-		// try as custom operator
-		Optional<OperatorType> operatorType = methodInstance.getID()
-				.getOperator()
-				.filter(OperatorType::canBePreOrPostCall);
-		if (operatorType.isPresent()) {
-			original.modifyCustomOperator(target, methodInstance.method, returnType, PushOption.NONE);
-			return true;
-		}
-
-		return false;
-	}
-
 	@Override
 	public Void visitArray(ArrayExpression expression) {
 		for (Expression value : expression.expressions)
@@ -125,9 +76,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitCall(CallExpression expression) {
-		if (!compileIncrementOrDecrement(expression.target, expression.type, expression.method))
-			fallback(expression);
-
+		fallback(expression);
 		return null;
 	}
 
@@ -406,10 +355,8 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
-	public Void visitPostCall(PostCallExpression expression) {
-		if (!compileIncrementOrDecrement(expression.target, expression.type, expression.member))
-			fallback(expression);
-
+	public Void visitModification(ModificationExpression expression) {
+		original.modify(expression, PushOption.NONE);
 		return null;
 	}
 

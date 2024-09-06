@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.compilation;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ModificationExpression;
+import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -42,6 +44,10 @@ public interface CompilingExpression {
 	 * @return callable
 	 */
 	Optional<CompilingCallable> call();
+
+	default Optional<ModifiableExpression> asModifiable() {
+		return Optional.empty();
+	}
 
 	/**
 	 * Finds a member from this expression.

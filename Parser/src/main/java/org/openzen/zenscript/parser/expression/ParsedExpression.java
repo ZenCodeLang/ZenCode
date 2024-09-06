@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.compilation.CompilableLambdaHeader;
 import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.expression.ModificationExpression;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -318,16 +319,16 @@ public abstract class ParsedExpression implements CompilableExpression {
 						OperatorType.INVERT);
 			case T_INCREMENT:
 				parser.next();
-				return new ParsedExpressionUnary(
+				return new ParsedModificationExpression(
 						position,
 						readUnaryExpression(parser.getPosition(), parser, options),
-						OperatorType.INCREMENT);
+						ModificationExpression.Modification.PreIncrement);
 			case T_DECREMENT:
 				parser.next();
-				return new ParsedExpressionUnary(
+				return new ParsedModificationExpression(
 						position,
 						readUnaryExpression(parser.getPosition(), parser, options),
-						OperatorType.DECREMENT);
+						ModificationExpression.Modification.PreDecrement);
 			case K_TRY:
 				parser.next();
 				if (parser.optional(T_QUEST) != null) {
@@ -393,9 +394,9 @@ public abstract class ParsedExpression implements CompilableExpression {
 				IParsedType type = IParsedType.parse(parser);
 				base = new ParsedExpressionCast(position, base, type, optional);
 			} else if (parser.optional(T_INCREMENT) != null) {
-				base = new ParsedExpressionPostCall(position, base, OperatorType.INCREMENT);
+				base = new ParsedModificationExpression(position, base, ModificationExpression.Modification.PostIncrement);
 			} else if (parser.optional(T_DECREMENT) != null) {
-				base = new ParsedExpressionPostCall(position, base, OperatorType.DECREMENT);
+				base = new ParsedModificationExpression(position, base, ModificationExpression.Modification.PostDecrement);
 			} else if (options.allowLambda && parser.optional(T_LAMBDA) != null) {
 				ParsedFunctionBody body = ParsedStatement.parseLambdaBody(parser, true);
 				CodePosition fposition = position;

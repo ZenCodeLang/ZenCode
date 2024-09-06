@@ -222,7 +222,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 		// This happens e.g. for Strings where compareTo is a static method in zencode but a virtual one in Java
 		boolean[] primitiveArguments = method.primitiveArguments;
-		if (method.kind == JavaNativeMethod.Kind.INSTANCE && asStatic) {
+		if (method.kind == JavaNativeMethod.Kind.INSTANCE && asStatic && arguments.arguments.length > 0) {
 			primitiveArguments = new boolean[arguments.arguments.length];
 			primitiveArguments[0] = method.cls.isPrimitive(); // Let's just assume they are all for object types
 			System.arraycopy(method.primitiveArguments, 0, primitiveArguments, 1, method.primitiveArguments.length);
@@ -635,31 +635,6 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.label(exit);
 				return null;
 			}
-			case BYTE_INC:
-			case BYTE_DEC:
-			case SBYTE_INC:
-			case SBYTE_DEC:
-			case SHORT_INC:
-			case SHORT_DEC:
-			case USHORT_INC:
-			case USHORT_DEC:
-			case INT_INC:
-			case UINT_INC:
-			case USIZE_INC:
-			case INT_DEC:
-			case UINT_DEC:
-			case USIZE_DEC:
-			case LONG_INC:
-			case ULONG_INC:
-			case LONG_DEC:
-			case ULONG_DEC:
-			case FLOAT_INC:
-			case FLOAT_DEC:
-			case DOUBLE_INC:
-			case DOUBLE_DEC:
-				Expression target = arguments[0];
-				expressionVisitor.modify(target, method, JavaModificationExpressionVisitor.PushOption.AFTER);
-				return null;
 		}
 
 		for (Expression argument : arguments) {
