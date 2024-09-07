@@ -87,12 +87,14 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 			return Optional.of(localVariable.get().compile(this));
 		}
 
-		Optional<IGlobal> global = context.findGlobal(name.name);
-		if (global.isPresent())
-			return global.map(g -> g.getExpression(position, name.arguments).compile(this));
+		// Resolve a local type first so that functions can shadow Globals
+		Optional<TypeID> asType = types.resolve(position, Collections.singletonList(name));
+		if(asType.isPresent()) {
+			return asType.map(type -> new TypeCompilingExpression(this, position, type));
+		}
 
-		return types.resolve(position, Collections.singletonList(name))
-				.map(type -> new TypeCompilingExpression(this, position, type));
+		return context.findGlobal(name.name)
+				.map(g -> g.getExpression(position, name.arguments).compile(this));
 	}
 
 	@Override
