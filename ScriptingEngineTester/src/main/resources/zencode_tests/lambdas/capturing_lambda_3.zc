@@ -1,0 +1,8 @@
+#output: Hello, World
+
+var greet as function(name as string) as void = name => {
+    var fn as function(greeting as string) as void = greeting => println(greeting + ", " + name);
+    fn("Hello");
+};
+
+greet("World");

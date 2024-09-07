@@ -1,0 +1,8 @@
+#dependency: stdlib
+#output: Called with 4 arguments
+
+function myFunc(args as stdlib.List<string>): void {
+    println("Called with " + args.length + " arguments");
+}
+
+myFunc(['one', 'two', 'three', 'four']);
