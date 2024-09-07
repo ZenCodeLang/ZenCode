@@ -80,11 +80,11 @@ public class ParsedExpressionArray extends ParsedExpression {
 			Optional<ArrayTypeID> maybeArray = cast.type.simplified().asArray()
 					.filter(array -> array.dimension == 1);
 			if (!maybeArray.isPresent()) {
-				// try implicit constructor instead
-				ResolvedType resolvedType = compiler.resolve(cast.type);
-				return resolvedType.findImplicitConstructor()
-						.map(constructor -> constructor.casted(compiler, position, cast, null, this))
-						.orElseGet(() -> cast.invalid(CompileErrors.invalidArrayType(cast.type)));
+				CastedExpression castedExpression = cast.of(eval());
+				if (!castedExpression.isFailed()) {
+					return castedExpression;
+				}
+				return cast.invalid(CompileErrors.invalidArrayType(cast.type));
 			}
 
 			TypeID elementType = maybeArray.get().elementType;
