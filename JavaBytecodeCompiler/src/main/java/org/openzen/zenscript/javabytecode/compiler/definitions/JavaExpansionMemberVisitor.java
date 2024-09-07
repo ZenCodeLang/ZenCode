@@ -231,11 +231,11 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		final ArrayList<TypeParameter> typeParametersFromType = new ArrayList<>();
-		expandedClass.extractTypeParameters(typeParametersFromType);
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
+		expandedClass.extractTypeParameters(typeParameters);
 
-		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParametersFromType);
-		member.toType.extractTypeParameters(typeParametersFromType);
+		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
+		member.toType.extractTypeParameters(typeParameters);
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
@@ -246,7 +246,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		methodWriter.label(methodStart);
 
 		int i = 0;
-		for (TypeParameter typeParameter : typeParametersFromType) {
+		for (TypeParameter typeParameter : typeParameters) {
 			final String name = "typeOf" + typeParameter.name;
 			methodWriter.nameVariable(i++, name, methodStart, methodEnd, Type.getType(Class.class));
 			methodWriter.nameParameter(0, name);
@@ -255,7 +255,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		methodWriter.nameVariable(i++, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
 		methodWriter.nameParameter(0, "expandedObj");
 
-		for (TypeParameter typeParameter : typeParametersFromType.subList(i - 1, typeParametersFromType.size())) {
+		for (TypeParameter typeParameter : typeParameters.subList(i - 1, typeParameters.size())) {
 			final String name = "typeOf" + typeParameter.name;
 			methodWriter.nameVariable(i++, name, methodStart, methodEnd, Type.getType(Class.class));
 			methodWriter.nameParameter(0, name);
