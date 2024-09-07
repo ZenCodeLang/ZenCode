@@ -75,6 +75,8 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 				keyType = joinedKeyType.get();
 				valueType = joinedValueType.get();
+				keys[i] = key;
+				values[i] = value;
 			}
 
 			AssocTypeID type = compiler.types().associativeOf(keyType, valueType);
