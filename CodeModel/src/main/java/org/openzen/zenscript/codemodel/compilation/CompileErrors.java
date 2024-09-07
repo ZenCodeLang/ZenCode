@@ -559,4 +559,8 @@ public class CompileErrors {
 	public static CompileError invalidPropertyPair(TypeID type, String name) {
 		return new CompileError(CompileExceptionCode.INVALID_PROPERTY_PAIR, "Setter and getter of property " + name  + " in type " + type + " have different types");
 	}
+
+	public static CompileError invalidLambdaHeader(FunctionHeader header) {
+		return new CompileError(CompileExceptionCode.LAMBDA_HEADER_INVALID, "Invalid lambda header " + header);
+	}
 }

@@ -3,6 +3,8 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
+
 public class WrapOptionalExpression extends Expression {
 	public final Expression value;
 
@@ -29,5 +31,10 @@ public class WrapOptionalExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new WrapOptionalExpression(position, tValue, type);
+	}
+
+	@Override
+	public Optional<InvalidExpression> asInvalid() {
+		return value.asInvalid();
 	}
 }

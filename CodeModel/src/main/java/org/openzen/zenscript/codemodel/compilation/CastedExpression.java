@@ -50,7 +50,7 @@ public class CastedExpression {
 	public CastedExpression(Level level, Expression value) {
 		this.level = level;
 		this.value = value;
-		this.error = level == Level.INVALID ? ((InvalidExpression)value).error : null;
+		this.error = level == Level.INVALID ? value.asInvalid().map(i -> i.error).orElse(null) : null;
 	}
 
 	public CastedExpression(CodePosition position, CompileError error) {

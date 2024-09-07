@@ -67,6 +67,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 					header = header.forTypeParameterInference();
 				}*/
 
+				if(header.hasInvalidTypes()) {
+					return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.invalidLambdaHeader(header)));
+				}
+
 				LambdaClosure closure = new LambdaClosure();
 				StatementCompiler functionCompiler = compiler.forLambda(closure, header);
 				Statement statement = body.compile(functionCompiler);
