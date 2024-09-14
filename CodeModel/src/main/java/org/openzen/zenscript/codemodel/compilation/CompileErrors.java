@@ -571,4 +571,8 @@ public class CompileErrors {
 	public static CompileError invalidLambdaHeader(FunctionHeader header) {
 		return new CompileError(CompileExceptionCode.LAMBDA_HEADER_INVALID, "Invalid lambda header " + header);
 	}
+
+	public static CompileError unreachableStatement() {
+		return new CompileError(CompileExceptionCode.UNREACHABLE_STATEMENT, "Unreachable statement");
+	}
 }

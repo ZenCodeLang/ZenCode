@@ -6,9 +6,13 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.Validator;
 
-import java.util.Arrays;
-
 public class ReturnStatementValidator implements StatementVisitor<ReturnStatementValidator.ReturnKind> {
+
+	private final Validator validator;
+
+	public ReturnStatementValidator(Validator validator) {
+		this.validator = validator;
+	}
 
 	/**
 	 * Validates whether a given statement appropriately returns a value as required by its return type.
@@ -24,7 +28,7 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 			return;
 		}
 
-		ReturnStatementValidator.ReturnKind returnKind = statement.accept(new ReturnStatementValidator());
+		ReturnStatementValidator.ReturnKind returnKind = statement.accept(new ReturnStatementValidator(validator));
 		switch (returnKind) {
 			case ALWAYS_RETURNS:
 				return;
@@ -129,7 +133,17 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 	}
 
 	private ReturnKind mergeInsideBlock(Statement[] statements) {
-		return Arrays.stream(statements).map(it -> it.accept(this)).reduce(ReturnKind.NEVER_RETURNS, ReturnKind::max);
+		ReturnKind result = ReturnKind.NEVER_RETURNS;
+		for (Statement statement : statements) {
+			if (result == ReturnKind.ALWAYS_RETURNS) {
+				validator.logError(statement.position, CompileErrors.unreachableStatement());
+				break;
+			}
+
+			result = ReturnKind.max(result, statement.accept(this));
+		}
+
+		return result;
 	}
 
 	public enum ReturnKind {
@@ -148,7 +162,7 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 
 		/**
 		 * Used to merge returnKinds of sequential statements into one (e.g. all statements inside a block)
-		 * In that case, the highest kind wins (ignoring duplicate return statements for now).
+		 * In that case, the highest kind wins.
 		 */
 		public static ReturnKind max(ReturnKind a, ReturnKind b) {
 			return a.ordinal() > b.ordinal() ? a : b;
