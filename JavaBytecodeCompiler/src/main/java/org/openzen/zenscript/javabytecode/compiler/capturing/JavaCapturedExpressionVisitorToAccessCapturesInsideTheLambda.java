@@ -2,6 +2,7 @@ package org.openzen.zenscript.javabytecode.compiler.capturing;
 
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.captured.*;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaMangler;
@@ -56,7 +57,23 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 
 	@Override
 	public Void visitRecaptured(CapturedClosureExpression expression) {
-		throw new UnsupportedOperationException("TODO");
+		int position = findIndex(expression);
+
+		javaWriter.loadObject(0);
+		javaWriter.getField(lambdaClassName, this.javaMangler.mangleCapturedParameter(position, false), context.getDescriptor(expression.type));
+		return null;
+	}
+
+	private static int findIndex(CapturedExpression expression) {
+		int h = 1;
+		for (CapturedExpression capture : expression.closure.captures) {
+			if(capture.equals(expression)) {
+				return h;
+			}
+			h++;
+		}
+
+		throw new RuntimeException(expression.position.toString() + ": Captured Statement error");
 	}
 
 	private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
@@ -74,12 +91,12 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
 		int h = 1;
 
-		Iterable<? extends CapturedExpression> captures = Stream.concat(
-				expression.closure.captures.stream(),
-				functionParameterExpression.closure.captures.stream()
-		)::iterator;
+		//Iterable<? extends CapturedExpression> captures = Stream.concat(
+		//		expression.closure.captures.stream(),
+		//		functionParameterExpression.closure.captures.stream()
+		//)::iterator;
 
-		for (CapturedExpression capture : captures) {
+		for (CapturedExpression capture : expression.closure.captures) {
 			if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
 				return h;
 			h++;

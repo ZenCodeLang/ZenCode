@@ -30,6 +30,6 @@ public class JavaCapturedExpressionVisitorToPutCapturesOnTheStackBeforeCallingTh
 
 	@Override
 	public Void visitRecaptured(CapturedClosureExpression expression) {
-		return expression.value.accept(this);
+		return expression.value.accept(expressionVisitor);
 	}
 }

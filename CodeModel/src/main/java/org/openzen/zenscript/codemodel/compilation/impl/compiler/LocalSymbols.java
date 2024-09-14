@@ -118,18 +118,19 @@ public class LocalSymbols {
 		if (parent == null)
 			return Optional.empty();
 		else if (closure != null)
-			return parent.findLocalVariable(position, name).map(var -> var.capture(closure));
+			return parent.findLocalVariable(position, name).map(variable -> variable.capture(closure));
 		else
 			return parent.findLocalVariable(position, name);
 	}
 
-	public LocalExpression capture(CodePosition position, LocalExpression local) {
-		if (this.parent == null)
-			return local;
-		else if (closure != null)
-			return local.capture(closure);
-		else
-			return parent.capture(position, local);
+	public LocalExpression capture(LocalExpression local) {
+		if(parent != null) {
+			local = parent.capture(local);
+		}
+		if(closure != null) {
+			local = local.capture(closure);
+		}
+		return local;
 	}
 
 	public Optional<CompilingExpression> getDollar() {

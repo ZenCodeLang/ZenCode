@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class MemberCompilerImpl implements MemberCompiler {

@@ -1,5 +1,4 @@
-#disabled: Not part of the refactor
-#output: 8
+#output: 4
 
 public class Stuff {
 	public val x as int : get;
