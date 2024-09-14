@@ -24,11 +24,11 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	private final JavaBytecodeContext context;
 	private final JavaCompiledModule module;
 	private final JavaWriter javaWriter;
-	private final ExpressionVisitor<Void> original;
+	private final JavaExpressionVisitor original;
 	private final JavaFieldBytecodeCompiler fieldCompiler;
 	private final JavaMangler mangler;
 
-	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler mangler, ExpressionVisitor<Void> original) {
+	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler mangler, JavaExpressionVisitor original) {
 		this.context = context;
 		this.module = module;
 		this.javaWriter = javaWriter;
@@ -335,8 +335,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitModification(ModificationExpression expression) {
-		// Todo: fix cast
-		((JavaExpressionVisitor)original).modify(expression, PushOption.NONE);
+		original.modify(expression, PushOption.NONE);
 		return null;
 	}
 

@@ -1,16 +1,15 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinFieldSymbol;
 import org.openzen.zenscript.javashared.*;
 
 public class JavaFieldBytecodeCompiler implements JavaFieldCompiler<Void> {
 	private final JavaWriter javaWriter;
-	private final ExpressionVisitor<Void> expressionVisitor;
+	private final JavaExpressionVisitor expressionVisitor;
 	private final boolean pushing;
 
-	public JavaFieldBytecodeCompiler(JavaWriter javaWriter, ExpressionVisitor<Void> expressionVisitor, boolean pushing) {
+	public JavaFieldBytecodeCompiler(JavaWriter javaWriter, JavaExpressionVisitor expressionVisitor, boolean pushing) {
 		this.javaWriter = javaWriter;
 		this.expressionVisitor = expressionVisitor;
 		this.pushing = pushing;

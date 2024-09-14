@@ -8,7 +8,7 @@ import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 
 /**
- * {@link CapturedExpressionVisitor} used to inside a lambda expression.
+ * {@link CapturedExpressionVisitor} used to access captured values inside a lambda expression.
  */
 public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implements CapturedExpressionVisitor<Void> {
 
@@ -41,6 +41,7 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 	@Override
 	public Void visitCapturedParameter(CapturedParameterExpression expression) {
 		final int position = calculateMemberPosition(expression, this.functionExpression);
+
 		javaWriter.loadObject(0);
 		javaWriter.getField(lambdaClassName, this.javaMangler.mangleCapturedParameter(position, false), context.getDescriptor(expression.parameter.type));
 		return null;
@@ -57,7 +58,7 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 
 	@Override
 	public Void visitRecaptured(CapturedClosureExpression expression) {
-		int position = findIndex(expression);
+		final int position = findIndex(expression);
 
 		javaWriter.loadObject(0);
 		javaWriter.getField(lambdaClassName, this.javaMangler.mangleCapturedParameter(position, false), context.getDescriptor(expression.type));
