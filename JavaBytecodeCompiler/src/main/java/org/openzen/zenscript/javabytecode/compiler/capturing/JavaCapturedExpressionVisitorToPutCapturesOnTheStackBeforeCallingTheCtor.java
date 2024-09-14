@@ -6,6 +6,11 @@ import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.captured.*;
 
+/**
+ * {@link CapturedExpressionVisitor} used to put the captured expressions on the stack.
+ * The {@link org.openzen.zenscript.javabytecode.compiler.JavaExpressionVisitor} will use this class just before it invokes
+ * the generated lambda class' constructor.
+ */
 public class JavaCapturedExpressionVisitorToPutCapturesOnTheStackBeforeCallingTheCtor implements CapturedExpressionVisitor<Void> {
 	private final ExpressionVisitor<Void> expressionVisitor;
 

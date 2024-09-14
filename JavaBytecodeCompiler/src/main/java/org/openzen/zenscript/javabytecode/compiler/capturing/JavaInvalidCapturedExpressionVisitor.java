@@ -2,6 +2,9 @@ package org.openzen.zenscript.javabytecode.compiler.capturing;
 
 import org.openzen.zenscript.codemodel.expression.captured.*;
 
+/**
+ * Fallback {@link CapturedExpressionVisitor} used by the JavaExpressionVisitor whenever we are outside any lambda context
+ */
 public class JavaInvalidCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
 
 	@Override

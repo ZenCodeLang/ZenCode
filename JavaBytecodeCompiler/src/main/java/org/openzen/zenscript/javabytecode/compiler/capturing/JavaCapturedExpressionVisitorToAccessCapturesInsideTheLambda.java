@@ -2,14 +2,14 @@ package org.openzen.zenscript.javabytecode.compiler.capturing;
 
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.captured.*;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 
-import java.util.stream.Stream;
-
+/**
+ * {@link CapturedExpressionVisitor} used to inside a lambda expression.
+ */
 public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implements CapturedExpressionVisitor<Void> {
 
 	private final String lambdaClassName;
@@ -73,7 +73,7 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 			h++;
 		}
 
-		throw new RuntimeException(expression.position.toString() + ": Captured Statement error");
+		throw new IllegalStateException(expression.position.toString() + ": Captured Statement error");
 	}
 
 	private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
@@ -85,22 +85,17 @@ public class JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda implem
 				return h;
 			h++;
 		}
-		throw new RuntimeException(localVariableExpression.position.toString() + ": Captured Statement error");
+		throw new IllegalStateException(localVariableExpression.position.toString() + ": Captured Statement error");
 	}
 
 	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
 		int h = 1;
-
-		//Iterable<? extends CapturedExpression> captures = Stream.concat(
-		//		expression.closure.captures.stream(),
-		//		functionParameterExpression.closure.captures.stream()
-		//)::iterator;
 
 		for (CapturedExpression capture : expression.closure.captures) {
 			if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
 				return h;
 			h++;
 		}
-		throw new RuntimeException(functionParameterExpression.position.toString() + ": Captured Statement error");
+		throw new IllegalStateException(functionParameterExpression.position.toString() + ": Captured Statement error");
 	}
 }
