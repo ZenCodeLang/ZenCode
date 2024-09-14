@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedParameterExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;

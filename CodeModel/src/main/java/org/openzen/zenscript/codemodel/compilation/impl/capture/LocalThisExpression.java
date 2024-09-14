@@ -1,11 +1,11 @@
 package org.openzen.zenscript.codemodel.compilation.impl.capture;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.TypeID;

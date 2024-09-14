@@ -1,4 +1,4 @@
-package org.openzen.zenscript.codemodel.expression;
+package org.openzen.zenscript.codemodel.expression.captured;
 
 public interface CapturedExpressionVisitor<T> {
 	T visitCapturedThis(CapturedThisExpression expression);

@@ -2,7 +2,6 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.compilation.CastedExpression;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;

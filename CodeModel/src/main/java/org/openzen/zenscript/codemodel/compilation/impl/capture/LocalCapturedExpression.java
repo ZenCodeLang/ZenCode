@@ -2,8 +2,8 @@ package org.openzen.zenscript.codemodel.compilation.impl.capture;
 
 import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
-import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedClosureExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 
 public class LocalCapturedExpression implements LocalExpression {

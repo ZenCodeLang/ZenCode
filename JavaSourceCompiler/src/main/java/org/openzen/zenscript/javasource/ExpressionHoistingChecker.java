@@ -6,6 +6,10 @@
 package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedClosureExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedParameterExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
 
 /**
  * @author Hoofdgebruiker

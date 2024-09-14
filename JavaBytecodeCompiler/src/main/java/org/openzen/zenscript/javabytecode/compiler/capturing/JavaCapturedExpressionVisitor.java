@@ -1,6 +1,7 @@
-package org.openzen.zenscript.javabytecode.compiler;
+package org.openzen.zenscript.javabytecode.compiler.capturing;
 
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.captured.*;
 
 public class JavaCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
 

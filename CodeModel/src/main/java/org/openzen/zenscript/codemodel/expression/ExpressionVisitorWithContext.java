@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
+
 public interface ExpressionVisitorWithContext<C, R> {
 	R visitAndAnd(C context, AndAndExpression expression);
 
@@ -13,13 +15,7 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitCallSuper(C context, CallSuperExpression expression);
 
-	R visitCapturedClosure(C context, CapturedClosureExpression expression);
-
-	R visitCapturedLocalVariable(C context, CapturedLocalVariableExpression expression);
-
-	R visitCapturedParameter(C context, CapturedParameterExpression expression);
-
-	R visitCapturedThis(C context, CapturedThisExpression expression);
+	R visitCaptured(C context, CapturedExpression expression);
 
 	R visitCheckNull(C context, CheckNullExpression expression);
 

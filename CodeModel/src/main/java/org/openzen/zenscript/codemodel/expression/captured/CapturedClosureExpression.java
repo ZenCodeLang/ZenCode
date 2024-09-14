@@ -1,6 +1,9 @@
-package org.openzen.zenscript.codemodel.expression;
+package org.openzen.zenscript.codemodel.expression.captured;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 
 import java.util.Objects;
 
@@ -14,18 +17,8 @@ public class CapturedClosureExpression extends CapturedExpression {
 	}
 
 	@Override
-	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitCapturedClosure(this);
-	}
-
-	@Override
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitRecaptured(this);
-	}
-
-	@Override
-	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
-		return visitor.visitCapturedClosure(context, this);
 	}
 
 	@Override

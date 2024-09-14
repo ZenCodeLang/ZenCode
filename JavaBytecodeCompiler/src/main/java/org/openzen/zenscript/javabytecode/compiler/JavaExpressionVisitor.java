@@ -9,9 +9,11 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpressionVisitor;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.statement.VariableID;
@@ -21,6 +23,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
+import org.openzen.zenscript.javabytecode.compiler.capturing.*;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
@@ -45,11 +48,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private final JavaBoxingTypeVisitor optionalWrappingTypeVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 	private final JavaUnboxingTypeVisitor optionalUnwrappingTypeVisitor;
-	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaFieldBytecodeCompiler fieldCompiler;
 	private final JavaMethodBytecodeCompiler methodCompiler;
+	private final CapturedExpressionVisitor<Void> capturedExpressionVisitor;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler javaMangler) {
+		this(context, module, javaWriter, javaMangler, new JavaInvalidCapturedExpressionVisitor());
+	}
+
+	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler javaMangler, CapturedExpressionVisitor<Void> capturedExpressionVisitor) {
 		this.javaWriter = javaWriter;
 		this.context = context;
 		this.module = module;
@@ -60,6 +67,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		optionalUnwrappingTypeVisitor = JavaUnboxingTypeVisitor.forOptionalUnwrapping(javaWriter);
 		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, this, true);
 		methodCompiler = new JavaMethodBytecodeCompiler(javaWriter, this, context, module);
+		this.capturedExpressionVisitor = capturedExpressionVisitor;
 	}
 
 	private static boolean hasNoDefault(MatchExpression switchStatement) {
@@ -242,7 +250,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		JavaMethod method = javaCompiledModule.getMethodInfo(expression.method.method);
 		method.compileVirtual(methodCompiler, expression.type, expression.target, expression.arguments);
 		if (expression.method.getHeader().getReturnType().isGeneric())
-				javaWriter.checkCast(context.getType(expression.type));
+			javaWriter.checkCast(context.getType(expression.type));
 
 		return null;
 	}
@@ -284,20 +292,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	@Override
-	public Void visitCapturedClosure(CapturedClosureExpression expression) {
+	public Void visitCaptured(CapturedExpression expression) {
 		return expression.accept(capturedExpressionVisitor);
 	}
 
-	@Override
-	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-		return expression.accept(capturedExpressionVisitor);
-	}
-
-	@Override
-	public Void visitCapturedParameter(CapturedParameterExpression expression) {
-		return expression.accept(capturedExpressionVisitor);
-	}
-
+	/*
 	@Override
 	public Void visitCapturedThis(CapturedThisExpression expression) {
 		// TODO - does this cover all situations?
@@ -308,6 +307,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.load(context.getType(expression.type), thisLocal);
 		return null;
 	}
+	 */
 
 	@Override
 	public Void visitCheckNull(CheckNullExpression expression) {
@@ -565,11 +565,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (CapturedExpression capture : expression.closure.captures) {
 			constructorWriter.dup();
 			Type type = context.getType(capture.type);
-			// TODO("Or maybe split i and ++i?")
-			String name = this.javaMangler.mangleCapturedParameter(++i, capture instanceof CapturedThisExpression);
+			i++;
+			String name = this.javaMangler.mangleCapturedParameter(i, capture instanceof CapturedThisExpression);
 			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, name, type.getDescriptor(), null, null).visitEnd();
 
-			capture.accept(this);
+			capture.accept(new JavaCapturedExpressionVisitorToPutCapturesOnTheStackBeforeCallingTheCtor(this));
 
 			constructorWriter.load(type, i);
 			constructorWriter.putField(className, name, type.getDescriptor());
@@ -585,9 +585,20 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		functionWriter.start();
 
-		final JavaExpressionVisitor lambdaBodyVisitor = new JavaLambdaBodyCapturingExpressionVisitor(context, module, functionWriter, javaMangler, className, expression);
-		final JavaStatementVisitor capturedStatementVisitor = new JavaStatementVisitor(context, lambdaBodyVisitor, javaMangler);
-		expression.body.accept(capturedStatementVisitor);
+		JavaExpressionVisitor withCapturedExpressionVisitor = new JavaExpressionVisitor(
+				context,
+				module,
+				functionWriter,
+				javaMangler,
+				new JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda(
+						context,
+						functionWriter,
+						javaMangler,
+						className,
+						expression
+				)
+		);
+		expression.body.accept(new JavaStatementVisitor(context, withCapturedExpressionVisitor, javaMangler));
 
 		functionWriter.ret();
 		functionWriter.end();
@@ -596,6 +607,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		context.register(className, lambdaCW.toByteArray());
 
 		return null;
+	}
+
+	private JavaExpressionVisitor withCapturedExpressionVisitor(CapturedExpressionVisitor<Void> capturedExpressionVisitor) {
+		return new JavaExpressionVisitor(context, module, javaWriter, javaMangler, capturedExpressionVisitor);
 	}
 
 	private String calcFunctionDescriptor(LambdaClosure closure) {
@@ -751,7 +766,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			javaWriter.label(caseStart);
 
 			// switchCase.key == null => default case
-			if(switchCase.key != null) {
+			if (switchCase.key != null) {
 				switchCase.key.accept(new JavaSwitchKeyVariableVisitor(javaWriter, context, caseStart, caseEnd));
 			}
 			if (isVariantOptionSwitch) {

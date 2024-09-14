@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
+
 import java.util.*;
 
 public class LambdaClosure {

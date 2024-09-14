@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
@@ -151,22 +152,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
-	public Void visitCapturedClosure(CapturedClosureExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedParameter(CapturedParameterExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedThis(CapturedThisExpression expression) {
+	public Void visitCaptured(CapturedExpression expression) {
 		return null;
 	}
 
