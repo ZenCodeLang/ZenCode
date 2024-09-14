@@ -484,6 +484,14 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.RETURN_VALUE_VOID, "Return type is void; cannot return a value");
 	}
 
+	public static CompileError missingReturn() {
+		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Missing return");
+	}
+
+	public static CompileError notAllBranchesReturn() {
+		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Not all branches return a value");
+	}
+
 	public static CompileError missingReturnValue() {
 		return new CompileError(CompileExceptionCode.MISSING_RETURN_VALUE, "Missing return value");
 	}

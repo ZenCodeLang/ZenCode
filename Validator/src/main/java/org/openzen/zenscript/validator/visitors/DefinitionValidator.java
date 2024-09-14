@@ -116,6 +116,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 
 		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
 		definition.caller.body.accept(statementValidator);
+		ReturnStatementValidator.validate(definition.header.getReturnType(), definition.caller.body, validator);
 		return null;
 	}
 

@@ -1,4 +1,5 @@
-#error: 4:TYPE_NOT_INFERRED
+#error: 5:TYPE_NOT_INFERRED
+#error: 5:MISSING_RETURN
 
 class Foo {
 	print() {

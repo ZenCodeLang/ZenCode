@@ -285,6 +285,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
 			validateThrow(member, member.header, member.body);
+			ReturnStatementValidator.validate(member.header.getReturnType(), member.body, validator);
 		}
 	}
 
