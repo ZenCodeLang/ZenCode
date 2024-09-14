@@ -100,6 +100,9 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			}
 		} else {
 			checkConstructorForwarded(member);
+			if(member.isImplicit()) {
+				ReturnStatementValidator.validate(member.getTargetType(), member.body, validator);
+			}
 		}
 
 		return null;
@@ -301,6 +304,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			member.body.accept(statementValidator);
 
 			validateThrow(member, new FunctionHeader(member.type), member.body);
+			ReturnStatementValidator.validate(member.type, member.body, validator);
 		}
 	}
 
