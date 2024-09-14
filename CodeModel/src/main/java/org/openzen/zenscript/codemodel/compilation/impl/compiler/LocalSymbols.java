@@ -46,11 +46,11 @@ public class LocalSymbols {
 
 	private LocalSymbols(LocalSymbols parent, CompilingLoopStatement loop, String... loopName) {
 		this.parent = parent;
-		this.closure = parent.closure;
+		this.closure = null;
 		this.loop = loop;
 		this.loopName = loopName;
-		this.header = parent.header;
-		this.dollar = parent.dollar;
+		this.header = null;
+		this.dollar = null;
 
 		for (CompilingVariable loopVariable : loop.getLoopVariables())
 			localVariables.put(loopVariable.name, loopVariable);
@@ -58,10 +58,10 @@ public class LocalSymbols {
 
 	private LocalSymbols(LocalSymbols parent, CompilingExpression dollar) {
 		this.parent = parent;
-		this.closure = parent.closure;
+		this.closure = null;
 		this.loop = null;
 		this.loopName = null;
-		this.header = parent.header;
+		this.header = null;
 		this.dollar = dollar;
 	}
 

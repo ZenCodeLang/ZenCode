@@ -609,10 +609,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	private JavaExpressionVisitor withCapturedExpressionVisitor(CapturedExpressionVisitor<Void> capturedExpressionVisitor) {
-		return new JavaExpressionVisitor(context, module, javaWriter, javaMangler, capturedExpressionVisitor);
-	}
-
 	private String calcFunctionDescriptor(LambdaClosure closure) {
 		StringJoiner joiner = new StringJoiner("", "(", ")V");
 		for (CapturedExpression capture : closure.captures) {
