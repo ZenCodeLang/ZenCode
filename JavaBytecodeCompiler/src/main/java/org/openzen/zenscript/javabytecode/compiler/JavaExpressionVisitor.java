@@ -122,8 +122,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod MAP_CONTAINS_KEY = JavaMethod.getInterface(JavaClass.MAP, "containsKey", "(Ljava/lang/Object;)Z");
 	private static final JavaMethod MAP_SIZE = JavaMethod.getInterface(JavaClass.MAP, "size", "()I");
 	private static final JavaMethod MAP_ISEMPTY = JavaMethod.getInterface(JavaClass.MAP, "isEmpty", "()Z");
-	private static final JavaMethod MAP_KEYS = JavaMethod.getInterface(JavaClass.MAP, "keys", "()Ljava/lang/Object;");
-	private static final JavaMethod MAP_VALUES = JavaMethod.getInterface(JavaClass.MAP, "values", "()Ljava/lang/Object;");
+	private static final JavaMethod MAP_KEYS = JavaMethod.getInterface(JavaClass.MAP, "keySet", "()Ljava/util/Set;");
+	private static final JavaMethod MAP_VALUES = JavaMethod.getInterface(JavaClass.MAP, "values", "()Ljava/util/Collection;");
 	private static final JavaMethod ARRAYS_COPY_OF_RANGE_OBJECTS = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([Ljava/lang/Object;II)[Ljava/lang/Object;");
 	private static final JavaMethod ARRAYS_COPY_OF_RANGE_BOOLS = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([ZII)[Z");
 	private static final JavaMethod ARRAYS_COPY_OF_RANGE_BYTES = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([BII)[B");
@@ -2433,7 +2433,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.invokeVirtual(MAP_KEYS);
 				javaWriter.dup();
 				javaWriter.invokeVirtual(COLLECTION_SIZE);
-				javaWriter.newArray(resultType);
+				javaWriter.newArray(resultType.getElementType());
 				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
 				javaWriter.checkCast(resultType);
 				break;
@@ -2444,7 +2444,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.invokeVirtual(MAP_VALUES);
 				javaWriter.dup();
 				javaWriter.invokeVirtual(COLLECTION_SIZE);
-				javaWriter.newArray(resultType);
+				javaWriter.newArray(resultType.getElementType());
 				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
 				javaWriter.checkCast(resultType);
 				break;
