@@ -225,26 +225,13 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 
 	private void checkImplementationComplete(ImplementationMember implementation) {
-		// TODO
-		/*Set<IDefinitionMember> implemented = new HashSet<>();
-		for (IDefinitionMember member : implementation.members)
-			if (member.getOverrides() != null)
-				implemented.add(member.getOverrides().getTarget());
-		for (DefinitionMemberRef member : implementation.definitionBorrowedMembers.keySet())
-			implemented.add(member.getTarget());
+		ImplementationCheckValidator implementationCheckValidator = new ImplementationCheckValidator(validator, implementation);
+		implementation.members.forEach(member -> member.accept(implementationCheckValidator));
 
-		TypeMembers members = scope.getTypeMembers(implementation.type);
-		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
-		if (unimplemented.size() == 1) {
-			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");
-		} else if (unimplemented.size() > 1) {
-			StringBuilder message = new StringBuilder();
-			message.append("Implementation incomplete: ").append(unimplemented.size()).append(" members not yet implemented:");
-			for (IDefinitionMember member : unimplemented) {
-				message.append("\n").append("  - ").append(member.describe());
-			}
-			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, message.toString());
-		}*/
+		List<IDefinitionMember> unimplementedMembers = implementationCheckValidator.getUnimplementedMembers();
+		if (!unimplementedMembers.isEmpty()) {
+			validator.logError(implementation.position, CompileErrors.incompleteImplementation(unimplementedMembers));
+		}
 	}
 
 	@Override
