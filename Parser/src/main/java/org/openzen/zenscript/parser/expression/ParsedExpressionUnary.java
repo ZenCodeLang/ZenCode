@@ -40,7 +40,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression value = this.value.eval();
-			if (value.type == BasicTypeID.INVALID)
+			if (value.type.isInvalid())
 				return value;
 
 			ResolvedType resolvedType = compiler.resolve(value.type);
@@ -52,7 +52,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
-			if (value.type == BasicTypeID.INVALID)
+			if (value.type.isInvalid())
 				return CastedExpression.invalid(value);
 
 			ResolvedType resolvedType = compiler.resolve(value.type);

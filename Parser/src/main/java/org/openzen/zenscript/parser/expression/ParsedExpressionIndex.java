@@ -49,7 +49,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression value = this.value.eval();
-			if (value.type == BasicTypeID.INVALID)
+			if (value.type.isInvalid())
 				return value;
 
 			ResolvedType resolved = compiler.resolve(value.type);
@@ -61,7 +61,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
-			if (value.type == BasicTypeID.INVALID)
+			if (value.type.isInvalid())
 				return CastedExpression.invalid(value);
 
 			ResolvedType resolved = compiler.resolve(value.type);
@@ -115,7 +115,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression instance = this.instance.eval();
-			if (instance.type == BasicTypeID.INVALID)
+			if (instance.type.isInvalid())
 				return CastedExpression.invalid(instance);
 
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)

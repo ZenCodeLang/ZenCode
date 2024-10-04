@@ -674,7 +674,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private void checkCorrectType(CodePosition position, TypeID expected, TypeID actual) {
-		if (actual == BasicTypeID.INVALID)
+		if (actual.isInvalid())
 			return; // in this case the underlying error will already by reported elsewhere
 
 		if (!expected.equals(actual)) {

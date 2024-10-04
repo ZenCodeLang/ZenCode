@@ -45,7 +45,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			Expression leftValue = this.left.eval();
-			if (leftValue.type == BasicTypeID.INVALID)
+			if (leftValue.type.isInvalid())
 				return leftValue;
 
 			ResolvedType resolved = compiler.resolve(leftValue.type);
@@ -57,7 +57,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			Expression leftValue = this.left.eval();
-			if (leftValue.type == BasicTypeID.INVALID)
+			if (leftValue.type.isInvalid())
 				return CastedExpression.invalid(leftValue);
 
 			ResolvedType resolved = compiler.resolve(leftValue.type);
