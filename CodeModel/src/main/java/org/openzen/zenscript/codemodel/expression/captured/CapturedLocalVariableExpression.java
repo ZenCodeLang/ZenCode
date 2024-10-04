@@ -1,7 +1,8 @@
-package org.openzen.zenscript.codemodel.expression;
+package org.openzen.zenscript.codemodel.expression.captured;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.VariableDefinition;
+import org.openzen.zenscript.codemodel.expression.*;
 
 import java.util.Objects;
 
@@ -15,18 +16,8 @@ public class CapturedLocalVariableExpression extends CapturedExpression {
 	}
 
 	@Override
-	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitCapturedLocalVariable(this);
-	}
-
-	@Override
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedLocal(this);
-	}
-
-	@Override
-	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
-		return visitor.visitCapturedLocalVariable(context, this);
 	}
 
 	@Override

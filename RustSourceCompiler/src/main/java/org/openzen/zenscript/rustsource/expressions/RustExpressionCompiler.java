@@ -1,6 +1,10 @@
 package org.openzen.zenscript.rustsource.expressions;
 
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedClosureExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedParameterExpression;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;

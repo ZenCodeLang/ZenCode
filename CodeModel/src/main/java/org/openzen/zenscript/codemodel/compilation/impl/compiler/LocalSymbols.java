@@ -46,11 +46,11 @@ public class LocalSymbols {
 
 	private LocalSymbols(LocalSymbols parent, CompilingLoopStatement loop, String... loopName) {
 		this.parent = parent;
-		this.closure = parent.closure;
+		this.closure = null;
 		this.loop = loop;
 		this.loopName = loopName;
-		this.header = parent.header;
-		this.dollar = parent.dollar;
+		this.header = null;
+		this.dollar = null;
 
 		for (CompilingVariable loopVariable : loop.getLoopVariables())
 			localVariables.put(loopVariable.name, loopVariable);
@@ -58,10 +58,10 @@ public class LocalSymbols {
 
 	private LocalSymbols(LocalSymbols parent, CompilingExpression dollar) {
 		this.parent = parent;
-		this.closure = parent.closure;
+		this.closure = null;
 		this.loop = null;
 		this.loopName = null;
-		this.header = parent.header;
+		this.header = null;
 		this.dollar = dollar;
 	}
 
@@ -118,18 +118,21 @@ public class LocalSymbols {
 		if (parent == null)
 			return Optional.empty();
 		else if (closure != null)
-			return parent.findLocalVariable(position, name).map(var -> var.capture(closure));
+			return parent.findLocalVariable(position, name).map(variable -> variable.capture(closure));
 		else
 			return parent.findLocalVariable(position, name);
 	}
 
-	public LocalExpression capture(CodePosition position, LocalExpression local) {
-		if (this.parent == null)
-			return local;
-		else if (closure != null)
-			return local.capture(closure);
-		else
-			return parent.capture(position, local);
+	public LocalExpression capture(LocalExpression local) {
+		if(parent != null) {
+			local = parent.capture(local);
+		}
+		if(closure != null) {
+			// watch out: if both parent and closure are present, both may add the same variable to the closure,
+			// which is what we want (don't try to optimize this)
+			local = local.capture(closure);
+		}
+		return local;
 	}
 
 	public Optional<CompilingExpression> getDollar() {

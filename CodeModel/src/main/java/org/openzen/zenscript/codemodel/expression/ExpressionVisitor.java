@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
+
 public interface ExpressionVisitor<T> {
 	T visitAndAnd(AndAndExpression expression);
 
@@ -13,13 +15,7 @@ public interface ExpressionVisitor<T> {
 
 	T visitCallSuper(CallSuperExpression expression);
 
-	T visitCapturedClosure(CapturedClosureExpression expression);
-
-	T visitCapturedLocalVariable(CapturedLocalVariableExpression expression);
-
-	T visitCapturedParameter(CapturedParameterExpression expression);
-
-	T visitCapturedThis(CapturedThisExpression expression);
+	T visitCaptured(CapturedExpression expression);
 
 	T visitCheckNull(CheckNullExpression expression);
 

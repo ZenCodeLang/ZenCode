@@ -6,13 +6,9 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
-import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
@@ -20,8 +16,6 @@ import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVis
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
-
-import java.util.Optional;
 
 /**
  * @author Hoofdgebruiker
@@ -93,23 +87,8 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
-	public Void visitCapturedClosure(CapturedClosureExpression expression) {
-		return expression.value.accept(this);
-	}
-
-	@Override
-	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedParameter(CapturedParameterExpression expression) {
-		return null;
-	}
-
-	@Override
-	public Void visitCapturedThis(CapturedThisExpression expression) {
-		return null;
+	public Void visitCaptured(CapturedExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
