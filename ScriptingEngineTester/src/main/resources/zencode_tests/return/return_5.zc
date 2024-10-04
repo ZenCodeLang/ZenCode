@@ -1,4 +1,3 @@
-#disabled: Not part of the refactor
 #error: 10:UNREACHABLE_STATEMENT
 
 function test(check: bool): string {

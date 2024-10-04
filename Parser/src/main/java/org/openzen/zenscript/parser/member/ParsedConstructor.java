@@ -2,6 +2,7 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
@@ -43,7 +44,11 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 		@Override
 		public void compile(List<CompileException> errors) {
 			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
-			compiled.setBody(body.compile(compiler.forMethod(compiled.header.withReturnType(BasicTypeID.VOID))));
+
+			// Implicit .ctors return the created object, but "normal" ones don't, so for non-implict .ctors we change the header to return VOID
+			FunctionHeader compilingHeader = modifiers.isImplicit() ? compiled.header : compiled.header.withReturnType(BasicTypeID.VOID);
+			compiled.setBody(body.compile(compiler.forMethod(compilingHeader)));
+
 		}
 
 		@Override

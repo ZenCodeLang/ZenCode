@@ -5,6 +5,8 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Optional;
+
 public class InvalidExpression extends Expression {
 	public final CompileError error;
 
@@ -31,5 +33,10 @@ public class InvalidExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
+	}
+
+	@Override
+	public Optional<InvalidExpression> asInvalid() {
+		return Optional.of(this);
 	}
 }

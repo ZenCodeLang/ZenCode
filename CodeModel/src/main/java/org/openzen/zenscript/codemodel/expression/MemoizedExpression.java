@@ -77,4 +77,9 @@ public class MemoizedExpression extends Expression {
 	public VariableID getVariableID() {
 		return variableID;
 	}
+
+	@Override
+	public Optional<InvalidExpression> asInvalid() {
+		return target.asInvalid();
+	}
 }

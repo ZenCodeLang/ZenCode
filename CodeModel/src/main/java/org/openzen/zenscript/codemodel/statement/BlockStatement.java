@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
@@ -82,7 +83,7 @@ public class BlockStatement extends Statement {
 				.collect(Collectors.toList());
 
 		if (collect.isEmpty())
-			return super.getReturnType();
+			return Optional.of(BasicTypeID.VOID);
 		else if (collect.size() == 1)
 			return Optional.ofNullable(collect.get(0));
 		else

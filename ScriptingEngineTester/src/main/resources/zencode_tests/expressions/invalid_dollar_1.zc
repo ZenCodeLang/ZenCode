@@ -1,0 +1,4 @@
+#error: 4:NO_SUCH_TYPE
+#error: 4:LAMBDA_HEADER_INVALID
+
+var x as function(x: i) as void = (invalid) => [][invalid];

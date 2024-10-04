@@ -244,13 +244,20 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition, true);
 
 		methodWriter.label(methodStart);
-		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
-		methodWriter.nameParameter(0, "expandedObj");
 
-		int i = 1;
+		int i = 0;
 		for (TypeParameter typeParameter : typeParameters) {
 			final String name = "typeOf" + typeParameter.name;
-			methodWriter.nameVariable(i, name, methodStart, methodEnd, Type.getType(Class.class));
+			methodWriter.nameVariable(i++, name, methodStart, methodEnd, Type.getType(Class.class));
+			methodWriter.nameParameter(0, name);
+		}
+
+		methodWriter.nameVariable(i++, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
+		methodWriter.nameParameter(0, "expandedObj");
+
+		for (TypeParameter typeParameter : typeParameters.subList(i - 1, typeParameters.size())) {
+			final String name = "typeOf" + typeParameter.name;
+			methodWriter.nameVariable(i++, name, methodStart, methodEnd, Type.getType(Class.class));
 			methodWriter.nameParameter(0, name);
 		}
 

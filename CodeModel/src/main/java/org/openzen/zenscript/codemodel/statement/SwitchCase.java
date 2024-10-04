@@ -13,6 +13,10 @@ public class SwitchCase {
 		this.statements = statements;
 	}
 
+	public boolean isDefault() {
+		return value == null;
+	}
+
 	public SwitchCase transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Statement[] tStatements = new Statement[statements.length];
 		int i = 0;

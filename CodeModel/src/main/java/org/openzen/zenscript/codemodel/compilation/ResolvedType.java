@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,13 +28,21 @@ public interface ResolvedType {
 	default Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		return findCaster(target)
 				.filter(caster -> !caster.getModifiers().isImplicit())
-				.map(caster -> caster.call(compiler.at(position), value, CallArguments.EMPTY));
+				// TODO: remember the type arguments in the caster method instead, so we don't need to infer it again
+				.flatMap(caster -> MatchedCallArguments.match(compiler, position, Collections.singletonList(caster), target, TypeID.NONE)
+						.getArguments()
+						.map(arg -> caster.call(compiler.at(position), value, arg))
+				);
 	}
 
 	default Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		return findCaster(target)
 				.filter(caster -> caster.getModifiers().isImplicit())
-				.map(caster -> caster.call(compiler.at(position), value, CallArguments.EMPTY));
+				// TODO: remember the type arguments in the caster method instead, so we don't need to infer it again
+				.flatMap(caster -> MatchedCallArguments.match(compiler, position, Collections.singletonList(caster), target, TypeID.NONE)
+						.getArguments()
+						.map(arg -> caster.call(compiler.at(position), value, arg))
+				);
 	}
 
 	default boolean canCastImplicitlyTo(TypeID target) {

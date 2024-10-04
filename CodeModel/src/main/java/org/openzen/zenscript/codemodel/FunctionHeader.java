@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class FunctionHeader {
 	public static final FunctionHeader PLACEHOLDER = new FunctionHeader(BasicTypeID.VOID);
@@ -468,5 +469,9 @@ public class FunctionHeader {
 		result = 31 * result + maxParameters;
 		result = 31 * result + (hasUnknowns ? 1 : 0);
 		return result;
+	}
+
+	public boolean hasInvalidTypes() {
+		return Stream.of(parameters).anyMatch(p -> p.type.isInvalid());
 	}
 }

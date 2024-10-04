@@ -1,6 +1,9 @@
+#output: Shadowed: Hello
 
-function println(a as string) {
+import testsupport.SharedGlobals;
 
+function println(a as string) as void {
+    SharedGlobals.println("Shadowed: " + a);
 }
 
 println("Hello");

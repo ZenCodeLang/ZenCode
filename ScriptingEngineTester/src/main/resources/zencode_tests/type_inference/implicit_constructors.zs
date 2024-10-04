@@ -7,7 +7,10 @@ function enquote(input: string): string => '"' + input + '"';
 
 interface JsonData {
 
-	public implicit this(data: JsonData[]) => new JsonArray(data);
+	public implicit this(data: JsonData[]) {
+	    // this one uses the method body syntax to verify that both syntaxes work
+	    return new JsonArray(data);
+	}
 	public implicit this(data: JsonData[string]) => new JsonObject(data);
 	public implicit this(data: string)  => new JsonString(data);
 	public implicit this(data: int)  => new JsonNumber(data);

@@ -67,6 +67,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 					header = header.forTypeParameterInference();
 				}*/
 
+				if(header.hasInvalidTypes()) {
+					return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.invalidLambdaHeader(header)));
+				}
+
 				LambdaClosure closure = new LambdaClosure();
 				StatementCompiler functionCompiler = compiler.forLambda(closure, header);
 				Statement statement = body.compile(functionCompiler);
@@ -83,7 +87,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 						}
 					}*/
 
-					returnType.ifPresent(header::setReturnType);
+					if (returnType.isPresent()) {
+						header = header.withReturnType(returnType.get());
+					}
 				}
 
 				/*if (genericHeader.typeParameters.length > 0 && !scope.genericInferenceMap.isEmpty()) {

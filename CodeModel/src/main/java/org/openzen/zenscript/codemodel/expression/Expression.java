@@ -106,4 +106,8 @@ public abstract class Expression {
 	public final CompilingExpression wrap(ExpressionCompiler compiler) {
 		return new WrappedCompilingExpression(compiler, this);
 	}
+
+	public Optional<InvalidExpression> asInvalid() {
+		return Optional.empty();
+	}
 }

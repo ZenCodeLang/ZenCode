@@ -484,6 +484,18 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.RETURN_VALUE_VOID, "Return type is void; cannot return a value");
 	}
 
+	public static CompileError missingReturn() {
+		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Missing return");
+	}
+
+	public static CompileError notAllBranchesReturn() {
+		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Not all branches return a value");
+	}
+
+	public static CompileError missingHeaderReturnType(){
+		return new CompileError(CompileExceptionCode.MISSING_RETURN_TYPE_IN_HEADER, "Missing return type in function header");
+	}
+
 	public static CompileError missingReturnValue() {
 		return new CompileError(CompileExceptionCode.MISSING_RETURN_VALUE, "Missing return value");
 	}
@@ -558,5 +570,13 @@ public class CompileErrors {
 
 	public static CompileError invalidPropertyPair(TypeID type, String name) {
 		return new CompileError(CompileExceptionCode.INVALID_PROPERTY_PAIR, "Setter and getter of property " + name  + " in type " + type + " have different types");
+	}
+
+	public static CompileError invalidLambdaHeader(FunctionHeader header) {
+		return new CompileError(CompileExceptionCode.LAMBDA_HEADER_INVALID, "Invalid lambda header " + header);
+	}
+
+	public static CompileError unreachableStatement() {
+		return new CompileError(CompileExceptionCode.UNREACHABLE_STATEMENT, "Unreachable statement");
 	}
 }

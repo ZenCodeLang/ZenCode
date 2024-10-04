@@ -111,7 +111,8 @@ public class JavaModificationExpressionVisitor implements ModifiableExpressionVi
 
 	@Override
 	public Void visitInvalid(ModifiableInvalidExpression modifiableInvalidExpression) {
-		return null;
+		// should be caught by the expression validator
+		throw new UnsupportedOperationException("Cannot modify an invalid expression");
 	}
 
 	@Override
