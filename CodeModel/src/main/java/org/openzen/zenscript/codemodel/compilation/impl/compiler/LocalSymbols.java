@@ -128,6 +128,8 @@ public class LocalSymbols {
 			local = parent.capture(local);
 		}
 		if(closure != null) {
+			// watch out: if both parent and closure are present, both may add the same variable to the closure,
+			// which is what we want (don't try to optimize this)
 			local = local.capture(closure);
 		}
 		return local;
