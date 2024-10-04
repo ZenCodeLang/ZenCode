@@ -371,8 +371,14 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	}
 
 	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
-		if (definition.getSuperType() != null)
-			prepare(definition.getSuperType());
+		if (definition.getSuperType() != null) {
+			// ToDo: Should we inherit the preparation work done from the modules we depend on?
+			//  Current workaround is so that we don't fail when trying to prepare a class from another module as
+			//  the context cannot resolve these class names to a ZS Package
+			definition.getSuperType().asDefinition()
+					.filter(superDefinition -> module.module.module.equals(superDefinition.definition.getModule()))
+					.ifPresent(this::prepare);
+		}
 
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
