@@ -130,7 +130,6 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitMethod(MethodMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		ValidationUtils.validateHeader(validator, member.position, member.header);
 		validateFunctional(member, new MethodStatementScope(member.header));
 		return null;
 	}
@@ -282,8 +281,12 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			} else {
 				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
 			}
+		} else if (member.getHeader().getReturnType() == BasicTypeID.UNDETERMINED) {
+			validator.logError(member.position, CompileErrors.missingHeaderReturnType());
+			return;
 		}
 
+		ValidationUtils.validateHeader(validator, member.position, member.header);
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
@@ -319,6 +322,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
 			validateThrow(member, new FunctionHeader(BasicTypeID.VOID, member.type), member.body);
+			ReturnStatementValidator.validate(BasicTypeID.VOID, member.body, validator);
 		}
 	}
 

@@ -75,10 +75,6 @@ public class BlockStatement extends Statement {
 
 	@Override
 	public Optional<TypeID> getReturnType() {
-		if(statements.length == 0) {
-			return Optional.of(BasicTypeID.VOID);
-		}
-
 		final List<TypeID> collect = Arrays.stream(statements)
 				.map(Statement::getReturnType)
 				.filter(Optional::isPresent)
@@ -87,7 +83,7 @@ public class BlockStatement extends Statement {
 				.collect(Collectors.toList());
 
 		if (collect.isEmpty())
-			return super.getReturnType();
+			return Optional.of(BasicTypeID.VOID);
 		else if (collect.size() == 1)
 			return Optional.ofNullable(collect.get(0));
 		else

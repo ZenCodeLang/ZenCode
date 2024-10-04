@@ -28,6 +28,7 @@ public interface ResolvedType {
 	default Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		return findCaster(target)
 				.filter(caster -> !caster.getModifiers().isImplicit())
+				// TODO: remember the type arguments in the caster method instead, so we don't need to infer it again
 				.flatMap(caster -> MatchedCallArguments.match(compiler, position, Collections.singletonList(caster), target, TypeID.NONE)
 						.getArguments()
 						.map(arg -> caster.call(compiler.at(position), value, arg))
@@ -37,6 +38,7 @@ public interface ResolvedType {
 	default Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		return findCaster(target)
 				.filter(caster -> caster.getModifiers().isImplicit())
+				// TODO: remember the type arguments in the caster method instead, so we don't need to infer it again
 				.flatMap(caster -> MatchedCallArguments.match(compiler, position, Collections.singletonList(caster), target, TypeID.NONE)
 						.getArguments()
 						.map(arg -> caster.call(compiler.at(position), value, arg))

@@ -492,6 +492,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Not all branches return a value");
 	}
 
+	public static CompileError missingHeaderReturnType(){
+		return new CompileError(CompileExceptionCode.MISSING_RETURN_TYPE_IN_HEADER, "Missing return type in function header");
+	}
+
 	public static CompileError missingReturnValue() {
 		return new CompileError(CompileExceptionCode.MISSING_RETURN_VALUE, "Missing return value");
 	}

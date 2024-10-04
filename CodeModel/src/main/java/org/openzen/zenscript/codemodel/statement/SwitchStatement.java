@@ -24,6 +24,10 @@ public class SwitchStatement extends LoopStatement {
 		cases.add(case_);
 	}
 
+	public boolean isExhaustive() {
+		return cases.stream().anyMatch(SwitchCase::isDefault);
+	}
+
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitSwitch(this);

@@ -22,13 +22,13 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 	 * @param validator  the validator used to log errors
 	 */
 	public static void validate(TypeID returnType, Statement statement, Validator validator) {
-		if (returnType == BasicTypeID.VOID) {
+		ReturnStatementValidator.ReturnKind returnKind = statement.accept(new ReturnStatementValidator(validator));
+		if (returnType == BasicTypeID.VOID || returnType == BasicTypeID.UNDETERMINED) {
 			// We don't care about void functions, since using return statements is optional in there
 			// The check that return values in void functions don't return a value is done in the ExpressionValidator.
 			return;
 		}
 
-		ReturnStatementValidator.ReturnKind returnKind = statement.accept(new ReturnStatementValidator(validator));
 		switch (returnKind) {
 			case ALWAYS_RETURNS:
 				return;
@@ -75,7 +75,7 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 
 	@Override
 	public ReturnKind visitForeach(ForeachStatement statement) {
-		return statement.getContent().accept(this);
+		return ReturnKind.branches(ReturnKind.NEVER_RETURNS, statement.getContent().accept(this));
 	}
 
 	@Override
@@ -98,10 +98,15 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 
 	@Override
 	public ReturnKind visitSwitch(SwitchStatement statement) {
-		return statement.cases.stream()
+		ReturnKind casesKind = statement.cases.stream()
 				.map(c -> mergeInsideBlock(c.statements))
 				.reduce(ReturnKind::branches)
 				.orElse(ReturnKind.NEVER_RETURNS);
+		if (statement.isExhaustive()) {
+			return casesKind;
+		} else {
+			return ReturnKind.branches(casesKind, ReturnKind.NEVER_RETURNS);
+		}
 	}
 
 	@Override
@@ -129,7 +134,7 @@ public class ReturnStatementValidator implements StatementVisitor<ReturnStatemen
 
 	@Override
 	public ReturnKind visitWhile(WhileStatement statement) {
-		return statement.content.accept(this);
+		return ReturnKind.branches(ReturnKind.NEVER_RETURNS, statement.content.accept(this));
 	}
 
 	private ReturnKind mergeInsideBlock(Statement[] statements) {
