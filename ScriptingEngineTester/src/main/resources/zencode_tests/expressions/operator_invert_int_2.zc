@@ -4,7 +4,7 @@
 #output: 42
 
 println(typeof(~42));
-println(~42); // ToDo: Type inference does not work properly here: "No INVERT operator on type STRING"
+println(~42);
 
 println(typeof(~(~42)));
 println(~(~42));
