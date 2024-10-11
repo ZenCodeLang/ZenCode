@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalThisExpression;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
@@ -90,6 +91,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		Optional<TypeID> asType = types.resolve(position, Collections.singletonList(name));
 		if(asType.isPresent()) {
 			return asType.map(type -> new TypeCompilingExpression(this, position, type));
+		}
+
+		Optional<ZSPackage> asPackage = types.getRootPackage(name.name);
+		if (asPackage.isPresent()) {
+			return Optional.of(new PackageCompilingExpression(this, position, asPackage.get()));
 		}
 
 		return context.findGlobal(name.name)

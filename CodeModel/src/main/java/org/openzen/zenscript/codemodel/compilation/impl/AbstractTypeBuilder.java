@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
@@ -72,6 +73,11 @@ public abstract class AbstractTypeBuilder implements TypeBuilder {
 				}
 
 				return AbstractTypeBuilder.this.resolve(position, name);
+			}
+
+			@Override
+			public Optional<ZSPackage> getRootPackage(String name) {
+				return AbstractTypeBuilder.this.getRootPackage(name);
 			}
 
 			@Override

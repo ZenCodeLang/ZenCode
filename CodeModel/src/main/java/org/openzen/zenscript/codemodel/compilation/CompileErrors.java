@@ -70,6 +70,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.TYPE_NOT_VALUE, "Type cannot be used as value");
 	}
 
+	public static CompileError cannotUsePackageAsValue() {
+		return new CompileError(CompileExceptionCode.PACKAGE_NOT_VALUE, "Package cannot be used as value");
+	}
+
 	public static CompileError associativeKeyCannotHaveTypeParameters() {
 		return new CompileError(CompileExceptionCode.INVALID_ASSOC_KEY,
 				"Associative array key cannot have type parameters");
@@ -598,5 +602,9 @@ public class CompileErrors {
 		}
 
 		return new CompileError(CompileExceptionCode.INCOMPLETE_IMPLEMENTATION, text);
+	}
+
+	public static CompileError noMemberInPackage(String fullName, String name) {
+		return new CompileError(CompileExceptionCode.NO_SUCH_MEMBER, "No member " + name + " in package " + fullName);
 	}
 }

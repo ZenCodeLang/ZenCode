@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.compilation.impl.compiler.LocalSymbols;
 import org.openzen.zenscript.codemodel.compilation.impl.compiler.MemberCompilerImpl;
 import org.openzen.zenscript.codemodel.compilation.impl.compiler.StatementCompilerImpl;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -88,6 +89,11 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 				return fromPackage;
 
 			return context.resolve(position, name);
+		}
+
+		@Override
+		public Optional<ZSPackage> getRootPackage(String name) {
+			return context.getRootPackage(name);
 		}
 
 		@Override

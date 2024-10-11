@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
@@ -31,6 +32,8 @@ public interface TypeBuilder {
 	GenericMapTypeBuilder withGeneric(TypeParameter... parameters);
 
 	Optional<TypeID> resolve(CodePosition position, List<GenericName> name);
+
+	Optional<ZSPackage> getRootPackage(String name);
 
 	Optional<AnnotationDefinition> resolveAnnotation(List<GenericName> name);
 

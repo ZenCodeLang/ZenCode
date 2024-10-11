@@ -114,6 +114,11 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 	}
 
 	@Override
+	public Optional<ZSPackage> getRootPackage(String name) {
+		return rootPackage.getOptional(name);
+	}
+
+	@Override
 	public Optional<AnnotationDefinition> resolveAnnotation(List<GenericName> name) {
 		if (name.size() > 1) {
 			return Optional.empty();
