@@ -371,8 +371,12 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	}
 
 	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
-		if (definition.getSuperType() != null)
-			prepare(definition.getSuperType());
+		if (definition.getSuperType() != null) {
+			// don't perform this step on definitions from other modules - it should already have been performed there
+			definition.getSuperType().asDefinition()
+					.filter(superDefinition -> module.module.module.equals(superDefinition.definition.getModule()))
+					.ifPresent(this::prepare);
+		}
 
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
