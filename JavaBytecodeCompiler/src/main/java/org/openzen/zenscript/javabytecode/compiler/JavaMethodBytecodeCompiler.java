@@ -90,8 +90,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private static final JavaNativeMethod MAP_CONTAINS_KEY = JavaNativeMethod.getInterface(JavaClass.MAP, "containsKey", "(Ljava/lang/Object;)Z");
 	private static final JavaNativeMethod MAP_SIZE = JavaNativeMethod.getInterface(JavaClass.MAP, "size", "()I");
 	private static final JavaNativeMethod MAP_ISEMPTY = JavaNativeMethod.getInterface(JavaClass.MAP, "isEmpty", "()Z");
-	private static final JavaNativeMethod MAP_KEYS = JavaNativeMethod.getInterface(JavaClass.MAP, "keys", "()Ljava/lang/Object;");
-	private static final JavaNativeMethod MAP_VALUES = JavaNativeMethod.getInterface(JavaClass.MAP, "values", "()Ljava/lang/Object;");
+	private static final JavaNativeMethod MAP_KEYS = JavaNativeMethod.getInterface(JavaClass.MAP, "keySet", "()Ljava/util/Set;");
+	private static final JavaNativeMethod MAP_VALUES = JavaNativeMethod.getInterface(JavaClass.MAP, "values", "()Ljava/util/Collection;");
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_OBJECTS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([Ljava/lang/Object;II)[Ljava/lang/Object;");
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_BOOLS = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([ZII)[Z");
 	private static final JavaNativeMethod ARRAYS_COPY_OF_RANGE_BYTES = JavaNativeMethod.getNativeStatic(JavaClass.ARRAYS, "copyOfRange", "([BII)[B");
@@ -1263,21 +1263,21 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				javaWriter.invokeVirtual(STRING_CHAR_AT);
 				break;
 			case ASSOC_KEYS: {
-				Type resultType = context.getType(arguments[0].type);
+				Type resultType = arguments[0].type.asAssoc().map(m -> m.keyType).map(ArrayTypeID::new).map(context::getType).orElseThrow(() -> new IllegalStateException("Must be an assoc array!"));
 				javaWriter.invokeVirtual(MAP_KEYS);
 				javaWriter.dup();
 				javaWriter.invokeVirtual(COLLECTION_SIZE);
-				javaWriter.newArray(resultType);
+				javaWriter.newArray(resultType.getElementType());
 				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
 				javaWriter.checkCast(resultType);
 				return null;
 			}
 			case ASSOC_VALUES: {
-				Type resultType = context.getType(arguments[0].type);
+				Type resultType = arguments[0].type.asAssoc().map(m -> m.keyType).map(ArrayTypeID::new).map(context::getType).orElseThrow(() -> new IllegalStateException("Must be an assoc array!"));
 				javaWriter.invokeVirtual(MAP_VALUES);
 				javaWriter.dup();
 				javaWriter.invokeVirtual(COLLECTION_SIZE);
-				javaWriter.newArray(resultType);
+				javaWriter.newArray(resultType.getElementType());
 				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
 				javaWriter.checkCast(resultType);
 				return null;

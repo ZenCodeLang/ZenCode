@@ -1,0 +1,7 @@
+#output: 1
+#output: World
+
+var map = {"Hello": "World"};
+
+println(map.values.length);
+println(map.values[$-1]);
