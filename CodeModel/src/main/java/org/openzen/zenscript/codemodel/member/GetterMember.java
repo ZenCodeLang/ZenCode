@@ -74,11 +74,6 @@ public class GetterMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	@Override
 	protected void inferFromOverride(MethodInstance overrides) {
 		if (type == BasicTypeID.UNDETERMINED)
 			type = overrides.getHeader().getReturnType();

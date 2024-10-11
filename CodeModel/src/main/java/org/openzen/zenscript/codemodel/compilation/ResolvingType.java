@@ -9,6 +9,4 @@ public interface ResolvingType {
 	TypeID getType();
 
 	ResolvedType withExpansions(List<ExpansionSymbol> expansions);
-
-
 }

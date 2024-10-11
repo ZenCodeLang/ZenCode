@@ -106,6 +106,7 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 
 	private boolean isImplicitlyAbstract() {
 		return definition.isInterface()
+				&& !modifiers.isStatic()
 				&& !getID().getOperator().filter(op -> op == OperatorType.CONSTRUCTOR).isPresent();
 	}
 }

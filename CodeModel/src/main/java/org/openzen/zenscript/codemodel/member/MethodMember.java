@@ -7,8 +7,6 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.Optional;
-
 public class MethodMember extends FunctionalMember {
 	public final String name;
 
@@ -63,10 +61,5 @@ public class MethodMember extends FunctionalMember {
 	@Override
 	protected void inferFromOverride(MethodInstance overrides) {
 		header = header.inferFromOverride(overrides.getHeader());
-	}
-
-	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
 	}
 }
