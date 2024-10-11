@@ -202,7 +202,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 							.orElse(value);
 				}).toArray(Expression[]::new);
 
-		if (Stream.of(expressions).anyMatch(e -> e.type == BasicTypeID.INVALID)) {
+		if (Stream.of(expressions).anyMatch(e -> e.type.isInvalid())) {
 			return new MatchedCallArguments<>(
 					method,
 					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, expressions)
