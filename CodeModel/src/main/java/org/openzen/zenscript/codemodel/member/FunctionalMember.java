@@ -4,16 +4,22 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.Optional;
 
 public abstract class FunctionalMember extends DefinitionMember implements MethodSymbol {
 	public FunctionHeader header;
 	public Statement body = null;
 	private final MethodID id;
+	protected MethodInstance overrides;
+	private boolean expectsOverride = false;
 
 	public FunctionalMember(
 			CodePosition position,
@@ -34,6 +40,10 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 
 	public abstract FunctionalKind getKind();
 
+	public boolean doesExpectOverride() {
+		return expectsOverride;
+	}
+
 	@Override
 	public Modifiers getModifiers() {
 		return getEffectiveModifiers();
@@ -46,6 +56,8 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 			result = result.withPublic();
 		if (!result.hasAccessModifiers())
 			result = result.withInternal();
+		if (isImplicitlyAbstract())
+			result = result.withAbstract();
 
 		return result;
 	}
@@ -75,5 +87,26 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	@Override
 	public FunctionHeader getHeader() {
 		return header;
+	}
+
+	@Override
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
+	}
+
+	public void setOverrides(MethodInstance overrides) {
+		this.overrides = overrides;
+		this.expectsOverride = true;
+		if (overrides != null) {
+			inferFromOverride(overrides);
+		}
+	}
+
+	protected abstract void inferFromOverride(MethodInstance overrides);
+
+	private boolean isImplicitlyAbstract() {
+		return definition.isInterface()
+				&& !modifiers.isStatic()
+				&& !getID().getOperator().filter(op -> op == OperatorType.CONSTRUCTOR).isPresent();
 	}
 }

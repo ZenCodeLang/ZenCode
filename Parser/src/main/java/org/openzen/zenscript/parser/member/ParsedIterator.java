@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -49,10 +50,12 @@ public class ParsedIterator extends ParsedFunctionalMember {
 
 		@Override
 		protected void fillOverride(TypeID baseType) {
-			compiler.resolve(baseType)
+			MethodInstance overrides = compiler.resolve(baseType)
 					.findIterator(loopVariableTypes.size())
 					.flatMap(IteratorInstance::getMethod)
-					.ifPresent(compiled::setOverrides);
+					.orElse(null);
+
+			compiled.setOverrides(overrides);
 		}
 	}
 }

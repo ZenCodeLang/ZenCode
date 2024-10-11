@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.impl.ComparisonOperator;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -106,6 +107,11 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return loadStatic(MethodID.staticOperator(operator));
+	}
+
+	@Override
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		return template.getInterfaceMethodsToImplement();
 	}
 
 	@Override

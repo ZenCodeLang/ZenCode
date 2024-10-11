@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -61,9 +62,10 @@ public class ParsedSetter extends ParsedFunctionalMember {
 		@Override
 		protected void fillOverride(TypeID baseType) {
 			ResolvedType resolved = compiler.resolve(baseType);
-			resolved.findSetter(name)
+			MethodInstance overrides = resolved.findSetter(name)
 					.flatMap(setter -> setter.findOverriddenMethod(compiler, compiled.header))
-					.ifPresent(compiled::setOverrides);
+					.orElse(null);
+			compiled.setOverrides(overrides);
 		}
 	}
 }

@@ -7,11 +7,8 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.Optional;
-
 public class MethodMember extends FunctionalMember {
 	public final String name;
-	private MethodInstance overrides;
 
 	public MethodMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, FunctionHeader header) {
 		super(position, definition, modifiers, modifiers.isStatic() ? MethodID.staticMethod(name) : MethodID.instanceMethod(name), header);
@@ -62,12 +59,7 @@ public class MethodMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance overrides) {
-		this.overrides = overrides;
+	protected void inferFromOverride(MethodInstance overrides) {
 		header = header.inferFromOverride(overrides.getHeader());
 	}
 }

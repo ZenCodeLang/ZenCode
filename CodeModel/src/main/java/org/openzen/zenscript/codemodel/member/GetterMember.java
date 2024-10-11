@@ -15,7 +15,6 @@ public class GetterMember extends FunctionalMember {
 	public final String name;
 	public TypeID type;
 	public Statement body = null;
-	private MethodInstance overrides;
 
 	public GetterMember(
 			CodePosition position,
@@ -75,15 +74,9 @@ public class GetterMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance override) {
-		this.overrides = override;
-
+	protected void inferFromOverride(MethodInstance overrides) {
 		if (type == BasicTypeID.UNDETERMINED)
-			type = override.getHeader().getReturnType();
+			type = overrides.getHeader().getReturnType();
 	}
 
 	@Override

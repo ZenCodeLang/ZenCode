@@ -1,4 +1,4 @@
-#error: 7:INCOMPLETE_IMPLEMENTATION
+#error: 8:INCOMPLETE_IMPLEMENTATION
 
 interface Test {
 	print(): void;

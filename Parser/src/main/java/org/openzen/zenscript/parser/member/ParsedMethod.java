@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -49,10 +50,11 @@ public class ParsedMethod extends ParsedFunctionalMember {
 		@Override
 		protected void fillOverride(TypeID baseType) {
 			if (!modifiers.isStatic()) {
-				compiler.resolve(baseType)
+				MethodInstance overrides = compiler.resolve(baseType)
 						.findMethod(name)
 						.flatMap(operator -> operator.findOverriddenMethod(compiler, compiled.header))
-						.ifPresent(compiled::setOverrides);
+						.orElse(null);
+				compiled.setOverrides(overrides);
 			}
 		}
 	}

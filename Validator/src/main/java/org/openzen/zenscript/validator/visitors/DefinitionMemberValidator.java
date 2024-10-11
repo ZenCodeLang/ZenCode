@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
@@ -224,26 +225,13 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 
 	private void checkImplementationComplete(ImplementationMember implementation) {
-		// TODO
-		/*Set<IDefinitionMember> implemented = new HashSet<>();
-		for (IDefinitionMember member : implementation.members)
-			if (member.getOverrides() != null)
-				implemented.add(member.getOverrides().getTarget());
-		for (DefinitionMemberRef member : implementation.definitionBorrowedMembers.keySet())
-			implemented.add(member.getTarget());
+		ImplementationCheckValidator implementationCheckValidator = new ImplementationCheckValidator(validator, implementation);
+		implementation.members.forEach(member -> member.accept(implementationCheckValidator));
 
-		TypeMembers members = scope.getTypeMembers(implementation.type);
-		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
-		if (unimplemented.size() == 1) {
-			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");
-		} else if (unimplemented.size() > 1) {
-			StringBuilder message = new StringBuilder();
-			message.append("Implementation incomplete: ").append(unimplemented.size()).append(" members not yet implemented:");
-			for (IDefinitionMember member : unimplemented) {
-				message.append("\n").append("  - ").append(member.describe());
-			}
-			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, message.toString());
-		}*/
+		List<MethodSymbol> unimplementedMembers = implementationCheckValidator.getUnimplementedMembers();
+		if (!unimplementedMembers.isEmpty()) {
+			validator.logError(implementation.position, CompileErrors.incompleteImplementation(unimplementedMembers));
+		}
 	}
 
 	@Override
@@ -280,9 +268,12 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 				ValidationUtils.validateValidOverride(validator, member.position, member.header, maybeOverrides.get().getHeader());
 			} else {
 				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
+				return;
 			}
 		} else if (member.getHeader().getReturnType() == BasicTypeID.UNDETERMINED) {
-			validator.logError(member.position, CompileErrors.missingHeaderReturnType());
+			if (!member.doesExpectOverride()) {
+				validator.logError(member.position, CompileErrors.missingHeaderReturnType());
+			}
 			return;
 		}
 

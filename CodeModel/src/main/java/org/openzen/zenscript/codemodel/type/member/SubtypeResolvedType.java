@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -161,6 +162,16 @@ public class SubtypeResolvedType implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return thisType.findStaticOperator(operator);
+	}
+
+	@Override
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		Set<MethodSymbol> overridden = new HashSet<>();
+		return Stream.concat(baseTypes.stream(), Stream.of(thisType))
+				.flatMap(type -> type.getInterfaceMethodsToImplement().stream())
+				.filter(method -> !overridden.contains(method))
+				.peek(m -> m.getOverrides().ifPresent(override -> overridden.add(override.method)))
+				.collect(Collectors.toList());
 	}
 
 	private <T> Optional<T> findFirstInLocalOrBaseTypes(Function<ResolvedType, Optional<T>> mapper) {

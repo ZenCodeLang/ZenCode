@@ -11,7 +11,6 @@ import java.util.Optional;
 
 public class OperatorMember extends FunctionalMember {
 	public final OperatorType operator;
-	private MethodInstance overrides;
 
 	public OperatorMember(
 			CodePosition position,
@@ -67,12 +66,7 @@ public class OperatorMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance overrides) {
-		this.overrides = overrides;
+	protected void inferFromOverride(MethodInstance overrides) {
 		header = header.inferFromOverride(overrides.getHeader());
 	}
 }

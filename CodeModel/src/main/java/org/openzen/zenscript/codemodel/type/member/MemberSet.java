@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -114,6 +115,19 @@ public class MemberSet implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return findStatic(MethodID.staticOperator(operator));
+	}
+
+	@Override
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		List<MethodSymbol> result = new ArrayList<>();
+		for (List<InstanceCallableMethod> methods : instanceMethods.values()) {
+			for (InstanceCallableMethod method : methods) {
+				if (method.getModifiers().isAbstract()) {
+					method.asMethod().ifPresent(m -> result.add(m.method));
+				}
+			}
+		}
+		return result;
 	}
 
 	@Override
