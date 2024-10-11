@@ -1,6 +1,7 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.*;
@@ -17,17 +18,12 @@ public class ImplementationCheckValidator implements MemberVisitor<Void> {
 
 	private final Validator validator;
 	private final Set<MethodSymbol> implementedMethods = new HashSet<>();
-	private final InterfaceDefinition interfaceDefinition;
+	private final ResolvedType interfaceDefinition;
 
 	public ImplementationCheckValidator(Validator validator, ImplementationMember implementationMember) {
 		this.validator = validator;
 
-		this.interfaceDefinition = implementationMember.asImplementation()
-				.flatMap(TypeID::asDefinition)
-				.map(d -> d.definition)
-				.filter(InterfaceDefinition.class::isInstance)
-				.map(InterfaceDefinition.class::cast)
-				.orElseThrow(() -> new NoSuchElementException("Must be an implementation!"));
+		this.interfaceDefinition = implementationMember.type.resolveWithoutExpansions();
 	}
 
 	@Override
@@ -80,16 +76,12 @@ public class ImplementationCheckValidator implements MemberVisitor<Void> {
 
 	private void visitFunctional(FunctionalMember member) {
 		member.getOverrides().ifPresent(e -> {
-			if (interfaceDefinition.equals(e.method.getDefiningType())) {
-				if (implementedMethods.contains(e.method)) {
-					validator.logError(member.position, CompileErrors.duplicateMember(member.toString()));
-					return;
-				}
-
-				implementedMethods.add(e.method);
-			} else {
-				validator.logError(member.position, CompileErrors.invalidOverride("override not part of interface"));
+			if (implementedMethods.contains(e.method)) {
+				validator.logError(member.position, CompileErrors.duplicateMember(member.toString()));
+				return;
 			}
+
+			implementedMethods.add(e.method);
 		});
 	}
 
@@ -111,11 +103,9 @@ public class ImplementationCheckValidator implements MemberVisitor<Void> {
 		return null;
 	}
 
-	public List<IDefinitionMember> getUnimplementedMembers() {
-		return interfaceDefinition.members.stream()
-				.filter(IDefinitionMember::isAbstract)
+	public List<MethodSymbol> getUnimplementedMembers() {
+		return interfaceDefinition.getInterfaceMethodsToImplement().stream()
 				.filter(o -> !implementedMethods.contains(o))
 				.collect(Collectors.toList());
 	}
-
 }

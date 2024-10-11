@@ -14,7 +14,6 @@ import java.util.Optional;
 public class IteratorMember extends FunctionalMember {
 	private final TypeID[] iteratorTypes;
 	public Statement body;
-	public MethodInstance overrides;
 
 	public IteratorMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, TypeID[] iteratorTypes) {
 		super(position, definition, modifiers, MethodID.iterator(iteratorTypes.length), createIteratorHeader(iteratorTypes));
@@ -69,11 +68,5 @@ public class IteratorMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance overrides) {
-		this.overrides = overrides;
-	}
+	protected void inferFromOverride(MethodInstance overrides) {}
 }

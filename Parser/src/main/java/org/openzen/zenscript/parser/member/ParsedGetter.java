@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -46,9 +47,10 @@ public class ParsedGetter extends ParsedFunctionalMember {
 		@Override
 		protected void fillOverride(TypeID baseType) {
 			ResolvedType resolved = compiler.resolve(baseType);
-			resolved.findGetter(name)
+			MethodInstance overrides = resolved.findGetter(name)
 					.flatMap(getter -> getter.findOverriddenMethod(compiler, compiled.header))
-					.ifPresent(compiled::setOverrides);
+					.orElse(null);
+			compiled.setOverrides(overrides);
 		}
 	}
 }

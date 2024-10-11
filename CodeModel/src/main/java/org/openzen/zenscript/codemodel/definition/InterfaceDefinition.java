@@ -4,9 +4,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvingType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
@@ -17,10 +20,6 @@ public class InterfaceDefinition extends HighLevelDefinition {
 
 	public InterfaceDefinition(CodePosition position, ModuleSymbol module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
-	}
-
-	public void addBaseInterface(TypeID baseInterface) {
-		baseInterfaces.add(baseInterface);
 	}
 
 	@Override
@@ -39,9 +38,7 @@ public class InterfaceDefinition extends HighLevelDefinition {
 	}
 
 	@Override
-	protected void resolveAdditional(TypeID type, MemberSet.Builder members, GenericMapper mapper) {
-		for (TypeID baseType : baseInterfaces) {
-			// TODO: register those members
-		}
+	public ResolvingType resolve(TypeID[] typeArguments) {
+		return InterfaceResolvingType.of(super.resolve(typeArguments), baseInterfaces);
 	}
 }

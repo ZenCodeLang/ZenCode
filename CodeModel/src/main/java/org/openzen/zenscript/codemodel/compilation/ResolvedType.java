@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -83,6 +84,8 @@ public interface ResolvedType {
     Optional<IteratorInstance> findIterator(int variables);
 
 	Optional<StaticCallable> findStaticOperator(OperatorType operator);
+
+	List<MethodSymbol> getInterfaceMethodsToImplement();
 
 	interface SwitchMember {
 		SwitchValue toSwitchValue(List<CompilingVariable> bindings);

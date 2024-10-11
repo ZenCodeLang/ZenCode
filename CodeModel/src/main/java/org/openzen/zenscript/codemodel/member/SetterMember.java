@@ -16,7 +16,6 @@ public class SetterMember extends FunctionalMember {
 	public TypeID type;
 	public Statement body;
 	public FunctionParameter parameter;
-	private MethodInstance overrides;
 
 	public SetterMember(
 			CodePosition position,
@@ -66,13 +65,7 @@ public class SetterMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance overrides) {
-		this.overrides = overrides;
-
+	public void inferFromOverride(MethodInstance overrides) {
 		if (type == BasicTypeID.UNDETERMINED) {
 			this.type = overrides.getHeader().getReturnType();
 			parameter = new FunctionParameter(overrides.getHeader().getReturnType(), "$");

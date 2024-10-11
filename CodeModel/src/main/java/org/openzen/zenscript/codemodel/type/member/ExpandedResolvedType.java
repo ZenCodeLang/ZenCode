@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -173,6 +174,11 @@ public class ExpandedResolvedType implements ResolvedType {
 			}
 		}
 		return Optional.ofNullable(result);
+	}
+
+	@Override
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		return base.getInterfaceMethodsToImplement();
 	}
 
 	@Override

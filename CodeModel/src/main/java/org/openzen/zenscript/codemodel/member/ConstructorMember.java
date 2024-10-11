@@ -79,6 +79,9 @@ public class ConstructorMember extends FunctionalMember {
 	}
 
 	@Override
+	protected void inferFromOverride(MethodInstance overrides) {}
+
+	@Override
 	public Modifiers getEffectiveModifiers() {
 		Modifiers result = modifiers.withStatic();
 		if (definition.isEnum())

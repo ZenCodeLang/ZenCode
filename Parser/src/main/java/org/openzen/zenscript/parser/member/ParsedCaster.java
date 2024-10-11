@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.AnyMethod;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -45,10 +46,11 @@ public class ParsedCaster extends ParsedFunctionalMember {
 		@Override
 		protected void fillOverride(TypeID baseType) {
 			if (!modifiers.isStatic()) {
-				compiler.resolve(baseType)
+				MethodInstance overrides = compiler.resolve(baseType)
 						.findCaster(compiled.toType)
 						.flatMap(AnyMethod::asMethod)
-						.ifPresent(compiled::setOverrides);
+						.orElse(null);
+				compiled.setOverrides(overrides);
 			}
 		}
 	}

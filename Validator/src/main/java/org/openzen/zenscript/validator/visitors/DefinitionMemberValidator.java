@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
@@ -227,7 +228,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		ImplementationCheckValidator implementationCheckValidator = new ImplementationCheckValidator(validator, implementation);
 		implementation.members.forEach(member -> member.accept(implementationCheckValidator));
 
-		List<IDefinitionMember> unimplementedMembers = implementationCheckValidator.getUnimplementedMembers();
+		List<MethodSymbol> unimplementedMembers = implementationCheckValidator.getUnimplementedMembers();
 		if (!unimplementedMembers.isEmpty()) {
 			validator.logError(implementation.position, CompileErrors.incompleteImplementation(unimplementedMembers));
 		}
@@ -267,9 +268,12 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 				ValidationUtils.validateValidOverride(validator, member.position, member.header, maybeOverrides.get().getHeader());
 			} else {
 				validator.logError(member.position, CompileErrors.overriddenMethodNotFound(member.getID(), member.header));
+				return;
 			}
 		} else if (member.getHeader().getReturnType() == BasicTypeID.UNDETERMINED) {
-			validator.logError(member.position, CompileErrors.missingHeaderReturnType());
+			if (!member.doesExpectOverride()) {
+				validator.logError(member.position, CompileErrors.missingHeaderReturnType());
+			}
 			return;
 		}
 

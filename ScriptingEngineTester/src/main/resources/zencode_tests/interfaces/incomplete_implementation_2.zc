@@ -1,0 +1,20 @@
+#error: 12:INCOMPLETE_IMPLEMENTATION
+
+interface Test1 {
+	print(): void;
+}
+
+interface Test2 : Test1 {
+	print2(): void;
+}
+
+class TestClass {
+	implements Test2 {
+		print2() {
+			println("hello");
+		}
+	}
+}
+
+val a = new TestClass();
+a.print2();

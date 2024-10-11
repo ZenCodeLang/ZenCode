@@ -7,11 +7,8 @@ import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.Optional;
-
 public class CasterMember extends FunctionalMember {
 	public TypeID toType;
-	public MethodInstance overrides;
 
 	public CasterMember(
 			CodePosition position,
@@ -67,11 +64,5 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
-	public Optional<MethodInstance> getOverrides() {
-		return Optional.ofNullable(overrides);
-	}
-
-	public void setOverrides(MethodInstance overrides) {
-		this.overrides = overrides;
-	}
+	protected void inferFromOverride(MethodInstance overrides) {}
 }

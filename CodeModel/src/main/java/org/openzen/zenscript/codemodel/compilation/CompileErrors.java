@@ -5,6 +5,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -585,14 +586,14 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.DEFINITION_NOT_ALLOWED_HERE, text);
 	}
 
-	public static CompileError incompleteImplementation(List<IDefinitionMember> unimplementedMembers) {
+	public static CompileError incompleteImplementation(List<MethodSymbol> unimplementedMembers) {
 
 		String text;
 		if(unimplementedMembers.size() == 1) {
-			text = unimplementedMembers.get(0).describe() + " is not implemented";
+			text = unimplementedMembers.get(0).toString() + " is not implemented";
 		} else {
 			text = unimplementedMembers.stream()
-					.map(IDefinitionMember::describe)
+					.map(MethodSymbol::toString)
 					.collect(Collectors.joining("\n  - ", "Implementation incomplete: " + unimplementedMembers.size() + " members not yet implemented:\n", ""));
 		}
 

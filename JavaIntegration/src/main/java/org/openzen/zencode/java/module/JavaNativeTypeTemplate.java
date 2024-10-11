@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JavaNativeTypeTemplate {
@@ -247,6 +248,16 @@ public class JavaNativeTypeTemplate {
 		JavaRuntimeMethod method = new JavaRuntimeMethod(class_, target, javaMethod, MethodID.staticMethod(javaMethod.getName()), header, implicit);
 		class_.module.getCompiled().setMethodInfo(method, method);
 		return method;
+	}
+
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		if (methods == null) {
+			loadMethods();
+		}
+		return methods.values().stream()
+				.flatMap(List::stream)
+				.filter(m -> m.getModifiers().isAbstract())
+				.collect(Collectors.toList());
 	}
 
 	private static class EnumField implements CompilableExpression {

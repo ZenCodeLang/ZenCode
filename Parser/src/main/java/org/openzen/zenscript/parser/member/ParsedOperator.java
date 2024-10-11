@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.CompilingMember;
 import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -47,10 +48,12 @@ public class ParsedOperator extends ParsedFunctionalMember {
 
 		@Override
 		protected void fillOverride(TypeID baseType) {
-			compiler.resolve(baseType)
+			MethodInstance overrides = compiler.resolve(baseType)
 					.findOperator(operator)
 					.flatMap(operator -> operator.findOverriddenMethod(compiler, compiled.header))
-					.ifPresent(compiled::setOverrides);
+					.orElse(null);
+
+			compiled.setOverrides(overrides);
 		}
 	}
 }

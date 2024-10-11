@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
@@ -134,5 +135,10 @@ public class OptionalResolvedType implements ResolvedType {
 	@Override
 	public Optional<StaticCallable> findStaticOperator(OperatorType operator) {
 		return Optional.empty();
+	}
+
+	@Override
+	public List<MethodSymbol> getInterfaceMethodsToImplement() {
+		return Collections.emptyList();
 	}
 }
