@@ -45,11 +45,13 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
 	private final Map<Class<?>, Function<TypeID[], TypeID>> specialTypes = new HashMap<>();
+	private final JdkJavaRuntimeConverter jdkJavaRuntimeConverter;
 	private JavaNativeHeaderConverter headerConverter;
 
 	public JavaRuntimeTypeConverterImpl(JavaNativeModuleSpace nativeModuleSpace, JavaNativePackageInfo packageInfo) {
 		this.nativeModuleSpace = nativeModuleSpace;
 		this.packageInfo = packageInfo;
+		this.jdkJavaRuntimeConverter = new JdkJavaRuntimeConverter(packageInfo.getRoot());
 		fillClassMaps();
 		fillSpecialTypes();
 	}
@@ -240,8 +242,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 
 	private TypeSymbol findType(Class<?> cls) {
 		// ToDo: Have a custom type for Collection
-		if (cls == List.class || cls == Collection.class) {
-			return packageInfo.getRoot().getImport(Arrays.asList("stdlib", "List"), 0);
+		Optional<TypeSymbol> typeID = jdkJavaRuntimeConverter.resolveJavaType(cls);
+		if (typeID.isPresent()) {
+			return typeID.get();
 		}
 		if (cls == Object.class) {
 			TypeSymbol result = packageInfo.getRoot().getImport(Arrays.asList("stdlib", "Object"), 0);
