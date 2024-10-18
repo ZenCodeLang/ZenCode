@@ -94,6 +94,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			constructorWriter.nameParameter(0, "index");
 		}
 
+		// TODO: these must be initialized after calling the super constructor (it now ends up before it)
+		// this seems to work fine, but it might break
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			constructorWriter.nameParameter(0, "typeof" + typeParameter.name);
 			constructorWriter.nameVariable(
@@ -341,6 +343,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
+		if (member.getTag(NativeTag.class) != null) {
+			return null;
+		}
+
 		JavaImplementation implementation = context.getJavaImplementation(member);
 		if (implementation.inline) {
 			for (IDefinitionMember imember : member.members)

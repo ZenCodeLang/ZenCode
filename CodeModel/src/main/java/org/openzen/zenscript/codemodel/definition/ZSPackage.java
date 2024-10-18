@@ -1,15 +1,11 @@
 package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ZSPackage {
 	public final String name;
@@ -37,6 +33,10 @@ public class ZSPackage {
 
 	public boolean contains(String name) {
 		return types.containsKey(name) || subPackages.containsKey(name);
+	}
+
+	public TypeSymbol getImport(String[] name) {
+		return getImport(Arrays.asList(name), 0);
 	}
 
 	public TypeSymbol getImport(List<String> name, int depth) {

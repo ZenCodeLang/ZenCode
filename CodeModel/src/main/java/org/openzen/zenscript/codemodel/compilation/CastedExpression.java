@@ -39,8 +39,12 @@ public class CastedExpression {
 		return new CastedExpression(position, error);
 	}
 
-	public static CastedExpression invalid(Expression expression) {
-		return new CastedExpression(Level.INVALID, expression);
+	public static CastedExpression invalid(Expression expression, CompileError error) {
+		return new CastedExpression(Level.INVALID, expression, error);
+	}
+
+	public static CastedExpression invalidType(Expression expression) {
+		return new CastedExpression(Level.INVALID, expression, expression.type.asInvalid().error);
 	}
 
 	public final Level level;
@@ -56,6 +60,12 @@ public class CastedExpression {
 	public CastedExpression(CodePosition position, CompileError error) {
 		this.level = Level.INVALID;
 		this.value = new InvalidExpression(position, BasicTypeID.INVALID, error);
+		this.error = error;
+	}
+
+	private CastedExpression(Level level, Expression value, CompileError error) {
+		this.level = level;
+		this.value = value;
 		this.error = error;
 	}
 

@@ -44,6 +44,11 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
+	public InvalidTypeID asInvalid() {
+		return this;
+	}
+
+	@Override
 	public ResolvingType resolve() {
 		return MemberSet.create(this).build();
 	}

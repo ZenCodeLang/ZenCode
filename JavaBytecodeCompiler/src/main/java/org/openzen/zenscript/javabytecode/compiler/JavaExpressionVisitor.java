@@ -49,7 +49,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 	private final JavaUnboxingTypeVisitor optionalUnwrappingTypeVisitor;
 	private final JavaFieldBytecodeCompiler fieldCompiler;
-	private final JavaMethodBytecodeCompiler methodCompiler;
+	public final JavaMethodBytecodeCompiler methodCompiler;
 	private final CapturedExpressionVisitor<Void> capturedExpressionVisitor;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler javaMangler) {
@@ -105,7 +105,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitArray(ArrayExpression expression) {
 		Type type = context.getType(expression.arrayType.elementType);
 		if (expression.arrayType.elementType.isGeneric()) {
-			expression.arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
+			expression.arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context, false));
 			javaWriter.constant(expression.expressions.length);
 			javaWriter.invokeStatic(ARRAY_NEWINSTANCE);
 			javaWriter.checkCast(context.getInternalName(expression.arrayType));

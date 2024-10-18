@@ -150,7 +150,12 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(type, members, mapper);
 		}
-		List<TypeID> interfaces = this.members.stream().map(IDefinitionMember::asImplementation).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+		List<TypeID> interfaces = this.members.stream()
+				.map(IDefinitionMember::asImplementation)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(mapper::map)
+				.collect(Collectors.toList());
 
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
 		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));

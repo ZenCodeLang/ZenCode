@@ -15,9 +15,11 @@ import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
  */
 public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWriter, Void, RuntimeException> {
 	private final JavaBytecodeContext context;
+	private final boolean insideConstructor;
 
-	public JavaTypeExpressionVisitor(JavaBytecodeContext context) {
+	public JavaTypeExpressionVisitor(JavaBytecodeContext context, boolean insideConstructor) {
 		this.context = context;
+		this.insideConstructor = insideConstructor;
 	}
 
 	@Override
@@ -98,7 +100,7 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 	@Override
 	public Void visitGeneric(JavaWriter writer, GenericTypeID generic) {
 		JavaTypeParameterInfo info = context.target.getTypeParameterInfo(generic.parameter);
-		if (info.field != null) {
+		if (info.field != null && !insideConstructor) {
 			writer.loadObject(0); // this
 			writer.getField(info.field);
 		} else {

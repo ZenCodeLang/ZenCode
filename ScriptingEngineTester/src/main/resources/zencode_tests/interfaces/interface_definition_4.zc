@@ -7,7 +7,7 @@ interface Test {
 class TestClass {
 	implements Test {
 		protected print() {
-			return "hello";
+			println("hello");
 		}
 	}
 }

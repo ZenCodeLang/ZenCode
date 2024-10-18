@@ -14,6 +14,7 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
@@ -27,14 +28,22 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	private final JavaExpressionVisitor original;
 	private final JavaFieldBytecodeCompiler fieldCompiler;
 	private final JavaMangler mangler;
+	private final JavaMethodBytecodeCompiler methodCompiler;
 
-	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaMangler mangler, JavaExpressionVisitor original) {
+	public JavaNonPushingExpressionVisitor(
+			JavaBytecodeContext context,
+			JavaCompiledModule module,
+			JavaWriter javaWriter,
+			JavaMangler mangler,
+			JavaExpressionVisitor original
+	) {
 		this.context = context;
 		this.module = module;
 		this.javaWriter = javaWriter;
 		this.original = original;
 		this.mangler = mangler;
 		fieldCompiler = new JavaFieldBytecodeCompiler(javaWriter, original, false);
+		this.methodCompiler = original.methodCompiler;
 	}
 
 	@Override
@@ -198,27 +207,29 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			javaWriter.loadInt(2);
 		}
 
+		context.getJavaMethod(expression.constructor).compileBaseConstructor(
+				methodCompiler,
+				expression.constructor.getTarget(),
+				expression.arguments);
+
+		/*methodCompiler.handleArguments(0, expression.constructor.getHeader(), expression.arguments, false);
 		for (Expression argument : expression.arguments.arguments) {
 			argument.accept(original);
 		}
 		String internalName = context.getInternalName(expression.objectType);
 		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.forDefinition.isEnum()
 				? context.getEnumConstructorDescriptor(expression.constructor.getHeader())
-				: context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));
+				: context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));*/
 		return null;
 	}
 
 	@Override
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		javaWriter.loadObject(0);
-		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(original);
-		}
-		//No super calls in enums possible, and that's already handled in the enum constructor itself.
-		javaWriter.invokeSpecial(
-				context.getInternalName(expression.constructor.getTarget()),
-				"<init>",
-				context.getMethodDescriptor(expression.constructor.getHeader().withReturnType(BasicTypeID.VOID)));
+		context.getJavaMethod(expression.constructor).compileBaseConstructor(
+				methodCompiler,
+				expression.constructor.getTarget(),
+				expression.arguments);
 
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, mangler, false);
 		return null;

@@ -1,0 +1,18 @@
+#output: Hello World
+
+virtual class BaseClass<T> {
+    val value as T;
+
+	this(value: T) {
+		this.value = value;
+	}
+}
+
+class Subclass<T> : BaseClass<T> {
+	this(value: T) {
+		super(value);
+	}
+}
+
+val instance = new Subclass<string>("Hello World");
+println(instance.value);

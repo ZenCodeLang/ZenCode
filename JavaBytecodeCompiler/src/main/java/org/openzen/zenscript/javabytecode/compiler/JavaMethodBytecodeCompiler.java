@@ -149,14 +149,32 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		AtomicInteger typeArguments = new AtomicInteger(0);
 		if (method.compile) {
 			type.asDefinition().ifPresent(definitionType -> {
-				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context, false);
 				typeArguments.set(definitionType.typeArguments.length);
 				for (TypeID typeParameter : definitionType.typeArguments) {
 					typeParameter.accept(javaWriter, javaTypeExpressionVisitor);
 				}
 			});
 		}
-		handleArguments(typeArguments.get(), method, arguments, false);
+		handleArguments(typeArguments.get(), method, arguments, false, false);
+		javaWriter.invokeSpecial(method);
+		return null;
+	}
+
+	@Override
+	public Void nativeBaseConstructor(JavaNativeMethod method, TypeID type, CallArguments arguments) {
+		javaWriter.loadObject(0);
+		AtomicInteger typeArguments = new AtomicInteger(0);
+		if (method.compile) {
+			type.asDefinition().ifPresent(definitionType -> {
+				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context, true);
+				typeArguments.set(definitionType.typeArguments.length);
+				for (TypeID typeParameter : definitionType.typeArguments) {
+					typeParameter.accept(javaWriter, javaTypeExpressionVisitor);
+				}
+			});
+		}
+		handleArguments(typeArguments.get(), method, arguments, false, false);
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
@@ -164,7 +182,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	@Override
 	public Void nativeVirtualMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		if (arguments.expansionTypeArguments.length > 0) {
-			final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+			final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context, false);
 			for (int i = 0; i < arguments.expansionTypeArguments.length; i++) {
 				arguments.expansionTypeArguments[i].accept(javaWriter, javaTypeExpressionVisitor);
 			}
@@ -181,7 +199,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	}
 
 	public void nativeMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments, boolean asStatic) {
-		handleArguments(arguments.typeArguments.length, method, arguments, asStatic);
+		handleArguments(arguments.typeArguments.length, method, arguments, asStatic, false);
 
 		if (method.kind == JavaNativeMethod.Kind.STATIC) {
 			javaWriter.invokeStatic(method);
@@ -209,14 +227,19 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	@Override
 	public Void nativeSpecialMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments) {
 		target.accept(expressionVisitor);
-		handleArguments(arguments.typeArguments.length, method, arguments, false);
+		handleArguments(arguments.typeArguments.length, method, arguments, false, false);
 		javaWriter.invokeSpecial(method);
 		return null;
 	}
 
-	private void handleArguments(int typeArguments, JavaNativeMethod method, CallArguments arguments, boolean asStatic) {
+	private void handleArguments(
+			int typeArguments,
+			JavaNativeMethod method,
+			CallArguments arguments,
+			boolean asStatic,
+			boolean insideConstructor) {
 		if (method.compile) {
-			handleTypeArguments(method, arguments);
+			handleTypeArguments(method, arguments, insideConstructor);
 		}
 
 		// This happens e.g. for Strings where compareTo is a static method in zencode but a virtual one in Java
@@ -236,8 +259,8 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 		}
 	}
 
-	private void handleTypeArguments(JavaNativeMethod method, CallArguments arguments) {
-		final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+	private void handleTypeArguments(JavaNativeMethod method, CallArguments arguments, boolean insideConstructor) {
+		final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context, insideConstructor);
 		if (arguments.typeArguments.length != method.typeParameterArguments.length)
 			throw new IllegalArgumentException("Number of type parameters doesn't match");
 

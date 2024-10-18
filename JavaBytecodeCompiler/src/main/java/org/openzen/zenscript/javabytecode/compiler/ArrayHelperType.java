@@ -27,7 +27,7 @@ public class ArrayHelperType {
 	public void newArray(JavaWriter javaWriter) {
 		if(elementType instanceof GenericTypeID) {
 
-			elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
+			elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context, false));
 			javaWriter.swap();
 			final JavaClass arrayClass = JavaClass.fromInternalName("java/lang/reflect/Array", JavaClass.Kind.CLASS);
 			javaWriter.invokeStatic(JavaNativeMethod.getStatic(arrayClass, "newInstance", "(Ljava/lang/Class;I)Ljava/lang/Object;", 0));

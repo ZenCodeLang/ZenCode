@@ -30,7 +30,7 @@ public class JavaNativeClass {
 	}
 
 	public void addConstructor(String key, String descriptor) {
-		methods.put(key, createMethod("<init>", descriptor, JavaNativeMethod.Kind.CONSTRUCTOR));
+		methods.put(key, JavaNativeMethod.getNativeConstructor(cls, descriptor));
 	}
 
 	public void addInstanceMethod(String key, String name, String descriptor) {
@@ -41,12 +41,12 @@ public class JavaNativeClass {
 		methods.put(key, createMethod(name, descriptor, JavaNativeMethod.Kind.INSTANCE, genericReturnType));
 	}
 
-	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind instance) {
-		return createMethod(name, descriptor, instance, false);
+	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind kind) {
+		return createMethod(name, descriptor, kind, false);
 	}
 
-	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind instance, boolean genericReturnType) {
-		return new JavaNativeMethod(cls, instance, name, false, descriptor, JavaModifiers.PUBLIC, genericReturnType);
+	public JavaNativeMethod createMethod(String name, String descriptor, JavaNativeMethod.Kind kind, boolean genericReturnType) {
+		return new JavaNativeMethod(cls, kind, name, false, descriptor, JavaModifiers.PUBLIC, genericReturnType);
 	}
 
 	public JavaNativeMethod createInstanceMethod(String name, String descriptor) {

@@ -34,7 +34,12 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		this.javaWriter = expressionVisitor.getJavaWriter();
 		this.context = context;
 		this.expressionVisitor = expressionVisitor;
-		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(expressionVisitor.context, expressionVisitor.module, expressionVisitor.javaWriter, javaMangler, expressionVisitor);
+		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(
+				expressionVisitor.context,
+				expressionVisitor.module,
+				expressionVisitor.javaWriter,
+				javaMangler,
+				expressionVisitor);
 	}
 
 	@Override

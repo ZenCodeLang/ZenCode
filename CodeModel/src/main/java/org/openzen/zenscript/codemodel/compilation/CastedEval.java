@@ -31,7 +31,7 @@ public class CastedEval {
 		if (value.type.equals(type) || type == BasicTypeID.UNDETERMINED)
 			return new CastedExpression(CastedExpression.Level.EXACT, value);
 		if (value.type.isInvalid())
-			return CastedExpression.invalid(value);
+			return CastedExpression.invalidType(value);
 
 		ResolvedType resolvedTargetType = compiler.resolve(type);
 

@@ -80,7 +80,7 @@ class ArrayInitializerHelper {
 
 		final ArrayHelperType elementType = currentArrayType.getWithOneDimensionLess();
 		if (arrayType.elementType.isGeneric()) {
-			arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context));
+			arrayType.elementType.accept(javaWriter, new JavaTypeExpressionVisitor(context, false));
 			javaWriter.loadInt(currentArraySizeLocation);
 			javaWriter.invokeStatic(ARRAY_NEWINSTANCE);
 			javaWriter.checkCast(context.getInternalName(arrayType));

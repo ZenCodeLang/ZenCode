@@ -78,15 +78,21 @@ public class ScriptingEngine {
 		try {
 			ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
 			for (String moduleName : stdLibModulesToRegister) {
-				registerModule(moduleName, root.getOrCreatePackage(moduleName), stdlibs);
+				String[] dependencies = moduleName.equals("stdlib") ? new String[0] : new String[]{"stdlib"};
+				registerModule(moduleName, root.getOrCreatePackage(moduleName), stdlibs, dependencies);
 			}
 		} catch (CompileException | ParseException | IOException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
-	public void registerModule(String name, ZSPackage zsPackage, ModuleLoader loader) throws CompileException, ParseException {
-		SemanticModule stdlibModule = loader.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);
+	public void registerModule(String name, ZSPackage zsPackage, ModuleLoader loader, String[] dependencies) throws CompileException, ParseException {
+		SemanticModule[] dependencyModules = new SemanticModule[dependencies.length];
+		for (int i = 0; i < dependencies.length; i++) {
+			dependencyModules[i] = space.getModule(dependencies[i]);
+		}
+
+		SemanticModule stdlibModule = loader.loadModule(space, name, null, dependencyModules, FunctionParameter.NONE, zsPackage, logger);
 		stdlibModule = Validator.validate(stdlibModule, logger);
 		space.addModule(name, stdlibModule);
 		registerCompiled(stdlibModule);
