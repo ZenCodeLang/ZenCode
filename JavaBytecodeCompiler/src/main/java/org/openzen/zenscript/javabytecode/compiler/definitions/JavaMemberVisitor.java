@@ -343,6 +343,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
+		if (member.getTag(NativeTag.class) != null) {
+			return null;
+		}
+
 		JavaImplementation implementation = context.getJavaImplementation(member);
 		if (implementation.inline) {
 			for (IDefinitionMember imember : member.members)

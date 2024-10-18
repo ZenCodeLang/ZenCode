@@ -81,6 +81,7 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 
 		@Override
 		public void compile(List<CompileException> errors) {
+			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
 			for (CompilingMember member : members) {
 				member.compile(errors);
 			}

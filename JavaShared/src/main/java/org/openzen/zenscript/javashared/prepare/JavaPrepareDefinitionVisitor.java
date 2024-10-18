@@ -47,7 +47,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 
 		{
-			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "HashSet", JavaClass.Kind.INTERFACE));
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "HashSet", JavaClass.Kind.CLASS));
 			cls.addConstructor("constructor", "()V");
 			nativeClasses.put("collections::HashSet", cls);
 		}

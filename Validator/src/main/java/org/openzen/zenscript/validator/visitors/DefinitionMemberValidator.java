@@ -225,8 +225,21 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 
 	private void checkImplementationComplete(ImplementationMember implementation) {
+		if (implementation.getEffectiveModifiers().isExtern()) {
+			return;
+		}
+
 		ImplementationCheckValidator implementationCheckValidator = new ImplementationCheckValidator(validator, implementation);
-		implementation.members.forEach(member -> member.accept(implementationCheckValidator));
+		implementation.members.forEach(member -> {
+			ValidationUtils.validateModifiers(
+					validator,
+					member.getSpecifiedModifiers(),
+					Modifiers.FLAG_PRIVATE | Modifiers.FLAG_PUBLIC,
+					member.getPosition(),
+					"Invalid modifier or implementation member"
+			);
+			member.accept(implementationCheckValidator);
+		});
 
 		List<MethodSymbol> unimplementedMembers = implementationCheckValidator.getUnimplementedMembers();
 		if (!unimplementedMembers.isEmpty()) {

@@ -99,6 +99,9 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitImplementation(ImplementationMember implementation) {
+			for (MemberAnnotation annotation : implementation.annotations)
+				annotation.apply(implementation);
+
 			for (IDefinitionMember member : implementation.members) {
 				member.accept(this);
 			}
