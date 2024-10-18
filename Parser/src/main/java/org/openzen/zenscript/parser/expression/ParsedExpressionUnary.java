@@ -53,7 +53,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
 			if (value.type.isInvalid())
-				return CastedExpression.invalid(value);
+				return CastedExpression.invalidType(value);
 
 			ResolvedType resolvedType = compiler.resolve(value.type);
 			return resolvedType.findOperator(operator)

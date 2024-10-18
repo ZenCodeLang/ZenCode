@@ -62,7 +62,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			Expression value = this.value.eval();
 			if (value.type.isInvalid())
-				return CastedExpression.invalid(value);
+				return CastedExpression.invalidType(value);
 
 			ResolvedType resolved = compiler.resolve(value.type);
 			return resolved.findOperator(OperatorType.INDEXGET)
@@ -116,7 +116,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			Expression instance = this.instance.eval();
 			if (instance.type.isInvalid())
-				return CastedExpression.invalid(instance);
+				return CastedExpression.invalidType(instance);
 
 			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
 					.map(operator -> operator.cast(compiler, position, cast, instance, TypeID.NONE, arguments))

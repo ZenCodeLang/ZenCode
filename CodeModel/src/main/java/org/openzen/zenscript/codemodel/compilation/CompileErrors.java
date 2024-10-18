@@ -254,6 +254,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.INVALID_TYPE_ARGUMENTS, "Invalid number of type arguments");
 	}
 
+	public static CompileError invalidType() {
+		return new CompileError(CompileExceptionCode.INVALID_TYPE, "Invalid type");
+	}
+
     public static CompileError noInnerType(TypeID type, String name) {
 		return new CompileError(CompileExceptionCode.NO_SUCH_TYPE, "No such inner type in " + type + ": " + name);
     }

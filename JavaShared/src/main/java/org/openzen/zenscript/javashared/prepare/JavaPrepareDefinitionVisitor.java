@@ -21,6 +21,7 @@ import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Hoofdgebruiker
@@ -299,8 +300,9 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(definition))
 			return module.getClass(definition).compiled;
 
-		for (TypeID baseType : definition.baseInterfaces)
-			prepare(baseType);
+		for (TypeID baseType : definition.baseInterfaces) {
+			getTypeInOwnModule(baseType).ifPresent(this::prepare);
+		}
 
 		return visitClassCompiled(definition, true, JavaClass.Kind.INTERFACE);
 	}
@@ -373,9 +375,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
 		if (definition.getSuperType() != null) {
 			// don't perform this step on definitions from other modules - it should already have been performed there
-			definition.getSuperType().asDefinition()
-					.filter(superDefinition -> module.module.module.equals(superDefinition.definition.getModule()))
-					.ifPresent(this::prepare);
+			getTypeInOwnModule(definition.getSuperType()).ifPresent(this::prepare);
 		}
 
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
@@ -425,5 +425,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 
 		return cls;
+	}
+
+	private Optional<DefinitionTypeID> getTypeInOwnModule(TypeID type) {
+		return type.asDefinition()
+				.filter(superDefinition -> module.module.module.equals(superDefinition.definition.getModule()));
 	}
 }

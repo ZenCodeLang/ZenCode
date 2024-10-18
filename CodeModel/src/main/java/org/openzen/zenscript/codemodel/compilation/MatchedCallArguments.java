@@ -105,7 +105,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 	public CastedExpression cast(ExpressionBuilder builder, CastedEval eval, CallEvaluator<T> evaluator) {
 		if (this.error != null) {
-			return CastedExpression.invalid(builder.invalid(error));
+			return CastedExpression.invalid(builder.invalid(error), error);
 		} else {
 			return eval.of(evaluator.eval(builder, method, arguments));
 		}

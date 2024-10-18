@@ -83,8 +83,10 @@ public class ParsedClass extends BaseParsedDefinition {
 		@Override
 		public void linkTypes() {
 			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, parameters);
-			if (superclass != null)
-				compiled.setSuperType(superclass.compile(compiler.types()));
+			if (superclass != null) {
+				TypeBuilder typesWithGenericParameters = compiler.types().withGeneric(compiled.typeParameters);
+				compiled.setSuperType(superclass.compile(typesWithGenericParameters));
+			}
 			super.linkTypes();
 		}
 

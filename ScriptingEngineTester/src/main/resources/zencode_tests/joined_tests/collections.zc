@@ -1,5 +1,3 @@
-#disabled: Blocked because collections currently don't depend on stdlib
-#disabled: Blocked because collections cannot expand the exception type from stdlib (see stdlib/exception_subtype_0.zc)
 #dependency: stdlib
 #dependency: collections
 #output: 3

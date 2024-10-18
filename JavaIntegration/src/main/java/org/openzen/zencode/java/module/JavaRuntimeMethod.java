@@ -138,6 +138,11 @@ public class JavaRuntimeMethod implements JavaMethod, MethodSymbol {
 	}
 
 	@Override
+	public <T> T compileBaseConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		return compiler.nativeBaseConstructor(method, type, arguments);
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.nativeVirtualMethod(method, returnType, target, arguments);
 	}

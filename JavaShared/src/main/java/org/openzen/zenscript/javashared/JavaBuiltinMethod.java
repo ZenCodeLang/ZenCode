@@ -19,6 +19,11 @@ public class JavaBuiltinMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileBaseConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		throw new UnsupportedOperationException("Not supported for builtin methods");
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.builtinVirtualMethod(method, target, arguments);
 	}

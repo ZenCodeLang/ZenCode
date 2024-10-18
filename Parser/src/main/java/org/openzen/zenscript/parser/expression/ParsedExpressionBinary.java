@@ -58,7 +58,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			Expression leftValue = this.left.eval();
 			if (leftValue.type.isInvalid())
-				return CastedExpression.invalid(leftValue);
+				return CastedExpression.invalidType(leftValue);
 
 			ResolvedType resolved = compiler.resolve(leftValue.type);
 			return resolved.findOperator(operator)

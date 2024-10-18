@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -97,8 +98,9 @@ public class ParsedInterface extends BaseParsedDefinition {
 		@Override
 		public void linkTypes() {
 			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, typeParameters);
+			TypeBuilder typesWithGenericParameters = compiler.types().withGeneric(compiled.typeParameters);
 			for (IParsedType type : superInterfaces)
-				compiled.baseInterfaces.add(type.compile(compiler.types()));
+				compiled.baseInterfaces.add(type.compile(typesWithGenericParameters));
 
 			super.linkTypes();
 		}

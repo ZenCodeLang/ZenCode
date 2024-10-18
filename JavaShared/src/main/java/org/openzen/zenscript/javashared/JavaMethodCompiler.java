@@ -8,6 +8,8 @@ import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 public interface JavaMethodCompiler<T> {
 	T nativeConstructor(JavaNativeMethod method, TypeID type, CallArguments arguments);
 
+	T nativeBaseConstructor(JavaNativeMethod method, TypeID type, CallArguments arguments);
+
 	T nativeVirtualMethod(JavaNativeMethod method, TypeID returnType, Expression target, CallArguments arguments);
 
 	T nativeStaticMethod(JavaNativeMethod method, TypeID returnType, CallArguments arguments);

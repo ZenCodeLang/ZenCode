@@ -133,6 +133,11 @@ public class JavaNativeMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileBaseConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		return compiler.nativeBaseConstructor(this, type, arguments);
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.nativeVirtualMethod(this, returnType, target, arguments);
 	}

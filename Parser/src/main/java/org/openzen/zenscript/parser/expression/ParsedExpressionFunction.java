@@ -1,5 +1,6 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -67,8 +68,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 					header = header.forTypeParameterInference();
 				}*/
 
-				if(header.hasInvalidTypes()) {
-					return CastedExpression.invalid(compiler.at(position).invalid(CompileErrors.invalidLambdaHeader(header)));
+				if (header.hasInvalidTypes()) {
+					CompileError error = CompileErrors.invalidLambdaHeader(header);
+					return CastedExpression.invalid(compiler.at(position).invalid(error), error);
 				}
 
 				LambdaClosure closure = new LambdaClosure();

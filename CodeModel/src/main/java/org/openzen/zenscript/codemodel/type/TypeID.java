@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -86,6 +87,10 @@ public interface TypeID {
 
 	default boolean isInvalid() {
 		return false;
+	}
+
+	default InvalidTypeID asInvalid() {
+		return new InvalidTypeID(CodePosition.UNKNOWN, CompileErrors.invalidType());
 	}
 
 	default boolean canCastImplicitTo(TypeID other) {

@@ -25,6 +25,11 @@ public enum JavaSpecialMethod implements JavaMethod {
 	}
 
 	@Override
+	public <T> T compileBaseConstructor(JavaMethodCompiler<T> compiler, TypeID type, CallArguments arguments) {
+		throw new UnsupportedOperationException("Not supported for special methods");
+	}
+
+	@Override
 	public <T> T compileVirtual(JavaMethodCompiler<T> compiler, TypeID returnType, Expression target, CallArguments arguments) {
 		return compiler.specialVirtualMethod(this, target, arguments);
 	}
