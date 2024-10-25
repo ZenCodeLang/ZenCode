@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
@@ -49,7 +50,13 @@ public class IteratorMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		TypeID[] instancedTypes = mapper.map(iteratorTypes);
+		IteratorTypeID iteratorTypeID = new IteratorTypeID(instancedTypes);
+		FunctionHeader header = new FunctionHeader(iteratorTypeID);
 
+		MethodInstance instance = new MethodInstance(this, header, targetType);
+		IteratorInstance iterator = new IteratorInstance(targetType, instancedTypes, instance);
+		members.iterator(iterator);
 	}
 
 	@Override
