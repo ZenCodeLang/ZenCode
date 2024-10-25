@@ -32,7 +32,7 @@ public class JdkJavaRuntimeConverter {
 
 	private void fillJavaClassToZenCodeClassName() {
 		fillMapping(List.class, "stdlib.List");
-		fillMapping(Collection.class, "stdlib.List");
+		fillMapping(Collection.class, "javalib.Collection");
 		fillMapping(Comparable.class, "stdlib.Comparable");
 		fillMapping(Exception.class, "stdlib.Exception");
 		fillMapping(IllegalArgumentException.class, "stdlib.IllegalArgumentException");

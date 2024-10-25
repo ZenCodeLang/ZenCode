@@ -47,6 +47,18 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 
 		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "Collection", JavaClass.Kind.INTERFACE));
+			cls.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
+			cls.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
+			cls.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
+			cls.addMethod("toArray", JavaSpecialMethod.COLLECTION_TO_ARRAY);
+			cls.addInstanceMethod("length", "size", "()I");
+			cls.addInstanceMethod("isEmpty", "isEmpty", "()Z");
+			cls.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
+			nativeClasses.put("javalib::Collection", cls);
+		}
+
+		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.util", "HashSet", JavaClass.Kind.CLASS));
 			cls.addConstructor("constructor", "()V");
 			nativeClasses.put("collections::HashSet", cls);

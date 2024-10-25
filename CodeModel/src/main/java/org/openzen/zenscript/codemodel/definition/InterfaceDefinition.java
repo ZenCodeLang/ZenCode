@@ -8,11 +8,15 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.InterfaceResolvingType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class InterfaceDefinition extends HighLevelDefinition {
@@ -39,6 +43,19 @@ public class InterfaceDefinition extends HighLevelDefinition {
 
 	@Override
 	public ResolvingType resolve(TypeID[] typeArguments) {
-		return InterfaceResolvingType.of(super.resolve(typeArguments), baseInterfaces);
+		if (baseInterfaces.isEmpty()) {
+			return InterfaceResolvingType.of(super.resolve(typeArguments), Collections.emptyList());
+		} else {
+			TypeID type = DefinitionTypeID.create(this, typeArguments);
+
+			MemberSet.Builder members = MemberSet.create(type);
+			GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
+			for (IDefinitionMember member : this.members) {
+				member.registerTo(type, members, mapper);
+			}
+
+			TypeID[] baseInterfaces = this.baseInterfaces.toArray(TypeID.NONE);
+			return InterfaceResolvingType.of(super.resolve(typeArguments), Arrays.asList(mapper.map(baseInterfaces)));
+		}
 	}
 }

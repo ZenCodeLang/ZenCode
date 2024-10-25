@@ -5,17 +5,14 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 
 class JavaNativeSpecialTypeTests extends ZenCodeTest {
 
 	@Override
 	public List<String> getRequiredStdLibModules() {
-		return Collections.singletonList("stdlib");
+		return Arrays.asList("stdlib", "javalib");
 	}
 
 	@Override
