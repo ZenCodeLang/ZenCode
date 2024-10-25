@@ -126,6 +126,8 @@ public abstract class JavaContext {
 		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType, tType);
 		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType);
 		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, new GenericTypeID(t), tType);
+		registerFunction("TUToT", BiFunction.class, "apply", new TypeParameter[]{t, u}, tType, tType, uType);
+		registerFunction("TUToU", BiFunction.class, "apply", new TypeParameter[]{t, u}, uType, tType, uType);
 	}
 
 	private void registerFunction(String id, Class<?> clazz, String methodName, TypeParameter[] typeParameters, TypeID returnType, TypeID... parameterTypes) {
