@@ -141,4 +141,9 @@ public class OptionalResolvedType implements ResolvedType {
 	public List<MethodSymbol> getInterfaceMethodsToImplement() {
 		return Collections.emptyList();
 	}
+
+	@Override
+	public boolean extendsOrImplements(TypeID type) {
+		return this.type.equals(type);
+	}
 }

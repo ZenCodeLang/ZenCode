@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
@@ -31,9 +32,10 @@ public class TypeParameter extends Taggable {
 		return false;
 	}
 
-	public boolean matches(TypeID type) {
+	public boolean matches(TypeID type, GenericMapper mapper) {
 		for (TypeParameterBound bound : bounds) {
-			if (!bound.matches(type))
+			TypeParameterBound instanced = bound.instance(mapper);
+			if (!instanced.matches(type))
 				return false;
 		}
 

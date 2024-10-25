@@ -87,6 +87,8 @@ public interface ResolvedType {
 
 	List<MethodSymbol> getInterfaceMethodsToImplement();
 
+	boolean extendsOrImplements(TypeID type);
+
 	interface SwitchMember {
 		SwitchValue toSwitchValue(List<CompilingVariable> bindings);
 	}

@@ -131,6 +131,11 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
+	public boolean extendsOrImplements(TypeID type) {
+		return this.type.equals(type);
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return Optional.ofNullable(fields.get(name));
 	}

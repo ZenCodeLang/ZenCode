@@ -1,20 +1,27 @@
-#dependency: stdlib
-#output: T-2
+#output: T-5
 #output: T-3
 #output: T-3
 #output: T-4
-#output: T-5
+#output: T-2
 
-import stdlib.Comparable;
+interface Comparable<T> {
+	compareTo(other: T): int;
+}
+
+expand <T : Comparable<T>> T[] {
+	sort(): void {}
+}
 
 public class TicketNumber {
    private var value as int;
 
+   public implicit as string => "T-" + value;
+}
+
+expand TicketNumber {
    public implements Comparable<TicketNumber> {
        compareTo(other) => this.value - other.value;
    }
-
-   public implicit as string => "T-" + value;
 }
 
 val a = [

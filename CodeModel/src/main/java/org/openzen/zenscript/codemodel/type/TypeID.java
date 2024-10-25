@@ -164,7 +164,7 @@ public interface TypeID {
 	}
 
 	default boolean extendsOrImplements(TypeID type) {
-		return false;
+		return resolveWithoutExpansions().extendsOrImplements(type);
 	}
 
 	/**

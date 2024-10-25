@@ -115,6 +115,11 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
+	public boolean extendsOrImplements(TypeID type) {
+		return type.equals(this.type); // TODO
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return template.getField(name).map(f -> new RuntimeField(mapper.map(f)));
 	}

@@ -182,6 +182,12 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
+	public boolean extendsOrImplements(TypeID type) {
+		return base.extendsOrImplements(type)
+				|| expansions.stream().anyMatch(expansion -> expansion.extendsOrImplements(type));
+	}
+
+	@Override
 	public Optional<Field> findField(String name) {
 		return base.findField(name);
 	}

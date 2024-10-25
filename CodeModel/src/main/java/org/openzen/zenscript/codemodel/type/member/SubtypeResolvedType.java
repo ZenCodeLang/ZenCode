@@ -174,6 +174,11 @@ public class SubtypeResolvedType implements ResolvedType {
 				.collect(Collectors.toList());
 	}
 
+	@Override
+	public boolean extendsOrImplements(TypeID type) {
+		return streamAllTypes().anyMatch(t -> t.extendsOrImplements(type));
+	}
+
 	private <T> Optional<T> findFirstInLocalOrBaseTypes(Function<ResolvedType, Optional<T>> mapper) {
 		return streamAllTypes()
 				.map(mapper)

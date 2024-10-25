@@ -26,15 +26,12 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitArray(Matching context, ArrayTypeID array) {
-		if (context.type instanceof ArrayTypeID) {
-			ArrayTypeID arrayType = (ArrayTypeID) context.type;
+		return context.type.asArray().map(arrayType -> {
 			if (arrayType.dimension != array.dimension)
 				return false;
 
 			return match(context, arrayType.elementType, array.elementType);
-		} else {
-			return false;
-		}
+		}).orElse(false);
 	}
 
 	@Override

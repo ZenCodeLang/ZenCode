@@ -22,7 +22,8 @@ public class GenericTypeID implements TypeID {
 	}
 
 	public boolean matches(TypeID type) {
-		return parameter.matches(type);
+		GenericMapper mapper = GenericMapper.single(parameter, type);
+		return parameter.matches(type, mapper);
 	}
 
 	@Override
