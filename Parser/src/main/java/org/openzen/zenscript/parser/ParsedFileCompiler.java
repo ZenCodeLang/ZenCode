@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.compilation.impl.compiler.MemberCompilerI
 import org.openzen.zenscript.codemodel.compilation.impl.compiler.StatementCompilerImpl;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -42,6 +43,11 @@ public class ParsedFileCompiler implements DefinitionCompiler {
 	@Override
 	public TypeBuilder types() {
 		return localTypeBuilder;
+	}
+
+	@Override
+	public List<ExpansionSymbol> getAvailableExpansions() {
+		return context.getAvailableExpansions();
 	}
 
 	@Override

@@ -21,9 +21,9 @@ public class GenericTypeID implements TypeID {
 		this.parameter = parameter;
 	}
 
-	public boolean matches(TypeID type) {
+	public boolean matches(TypeID type, List<ExpansionSymbol> expansions) {
 		GenericMapper mapper = GenericMapper.single(parameter, type);
-		return parameter.matches(type, mapper);
+		return parameter.matches(type, mapper, expansions);
 	}
 
 	@Override

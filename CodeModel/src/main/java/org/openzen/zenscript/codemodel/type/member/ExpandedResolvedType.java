@@ -18,7 +18,7 @@ public class ExpandedResolvedType implements ResolvedType {
 	public static ResolvedType resolve(ResolvedType base, List<ExpansionSymbol> expansions) {
 		List<ResolvedType> resolutions = new ArrayList<>();
 		for (ExpansionSymbol expansion : expansions) {
-			expansion.resolve(base.getType()).ifPresent(resolutions::add);
+			expansion.resolve(base.getType(), expansions).ifPresent(resolutions::add);
 		}
 		return ExpandedResolvedType.of(base, resolutions);
 	}

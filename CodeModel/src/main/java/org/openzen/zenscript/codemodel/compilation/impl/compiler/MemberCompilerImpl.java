@@ -2,7 +2,10 @@ package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.List;
 
 public class MemberCompilerImpl implements MemberCompiler {
 	private final CompileContext context;
@@ -40,6 +43,11 @@ public class MemberCompilerImpl implements MemberCompiler {
 	@Override
 	public DefinitionCompiler forInner() {
 		return definitionCompiler;
+	}
+
+	@Override
+	public List<ExpansionSymbol> getAvailableExpansions() {
+		return context.getAvailableExpansions();
 	}
 
 	@Override

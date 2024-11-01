@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 
 import java.util.*;
 
@@ -44,8 +45,8 @@ public interface TypeID {
 	 *
 	 * @return inferred type parameters, or null if no match was found
  	 */
-	default Map<TypeParameter, TypeID> inferTypeParameters(TypeID targetType) {
-		return TypeMatcher.match(this, targetType);
+	default Map<TypeParameter, TypeID> inferTypeParameters(TypeID targetType, List<ExpansionSymbol> expansions) {
+		return TypeMatcher.match(this, targetType, expansions);
 	}
 
 	void extractTypeParameters(List<TypeParameter> typeParameters);
@@ -163,8 +164,8 @@ public interface TypeID {
 		return this.resolve().withExpansions(Collections.emptyList());
 	}
 
-	default boolean extendsOrImplements(TypeID type) {
-		return resolveWithoutExpansions().extendsOrImplements(type);
+	default boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
+		return this.resolve().withExpansions(expansions).extendsOrImplements(type);
 	}
 
 	/**

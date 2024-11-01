@@ -3,8 +3,10 @@ package org.openzen.zenscript.codemodel.generic;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 public final class ParameterTypeBound implements TypeParameterBound {
@@ -27,8 +29,8 @@ public final class ParameterTypeBound implements TypeParameterBound {
 	}
 
 	@Override
-	public boolean matches(TypeID type) {
-		return type.extendsOrImplements(this.type);
+	public boolean matches(TypeID type, List<ExpansionSymbol> expansions) {
+		return type.extendsOrImplements(this.type, expansions);
 	}
 
 	@Override

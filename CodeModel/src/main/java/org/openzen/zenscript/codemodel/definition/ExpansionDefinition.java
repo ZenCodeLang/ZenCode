@@ -5,16 +5,21 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
+import org.openzen.zenscript.codemodel.type.member.InterfaceResolvingType;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ExpansionDefinition extends HighLevelDefinition implements ExpansionSymbol {
@@ -40,11 +45,11 @@ public class ExpansionDefinition extends HighLevelDefinition implements Expansio
 	}
 
 	@Override
-	public Optional<ResolvedType> resolve(TypeID expandingType) {
+	public Optional<ResolvedType> resolve(TypeID expandingType, List<ExpansionSymbol> expansions) {
 		if (target == null)
 			throw new RuntimeException(position.toString() + ": Missing expansion target");
 
-		Map<TypeParameter, TypeID> mapping = TypeMatcher.match(expandingType, target);
+		Map<TypeParameter, TypeID> mapping = TypeMatcher.match(expandingType, target, expansions);
 		if (mapping == null)
 			return Optional.empty();
 
@@ -54,6 +59,15 @@ public class ExpansionDefinition extends HighLevelDefinition implements Expansio
 		for (IDefinitionMember member : members)
 			member.registerTo(expandingType, resolution, mapper);
 
-		return Optional.of(resolution.buildWithoutExpansions());
+		List<TypeID> interfaces = this.members.stream()
+				.map(IDefinitionMember::asImplementation)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(mapper::map)
+				.collect(Collectors.toList());
+
+		ResolvingType resolved = resolution.build();
+		ResolvingType withInterfaces = InterfaceResolvingType.of(resolved, interfaces);
+		return Optional.of(withInterfaces.withExpansions(Collections.emptyList()));
 	}
 }

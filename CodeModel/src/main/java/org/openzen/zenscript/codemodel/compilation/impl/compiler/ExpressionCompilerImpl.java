@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalThisExpress
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberInstance;
@@ -187,6 +188,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	public StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header) {
 		LocalSymbols newLocals = locals.forLambda(closure, header);
 		return new StatementCompilerImpl(context, localType, types, header, newLocals, null);
+	}
+
+	@Override
+	public List<ExpansionSymbol> getAvailableExpansions() {
+		return context.getAvailableExpansions();
 	}
 
 	@Override

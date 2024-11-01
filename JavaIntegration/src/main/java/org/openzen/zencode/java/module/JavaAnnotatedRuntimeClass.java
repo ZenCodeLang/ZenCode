@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.TypeMatcher;
@@ -11,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.member.InterfaceResolvingType;
 import org.openzen.zenscript.codemodel.type.member.SubclassResolvingType;
 import org.openzen.zenscript.javashared.JavaClass;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Optional;
@@ -40,12 +42,12 @@ public class JavaAnnotatedRuntimeClass extends JavaRuntimeClass {
 	}
 
 	@Override
-	public Optional<ResolvedType> resolve(TypeID expandingType) {
+	public Optional<ResolvedType> resolve(TypeID expandingType, List<ExpansionSymbol> expansions) {
 		if (!isExpansion()) {
 			return Optional.empty();
 		}
 
-		Map<TypeParameter, TypeID> mapping = TypeMatcher.match(expandingType, target);
+		Map<TypeParameter, TypeID> mapping = TypeMatcher.match(expandingType, target, expansions);
 		if (mapping == null)
 			return Optional.empty();
 

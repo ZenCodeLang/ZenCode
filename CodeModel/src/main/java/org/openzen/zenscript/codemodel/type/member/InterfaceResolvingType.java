@@ -37,7 +37,7 @@ public class InterfaceResolvingType implements ResolvingType {
 		List<ResolvedType> resolvedInterfaces = implementedInterfaces.stream().map(iface -> iface.resolve().withExpansions(expansions)).collect(Collectors.toList());
 
 		List<ResolvedType> interfaceExpansions = implementedInterfaces.stream()
-				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface)).filter(Optional::isPresent).map(Optional::get))
+				.flatMap(iface -> expansions.stream().map(expansion -> expansion.resolve(iface, expansions)).filter(Optional::isPresent).map(Optional::get))
 				.collect(Collectors.toList());
 
 		return SubtypeResolvedType.ofImplementation(

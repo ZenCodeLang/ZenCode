@@ -72,6 +72,11 @@ public class CompileContext extends AbstractTypeBuilder implements TypeResolver 
 		expansions.add(expansion);
 	}
 
+	@Override
+	public List<ExpansionSymbol> getAvailableExpansions() {
+		return expansions;
+	}
+
 	public Optional<IGlobal> findGlobal(String name) {
 		return Optional.ofNullable(globals.get(name));
 	}

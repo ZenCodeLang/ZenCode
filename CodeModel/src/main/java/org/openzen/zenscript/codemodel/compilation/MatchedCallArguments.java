@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -143,7 +144,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 		// Type inference
-		Optional<TypeID[]> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, arguments);
+		Optional<TypeID[]> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, compiler.getAvailableExpansions(), arguments);
 		if (!inferred.isPresent()) {
 			return new MatchedCallArguments<>(
 					method,
@@ -320,6 +321,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			T method,
 			TypeID result,
 			TypeID[] typeArguments,
+			List<ExpansionSymbol> expansions,
 			CompilingExpression... arguments
 	) {
 		int providedTypeArguments = typeArguments == null ? 0 : typeArguments.length;
@@ -335,7 +337,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		// attempt to infer type arguments from the return type
 		final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
 		if (result != null) {
-			typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result));
+			typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result, expansions));
 		}
 
 		// create a mapping with everything found so far
@@ -348,7 +350,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			Expression evaluated = argument.eval();
 			if (evaluated.type != BasicTypeID.UNDETERMINED) {
 				TypeID parameterType = mapper.map(method.getHeader().parameters[i].type);
-				Map<TypeParameter, TypeID> mapping = parameterType.inferTypeParameters(evaluated.type);
+				Map<TypeParameter, TypeID> mapping = parameterType.inferTypeParameters(evaluated.type, expansions);
 				if (mapping != null)
 					typeArgumentMap.putAll(mapping);
 			}

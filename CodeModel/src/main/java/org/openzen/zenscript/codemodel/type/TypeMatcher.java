@@ -1,8 +1,10 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching, Boolean, RuntimeException> {
@@ -11,8 +13,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	private TypeMatcher() {
 	}
 
-	public static Map<TypeParameter, TypeID> match(TypeID type, TypeID pattern) {
-		Matching matching = new Matching(type);
+	public static Map<TypeParameter, TypeID> match(TypeID type, TypeID pattern, List<ExpansionSymbol> expansions) {
+		Matching matching = new Matching(type, expansions);
 		if (pattern.accept(matching, INSTANCE))
 			return matching.mapping;
 
@@ -113,7 +115,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 		if (context.mapping.containsKey(generic.parameter)) {
 			TypeID argument = context.mapping.get(generic.parameter);
 			return argument == context.type;
-		} else if (context.type == generic || generic.matches(context.type)) {
+		} else if (context.type == generic || generic.matches(context.type, context.expansions)) {
 			context.mapping.put(generic.parameter, context.type);
 			return true;
 		} else {
@@ -153,19 +155,22 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	public static final class Matching {
 		public final TypeID type;
 		public final Map<TypeParameter, TypeID> mapping;
+		private final List<ExpansionSymbol> expansions;
 
-		public Matching(TypeID type) {
+		public Matching(TypeID type, List<ExpansionSymbol> expansions) {
 			this.type = type;
 			mapping = new HashMap<>();
+			this.expansions = expansions;
 		}
 
-		private Matching(TypeID type, Map<TypeParameter, TypeID> mapping) {
+		private Matching(TypeID type, Map<TypeParameter, TypeID> mapping, List<ExpansionSymbol> expansions) {
 			this.type = type;
 			this.mapping = mapping;
+			this.expansions = expansions;
 		}
 
 		public Matching withType(TypeID type) {
-			return new Matching(type, mapping);
+			return new Matching(type, mapping, expansions);
 		}
 	}
 }

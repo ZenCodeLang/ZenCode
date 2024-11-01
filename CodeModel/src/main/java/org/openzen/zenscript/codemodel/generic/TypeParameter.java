@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.generic;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
@@ -32,10 +33,10 @@ public class TypeParameter extends Taggable {
 		return false;
 	}
 
-	public boolean matches(TypeID type, GenericMapper mapper) {
+	public boolean matches(TypeID type, GenericMapper mapper, List<ExpansionSymbol> expansions) {
 		for (TypeParameterBound bound : bounds) {
 			TypeParameterBound instanced = bound.instance(mapper);
-			if (!instanced.matches(type))
+			if (!instanced.matches(type, expansions))
 				return false;
 		}
 

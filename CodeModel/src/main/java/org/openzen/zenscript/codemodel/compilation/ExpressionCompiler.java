@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.impl.capture.LocalExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
@@ -41,4 +42,6 @@ public interface ExpressionCompiler extends TypeResolver {
 	ExpressionCompiler withDollar(CompilingExpression value);
 
 	StatementCompiler forLambda(LambdaClosure closure, FunctionHeader header);
+
+	List<ExpansionSymbol> getAvailableExpansions();
 }

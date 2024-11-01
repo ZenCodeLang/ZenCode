@@ -2,8 +2,10 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TypeParameterBound {
@@ -15,7 +17,7 @@ public interface TypeParameterBound {
 
 	Optional<ResolvingType> resolveMembers();
 
-	boolean matches(TypeID type);
+	boolean matches(TypeID type, List<ExpansionSymbol> expansions);
 
 	TypeParameterBound instance(GenericMapper mapper);
 
