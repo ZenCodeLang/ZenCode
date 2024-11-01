@@ -2,11 +2,13 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -94,8 +96,17 @@ public class ParsedFunction extends ParsedDefinition {
 
 		@Override
 		public void linkTypes() {
-			if (compiled.header == null)
-				compiled.setHeader(header.compile(compiler.types()));
+			if (compiled.header == null) {
+				FunctionHeader compiledHeader = header.compile(compiler.types());
+				compiled.setTypeParameters(compiledHeader.typeParameters);
+
+				FunctionHeader withoutTypeParameters = new FunctionHeader(
+						TypeParameter.NONE,
+						compiledHeader.getReturnType(),
+						compiledHeader.thrownType,
+						compiledHeader.parameters);
+				compiled.setHeader(withoutTypeParameters);
+			}
 		}
 
 		@Override
