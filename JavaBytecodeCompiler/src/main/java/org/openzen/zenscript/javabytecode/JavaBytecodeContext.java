@@ -106,7 +106,7 @@ public class JavaBytecodeContext extends JavaContext {
 				new FunctionParameter(range.baseType, "to")
 		);
 		JavaNativeMethod method = JavaNativeMethod.getConstructor(range.cls, getMethodDescriptor(ctorHeader), Opcodes.ACC_PUBLIC);
-		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(range.compiling.compiled, method, getMethodSignature(ctorHeader));
+		JavaCompilingMethod compilingMethod = new JavaCompilingMethod(method, getMethodSignature(ctorHeader));
 
 		JavaWriter constructorWriter = new JavaWriter(logger, CodePosition.GENERATED, rangeWriter, compilingMethod, null);
 		constructorWriter.loadObject(0);

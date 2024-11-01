@@ -112,7 +112,7 @@ public class JavaNativeMethod implements JavaMethod {
 
 	@Override
 	public JavaCompilingMethod asCompilingMethod(JavaClass compiled, String signature) {
-		return new JavaCompilingMethod(compiled, this, signature, compile);
+		return new JavaCompilingMethod(this, signature, compile);
 	}
 
 	public boolean isAbstract() {
@@ -121,6 +121,18 @@ public class JavaNativeMethod implements JavaMethod {
 
 	public JavaNativeMethod createBridge(String descriptor) {
 		return new JavaNativeMethod(cls, kind, name, compile, descriptor, modifiers, genericResult, typeParameterArguments);
+	}
+
+	public JavaNativeMethod withModifiers(int modifiers) {
+		return new JavaNativeMethod(
+				cls,
+				kind,
+				name,
+				compile,
+				descriptor,
+				modifiers,
+				genericResult,
+				typeParameterArguments);
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class JavaCompiler {
 			final JavaClassWriter visitor = scriptFile.classWriter;
 			JavaClass scriptsClass = new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS);
 			JavaNativeMethod method = JavaNativeMethod.getStatic(scriptsClass, methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(scriptsClass, method, scriptDescriptor);
+			JavaCompilingMethod compilingMethod = new JavaCompilingMethod(method, scriptDescriptor);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
 			final JavaWriter writer = new JavaWriter(logger, CodePosition.UNKNOWN, visitor, compilingMethod, null);

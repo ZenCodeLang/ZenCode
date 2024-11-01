@@ -7,7 +7,6 @@ package org.openzen.zenscript.javashared.prepare;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
@@ -66,7 +65,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Voi
 				descriptor,
 				JavaModifiers.getJavaModifiers(definition.modifiers),
 				definition.header.getReturnType().isGeneric());
-		class_.addMethod(definition.caller, new JavaCompilingMethod(class_.compiled, method, signature));
+		class_.addMethod(definition.caller, new JavaCompilingMethod(method, signature));
 		return null;
 	}
 

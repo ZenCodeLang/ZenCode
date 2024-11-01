@@ -6,7 +6,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
@@ -24,6 +23,7 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javabytecode.compiler.capturing.*;
+import org.openzen.zenscript.javabytecode.compiler.definitions.JavaMemberVisitor;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
@@ -473,79 +473,41 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             return null;
         }*/
 
-		final String signature;
 		final String[] interfaces;
-		final String descriptor;
 
-		{//Fill the info above
-			if (expression.type instanceof JavaFunctionalInterfaceTypeID) {
-				//Let's implement the functional Interface instead
-				JavaFunctionalInterfaceTypeID type = (JavaFunctionalInterfaceTypeID) expression.type;
-				final Method functionalInterfaceMethod = type.functionalInterfaceMethod;
+		if (expression.type instanceof JavaFunctionalInterfaceTypeID) {
+			//Let's implement the functional Interface instead
+			JavaFunctionalInterfaceTypeID type = (JavaFunctionalInterfaceTypeID) expression.type;
+			final Method functionalInterfaceMethod = type.functionalInterfaceMethod;
 
-				//Should be the same, should it not?
-				signature = context.getMethodSignature(expression.header, true);
-				descriptor = context.getMethodDescriptor(expression.header);
-				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
-			} else {
-				//Normal way, no casting to functional interface
-				signature = context.getMethodSignature(expression.header, true);
-				descriptor = context.getMethodDescriptor(expression.header);
-				interfaces = new String[]{context.getInternalName(new FunctionTypeID(expression.header))};
-			}
+			//Should be the same, should it not?
+			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
+		} else {
+			//Normal way, no casting to functional interface
+			interfaces = new String[]{context.getInternalName(new FunctionTypeID(expression.header))};
 		}
 
 		final JavaNativeMethod methodInfo;
 		final String className = this.javaMangler.mangleGeneratedLambdaName(interfaces[0]);
 		{
 			final JavaNativeMethod m = context.getFunctionalInterface(expression.type);
-			methodInfo = new JavaNativeMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
+			methodInfo = m.withModifiers(m.modifiers & ~JavaModifiers.ABSTRACT);
 		}
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		JavaClass lambdaClass = JavaClass.fromInternalName(className, JavaClass.Kind.CLASS);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
 		final JavaWriter functionWriter;
 
-		//Bridge method!!!
-		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
-			final JavaNativeMethod bridgeMethodInfo = new JavaNativeMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
-			JavaCompilingMethod compilingBridgeMethod = new JavaCompilingMethod(javaWriter.method.class_, bridgeMethodInfo, signature);
-			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, compilingBridgeMethod, null);
-			bridgeWriter.start();
-
-			//This.name(parameters, casted)
-			bridgeWriter.loadObject(0);
-
-			for (int i = 0; i < expression.header.parameters.length; i++) {
-				final FunctionParameter functionParameter = expression.header.parameters[i];
-				final Type type = context.getType(functionParameter.type);
-				bridgeWriter.load(type, i + 1);
-				if (!CompilerUtils.isPrimitive(functionParameter.type)) {
-					bridgeWriter.checkCast(type);
-				}
-			}
-
-			bridgeWriter.invokeVirtual(new JavaNativeMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaNativeMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, methodInfo.modifiers, methodInfo.genericResult));
-			final TypeID returnType = expression.header.getReturnType();
-			if (returnType != BasicTypeID.VOID) {
-				final Type returnTypeASM = context.getType(returnType);
-				if (!CompilerUtils.isPrimitive(returnType)) {
-					bridgeWriter.checkCast(returnTypeASM);
-				}
-				bridgeWriter.returnType(returnTypeASM);
-			}
-
-			bridgeWriter.ret();
-			bridgeWriter.end();
-
-			JavaNativeMethod actualMethod = methodInfo.createBridge(context.getMethodDescriptor(expression.header));
-			JavaCompilingMethod actualCompiling = new JavaCompilingMethod(lambdaClass, actualMethod, signature);
-			//No @Override
-			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
-		} else {
-			JavaCompilingMethod actualCompiling = new JavaCompilingMethod(lambdaClass, methodInfo, signature);
-			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
-		}
+		JavaCompilingMethod actualCompiling = JavaMemberVisitor.compileBridgeableMethod(
+				context,
+				expression.position,
+				lambdaCW,
+				lambdaClass,
+				methodInfo,
+				expression.header,
+				null
+		);
+		functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
 		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		javaWriter.newObject(className);
 		javaWriter.dup();
@@ -554,7 +516,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		//   To check: write a test where the ctor desc and signature would differ and make sure the program compiles/executes
 		final String constructorDescriptorAndSignature = calcFunctionDescriptor(expression.closure);
 		JavaNativeMethod constructor = JavaNativeMethod.getConstructor(lambdaClass, constructorDescriptorAndSignature, Opcodes.ACC_PUBLIC);
-		JavaCompilingMethod constructorCompiling = new JavaCompilingMethod(lambdaClass, constructor, constructorDescriptorAndSignature);
+		JavaCompilingMethod constructorCompiling = new JavaCompilingMethod(constructor, constructorDescriptorAndSignature);
 		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, constructorCompiling, null);
 		constructorWriter.start();
 		constructorWriter.loadObject(0);
@@ -1193,7 +1155,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		//Constructor
 		{
 			JavaNativeMethod constructor = JavaNativeMethod.getConstructor(classInfo, constructorDescriptor, Opcodes.ACC_PUBLIC);
-			JavaCompilingMethod compiling = new JavaCompilingMethod(classInfo, constructor, constructorSignature);
+			JavaCompilingMethod compiling = new JavaCompilingMethod(constructor, constructorSignature);
 			final JavaWriter constructorWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null);
 			constructorWriter.start();
 			constructorWriter.loadObject(0);
@@ -1209,7 +1171,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		//The actual method
 		{
-			JavaCompilingMethod compiling = new JavaCompilingMethod(classInfo, implementationMethod, methodSignature);
+			JavaCompilingMethod compiling = new JavaCompilingMethod(implementationMethod, methodSignature);
 			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, compiling, null);
 			functionWriter.start();
 

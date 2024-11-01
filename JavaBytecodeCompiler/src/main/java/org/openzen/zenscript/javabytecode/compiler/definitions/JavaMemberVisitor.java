@@ -4,6 +4,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
@@ -11,9 +13,13 @@ import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.*;
@@ -48,7 +54,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		javaModule = context.getJavaModule(definition.module);
 
 		JavaNativeMethod clinitMethod = new JavaNativeMethod(class_.compiled, JavaNativeMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false);
-		final JavaCompilingMethod clinitMethodCompiling = new JavaCompilingMethod(class_.compiled, clinitMethod, "()V");
+		final JavaCompilingMethod clinitMethodCompiling = new JavaCompilingMethod(clinitMethod, "()V");
 		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, clinitMethodCompiling, definition);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter, mangler);
 		this.clinitStatementVisitor.start();
@@ -201,6 +207,24 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final boolean isAbstract = member.body == null || member.getEffectiveModifiers().isAbstract();
 		final JavaCompilingMethod method = class_.getMethod(member);
 
+		Optional<MethodInstance> overrides = member.getOverrides();
+		if (overrides.isPresent()) {
+			JavaClass overriddenClass = context.getJavaClass(overrides.get().method.getDefiningType());
+			String overriddenMethodSignature = context.getMethodSignature(overrides.get().method.getHeader(), true);
+			JavaCompilingMethod overriddenMethodInfo = context.getJavaMethod(overrides.get().method)
+					.asCompilingMethod(overriddenClass, overriddenMethodSignature);
+
+			JavaMemberVisitor.compileBridgeableMethod(
+					context,
+					member.position,
+					writer,
+					class_.compiled,
+					overriddenMethodInfo.compiled,
+					member.header,
+					overriddenMethodSignature
+			);
+		}
+
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition);
 
 		if (!isAbstract) {
@@ -250,9 +274,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, javaMethod, member.definition);
 		methodWriter.label(methodStart);
 
-		//ToDo:
-		// in scripts, you use $ but the parameter is named "value", which to choose?
-		//final String name = member.parameter.name;
 		final String name = "$";
 		final int localIndex = member.isStatic() ? 0 : 1;
 		methodWriter.nameVariable(localIndex, name, methodStart, methodEnd, context.getType(member.type));
@@ -276,7 +297,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			if (member.body == null)
 				modifiers |= Opcodes.ACC_ABSTRACT;
 
-			final JavaCompilingMethod method = new JavaCompilingMethod(class_.compiled, JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers), "()V");
+			final JavaCompilingMethod method = new JavaCompilingMethod(JavaNativeMethod.getVirtual(class_.compiled, "close", "()V", modifiers), "()V");
 			if (member.body == null)
 				return null;
 
@@ -409,5 +430,58 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 
 		clinitStatementVisitor.end();
+	}
+
+	public static JavaCompilingMethod compileBridgeableMethod(
+			JavaBytecodeContext context,
+			CodePosition position,
+			ClassWriter classWriter,
+			JavaClass localClass,
+			JavaNativeMethod overriddenMethodInfo,
+			FunctionHeader implementationHeader,
+			String overriddenMethodSignature
+	) {
+		final String implementationSignature = context.getMethodSignature(implementationHeader, true);
+		final String implementationDescriptor = context.getMethodDescriptor(implementationHeader);
+
+		if (!Objects.equals(overriddenMethodInfo.descriptor, implementationDescriptor)) {
+			final JavaNativeMethod bridgeMethodInfo = overriddenMethodInfo
+					.withModifiers((overriddenMethodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC) & ~JavaModifiers.ABSTRACT);
+			JavaCompilingMethod compilingBridgeMethod = new JavaCompilingMethod(
+					bridgeMethodInfo,
+					overriddenMethodSignature == null ? implementationSignature : overriddenMethodSignature);
+			final JavaWriter bridgeWriter = new JavaWriter(context.logger, position, classWriter, compilingBridgeMethod, null);
+			bridgeWriter.start();
+
+			//This.name(parameters, casted)
+			bridgeWriter.loadObject(0);
+
+			for (int i = 0; i < implementationHeader.parameters.length; i++) {
+				final FunctionParameter functionParameter = implementationHeader.parameters[i];
+				final Type type = context.getType(functionParameter.type);
+				bridgeWriter.load(type, i + 1);
+				if (!CompilerUtils.isPrimitive(functionParameter.type)) {
+					bridgeWriter.checkCast(type);
+				}
+			}
+
+			bridgeWriter.invokeVirtual(new JavaNativeMethod(localClass, JavaNativeMethod.Kind.INSTANCE, overriddenMethodInfo.name, overriddenMethodInfo.compile, implementationDescriptor, overriddenMethodInfo.modifiers, overriddenMethodInfo.genericResult));
+			final TypeID returnType = implementationHeader.getReturnType();
+			if (returnType != BasicTypeID.VOID) {
+				final Type returnTypeASM = context.getType(returnType);
+				if (!CompilerUtils.isPrimitive(returnType)) {
+					bridgeWriter.checkCast(returnTypeASM);
+				}
+				bridgeWriter.returnType(returnTypeASM);
+			}
+
+			bridgeWriter.ret();
+			bridgeWriter.end();
+
+			JavaNativeMethod actualMethod = overriddenMethodInfo.createBridge(context.getMethodDescriptor(implementationHeader));
+			return new JavaCompilingMethod(actualMethod, implementationSignature);
+		} else {
+			return new JavaCompilingMethod(overriddenMethodInfo, implementationSignature);
+		}
 	}
 }

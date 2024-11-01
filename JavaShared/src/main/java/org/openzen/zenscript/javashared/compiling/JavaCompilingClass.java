@@ -7,7 +7,6 @@ import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 
@@ -115,7 +114,7 @@ public class JavaCompilingClass {
 			);
 		}
 
-		JavaCompilingMethod compiling = new JavaCompilingMethod(compiled, javaMethod, getContext().getMethodSignatureConstructor(method));
+		JavaCompilingMethod compiling = new JavaCompilingMethod(javaMethod, getContext().getMethodSignatureConstructor(method));
 		addMethod(method, compiling);
 		return compiling;
 	}
@@ -151,7 +150,7 @@ public class JavaCompilingClass {
 				JavaModifiers.getJavaModifiers(method.getModifiers()),
 				getContext().isGenericReturn(method.getHeader().getReturnType()),
 				method.getHeader().useTypeParameters());
-		addMethod(method, new JavaCompilingMethod(compiled, javaMethod, signature));
+		addMethod(method, new JavaCompilingMethod(javaMethod, signature));
 	}
 
 	public void addDependency(DefinitionSymbol symbol) {

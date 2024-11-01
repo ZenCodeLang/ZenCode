@@ -10,15 +10,12 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingModule;
-
-import java.util.Optional;
 
 /**
  * @author Hoofdgebruiker
@@ -248,7 +245,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		JavaCompilingMethod method = null;
 		if (nativeTag != null && class_.nativeClass != null) {
 			final String signature = context.getMethodSignature(header);
-			method = new JavaCompilingMethod(class_.compiled, (JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value), signature);
+			method = new JavaCompilingMethod((JavaNativeMethod) class_.nativeClass.getMethod(nativeTag.value), signature);
 		}
 
 		for (FunctionParameter parameter : header.parameters) {
@@ -261,7 +258,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			if (member instanceof ConstructorMember) {
                 if(member.isImplicit()) {
 					final String signature = context.getMethodSignature(header, true);
-					method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+					method = new JavaCompilingMethod(new JavaNativeMethod(
 							class_.compiled,
 							getKind(member),
 							"implicit-constructor",
@@ -273,7 +270,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 							signature);
 				} else {
 					final String signature = context.getMethodSignatureConstructor(member);
-					method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+					method = new JavaCompilingMethod(new JavaNativeMethod(
 							class_.compiled,
 							getKind(member),
                             name,
@@ -288,7 +285,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 			} else {
 				final String signature = context.getMethodSignature(header);
-				method = new JavaCompilingMethod(class_.compiled, new JavaNativeMethod(
+				method = new JavaCompilingMethod(new JavaNativeMethod(
 						class_.compiled,
 						getKind(member),
 						name,

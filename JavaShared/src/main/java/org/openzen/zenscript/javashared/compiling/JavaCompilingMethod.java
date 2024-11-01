@@ -9,15 +9,15 @@ public class JavaCompilingMethod {
 	public boolean compile;
 	public final String signature;
 
-	public JavaCompilingMethod(JavaClass class_, JavaNativeMethod compiled, String signature) {
-		this.class_ = class_;
+	public JavaCompilingMethod(JavaNativeMethod compiled, String signature) {
+		this.class_ = compiled.cls;
 		this.compiled = compiled;
 		this.signature = signature;
 		this.compile = true;
 	}
 
-	public JavaCompilingMethod(JavaClass class_, JavaNativeMethod compiled, String signature, boolean compile) {
-		this.class_ = class_;
+	public JavaCompilingMethod(JavaNativeMethod compiled, String signature, boolean compile) {
+		this.class_ = compiled.cls;
 		this.compiled = compiled;
 		this.signature = signature;
 		this.compile = compile;
