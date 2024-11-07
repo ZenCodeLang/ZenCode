@@ -76,12 +76,12 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<StaticCallable> findStaticGetter(String name) {
-		return loadStatic(MethodID.getter(name));
+		return loadStatic(MethodID.staticGetter(name));
 	}
 
 	@Override
 	public Optional<StaticCallable> findStaticSetter(String name) {
-		return loadStatic(MethodID.setter(name));
+		return loadStatic(MethodID.staticSetter(name));
 	}
 
 	@Override

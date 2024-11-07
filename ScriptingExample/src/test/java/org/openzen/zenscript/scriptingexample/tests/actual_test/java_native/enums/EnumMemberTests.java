@@ -28,6 +28,34 @@ class EnumMemberTests extends ZenCodeTest {
 		logger.assertPrintOutput(0, "A");
 	}
 
+	@Test
+	void EnumMembersMustBeRetrievableByFullName() {
+		ScriptBuilder.create()
+				.add("public class MyClass {")
+				.add("		public this(thing as test_module.MyEnum) {")
+				.add("		println(thing.name);")
+				.add("	}")
+				.add("}")
+				.add("new MyClass(test_module.MyEnum.A);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "A");
+	}
+
+	@Test
+	void EnumMembersMustHaveValuesGetter() {
+		ScriptBuilder.create()
+				.add("var values = test_module.MyEnum.values;")
+				.add("var a = values[0];")
+				.add("var name = a.name;")
+				.add("println(a.name);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "A");
+	}
+
 
 	@ZenCodeType.Name("test_module.MyEnum")
 	public enum MyEnum {

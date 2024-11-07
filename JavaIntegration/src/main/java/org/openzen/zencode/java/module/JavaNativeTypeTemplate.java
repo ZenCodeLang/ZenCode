@@ -18,7 +18,9 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaNativeField;
@@ -29,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaNativeTypeTemplate {
 	protected final JavaRuntimeClass class_;
@@ -205,6 +208,31 @@ public class JavaNativeTypeTemplate {
 				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
 				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
 			}
+		}
+
+
+		if (class_.cls.isEnum()) {
+			Stream.of(
+					BuiltinMethodSymbol.ENUM_NAME,
+					BuiltinMethodSymbol.ENUM_ORDINAL,
+					//BuiltinMethodSymbol.ENUM_VALUES,
+					BuiltinMethodSymbol.ENUM_COMPARE
+			).forEach(method -> methods
+					.computeIfAbsent(method.getID(), x -> new ArrayList<>())
+					.add(method)
+			);
+
+			try {
+				MethodID id = MethodID.staticGetter("values");
+				FunctionHeader header = new FunctionHeader(new ArrayTypeID(target));
+				Method method = class_.cls.getMethod("values");
+				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, false, false);
+				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
+				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			} catch (ReflectiveOperationException exception) {
+				throw new IllegalStateException("We found an enum class without values() method: " + class_.cls.getCanonicalName(), exception);
+			}
+
 		}
 	}
 
