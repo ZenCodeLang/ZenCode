@@ -235,7 +235,7 @@ public class JavaForeachWriter {
 		TypeID type = statement.loopVariables[typeNumber].type;
 		if (CompilerUtils.isPrimitive(type)) {
 			javaWriter.checkCast(statementVisitor.context.getInternalName(new OptionalTypeID(type)));
-			type.accept(type, unboxingTypeVisitor);
+			type.accept(unboxingTypeVisitor);
 		} else {
 			javaWriter.checkCast(t);
 		}

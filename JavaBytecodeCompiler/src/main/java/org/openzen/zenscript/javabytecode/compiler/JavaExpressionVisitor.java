@@ -285,7 +285,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private void handleGenericReturnValue(TypeID actual) {
 		if (CompilerUtils.isPrimitive(actual)) {
 			getJavaWriter().checkCast(context.getInternalName(new OptionalTypeID(actual)));
-			actual.accept(actual, unboxingTypeVisitor);
+			actual.accept( unboxingTypeVisitor);
 		} else {
 			Type asmType = Type.getType(context.getType(actual).getDescriptor());
 			getJavaWriter().checkCast(asmType);
@@ -329,7 +329,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.aThrow();
 		javaWriter.label(end);
 
-		expression.type.accept(expression.type, optionalUnwrappingTypeVisitor);
+		expression.type.accept(optionalUnwrappingTypeVisitor);
 
 		return null;
 	}
@@ -344,7 +344,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.right.accept(this);
 		expression.right.type.accept(boxingTypeVisitor);
 		javaWriter.label(end);
-		expression.type.accept(expression.type, unboxingTypeVisitor);
+		expression.type.accept(unboxingTypeVisitor);
 		return null;
 	}
 

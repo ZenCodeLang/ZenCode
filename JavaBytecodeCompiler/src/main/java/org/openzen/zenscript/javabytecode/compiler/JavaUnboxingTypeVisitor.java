@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 
-public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
+public class JavaUnboxingTypeVisitor implements TypeVisitor<Void> {
 
 	private static final JavaNativeMethod UNBOX_BOOLEAN = JavaNativeMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z");
 	private static final JavaNativeMethod UNBOX_BYTE = JavaNativeMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B");
@@ -33,7 +33,7 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 
 
 	@Override
-	public Void visitBasic(TypeID context, BasicTypeID basic) throws RuntimeException {
+	public Void visitBasic(BasicTypeID basic) {
 		final JavaNativeMethod method;
 
 		switch (basic) {
@@ -83,55 +83,55 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 	}
 
 	@Override
-	public Void visitArray(TypeID context, ArrayTypeID array) throws RuntimeException {
+	public Void visitArray(ArrayTypeID array) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(TypeID context, AssocTypeID assoc) throws RuntimeException {
+	public Void visitAssoc(AssocTypeID assoc) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGenericMap(TypeID context, GenericMapTypeID map) throws RuntimeException {
+	public Void visitGenericMap(GenericMapTypeID map) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitIterator(TypeID context, IteratorTypeID iterator) throws RuntimeException {
+	public Void visitIterator(IteratorTypeID iterator) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(TypeID context, FunctionTypeID function) throws RuntimeException {
+	public Void visitFunction(FunctionTypeID function) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(TypeID context, DefinitionTypeID definition) throws RuntimeException {
+	public Void visitDefinition(DefinitionTypeID definition) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(TypeID context, GenericTypeID generic) throws RuntimeException {
+	public Void visitGeneric(GenericTypeID generic) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitRange(TypeID context, RangeTypeID range) throws RuntimeException {
+	public Void visitRange(RangeTypeID range) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitOptional(TypeID context, OptionalTypeID type) throws RuntimeException {
+	public Void visitOptional(OptionalTypeID type) {
 		//NO-OP
 		return null;
 	}

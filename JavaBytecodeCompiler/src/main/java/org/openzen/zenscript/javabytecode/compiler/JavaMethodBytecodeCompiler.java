@@ -273,7 +273,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 	private void handleGenericReturnValue(TypeID actual) {
 		if (CompilerUtils.isPrimitive(actual)) {
 			javaWriter.checkCast(context.getInternalName(new OptionalTypeID(actual)));
-			actual.accept(actual, unboxingTypeVisitor);
+			actual.accept(unboxingTypeVisitor);
 		} else {
 			javaWriter.checkCast(context.getInternalName(actual));
 		}
