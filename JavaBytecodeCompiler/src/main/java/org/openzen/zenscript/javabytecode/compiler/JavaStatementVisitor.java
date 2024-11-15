@@ -2,10 +2,9 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
@@ -132,38 +131,8 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		//javaWriter.label(min);
 		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, bytecodeLoopLabels);
-		if (statement.iterator.method.method instanceof BuiltinMethodSymbol) {
-			switch ((BuiltinMethodSymbol) statement.iterator.method.method) {
-				case ITERATOR_INT_RANGE:
-					iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.targetType));
-					break;
-				case ITERATOR_ARRAY_VALUES:
-					iteratorWriter.visitArrayValueIterator();
-					break;
-				case ITERATOR_ARRAY_KEY_VALUES:
-					iteratorWriter.visitArrayKeyValueIterator();
-					break;
-				case ITERATOR_ASSOC_KEYS:
-					iteratorWriter.visitAssocKeyIterator();
-					break;
-				case ITERATOR_ASSOC_KEY_VALUES:
-					iteratorWriter.visitAssocKeyValueIterator();
-					break;
-				case ITERATOR_STRING_CHARS:
-					iteratorWriter.visitStringCharacterIterator();
-					break;
-				//case ITERATOR_VALUES:
-				//	iteratorWriter.visitIteratorIterator(context.getType(statement.loopVariables[0].type));
-				//	break;
-				//case ITERABLE:
-				//	iteratorWriter.visitCustomIterator();
-				default:
-					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator);
-
-			}
-		} else {
-			iteratorWriter.visitCustomIterator();
-		}
+		MethodSymbol iteratorSymbol = statement.iterator.method.method;
+		iteratorWriter.compileIterator(iteratorSymbol);
 
 		javaWriter.goTo(startOfLoopBody);
 		javaWriter.label(afterLoop);

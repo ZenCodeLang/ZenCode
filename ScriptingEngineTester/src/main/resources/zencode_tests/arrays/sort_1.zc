@@ -1,6 +1,13 @@
 #dependency: stdlib
-#output: [1, 2, 3, 4, 5]
+#output: 1
+#output: 2
+#output: 3
+#output: 4
+#output: 5
 
 val a = [5, 1, 2, 4, 3];
 a.sort();
-println(a);
+
+for element in a {
+	println(element);
+}

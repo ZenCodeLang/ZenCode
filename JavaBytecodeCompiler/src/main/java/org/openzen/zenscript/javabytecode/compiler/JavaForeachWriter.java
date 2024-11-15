@@ -1,12 +1,16 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.codemodel.type.builtin.OptionalIteratorMethod;
 import org.openzen.zenscript.javabytecode.BytecodeLoopLabels;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -30,6 +34,43 @@ public class JavaForeachWriter {
 		this.statement = statement;
 		this.bytecodeLoopLabels = bytecodeLoopLabels;
 		this.unboxingTypeVisitor = JavaUnboxingTypeVisitor.forJavaUnboxing(this.javaWriter);
+	}
+
+	public void compileIterator(MethodSymbol iteratorSymbol) {
+		if (iteratorSymbol instanceof BuiltinMethodSymbol) {
+			switch ((BuiltinMethodSymbol) iteratorSymbol) {
+				case ITERATOR_INT_RANGE:
+					visitIntRange(((RangeTypeID) statement.iterator.targetType));
+					break;
+				case ITERATOR_ARRAY_VALUES:
+					visitArrayValueIterator();
+					break;
+				case ITERATOR_ARRAY_KEY_VALUES:
+					visitArrayKeyValueIterator();
+					break;
+				case ITERATOR_ASSOC_KEYS:
+					visitAssocKeyIterator();
+					break;
+				case ITERATOR_ASSOC_KEY_VALUES:
+					visitAssocKeyValueIterator();
+					break;
+				case ITERATOR_STRING_CHARS:
+					visitStringCharacterIterator();
+					break;
+				//case ITERATOR_VALUES:
+				//	iteratorWriter.visitIteratorIterator(context.getType(statement.loopVariables[0].type));
+				//	break;
+				//case ITERABLE:
+				//	iteratorWriter.visitCustomIterator();
+				default:
+					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator);
+
+			}
+		} else if (iteratorSymbol instanceof OptionalIteratorMethod) {
+			visitOptionalIterator(statement.iterator);
+		} else {
+			visitCustomIterator();
+		}
 	}
 
 	public void visitIntRange(RangeTypeID type) {
@@ -62,6 +103,14 @@ public class JavaForeachWriter {
 	public void visitStringCharacterIterator() {
 		javaWriter.invokeVirtual(JavaNativeMethod.getVirtual(JavaClass.STRING, "toCharArray", "()[C", JavaModifiers.PUBLIC));
 		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(statement.loopVariables[0].variable));
+	}
+
+	public void visitOptionalIterator(IteratorInstance iterator) {
+		javaWriter.dup();
+		javaWriter.ifNull(bytecodeLoopLabels.afterLoop);
+
+		OptionalIteratorMethod optionalIteratorMethod = (OptionalIteratorMethod) iterator.method.method;
+		compileIterator(optionalIteratorMethod.original);
 	}
 
 	public void visitIteratorIterator(Type targetType) {

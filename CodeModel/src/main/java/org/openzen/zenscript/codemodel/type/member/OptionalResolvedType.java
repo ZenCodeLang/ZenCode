@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
+import org.openzen.zenscript.codemodel.type.builtin.OptionalIteratorMethod;
 import org.openzen.zenscript.codemodel.type.builtin.OptionalToStringMethod;
 
 import java.util.Collections;
@@ -129,7 +130,16 @@ public class OptionalResolvedType implements ResolvedType {
 
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
-		return Optional.empty();
+		return baseType.findIterator(variables).map(iterator -> {
+			MethodSymbol wrappedMethodSymbol = new OptionalIteratorMethod(iterator.method.method);
+			MethodInstance wrappedMethodInstance = new MethodInstance(
+					wrappedMethodSymbol,
+					iterator.method.getHeader(),
+					type,
+					iterator.method.getExpansionTypeArguments(),
+					iterator.method.hasWideningConversions());
+			return new IteratorInstance(type, iterator.getLoopVariableTypes(), wrappedMethodInstance);
+		});
 	}
 
 	@Override
