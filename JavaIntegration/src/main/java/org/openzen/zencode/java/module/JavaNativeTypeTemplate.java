@@ -18,7 +18,9 @@ import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaNativeField;
@@ -29,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaNativeTypeTemplate {
 	protected final JavaRuntimeClass class_;
@@ -138,13 +141,16 @@ public class JavaNativeTypeTemplate {
 		for (Method method : class_.cls.getMethods()) {
 			if (isNotAccessible(method) || isOverridden(class_.cls, method))
 				continue;
+
 			if (expansion && !JavaModifiers.isStatic(method.getModifiers()))
 				continue;
 
-			Collection<MethodID> ids = new LinkedList<>();
-			boolean isStaticExpansion = false;
+			Collection<MethodID> ids = new LinkedHashSet<>(); // LinkedHashSet to prevent collision if a static method has both @Global and @Method
+			boolean isStaticExpansionMethod = expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class);
+			boolean isStaticMethodInsideZc = (!expansion || isStaticExpansionMethod) && JavaModifiers.isStatic(method.getModifiers());
+
 			boolean implicit = false;
-			boolean isStaticMethod = false;
+
 			if (method.isAnnotationPresent(ZenCodeType.Operator.class)) {
 				ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 				MethodID id = MethodID.operator(OperatorType.valueOf(operator.value().toString()));
@@ -153,13 +159,13 @@ public class JavaNativeTypeTemplate {
 			if (method.isAnnotationPresent(ZenCodeType.Getter.class)) {
 				ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
 				String name = getter.value().isEmpty() ? method.getName() : getter.value();
-				MethodID id = MethodID.getter(name);
+				MethodID id = isStaticMethodInsideZc ? MethodID.staticGetter(name) : MethodID.getter(name);
 				ids.add(id);
 			}
 			if (method.isAnnotationPresent(ZenCodeType.Setter.class)) {
 				ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
 				String name = setter.value().isEmpty() ? method.getName() : setter.value();
-				MethodID id = MethodID.setter(name);
+				MethodID id = isStaticMethodInsideZc ? MethodID.staticSetter(name) : MethodID.setter(name);
 				ids.add(id);
 			}
 			if (method.isAnnotationPresent(ZenCodeType.Caster.class)) {
@@ -171,20 +177,17 @@ public class JavaNativeTypeTemplate {
 			if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 				ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
-				boolean hasStaticModifier = JavaModifiers.isStatic(method.getModifiers());
-				MethodID id = hasStaticModifier && !expansion ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
+				MethodID id = isStaticMethodInsideZc ? MethodID.staticMethod(name) : MethodID.instanceMethod(name);
 				implicit |= methodAnnotation.implicit();
-				isStaticMethod |= hasStaticModifier;
 				ids.add(id);
 			}
-			if (expansion && method.isAnnotationPresent(ZenCodeType.StaticExpansionMethod.class)) {
+			if (isStaticExpansionMethod) {
 				ZenCodeType.StaticExpansionMethod methodAnnotation = method.getAnnotation(ZenCodeType.StaticExpansionMethod.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				MethodID id = MethodID.staticMethod(name);
 				ids.add(id);
-				isStaticExpansion = true;
 			}
-			if (!isStaticMethod && method.isAnnotationPresent(ZenCodeGlobals.Global.class) && JavaModifiers.isStatic(method.getModifiers())) {
+			if (isStaticMethodInsideZc && method.isAnnotationPresent(ZenCodeGlobals.Global.class)) {
 				ZenCodeGlobals.Global methodAnnotation = method.getAnnotation(ZenCodeGlobals.Global.class);
 				String name = methodAnnotation.value().isEmpty() ? method.getName() : methodAnnotation.value();
 				MethodID id = MethodID.staticMethod(name);
@@ -194,17 +197,41 @@ public class JavaNativeTypeTemplate {
 				continue;
 
 			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
-
-			if (expansion && !isStaticExpansion) {
+			if (expansion && !isStaticExpansionMethod) {
 				FunctionParameter[] withoutFirst = Arrays.copyOfRange(header.parameters, 1, header.parameters.length);
 				header = new FunctionHeader(header.typeParameters, header.getReturnType(), header.thrownType, withoutFirst);
 			}
 
 			for (MethodID id : ids) {
-				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit, expansion && !isStaticExpansion);
+				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, implicit, expansion && !isStaticExpansionMethod);
 				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
 				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
 			}
+		}
+
+
+		if (class_.cls.isEnum()) {
+			Stream.of(
+					BuiltinMethodSymbol.ENUM_NAME,
+					BuiltinMethodSymbol.ENUM_ORDINAL,
+					//BuiltinMethodSymbol.ENUM_VALUES,
+					BuiltinMethodSymbol.ENUM_COMPARE
+			).forEach(method -> methods
+					.computeIfAbsent(method.getID(), x -> new ArrayList<>())
+					.add(method)
+			);
+
+			try {
+				MethodID id = MethodID.staticGetter("values");
+				FunctionHeader header = new FunctionHeader(new ArrayTypeID(target));
+				Method method = class_.cls.getMethod("values");
+				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, false, false);
+				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
+				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			} catch (ReflectiveOperationException exception) {
+				throw new IllegalStateException("We found an enum class without values() method: " + class_.cls.getCanonicalName(), exception);
+			}
+
 		}
 	}
 
