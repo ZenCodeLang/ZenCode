@@ -324,7 +324,12 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 		@Override
 		public Expression lambda(LambdaClosure closure, FunctionHeader header, Statement body) {
-			return new FunctionExpression(position, closure, header, body);
+			return lambda(closure, header, null, body);
+		}
+
+		@Override
+		public Expression lambda(LambdaClosure closure, FunctionHeader header, FunctionHeader original, Statement body) {
+			return new FunctionExpression(position, closure, header, original, body);
 		}
 
 		@Override

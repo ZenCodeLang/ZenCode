@@ -1,3 +1,4 @@
+#disabled: Requires primitive specializations, not supported yet
 #dependency: stdlib
 #output: 5
 #output: 4

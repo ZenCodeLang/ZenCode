@@ -468,9 +468,12 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			bridgeWriter.invokeVirtual(new JavaNativeMethod(localClass, JavaNativeMethod.Kind.INSTANCE, overriddenMethodInfo.name, overriddenMethodInfo.compile, implementationDescriptor, overriddenMethodInfo.modifiers, overriddenMethodInfo.genericResult));
 			final TypeID returnType = implementationHeader.getReturnType();
 			if (returnType != BasicTypeID.VOID) {
-				final Type returnTypeASM = context.getType(returnType);
+				Type returnTypeASM = context.getType(returnType);
 				if (!CompilerUtils.isPrimitive(returnType)) {
 					bridgeWriter.checkCast(returnTypeASM);
+				} else if (!isPrimitiveReturnType(overriddenMethodInfo.descriptor)) {
+					returnType.accept(returnType, JavaBoxingTypeVisitor.forJavaBoxing(bridgeWriter));
+					returnTypeASM = Type.getReturnType(overriddenMethodInfo.descriptor);
 				}
 				bridgeWriter.returnType(returnTypeASM);
 			}
@@ -482,6 +485,22 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			return new JavaCompilingMethod(actualMethod, implementationSignature);
 		} else {
 			return new JavaCompilingMethod(overriddenMethodInfo, implementationSignature);
+		}
+	}
+
+	private static boolean isPrimitiveReturnType(String descriptor) {
+		switch (Type.getReturnType(descriptor).getSort()) {
+			case Type.BYTE:
+			case Type.SHORT:
+			case Type.INT:
+			case Type.LONG:
+			case Type.FLOAT:
+			case Type.DOUBLE:
+			case Type.BOOLEAN:
+			case Type.CHAR:
+				return true;
+			default:
+				return false;
 		}
 	}
 }

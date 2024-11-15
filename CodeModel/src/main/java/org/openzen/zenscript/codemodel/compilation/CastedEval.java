@@ -13,9 +13,14 @@ public class CastedEval {
 		return new CastedEval(compiler, position, type, false, false);
 	}
 
+	public static CastedEval implicit(ExpressionCompiler compiler, CodePosition position, TypeID type, TypeID original) {
+		return new CastedEval(compiler, position, type, original, false, false);
+	}
+
 	private final ExpressionCompiler compiler;
 	private final CodePosition position;
 	public final TypeID type;
+	public final TypeID original; // used for lambdas
 	private final boolean explicit;
 	private final boolean optional;
 
@@ -23,6 +28,16 @@ public class CastedEval {
 		this.compiler = compiler;
 		this.position = position;
 		this.type = type;
+		this.original = type;
+		this.explicit = explicit;
+		this.optional = optional;
+	}
+
+	public CastedEval(ExpressionCompiler compiler, CodePosition position, TypeID type, TypeID original, boolean explicit, boolean optional) {
+		this.compiler = compiler;
+		this.position = position;
+		this.type = type;
+		this.original = original;
 		this.explicit = explicit;
 		this.optional = optional;
 	}

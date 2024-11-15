@@ -67,6 +67,8 @@ public interface ExpressionBuilder {
 
 	Expression lambda(LambdaClosure closure, FunctionHeader header, Statement body);
 
+	Expression lambda(LambdaClosure closure, FunctionHeader header, FunctionHeader original, Statement body);
+
 	Expression newArray(ArrayTypeID type, Expression[] values);
 
 	Expression newAssoc(AssocTypeID type, List<Expression> keys, List<Expression> values);

@@ -1,3 +1,4 @@
+#disabled: Adding signed and unsigned requires explicit casting
 
 val byteValue = 1 as byte;
 val sbyteValue = 2 as sbyte;

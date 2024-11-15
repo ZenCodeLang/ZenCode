@@ -247,7 +247,8 @@ public class MatchedCallArguments<T extends AnyMethod> {
 						// invalid
 						return CastedExpression.invalid(position, CompileErrors.missingParameter(header.getParameter(false, i).name));
 					}
-					return argument.cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i)));
+					TypeID originalType = method.getHeader().getParameterType(false, i);
+					return argument.cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i), originalType));
 				})
 				.toArray(CastedExpression[]::new);
 
@@ -293,7 +294,12 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 		CastedExpression[] castedExpressions = IntStream.range(0, arguments.length)
-				.mapToObj(i -> arguments[i].cast(CastedEval.implicit(compiler, position, header.getParameterType(true, i))))
+				.mapToObj(i -> arguments[i].cast(CastedEval.implicit(
+						compiler,
+						position,
+						header.getParameterType(true, i),
+						method.getHeader().getParameterType(true, i)
+				)))
 				.toArray(CastedExpression[]::new);
 
 		Expression[] expressions = new Expression[header.parameters.length];

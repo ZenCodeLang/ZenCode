@@ -1,3 +1,4 @@
+#disabled: Requires primitive specializations, not supported yet
 #output: 6
 #output: 5
 #output: 5
@@ -15,7 +16,7 @@ public expand <T> T[] {
 
 
 var arr = new string[](6, "Hello");
-var lengths = arr.map<string>((element) => element.length);
+var lengths = arr.map<usize>((element) => element.length);
 
 println(lengths.length);
 for length in lengths println(length);

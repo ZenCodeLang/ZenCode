@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
@@ -474,6 +475,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }*/
 
 		final String[] interfaces;
+		FunctionHeader header = expression.original == null ? expression.header : expression.original;
 
 		if (expression.type instanceof JavaFunctionalInterfaceTypeID) {
 			//Let's implement the functional Interface instead
@@ -484,19 +486,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 		} else {
 			//Normal way, no casting to functional interface
-			interfaces = new String[]{context.getInternalName(new FunctionTypeID(expression.header))};
+			interfaces = new String[]{context.getInternalName(new FunctionTypeID(header))};
 		}
 
 		final JavaNativeMethod methodInfo;
 		final String className = this.javaMangler.mangleGeneratedLambdaName(interfaces[0]);
 		{
-			final JavaNativeMethod m = context.getFunctionalInterface(expression.type);
+			final JavaNativeMethod m = context.getFunctionalInterface(expression.original == null ? expression.type : new FunctionTypeID(expression.original));
 			methodInfo = m.withModifiers(m.modifiers & ~JavaModifiers.ABSTRACT);
 		}
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		JavaClass lambdaClass = JavaClass.fromInternalName(className, JavaClass.Kind.CLASS);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
-		final JavaWriter functionWriter;
 
 		JavaCompilingMethod actualCompiling = JavaMemberVisitor.compileBridgeableMethod(
 				context,
@@ -507,8 +508,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				expression.header,
 				null
 		);
-		functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
-		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		javaWriter.newObject(className);
 		javaWriter.dup();
 
@@ -544,7 +543,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		constructorWriter.ret();
 		constructorWriter.end();
 
-
+		JavaWriter functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
+		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
 		functionWriter.start();
 
 		JavaExpressionVisitor withCapturedExpressionVisitor = new JavaExpressionVisitor(
@@ -564,6 +564,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		functionWriter.ret();
 		functionWriter.end();
+
 		lambdaCW.visitEnd();
 
 		context.register(className, lambdaCW.toByteArray());

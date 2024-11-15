@@ -18,17 +18,20 @@ public class FunctionExpression extends Expression {
 	public final FunctionHeader header;
 	public final LambdaClosure closure;
 	public final Statement body;
+	public final FunctionHeader original;
 
 	public FunctionExpression(
 			CodePosition position,
 			LambdaClosure closure,
 			FunctionHeader header,
+			FunctionHeader original,
 			Statement body) {
 		super(position, new FunctionTypeID(header), body.getThrownType());
 
 		this.header = header;
 		this.closure = closure;
 		this.body = body;
+		this.original = original;
 	}
 
 	@Override
@@ -44,7 +47,7 @@ public class FunctionExpression extends Expression {
 	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
-		return tBody == body ? this : new FunctionExpression(position, closure, header, tBody);
+		return tBody == body ? this : new FunctionExpression(position, closure, header, original, tBody);
 	}
 
 	@Override

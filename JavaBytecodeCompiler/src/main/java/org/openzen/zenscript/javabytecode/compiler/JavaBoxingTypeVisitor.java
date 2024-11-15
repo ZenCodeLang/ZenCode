@@ -134,6 +134,9 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 
 	@Override
 	public Void visitOptional(TypeID context, OptionalTypeID type) {
+		if (type.baseType == BasicTypeID.USIZE) {
+			writer.invokeStatic(INTEGER_VALUEOF);
+		}
 		//NO-OP
 		return null;
 	}

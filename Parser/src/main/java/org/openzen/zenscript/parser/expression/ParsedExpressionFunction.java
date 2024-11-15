@@ -113,7 +113,8 @@ public class ParsedExpressionFunction extends ParsedExpression {
 					thatOtherHeader.setReturnType(header.getReturnType());
 				}*/
 
-				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).lambda(closure, header, statement));
+				FunctionHeader originalHeader = cast.original.asFunction().map(f -> f.header).orElse(null);
+				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).lambda(closure, header, originalHeader, statement));
 			} else {
 				return cast.of(eval());
 			}

@@ -78,7 +78,7 @@ public abstract class Expression {
 				if (body == function.body)
 					return function;
 
-				return new FunctionExpression(function.position, function.closure, function.header, body);
+				return new FunctionExpression(function.position, function.closure, function.header, function.original, body);
 			} else {
 				return expression;
 			}
