@@ -254,7 +254,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 			Expression argument = arguments.arguments[index];
 			argument.accept(expressionVisitor);
 			if (!primitiveArguments[typeArguments + index + (method.cls.kind == JavaClass.Kind.EXPANSION && !asStatic ? 1 : 0)]) {
-				argument.type.accept(argument.type, boxingTypeVisitor);
+				argument.type.accept(boxingTypeVisitor);
 			}
 		}
 	}
@@ -613,9 +613,9 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 				arguments[0].accept(expressionVisitor);
 				arguments[1].accept(expressionVisitor);
-				type.keyType.accept(type.keyType, boxingTypeVisitor);
+				type.keyType.accept(boxingTypeVisitor);
 				arguments[2].accept(expressionVisitor);
-				type.valueType.accept(type.valueType, boxingTypeVisitor);
+				type.valueType.accept(boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_PUT);
 				javaWriter.pop();
 				return null;
@@ -1355,7 +1355,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 				break;
 			case ASSOC_INDEXGET: {
 				AssocTypeID type = (AssocTypeID) arguments[0].type;
-				type.keyType.accept(type.keyType, boxingTypeVisitor);
+				type.keyType.accept(boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_GET);
 				javaWriter.checkCast(context.getType(new OptionalTypeID(type.valueType)));
 				break;

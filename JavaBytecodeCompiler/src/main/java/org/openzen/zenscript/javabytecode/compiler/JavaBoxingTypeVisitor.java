@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 
-public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
+public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 	private static final JavaNativeMethod BOOLEAN_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
 	private static final JavaNativeMethod BYTE_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
 	private static final JavaNativeMethod SHORT_VALUEOF = JavaNativeMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");
@@ -31,7 +31,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 	}
 
 	@Override
-	public Void visitBasic(TypeID context, BasicTypeID basic) {
+	public Void visitBasic(BasicTypeID basic) {
 		final JavaNativeMethod method;
 		switch (basic) {
 			case BOOL:
@@ -85,55 +85,55 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 	}
 
 	@Override
-	public Void visitArray(TypeID context, ArrayTypeID array) {
+	public Void visitArray(ArrayTypeID array) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(TypeID context, AssocTypeID assoc) {
+	public Void visitAssoc(AssocTypeID assoc) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGenericMap(TypeID context, GenericMapTypeID map) {
+	public Void visitGenericMap(GenericMapTypeID map) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitIterator(TypeID context, IteratorTypeID iterator) {
+	public Void visitIterator(IteratorTypeID iterator) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(TypeID context, FunctionTypeID function) {
+	public Void visitFunction(FunctionTypeID function) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(TypeID context, DefinitionTypeID definition) {
+	public Void visitDefinition(DefinitionTypeID definition) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(TypeID context, GenericTypeID generic) {
+	public Void visitGeneric(GenericTypeID generic) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitRange(TypeID context, RangeTypeID range) {
+	public Void visitRange(RangeTypeID range) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitOptional(TypeID context, OptionalTypeID type) {
+	public Void visitOptional(OptionalTypeID type) {
 		if (type.baseType == BasicTypeID.USIZE) {
 			writer.invokeStatic(INTEGER_VALUEOF);
 		}

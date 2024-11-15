@@ -472,7 +472,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				if (!CompilerUtils.isPrimitive(returnType)) {
 					bridgeWriter.checkCast(returnTypeASM);
 				} else if (!isPrimitiveReturnType(overriddenMethodInfo.descriptor)) {
-					returnType.accept(returnType, JavaBoxingTypeVisitor.forJavaBoxing(bridgeWriter));
+					returnType.accept(JavaBoxingTypeVisitor.forJavaBoxing(bridgeWriter));
 					returnTypeASM = Type.getReturnType(overriddenMethodInfo.descriptor);
 				}
 				bridgeWriter.returnType(returnTypeASM);

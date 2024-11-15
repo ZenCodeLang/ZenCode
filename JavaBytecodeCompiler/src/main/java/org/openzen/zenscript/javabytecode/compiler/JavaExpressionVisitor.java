@@ -342,7 +342,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.ifNonNull(end);
 		javaWriter.pop();
 		expression.right.accept(this);
-		expression.right.type.accept(expression.right.type, boxingTypeVisitor);
+		expression.right.type.accept(boxingTypeVisitor);
 		javaWriter.label(end);
 		expression.type.accept(expression.type, unboxingTypeVisitor);
 		return null;
@@ -659,9 +659,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (int i = 0; i < expression.keys.length; i++) {
 			javaWriter.dup();
 			expression.keys[i].accept(this);
-			type.keyType.accept(type.keyType, boxingTypeVisitor);
+			type.keyType.accept(boxingTypeVisitor);
 			expression.values[i].accept(this);
-			type.valueType.accept(type.valueType, boxingTypeVisitor);
+			type.valueType.accept(boxingTypeVisitor);
 			javaWriter.invokeInterface(MAP_PUT);
 			javaWriter.pop();
 		}
@@ -1297,7 +1297,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.accept(expression.value.type, optionalWrappingTypeVisitor);
+		expression.value.type.accept(optionalWrappingTypeVisitor);
 		return null;
 	}
 
