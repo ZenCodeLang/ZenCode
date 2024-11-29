@@ -68,15 +68,10 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		} else if (type.isAnnotationPresent(ZenCodeType.USize.class)) {
 			result = BasicTypeID.USIZE;
 		} else {
-			boolean unsigned = type.isAnnotationPresent(ZenCodeType.Unsigned.class);
-			result = loadType(context, JavaAnnotatedType.of(type), unsigned);
+			result = loadType(context, JavaAnnotatedType.of(type), false);
 		}
 
-		boolean isOptional = type.isAnnotationPresent(ZenCodeType.Nullable.class);
-		if (isOptional && !result.isOptional())
-			result = new OptionalTypeID(result);
-
-		return result;
+		return optionallyWrap(type, result);
 	}
 
 	@Override
@@ -172,7 +167,8 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 
 	private TypeID loadAnnotatedType(TypeVariableContext context, AnnotatedType type, boolean unsigned) {
 		final JavaAnnotatedType annotatedType = JavaAnnotatedType.of(type.getType());
-		return this.loadType(context, annotatedType, unsigned);
+		TypeID result = this.loadType(context, annotatedType, unsigned);
+		return optionallyWrap(type, result);
 	}
 
 	private TypeID loadClass(TypeVariableContext context, Class<?> type, boolean unsigned) {
@@ -468,5 +464,12 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		specialTypes.put(ToLongBiFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0], args[1])));
 		specialTypes.put(ToLongFunction.class, args -> new FunctionTypeID(new FunctionHeader(BasicTypeID.LONG, args[0])));
 		specialTypes.put(UnaryOperator.class, args -> new FunctionTypeID(new FunctionHeader(args[0], args[0])));
+	}
+
+	private TypeID optionallyWrap(AnnotatedType type, TypeID result) {
+		boolean isOptional = type.isAnnotationPresent(ZenCodeType.Nullable.class);
+		if (isOptional && !result.isOptional())
+			result = new OptionalTypeID(result);
+		return result;
 	}
 }
