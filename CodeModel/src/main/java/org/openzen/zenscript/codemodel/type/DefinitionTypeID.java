@@ -158,7 +158,7 @@ public class DefinitionTypeID implements TypeID {
 		final DefinitionTypeID other = (DefinitionTypeID) obj;
 		return this.definition == other.definition
 				&& Arrays.deepEquals(this.typeArguments, other.typeArguments)
-				&& Objects.equals(outer, this.outer);
+				&& Objects.equals(outer, other.outer);
 	}
 
 	@Override
