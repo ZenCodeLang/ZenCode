@@ -89,7 +89,7 @@ public class OptionalTypeID implements TypeID {
 		if (getClass() != obj.getClass())
 			return false;
 		final OptionalTypeID other = (OptionalTypeID) obj;
-		return this.baseType == other.baseType;
+		return this.baseType.equals(other.baseType);
 	}
 
 	@Override
