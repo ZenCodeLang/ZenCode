@@ -56,7 +56,7 @@ public interface ZenCodeType {
 	@interface Expansion {
 		String value();
 
-		//String[] typeParameters() default {};
+		String typeParameters() default "";
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

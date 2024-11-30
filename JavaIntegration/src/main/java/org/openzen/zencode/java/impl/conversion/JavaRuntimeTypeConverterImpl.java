@@ -27,6 +27,7 @@ import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
+import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.io.IOException;
@@ -73,7 +74,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 	}
 
 	@Override
-	public TypeID parseType(String type) {
+	public TypeID parseType(ZenCodeType.Expansion expansion) {
+		String type = expansion.value();
+
 		for (TypeID value : this.typeByClass.values()) {
 			if (value.toString().equals(type))
 				return value;
@@ -90,7 +93,17 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 			IParsedType parsed = IParsedType.parse(tokens);
 
 			CompileContext context = new CompileContext(relative ? packageInfo.getPkg() : packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
-			return parsed.compile(context);
+
+			final ZSTokenParser typeBoundsTokens = ZSTokenParser.create(new LiteralSourceFile("internal", expansion.typeParameters()), null);
+			TypeParameter[] typeParameters = Optional.ofNullable(ParsedTypeParameter.parseAll(typeBoundsTokens))
+					.map(parsedTypeParameters -> {
+						TypeParameter[] compiled = ParsedTypeParameter.getCompiled(parsedTypeParameters);
+						ParsedTypeParameter.compile(context, compiled, parsedTypeParameters);
+						return compiled;
+					})
+					.orElse(TypeParameter.NONE);
+
+			return parsed.compile(context.withGeneric(typeParameters));
 		} catch (IOException ex) {
 			throw new AssertionError("Not supposed to happen");
 		} catch (ParseException ex) {
@@ -384,6 +397,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 
 	private void fillClassMaps() {
 		typeByClass.put(void.class, BasicTypeID.VOID);
+		typeByClass.put(Void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
 		typeByClass.put(byte.class, BasicTypeID.SBYTE);
 		typeByClass.put(char.class, BasicTypeID.CHAR);

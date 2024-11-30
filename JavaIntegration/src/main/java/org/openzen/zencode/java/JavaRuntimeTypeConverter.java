@@ -7,5 +7,5 @@ import java.lang.reflect.AnnotatedType;
 public interface JavaRuntimeTypeConverter {
 	TypeID getType(TypeVariableContext context, AnnotatedType type);
 
-	TypeID parseType(String type);
+	TypeID parseType(ZenCodeType.Expansion type);
 }

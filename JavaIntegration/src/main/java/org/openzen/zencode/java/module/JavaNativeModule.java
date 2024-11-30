@@ -103,7 +103,7 @@ public class JavaNativeModule {
 		TypeID target = null;
 		if (kind == JavaClass.Kind.EXPANSION) {
 			ZenCodeType.Expansion expansion = cls.getAnnotation(ZenCodeType.Expansion.class);
-			target = typeConverter.parseType(expansion.value());
+			target = typeConverter.parseType(expansion);
 		}
 
 		ParsedName name = getClassName(cls);
