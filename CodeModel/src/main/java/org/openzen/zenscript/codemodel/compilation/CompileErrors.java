@@ -203,7 +203,7 @@ public class CompileErrors {
 	}
 
 	public static CompileError invalidMapType(TypeID type) {
-		return new CompileError(CompileExceptionCode.INVALID_TYPE, "Cannot construct map from type " + type);
+		return new CompileError(CompileExceptionCode.INVALID_TYPE, "Cannot construct type " + type + " from map");
 	}
 
 	public static CompileError invalidMapKey() {
