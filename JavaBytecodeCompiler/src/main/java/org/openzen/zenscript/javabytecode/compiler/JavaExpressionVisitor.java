@@ -1206,6 +1206,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
 		expression.value.accept(this);
+		javaWriter.checkCast(context.getType(expression.type));
 		return null; // nothing to do
 	}
 

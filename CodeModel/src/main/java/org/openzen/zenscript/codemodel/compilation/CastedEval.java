@@ -83,8 +83,8 @@ public class CastedEval {
 				return result;
 		}
 
-		//if (extendsOrImplements(type))
-		//	return CastedExpression.implicit(new SupertypeCastExpression(position, value, type));
+		if (this.type.extendsOrImplements(value.type, compiler.getAvailableExpansions()))
+			return CastedExpression.implicit(new SupertypeCastExpression(position, value, type));
 
 		if (explicit) {
 			Optional<Expression> casted = compiler.resolve(value.type).tryCastExplicit(type, compiler, position, value, optional);
