@@ -41,10 +41,11 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		Compiling result = new Compiling(compiler, value, tail);
 		StatementCompiler innerScope = compiler.forLoop(result);
 
-		CodeBlock next = new CodeBlock();
+		CodeBlock next = lastBlock.createNext();
 		for (ParsedSwitchCase switchCase : cases) {
 			CodeBlock current = next;
-			next = new CodeBlock();
+			current.addSuccessor(tail);
+			next = lastBlock.createNext();
 			result.continueBlock = next;
 			result.cases.add(switchCase.compile(innerScope, current));
 		}

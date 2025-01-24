@@ -1,0 +1,14 @@
+#output: Hello World
+
+val field = "Hello World";
+
+if true {
+	switch field {
+		case "Hello World":
+			println("Hello World");
+			break;
+		case "Goodbye World":
+			println("this is bad");
+			break;
+	}
+}
