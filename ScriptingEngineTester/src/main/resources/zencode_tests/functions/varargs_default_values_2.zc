@@ -1,0 +1,11 @@
+#output: ========
+#output: provided value
+#output: ========
+#debug
+function test(args...: string[] = ["default value here"]): void {
+	for item in args println(item);
+}
+
+println("========");
+test("provided value");
+println("========");

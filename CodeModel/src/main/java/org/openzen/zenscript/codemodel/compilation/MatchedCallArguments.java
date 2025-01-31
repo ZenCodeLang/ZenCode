@@ -168,7 +168,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		if (!matchedVarArg.isPresent()) {
 			return matchedWidening;
 		} else {
-			return Stream.of(matchedVarArg.get(), matchedWidening).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
+			return Stream.of(matchedWidening, matchedVarArg.get()).min(Comparator.comparing(match -> match.arguments.level)).orElseThrow(() -> new IllegalStateException("Should never happen"));
 		}
 	}
 

@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -213,9 +214,9 @@ public class JavaNativeTypeTemplate {
 		if (class_.cls.isEnum()) {
 			Stream.of(
 					BuiltinMethodSymbol.ENUM_NAME,
-					BuiltinMethodSymbol.ENUM_ORDINAL,
+					BuiltinMethodSymbol.ENUM_ORDINAL
 					//BuiltinMethodSymbol.ENUM_VALUES,
-					BuiltinMethodSymbol.ENUM_COMPARE
+//					BuiltinMethodSymbol.ENUM_COMPARE
 			).forEach(method -> methods
 					.computeIfAbsent(method.getID(), x -> new ArrayList<>())
 					.add(method)
@@ -231,6 +232,18 @@ public class JavaNativeTypeTemplate {
 			} catch (ReflectiveOperationException exception) {
 				throw new IllegalStateException("We found an enum class without values() method: " + class_.cls.getCanonicalName(), exception);
 			}
+
+			try {
+				MethodID id = MethodID.operator(OperatorType.COMPARE);
+				FunctionHeader header = new FunctionHeader(BasicTypeID.INT, target);
+				Method method = class_.cls.getMethod("compareTo", Enum.class);
+				JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, false, false);
+				methods.computeIfAbsent(id, x -> new ArrayList<>()).add(runtimeMethod);
+				class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			} catch (ReflectiveOperationException exception) {
+				throw new IllegalStateException("Error while registering Enum#compareTo for: " + class_.cls.getCanonicalName(), exception);
+			}
+
 
 		}
 	}
