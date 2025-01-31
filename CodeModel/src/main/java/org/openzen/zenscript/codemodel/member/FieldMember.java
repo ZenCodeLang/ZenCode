@@ -1,10 +1,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
@@ -12,6 +9,7 @@ import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
@@ -25,6 +23,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	public final GetterMember autoGetter;
 	public final SetterMember autoSetter;
 	public Expression initializer;
+	private final TypeID thisType;
 
 	public FieldMember(
 			CodePosition position,
@@ -40,6 +39,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 		this.name = name;
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
+		this.thisType = thisType;
 
 		// ToDo: This is never used?
 		TypeID[] parameters = null;
@@ -57,21 +57,29 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	private SetterMember constructAutoSetter(TypeID thisType, FieldInstance fieldInstance) {
 		Modifiers autoSetterModifiers = isStatic() ? autoSetterAccess.withStatic() : autoSetterAccess;
 		final SetterMember autoSetter = new SetterMember(position, definition, autoSetterModifiers, name, type);
-		final GetFunctionParameterExpression setValue = new GetFunctionParameterExpression(position, autoSetter.parameter);
+		autoSetter.setBody(constructAutoSetterBody(thisType, fieldInstance, autoSetter.parameter));
+		return autoSetter;
+	}
+
+	private Statement constructAutoSetterBody(TypeID thisType, FieldInstance fieldInstance, FunctionParameter parameter) {
+		final GetFunctionParameterExpression setValue = new GetFunctionParameterExpression(position, parameter);
 		final Expression setFieldExpression;
 		if (isStatic()) {
 			setFieldExpression = new SetStaticFieldExpression(position, fieldInstance, setValue);
 		} else {
 			setFieldExpression = new SetFieldExpression(position, new ThisExpression(position, thisType), fieldInstance, setValue);
 		}
-		autoSetter.setBody(new ExpressionStatement(position, setFieldExpression));
-		return autoSetter;
+		return new ExpressionStatement(position, setFieldExpression);
 	}
 
 	private GetterMember constructAutoGetter(TypeID thisType, FieldInstance fieldInstance) {
 		Modifiers autoGetterModifiers = isStatic() ? autoGetterAccess.withStatic() : autoGetterAccess;
 		final GetterMember autoGetter = new GetterMember(position, definition, autoGetterModifiers, name, type);
+		autoGetter.setBody(constructAutoGetterBody(thisType, fieldInstance));
+		return autoGetter;
+	}
 
+	private Statement constructAutoGetterBody(TypeID thisType, FieldInstance fieldInstance) {
 		final Expression getFieldExpression;
 		if(isStatic()) {
 			getFieldExpression = new GetStaticFieldExpression(position, fieldInstance);
@@ -79,8 +87,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 			getFieldExpression = new GetFieldExpression(position, new ThisExpression(position, thisType), fieldInstance);
 		}
 
-		autoGetter.setBody(new ReturnStatement(position, getFieldExpression));
-		return autoGetter;
+		return new ReturnStatement(position, getFieldExpression);
 	}
 
 	public boolean hasAutoGetter() {
@@ -156,10 +163,15 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	public void setType(TypeID type) {
 		super.setType(type);
 
-		if (autoGetter != null)
+		final FieldInstance fieldInstance = new FieldInstance(this, type);
+		if (autoGetter != null) {
 			this.autoGetter.setType(type);
-		if (autoSetter != null)
+			this.autoGetter.setBody(constructAutoGetterBody(thisType, fieldInstance));
+		}
+		if (autoSetter != null) {
 			this.autoSetter.setType(type);
+			this.autoSetter.setBody(constructAutoSetterBody(thisType, fieldInstance, autoSetter.parameter));
+		}
 	}
 
 	@Override
