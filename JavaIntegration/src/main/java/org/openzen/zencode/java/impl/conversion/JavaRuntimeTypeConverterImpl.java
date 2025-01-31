@@ -7,13 +7,11 @@ import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.TypeVariableContext;
 import org.openzen.zencode.java.module.JavaAnnotatedType;
 import org.openzen.zencode.java.module.JavaNativePackageInfo;
-import org.openzen.zencode.java.module.JavaRuntimeClass;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.compilation.CompileContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -68,7 +66,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		} else if (type.isAnnotationPresent(ZenCodeType.USize.class)) {
 			result = BasicTypeID.USIZE;
 		} else {
-			result = loadType(context, JavaAnnotatedType.of(type), false);
+			result = loadType(context, JavaAnnotatedType.of(type));
 		}
 
 		return optionallyWrap(type, result);
@@ -101,19 +99,19 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		}
 	}
 
-	private TypeID loadType(TypeVariableContext context, JavaAnnotatedType type, boolean unsigned) {
+	private TypeID loadType(TypeVariableContext context, JavaAnnotatedType type) {
 		final JavaAnnotatedType.ElementType elementType = type.getElementType();
 
 		try {
 			switch (elementType) {
 				case ANNOTATED_PARAMETERIZED_TYPE:
-					return loadAnnotatedParameterizedType(context, (AnnotatedParameterizedType) type.getAnnotatedElement(), unsigned);
+					return loadAnnotatedParameterizedType(context, (AnnotatedParameterizedType) type.getAnnotatedElement());
 				case ANNOTATED_TYPE:
-					return loadAnnotatedType(context, (AnnotatedType) type.getAnnotatedElement(), unsigned);
+					return loadAnnotatedType(context, (AnnotatedType) type.getAnnotatedElement());
 				case CLASS:
-					return loadClass(context, (Class<?>) type.getType(), unsigned);
+					return loadClass(context, (Class<?>) type.getType());
 				case GENERIC_ARRAY:
-					return loadGenericArray(context, (GenericArrayType) type.getType(), unsigned);
+					return loadGenericArray(context, (GenericArrayType) type.getType());
 				case PARAMETERIZED_TYPE:
 					return loadParameterizedType(context, (ParameterizedType) type.getType());
 				case TYPE_VARIABLE:
@@ -128,22 +126,20 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		throw new IllegalArgumentException("Invalid type " + elementType + ": not yet implemented or foolery");
 	}
 
-	private TypeSymbol loadRawType(TypeVariableContext context, JavaAnnotatedType type, boolean unsigned) {
+	private TypeSymbol loadRawType(JavaAnnotatedType type) {
 		final JavaAnnotatedType.ElementType elementType = type.getElementType();
 
 		try {
-			switch (elementType) {
-				case CLASS:
-					return findType((Class<?>) type.getType());
-				default:
-					throw new IllegalArgumentException("Didn't expect to get this kind of type: " + type);
+			if (Objects.requireNonNull(elementType) == JavaAnnotatedType.ElementType.CLASS) {
+				return findType((Class<?>) type.getType());
 			}
+			throw new IllegalArgumentException("Didn't expect to get this kind of type: " + type);
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("Unable to analyze type: " + type, e);
 		}
 	}
 
-	private TypeID loadAnnotatedParameterizedType(TypeVariableContext context, AnnotatedParameterizedType type, boolean unsigned) {
+	private TypeID loadAnnotatedParameterizedType(TypeVariableContext context, AnnotatedParameterizedType type) {
 		final ParameterizedType parameterizedType = this.getTypeIfValid(JavaAnnotatedType.of(type.getType()), JavaAnnotatedType.ElementType.PARAMETERIZED_TYPE);
 		final JavaAnnotatedType rawType = JavaAnnotatedType.of(parameterizedType.getRawType());
 
@@ -151,34 +147,31 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
 
 		for (int i = 0; i < actualTypeArguments.length; i++) {
-			codeParameters[i] = this.loadType(context, actualTypeArguments[i], false);
+			codeParameters[i] = this.loadType(context, actualTypeArguments[i]);
 		}
 
 		if (rawType.getElementType() == JavaAnnotatedType.ElementType.CLASS) {
+			//noinspection SuspiciousMethodCalls
 			if (specialTypes.containsKey(rawType.getType())) {
+				//noinspection SuspiciousMethodCalls
 				return specialTypes.get(rawType.getType()).apply(codeParameters);
 			}
 
-			final TypeSymbol rawTypeSymbol = loadRawType(context, rawType, unsigned);
+			final TypeSymbol rawTypeSymbol = loadRawType(rawType);
 			return DefinitionTypeID.create(rawTypeSymbol, codeParameters);
 		}
-		return this.loadType(context, JavaAnnotatedType.of(type), unsigned);
+		return this.loadType(context, JavaAnnotatedType.of(type));
 	}
 
-	private TypeID loadAnnotatedType(TypeVariableContext context, AnnotatedType type, boolean unsigned) {
+	private TypeID loadAnnotatedType(TypeVariableContext context, AnnotatedType type) {
 		final JavaAnnotatedType annotatedType = JavaAnnotatedType.of(type.getType());
-		TypeID result = this.loadType(context, annotatedType, unsigned);
+		TypeID result = this.loadType(context, annotatedType);
 		return optionallyWrap(type, result);
 	}
 
-	private TypeID loadClass(TypeVariableContext context, Class<?> type, boolean unsigned) {
-		if (unsigned) {
-			return unsignedByClass.computeIfAbsent(type, it -> {
-				throw new IllegalArgumentException("This class cannot be used as unsigned: " + it);
-			});
-		}
+	private TypeID loadClass(TypeVariableContext context, Class<?> type) {
 		if (type.isArray()) {
-			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()), false);
+			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()));
 			return new ArrayTypeID(baseType);
 		}
 		if (type.isAnnotationPresent(FunctionalInterface.class)) {
@@ -201,9 +194,9 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		return DefinitionTypeID.create(definition, typeParameters.toArray(TypeID.NONE));
 	}
 
-	private TypeID loadGenericArray(TypeVariableContext context, GenericArrayType type, boolean unsigned) {
+	private TypeID loadGenericArray(TypeVariableContext context, GenericArrayType type) {
 		final JavaAnnotatedType componentType = JavaAnnotatedType.of(type.getGenericComponentType());
-		final TypeID baseType = this.loadType(context, componentType, unsigned);
+		final TypeID baseType = this.loadType(context, componentType);
 		return new ArrayTypeID(baseType);
 	}
 
@@ -217,7 +210,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 
 		TypeID[] codeParameters = new TypeID[typeArguments.length];
 		for (int i = 0; i < typeArguments.length; i++) {
-			codeParameters[i] = this.loadType(context, typeArguments[i], false);
+			codeParameters[i] = this.loadType(context, typeArguments[i]);
 		}
 
 		if (rawType == Map.class) {
@@ -338,7 +331,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		Map<TypeParameter, TypeID> mapping = new HashMap<>();
 		TypeVariable<?>[] javaParameters = cls.getTypeParameters();
 		for (int i = 0; i < parameters.length; i++) {
-			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false));
+			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i]));
 		}
 
 		header = header.withGenericArguments(new GenericMapper(mapping, TypeID.NONE));
