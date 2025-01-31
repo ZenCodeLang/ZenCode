@@ -34,6 +34,15 @@ public class SetterMember extends FunctionalMember {
 		this.body = body;
 	}
 
+	public void setType(TypeID type) {
+		if (type == null) {
+			throw new NullPointerException();
+		}
+		this.type = type;
+		this.parameter = new FunctionParameter(type, "$");
+		this.header = new FunctionHeader(BasicTypeID.VOID, this.parameter);
+	}
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":get:" + name;
@@ -67,9 +76,7 @@ public class SetterMember extends FunctionalMember {
 	@Override
 	public void inferFromOverride(MethodInstance overrides) {
 		if (type == BasicTypeID.UNDETERMINED) {
-			this.type = overrides.getHeader().getReturnType();
-			parameter = new FunctionParameter(overrides.getHeader().getReturnType(), "$");
-			header = new FunctionHeader(BasicTypeID.VOID, parameter);
+			setType(overrides.getHeader().getReturnType());
 		}
 	}
 

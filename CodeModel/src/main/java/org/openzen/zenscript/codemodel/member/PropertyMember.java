@@ -14,7 +14,7 @@ public abstract class PropertyMember extends DefinitionMember {
 		if (type == null)
 			throw new NullPointerException();
 
-		this.type = type;
+		this.setType(type);
 	}
 
 	public TypeID getType() {

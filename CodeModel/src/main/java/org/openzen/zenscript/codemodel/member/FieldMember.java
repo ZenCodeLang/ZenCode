@@ -153,6 +153,16 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	}
 
 	@Override
+	public void setType(TypeID type) {
+		super.setType(type);
+
+		if (autoGetter != null)
+			this.autoGetter.setType(type);
+		if (autoSetter != null)
+			this.autoSetter.setType(type);
+	}
+
+	@Override
 	public Modifiers getModifiers() {
 		return modifiers;
 	}

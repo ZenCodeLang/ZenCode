@@ -31,11 +31,16 @@ public class GetterMember extends FunctionalMember {
 		this.body = body;
 
 		if (type == BasicTypeID.UNDETERMINED) {
-			body.getReturnType().ifPresent(returnType -> {
-				this.type = returnType;
-				this.header = new FunctionHeader(type);
-			});
+			body.getReturnType().ifPresent(this::setType);
 		}
+	}
+
+	public void setType(TypeID type) {
+		if (type == null) {
+			throw new NullPointerException();
+		}
+		this.type = type;
+		this.header = new FunctionHeader(type);
 	}
 
 	@Override

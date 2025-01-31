@@ -1,0 +1,7 @@
+#output: Hello World
+
+public class MyClass {
+	public static var myVariable = "Hello World";
+}
+
+println(MyClass.myVariable);
