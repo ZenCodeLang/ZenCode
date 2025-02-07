@@ -10,6 +10,7 @@ import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	public final Method functionalInterfaceMethod;
@@ -28,32 +29,23 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	}
 
 	@Override
-	public boolean canCastImplicitTo(TypeID other) {
-		return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
-	}
-
-	@Override
-	public boolean canCastImplicitFrom(TypeID other) {
-		return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
-	}
-
-	@Override
-	public Expression castImplicitTo(CodePosition position, Expression value, TypeID other) {
+	public Optional<Expression> castImplicitTo(CodePosition position, Expression value, TypeID other) {
 		if (other instanceof FunctionTypeID) {
 			FunctionTypeID otherType = (FunctionTypeID) other;
 			if (header.isEquivalentTo(otherType.header))
-				return new JavaFunctionInterfaceCastExpression(position, otherType, value);
+				return Optional.of(new JavaFunctionInterfaceCastExpression(position, otherType, value));
 		}
-		return null;
+
+		return Optional.empty();
 	}
 
 	@Override
-	public Expression castImplicitFrom(CodePosition position, Expression value) {
+	public Optional<Expression> castImplicitFrom(CodePosition position, Expression value) {
 		if (value.type instanceof FunctionTypeID) {
 			FunctionTypeID otherType = (FunctionTypeID) value.type;
 			if (header.isEquivalentTo(otherType.header))
-				return new JavaFunctionInterfaceCastExpression(position, this, value);
+				return Optional.of(new JavaFunctionInterfaceCastExpression(position, this, value));
 		}
-		return null;
+		return Optional.empty();
 	}
 }

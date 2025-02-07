@@ -94,36 +94,12 @@ public interface TypeID {
 		return new InvalidTypeID(CodePosition.UNKNOWN, CompileErrors.invalidType());
 	}
 
-	default boolean canCastImplicitTo(TypeID other) {
-		return false;
+	default Optional<Expression> castImplicitTo(CodePosition position, Expression value, TypeID toType) {
+		return Optional.empty();
 	}
 
-	default boolean canCastExplicitTo(TypeID other) {
-		return false;
-	}
-
-	default boolean canCastImplicitFrom(TypeID other) {
-		return false;
-	}
-
-	default boolean canCastExplicitFrom(TypeID other) {
-		return false;
-	}
-
-	default Expression castImplicitTo(CodePosition position, Expression value, TypeID toType) {
-		return null;
-	}
-
-	default Expression castExplicitTo(CodePosition position, Expression value, TypeID toOther) {
-		return null;
-	}
-
-	default Expression castImplicitFrom(CodePosition position, Expression value) {
-		return null;
-	}
-
-	default Expression castExplicitFrom(CodePosition position, Expression value) {
-		return null;
+	default Optional<Expression> castImplicitFrom(CodePosition position, Expression value) {
+		return Optional.empty();
 	}
 
 	default Optional<OptionalTypeID> asOptional() {

@@ -61,12 +61,15 @@ public class CastedEval {
 
 		Optional<Expression> implicitCast = resolvedValueType.tryCastImplicit(type, compiler, position, value, optional);
 		if (implicitCast.isPresent())
-			return new CastedExpression(CastedExpression.Level.IMPLICIT, implicitCast.get());
+			return CastedExpression.implicit(implicitCast.get());
 
-		if (value.type.canCastImplicitTo(type))
-			return new CastedExpression(CastedExpression.Level.IMPLICIT, value.type.castImplicitTo(position, value, type));
-		if (type.canCastImplicitFrom(value.type))
-			return CastedExpression.implicit(type.castImplicitFrom(position, value));
+		Optional<Expression> castedImplicitlyTo = value.type.castImplicitTo(position, value, type);
+		if (castedImplicitlyTo.isPresent())
+			return CastedExpression.implicit(castedImplicitlyTo.get());
+
+		Optional<Expression> castedImplicitlyFrom = type.castImplicitFrom(position, value);
+		if (castedImplicitlyFrom.isPresent())
+			return CastedExpression.implicit(castedImplicitlyFrom.get());
 
 		if (value.type == BasicTypeID.NULL && type.isOptional())
 			return CastedExpression.exact(new NullExpression(position, type));
