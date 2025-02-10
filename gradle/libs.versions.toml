@@ -1,0 +1,12 @@
+[versions]
+asm = "9.3"
+jupiter = "5.9.0"
+
+[libraries]
+asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
+asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
+asm-debug = { group = "org.ow2.asm", name = "asm-debug-all", version = "6.0_BETA" }
+jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "jupiter" }
+jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jupiter" }
+jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
+junit-platform-engine = { group = "org.junit.platform", name = "junit-platform-engine", version = "1.9.0" }

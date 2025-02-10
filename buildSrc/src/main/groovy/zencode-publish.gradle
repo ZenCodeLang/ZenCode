@@ -1,0 +1,16 @@
+plugins {
+	id 'maven-publish'
+}
+
+publishing {
+	publications {
+		register('mavenJava', MavenPublication) {
+			from components.java
+		}
+	}
+	repositories {
+		maven {
+			url System.getenv('local_maven_url')
+		}
+	}
+}

@@ -1,19 +1,12 @@
 plugins {
-    id 'java'
-}
-
-group 'org.example'
-version 'unspecified'
-
-repositories {
-    mavenCentral()
+	id 'zencode-common'
 }
 
 dependencies {
 	api project(':Shared')
-	implementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-	implementation 'org.junit.platform:junit-platform-engine:1.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+	implementation libs.jupiter.api
+	implementation libs.junit.platform.engine
+    testRuntimeOnly libs.jupiter.engine
 }
 
 test {
