@@ -7,7 +7,7 @@ if (!hasProperty('mainClass')) {
 }
 
 configurations {
-	register("stdLibs") {
+	stdLibs {
 		canBeResolved = true
 	}
 }
