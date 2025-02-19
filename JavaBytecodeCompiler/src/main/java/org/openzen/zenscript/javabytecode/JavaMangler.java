@@ -53,7 +53,7 @@ public final class JavaMangler {
 	}
 
 	public String mangleScriptBodyMethod(final int methodsAmount) {
-		return "script-body" + (methodsAmount == 0? "" : ('-' + Integer.toString(methodsAmount)));
+		return "$body" + (methodsAmount == 0? "" : ('$' + Integer.toString(methodsAmount)));
 	}
 
 	public String mangleSourceFileName(final HighLevelDefinition definition) {

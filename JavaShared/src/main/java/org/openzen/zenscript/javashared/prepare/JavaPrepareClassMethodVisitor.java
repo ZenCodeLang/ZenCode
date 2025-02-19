@@ -261,7 +261,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					method = new JavaCompilingMethod(new JavaNativeMethod(
 							class_.compiled,
 							getKind(member),
-							"implicit-constructor",
+							"$init$implicit",
 							true,
 							context.getMethodDescriptor(header),
 							(JavaModifiers.getJavaModifiers(member.getEffectiveModifiers())),
