@@ -2,11 +2,24 @@ plugins {
 	id 'zencode-common'
 }
 
+configurations {
+	stdLibs {
+		canBeResolved = true
+	}
+}
+
 dependencies {
 	api project(':Shared')
 	implementation libs.jupiter.api
 	implementation libs.junit.platform.engine
     testRuntimeOnly libs.jupiter.engine
+
+	stdLibs project(path: ":StdLibs", configuration: "zip")
+}
+
+processTestResources {
+	dependsOn(configurations.stdLibs)
+	from(configurations.stdLibs)
 }
 
 test {
