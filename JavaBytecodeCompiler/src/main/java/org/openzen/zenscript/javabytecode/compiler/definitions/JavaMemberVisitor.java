@@ -432,6 +432,16 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		clinitStatementVisitor.end();
 	}
 
+	public static JavaCompilingMethod compileBridgeableMethodNoSideEffect(final JavaNativeMethod overriddenMethodInfo, final String implementationDescriptor) {
+		// TODO("Restore signatures")
+		if (!Objects.equals(overriddenMethodInfo.descriptor, implementationDescriptor)) {
+			final JavaNativeMethod actualMethod = overriddenMethodInfo.createBridge(implementationDescriptor);
+			return new JavaCompilingMethod(actualMethod, null);
+		} else {
+			return new JavaCompilingMethod(overriddenMethodInfo, null);
+		}
+	}
+
 	public static JavaCompilingMethod compileBridgeableMethod(
 			JavaBytecodeContext context,
 			CodePosition position,

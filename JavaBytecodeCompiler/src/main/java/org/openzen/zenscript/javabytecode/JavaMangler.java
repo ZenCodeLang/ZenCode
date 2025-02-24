@@ -116,6 +116,41 @@ public final class JavaMangler {
 		return builder.toString();
 	}
 
+	public String mangleLambdaMethod(final String parentMethodName, final String interfaceName) {
+		final class LambdaId {
+			final String interfaceName;
+			final String method;
+
+			LambdaId(final String interfaceName, final String method) {
+				this.interfaceName = interfaceName;
+				this.method = method;
+			}
+
+			@Override
+			public boolean equals(final Object o) {
+				return this == o || o instanceof LambdaId && this.interfaceName.equals(((LambdaId) o).interfaceName) && this.method.equals(((LambdaId) o).method);
+			}
+
+			@Override
+			public int hashCode() {
+				return 17 * (this.interfaceName.hashCode() + 31 * this.method.hashCode());
+			}
+		}
+
+		final String sanitizedMethodName;
+		if (parentMethodName == null) {
+			sanitizedMethodName = "$null";
+		} else if ("<init>".equals(parentMethodName) || "<clinit>".equals(parentMethodName)) {
+			sanitizedMethodName = "$_" + parentMethodName.substring(1, parentMethodName.length() - 1) + '_';
+		} else {
+			sanitizedMethodName = parentMethodName;
+		}
+		final String interfaceTarget = interfaceName.replace('/', '_').replace('.', '_');
+		final LambdaId id = new LambdaId(interfaceName, sanitizedMethodName);
+
+		return "$lambda$" + sanitizedMethodName + '$' + interfaceTarget  + '$' + this.mangleCounters.get(id);
+	}
+
 	public String mangleGeneratedLambdaName(final String interfaceName) {
 		final class LambdaId {
 			final String target;

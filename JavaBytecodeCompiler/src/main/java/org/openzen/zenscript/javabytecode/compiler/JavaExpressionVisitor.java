@@ -490,95 +490,113 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		final JavaNativeMethod methodInfo;
-		final String className = this.javaMangler.mangleGeneratedLambdaName(interfaces[0]);
 		{
 			final JavaNativeMethod m = context.getFunctionalInterface(expression.original == null ? expression.type : new FunctionTypeID(expression.original));
 			methodInfo = m.withModifiers(m.modifiers & ~JavaModifiers.ABSTRACT);
 		}
-		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		JavaClass lambdaClass = JavaClass.fromInternalName(className, JavaClass.Kind.CLASS);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
 
-		JavaCompilingMethod actualCompiling = JavaMemberVisitor.compileBridgeableMethod(
-				context,
-				expression.position,
-				lambdaCW,
-				lambdaClass,
-				methodInfo,
-				expression.header,
-				null
-		);
-		javaWriter.newObject(className);
-		javaWriter.dup();
+		final JavaClass thisClass = javaWriter.method.class_;
+		final String lambdaName = this.javaMangler.mangleLambdaMethod(javaWriter.method.compiled.name, interfaces[0]);
+		final LambdaClosureInfo closureInfo = LambdaClosureInfo.from(context, expression.closure, thisClass);
+		final String lambdaDescriptor = calcFunctionDescriptor(thisClass, closureInfo, expression.header);
+		final JavaNativeMethod lambdaMethod = JavaNativeMethod.getStatic(thisClass, lambdaName, lambdaDescriptor, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC);
+		final JavaCompilingMethod lambdaMethodCompiling = JavaMemberVisitor.compileBridgeableMethodNoSideEffect(lambdaMethod, lambdaDescriptor); // TODO("Restore signatures")
+		final JavaWriter lambdaWriter = new JavaWriter(context.logger, expression.position, javaWriter.clazzVisitor, lambdaMethodCompiling, null);
+		final CapturedExpressionVisitor<Void> lambdaCapturesVisitor = new JavaCapturedExpressionVisitorLocalRedirectionVisitor(lambdaWriter, expression, closureInfo);
+		final JavaCompiledModule lambdaModule = new ShiftingJavaCompiledModule(module, closureInfo, context);
+		final JavaExpressionVisitor lambdaExpressionVisitor = new JavaExpressionVisitor(context, lambdaModule, lambdaWriter, javaMangler, lambdaCapturesVisitor);
+		final JavaStatementVisitor lambdaStatementVisitor = new JavaStatementVisitor(context, lambdaExpressionVisitor, javaMangler);
 
-		// ToDo: Is this fine or do we need the actual signature here?
-		//   To check: write a test where the ctor desc and signature would differ and make sure the program compiles/executes
-		final String constructorDescriptorAndSignature = calcFunctionDescriptor(expression.closure);
-		JavaNativeMethod constructor = JavaNativeMethod.getConstructor(lambdaClass, constructorDescriptorAndSignature, Opcodes.ACC_PUBLIC);
-		JavaCompilingMethod constructorCompiling = new JavaCompilingMethod(constructor, constructorDescriptorAndSignature);
-		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, constructorCompiling, null);
-		constructorWriter.start();
-		constructorWriter.loadObject(0);
-		constructorWriter.dup();
-		constructorWriter.invokeSpecial(Object.class, "<init>", "()V");
+		lambdaWriter.start();
+		expression.body.accept(lambdaStatementVisitor);
+		lambdaWriter.ret();
+		lambdaWriter.end();
 
-		int i = 0;
-		for (CapturedExpression capture : expression.closure.captures) {
-			constructorWriter.dup();
-			Type type = context.getType(capture.type);
-			i++;
-			String name = this.javaMangler.mangleCapturedParameter(i, capture instanceof CapturedThisExpression);
-			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, name, type.getDescriptor(), null, null).visitEnd();
-
-			capture.accept(new JavaCapturedExpressionVisitorToPutCapturesOnTheStackBeforeCallingTheCtor(this));
-
-			constructorWriter.load(type, i);
-			constructorWriter.putField(className, name, type.getDescriptor());
+		if (java.lang.reflect.Modifier.isStatic(javaWriter.method.compiled.modifiers) || thisClass.kind == JavaClass.Kind.EXPANSION) {
+			javaWriter.aConstNull();
+		} else {
+			javaWriter.loadObject(0);
 		}
 
-		constructorWriter.pop();
+		if (closureInfo.isDifferentThis()) {
+			for (final CapturedExpression capture : expression.closure.captures) {
+				capture.accept(new JavaCapturedExpressionVisitorLoadIndyCapturesVisitor(this, true));
+			}
+		}
+		for (final CapturedExpression capture : expression.closure.captures) {
+			capture.accept(new JavaCapturedExpressionVisitorLoadIndyCapturesVisitor(this, false));
+		}
 
-		javaWriter.invokeSpecial(className, "<init>", constructorDescriptorAndSignature);
-
-		constructorWriter.ret();
-		constructorWriter.end();
-
-		JavaWriter functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualCompiling, null);
-		functionWriter.clazzVisitor.visitSource(expression.position.getFilename(), null);
-		functionWriter.start();
-
-		JavaExpressionVisitor withCapturedExpressionVisitor = new JavaExpressionVisitor(
-				context,
-				module,
-				functionWriter,
-				javaMangler,
-				new JavaCapturedExpressionVisitorToAccessCapturesInsideTheLambda(
-						context,
-						functionWriter,
-						javaMangler,
-						className,
-						expression
-				)
+		// TODO("Have this in JavaWriter")
+		javaWriter.getVisitor().visitInvokeDynamicInsn(
+				methodInfo.name,
+				calcIndyDescriptor(thisClass, closureInfo, interfaces[0]),
+				new org.objectweb.asm.Handle(
+						Opcodes.H_INVOKESTATIC,
+						Type.getInternalName(org.openzen.zenscript.javart.factory.LambdaFactory.class),
+						"buildLambda",
+						Type.getMethodDescriptor(
+								Type.getType(java.lang.invoke.CallSite.class),
+								Type.getType(java.lang.invoke.MethodHandles.Lookup.class),
+								Type.getType(String.class),
+								Type.getType(java.lang.invoke.MethodType.class),
+								Type.getType(java.lang.invoke.MethodHandle.class),
+								Type.getType(java.lang.invoke.MethodType.class),
+								Type.INT_TYPE,
+								Type.getType(java.lang.invoke.MethodType.class)
+						),
+						false
+				),
+				new org.objectweb.asm.Handle(
+						Opcodes.H_INVOKESTATIC,
+						thisClass.internalName,
+						lambdaName,
+						lambdaDescriptor,
+						false
+				),
+				Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(expression.header)).compiled.descriptor),
+				org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_GENERATE_BRIDGE | (closureInfo.isDifferentThis()? org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_DIFFERENTIATE_RECEIVER : 0),
+				Type.getMethodType(methodInfo.descriptor)
 		);
-		expression.body.accept(new JavaStatementVisitor(context, withCapturedExpressionVisitor, javaMangler));
-
-		functionWriter.ret();
-		functionWriter.end();
-
-		lambdaCW.visitEnd();
-
-		context.register(className, lambdaCW.toByteArray());
 
 		return null;
 	}
 
-	private String calcFunctionDescriptor(LambdaClosure closure) {
-		StringJoiner joiner = new StringJoiner("", "(", ")V");
-		for (CapturedExpression capture : closure.captures) {
-			String descriptor = context.getDescriptor(capture.type);
-			joiner.add(descriptor);
+	private String calcFunctionDescriptor(final JavaClass thisClass, final LambdaClosureInfo closureInfo, final FunctionHeader header) {
+		final StringJoiner joiner = new StringJoiner("");
+		for (final CapturedExpression capture : closureInfo.closure().captures) {
+			if (!(capture instanceof CapturedThisExpression)) {
+				final String descriptor = context.getDescriptor(capture.type);
+				joiner.add(descriptor);
+			}
 		}
-		return joiner.toString();
+
+		final String thisDescriptor = closureInfo.isDifferentThis()? context.getDescriptor(closureInfo.thisType()) : "";
+
+		final StringBuilder builder = new StringBuilder(context.getMethodDescriptor(header));
+		builder.insert(builder.indexOf("(") + 1, 'L' + thisClass.internalName + ';' + thisDescriptor);
+		builder.insert(builder.lastIndexOf(")"), joiner);
+		return builder.toString();
+	}
+
+	private String calcIndyDescriptor(final JavaClass thisClass, final LambdaClosureInfo closureInfo, final String targetInterface) {
+		final StringBuilder builder = new StringBuilder("(L");
+		builder.append(thisClass.internalName).append(';');
+
+		if (closureInfo.isDifferentThis()) {
+			builder.append(context.getDescriptor(closureInfo.thisType()));
+		}
+
+		final StringJoiner joiner = new StringJoiner("");
+		for (final CapturedExpression capture : closureInfo.closure().captures) {
+			if (!(capture instanceof CapturedThisExpression)) {
+				final String descriptor = context.getDescriptor(capture.type);
+				joiner.add(descriptor);
+			}
+		}
+
+		builder.append(joiner).append(")L").append(targetInterface).append(';');
+		return builder.toString();
 	}
 
 	@Override
@@ -1069,6 +1087,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	private void visitFunctionalInterfaceWrapping(JavaFunctionInterfaceCastExpression expression) {
+		// TODO("Move to LambdaFactory")
+		// To do the above, we simply need to be able to "extract" this into a lambda form.
+		// In other words, if we have to convert (OurThing -> Function), as of now:
+		// 1. Generate a lambda method with the signature (ThisClass, ..., OurThing)
+		// 2. Fill the lambda method with simply $capture.invoke(...)
+		// 3. Invoke LambdaFactory passing the current OurThing instance as a capture; ThisClass can be simply always loaded as null as we always ignore it
+		// In the above, ... denotes parameters, **never** captures
 		final FunctionCastWrapperClass wrapper = generateFunctionCastWrapperClass(
 				expression.position,
 				(FunctionTypeID) expression.value.type,
