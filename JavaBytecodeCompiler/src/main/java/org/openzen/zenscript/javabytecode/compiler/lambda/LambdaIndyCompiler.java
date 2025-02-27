@@ -15,9 +15,7 @@ import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaExpressionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.JavaRedirectCapturesCapturedExpressionVisitor;
-import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.JavaLoadCapturesOnIndyCapturedExpressionVisitor;
-import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.JavaLoadThisOnIndyCapturedExpressionVisitor;
+import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.*;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaMemberVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
@@ -87,18 +85,19 @@ public final class LambdaIndyCompiler {
 
 	private void generateLambdaMethod(final JavaCompilingMethod compilingLambdaMethod, final FunctionExpression lambdaExpression, final LambdaClosureInfo closureInfo) {
 		final JavaWriter lambdaWriter = new JavaWriter(this.context.logger, lambdaExpression.position, this.writer.clazzVisitor, compilingLambdaMethod, null);
-		final CapturedExpressionVisitor<Void> lambdaCapturesVisitor = new JavaRedirectCapturesCapturedExpressionVisitor(lambdaWriter, lambdaExpression, closureInfo);
+		final CapturedExpressionVisitor<Void> lambdaCapturesVisitor = new JavaRedirectCapturesCapturedExpressionVisitor(lambdaWriter, lambdaExpression, closureInfo, this.context);
 		final JavaExpressionVisitor lambdaExpressionVisitor = new JavaExpressionVisitor(this.context, this.module, lambdaWriter, this.mangler, lambdaCapturesVisitor);
 		final JavaStatementVisitor lambdaStatementVisitor = new JavaStatementVisitor(this.context, lambdaExpressionVisitor, this.mangler);
 
-		this.generateLambdaMethodBody(compilingLambdaMethod, lambdaWriter, lambdaStatementVisitor, lambdaExpression);
+		this.generateLambdaMethodBody(compilingLambdaMethod, lambdaWriter, lambdaStatementVisitor, lambdaExpression, closureInfo);
 	}
 
 	private void generateLambdaMethodBody(
 			final JavaCompilingMethod method,
 			final JavaWriter writer,
 			final JavaStatementVisitor statementVisitor,
-			final FunctionExpression lambdaExpression
+			final FunctionExpression lambdaExpression,
+			final LambdaClosureInfo closureInfo
 	) {
 		final Label begin = new Label();
 		final Label end = new Label();
@@ -110,7 +109,7 @@ public final class LambdaIndyCompiler {
 		writer.ret();
 		writer.label(end);
 
-		this.loadLambdaVariables(writer, method, lambdaExpression, begin, end);
+		this.loadLambdaVariables(writer, method, lambdaExpression, closureInfo, begin, end);
 
 		writer.end();
 	}
@@ -119,9 +118,13 @@ public final class LambdaIndyCompiler {
 			final JavaWriter writer,
 			final JavaCompilingMethod method,
 			final FunctionExpression lambdaExpression,
+			final LambdaClosureInfo closureInfo,
 			final Label begin,
 			final Label end
 	) {
+		final JavaCaptureDataFinderCapturedExpressionVisitor captureDataFinder = new JavaCaptureDataFinderCapturedExpressionVisitor(lambdaExpression, closureInfo, this.context);
+		final LambdaCaptureData[] captures = lambdaExpression.closure.captures.stream().map(it -> it.accept(captureDataFinder)).toArray(LambdaCaptureData[]::new);
+
 		final Type[] methodArguments = Type.getArgumentTypes(method.compiled.descriptor);
 		final FunctionParameter[] lambdaParameters = lambdaExpression.header.parameters;
 
@@ -135,8 +138,15 @@ public final class LambdaIndyCompiler {
 				final String lambdaName = lambdaParameters[i - 1].name;
 				name = lambdaName == null || lambdaName.isEmpty()? "$param" + (i - 1) : lambdaName;
 			} else {
-				// TODO("Maybe find the actual name of the variable among the captures?")
-				name = "$capture$" + (i - p);
+				LambdaCaptureData data = null;
+				for (final LambdaCaptureData d : captures) {
+					if (d.position() == i) {
+						data = d;
+						break;
+					}
+				}
+
+				name = "$capture$" + (data == null || data.name().isEmpty()? (i - p) : data.name());
 			}
 
 			final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, localIndex, begin, name, end);
