@@ -1,11 +1,11 @@
-package org.openzen.zenscript.javabytecode.compiler.capturing;
+package org.openzen.zenscript.javabytecode.compiler.lambda.capturing;
 
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.captured.*;
 
-public class JavaLoadCapturesOnIndyCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
+public final class JavaLoadCapturesOnIndyCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
 	private final ExpressionVisitor<Void> visitor;
 
 	public JavaLoadCapturesOnIndyCapturedExpressionVisitor(final ExpressionVisitor<Void> visitor) {

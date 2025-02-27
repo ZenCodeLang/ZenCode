@@ -1,4 +1,4 @@
-package org.openzen.zenscript.javabytecode.compiler.capturing;
+package org.openzen.zenscript.javabytecode.compiler.lambda.capturing;
 
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -8,11 +8,11 @@ import org.openzen.zenscript.codemodel.expression.captured.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javabytecode.compiler.LambdaClosureInfo;
+import org.openzen.zenscript.javabytecode.compiler.lambda.LambdaClosureInfo;
 
 import java.util.function.Predicate;
 
-public class JavaCapturedExpressionVisitorLocalRedirectionVisitor implements CapturedExpressionVisitor<Void> {
+public final class JavaRedirectCapturesCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
 	private static final class MemberData {
 		private final int position;
 		private final Type type;
@@ -31,7 +31,7 @@ public class JavaCapturedExpressionVisitorLocalRedirectionVisitor implements Cap
 	private final JavaWriter javaWriter;
 	private final LambdaClosureInfo closureInfo;
 
-	public JavaCapturedExpressionVisitorLocalRedirectionVisitor(final JavaWriter javaWriter, final FunctionExpression functionExpression, final LambdaClosureInfo closureInfo) {
+	public JavaRedirectCapturesCapturedExpressionVisitor(final JavaWriter javaWriter, final FunctionExpression functionExpression, final LambdaClosureInfo closureInfo) {
 		this.javaWriter = javaWriter;
 		this.functionExpression = functionExpression;
 		this.closureInfo = closureInfo;

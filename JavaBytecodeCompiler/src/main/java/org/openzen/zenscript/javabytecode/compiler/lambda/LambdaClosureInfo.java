@@ -1,10 +1,8 @@
-package org.openzen.zenscript.javabytecode.compiler;
+package org.openzen.zenscript.javabytecode.compiler.lambda;
 
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;

@@ -1,4 +1,4 @@
-package org.openzen.zenscript.javabytecode.compiler.capturing;
+package org.openzen.zenscript.javabytecode.compiler.lambda.capturing;
 
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;

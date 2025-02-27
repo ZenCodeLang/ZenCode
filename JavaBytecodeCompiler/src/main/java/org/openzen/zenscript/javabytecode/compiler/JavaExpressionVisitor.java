@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpressionVisitor;
-import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableExpression;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
@@ -23,8 +22,8 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
-import org.openzen.zenscript.javabytecode.compiler.capturing.*;
-import org.openzen.zenscript.javabytecode.compiler.definitions.JavaMemberVisitor;
+import org.openzen.zenscript.javabytecode.compiler.lambda.LambdaIndyCompiler;
+import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.JavaInvalidCapturedExpressionVisitor;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
@@ -474,133 +473,25 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             return null;
         }*/
 
-		final String[] interfaces;
-		FunctionHeader header = expression.original == null ? expression.header : expression.original;
-
+		final String interfaceName;
 		if (expression.type instanceof JavaFunctionalInterfaceTypeID) {
 			//Let's implement the functional Interface instead
 			JavaFunctionalInterfaceTypeID type = (JavaFunctionalInterfaceTypeID) expression.type;
-			final Method functionalInterfaceMethod = type.functionalInterfaceMethod;
-
 			//Should be the same, should it not?
-			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
+			interfaceName = Type.getInternalName(type.functionalInterfaceMethod.getDeclaringClass());
 		} else {
 			//Normal way, no casting to functional interface
-			interfaces = new String[]{context.getInternalName(new FunctionTypeID(header))};
+			FunctionHeader header = expression.original == null ? expression.header : expression.original;
+			interfaceName = context.getInternalName(new FunctionTypeID(header));
 		}
 
-		final JavaNativeMethod methodInfo;
-		{
-			final JavaNativeMethod m = context.getFunctionalInterface(expression.original == null ? expression.type : new FunctionTypeID(expression.original));
-			methodInfo = m.withModifiers(m.modifiers & ~JavaModifiers.ABSTRACT);
-		}
+		final JavaNativeMethod functionalMethod = context.getFunctionalInterface(expression.original == null ? expression.type : new FunctionTypeID(expression.original));
+		final JavaNativeMethod methodInfo = functionalMethod.withModifiers(functionalMethod.modifiers & ~JavaModifiers.ABSTRACT);
 
-		final JavaClass thisClass = javaWriter.method.class_;
-		final String lambdaName = this.javaMangler.mangleLambdaMethod(javaWriter.method.compiled.name, interfaces[0]);
-		final LambdaClosureInfo closureInfo = LambdaClosureInfo.from(context, expression.closure, thisClass);
-		final String lambdaDescriptor = calcFunctionDescriptor(closureInfo, expression.header);
-		final JavaNativeMethod lambdaMethod = JavaNativeMethod.getStatic(thisClass, lambdaName, lambdaDescriptor, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC);
-		final JavaCompilingMethod lambdaMethodCompiling = JavaMemberVisitor.compileBridgeableMethodNoSideEffect(lambdaMethod, lambdaDescriptor); // TODO("Restore signatures")
-		final JavaWriter lambdaWriter = new JavaWriter(context.logger, expression.position, javaWriter.clazzVisitor, lambdaMethodCompiling, null);
-		final CapturedExpressionVisitor<Void> lambdaCapturesVisitor = new JavaCapturedExpressionVisitorLocalRedirectionVisitor(lambdaWriter, expression, closureInfo);
-		final JavaExpressionVisitor lambdaExpressionVisitor = new JavaExpressionVisitor(context, module, lambdaWriter, javaMangler, lambdaCapturesVisitor);
-		final JavaStatementVisitor lambdaStatementVisitor = new JavaStatementVisitor(context, lambdaExpressionVisitor, javaMangler);
-
-		lambdaWriter.start();
-		expression.body.accept(lambdaStatementVisitor);
-		lambdaWriter.ret();
-		lambdaWriter.end();
-
-		final JavaLoadThisOnIndyCapturedExpressionVisitor thisVisitor = new JavaLoadThisOnIndyCapturedExpressionVisitor(this);
-		final JavaLoadCapturesOnIndyCapturedExpressionVisitor othersVisitor = new JavaLoadCapturesOnIndyCapturedExpressionVisitor(this);
-
-		boolean hasLoadedThis = false;
-		for (final CapturedExpression capture : expression.closure.captures) {
-			// Note: we want this to be |= to ensure NO short-circuiting behavior
-			hasLoadedThis |= capture.accept(thisVisitor);
-		}
-
-		// If no this was loaded, then we don't care about its value; just load null
-		if (!hasLoadedThis) {
-			javaWriter.aConstNull();
-		}
-
-		for (final CapturedExpression capture : expression.closure.captures) {
-			capture.accept(othersVisitor);
-		}
-
-		// TODO("Have this in JavaWriter")
-		javaWriter.getVisitor().visitInvokeDynamicInsn(
-				methodInfo.name,
-				calcIndyDescriptor(closureInfo, interfaces[0]),
-				new org.objectweb.asm.Handle(
-						Opcodes.H_INVOKESTATIC,
-						Type.getInternalName(org.openzen.zenscript.javart.factory.LambdaFactory.class),
-						"buildLambda",
-						Type.getMethodDescriptor(
-								Type.getType(java.lang.invoke.CallSite.class),
-								Type.getType(java.lang.invoke.MethodHandles.Lookup.class),
-								Type.getType(String.class),
-								Type.getType(java.lang.invoke.MethodType.class),
-								Type.getType(java.lang.invoke.MethodHandle.class),
-								Type.getType(java.lang.invoke.MethodType.class),
-								Type.INT_TYPE,
-								Type.getType(java.lang.invoke.MethodType.class)
-						),
-						false
-				),
-				new org.objectweb.asm.Handle(
-						Opcodes.H_INVOKESTATIC,
-						thisClass.internalName,
-						lambdaName,
-						lambdaDescriptor,
-						false
-				),
-				Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(expression.header)).compiled.descriptor),
-				org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_GENERATE_BRIDGE,
-				Type.getMethodType(methodInfo.descriptor)
-		);
+		final LambdaIndyCompiler lambdaCompiler = LambdaIndyCompiler.of(this.javaWriter, this.javaMangler, this.context, this.module, this);
+		lambdaCompiler.compileFunctionExpressionViaIndy(expression, interfaceName, methodInfo);
 
 		return null;
-	}
-
-	private String calcFunctionDescriptor(final LambdaClosureInfo closureInfo, final FunctionHeader header) {
-		final StringJoiner joiner = new StringJoiner("");
-		for (final CapturedExpression capture : closureInfo.closure().captures) {
-			if (!(capture instanceof CapturedThisExpression)) {
-				final String descriptor = context.getDescriptor(capture.type);
-				joiner.add(descriptor);
-			}
-		}
-
-		// TODO("Remove null check: the method should always return non-null")
-		final String thisType = closureInfo.thisType() == null? "Ljava/lang/Void;" : context.getDescriptor(closureInfo.thisType());
-		final StringBuilder builder = new StringBuilder(context.getMethodDescriptor(header));
-		builder.insert(builder.indexOf("(") + 1, thisType);
-		builder.insert(builder.lastIndexOf(")"), joiner);
-		return builder.toString();
-	}
-
-	private String calcIndyDescriptor(final LambdaClosureInfo closureInfo, final String targetInterface) {
-		final StringBuilder builder = new StringBuilder("(");
-
-		// TODO("Remove null check as this method should never return null")
-		if (closureInfo.thisType() == null) {
-			builder.append("Ljava/lang/Void;");
-		} else {
-			builder.append(context.getDescriptor(closureInfo.thisType()));
-		}
-
-		final StringJoiner joiner = new StringJoiner("");
-		for (final CapturedExpression capture : closureInfo.closure().captures) {
-			if (!(capture instanceof CapturedThisExpression)) {
-				final String descriptor = context.getDescriptor(capture.type);
-				joiner.add(descriptor);
-			}
-		}
-
-		builder.append(joiner).append(")L").append(targetInterface).append(';');
-		return builder.toString();
 	}
 
 	@Override
