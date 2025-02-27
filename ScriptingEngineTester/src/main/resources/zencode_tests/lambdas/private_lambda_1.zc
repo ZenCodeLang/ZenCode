@@ -1,0 +1,17 @@
+#output: 99 bottles of beer on the wall!
+
+public class Foo {
+  foo(): void {
+    lambda(() => bar());
+  }
+
+  private bar(): void {
+    println("99 bottles of beer on the wall!");
+  }
+
+  private lambda(block: function() as void): void {
+    block();
+  }
+}
+
+(new Foo()).foo();
