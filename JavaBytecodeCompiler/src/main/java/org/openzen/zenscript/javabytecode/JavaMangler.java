@@ -145,10 +145,12 @@ public final class JavaMangler {
 		} else {
 			sanitizedMethodName = parentMethodName;
 		}
-		final String interfaceTarget = interfaceName.replace('/', '_').replace('.', '_');
-		final LambdaId id = new LambdaId(interfaceName, sanitizedMethodName);
+		final String interfaceTarget = interfaceName.replace('/', '.');
+		final int lastDot = interfaceTarget.lastIndexOf('.');
+		final String canonicalInterfaceTarget = lastDot == -1 ? interfaceTarget : interfaceTarget.substring(lastDot + 1);
+		final LambdaId id = new LambdaId(canonicalInterfaceTarget, sanitizedMethodName);
 
-		return "$lambda$" + sanitizedMethodName + '$' + interfaceTarget  + '$' + this.mangleCounters.get(id);
+		return "$lambda$" + sanitizedMethodName + '$' + canonicalInterfaceTarget + '$' + this.mangleCounters.get(id);
 	}
 
 	public String mangleGeneratedLambdaName(final String interfaceName) {
