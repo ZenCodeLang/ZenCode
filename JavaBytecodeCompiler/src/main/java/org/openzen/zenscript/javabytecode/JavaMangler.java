@@ -153,42 +153,6 @@ public final class JavaMangler {
 		return "$lambda$" + sanitizedMethodName + '$' + canonicalInterfaceTarget + '$' + this.mangleCounters.get(id);
 	}
 
-	public String mangleGeneratedLambdaName(final String interfaceName) {
-		final class LambdaId {
-			final String target;
-
-			LambdaId(final String target) {
-				this.target = target;
-			}
-
-			@Override
-			public boolean equals(final Object o) {
-				return this == o || o instanceof LambdaId && this.target.equals(((LambdaId) o).target);
-			}
-
-			@Override
-			public int hashCode() {
-				return 17 * this.target.hashCode();
-			}
-		}
-
-		final String interfaceTarget = interfaceName.replace('/', '_').replace('.', '_');
-		// TODO("Rework package structure")
-		return "zsynthetic/$Lambda$" + interfaceTarget + '$' + this.mangleCounters.get(new LambdaId(interfaceTarget));
-	}
-
-	public String mangleGeneratedLambdaName(final FunctionHeader header) {
-		return this.mangleGeneratedLambdaName("$Generated" + EXP_TAR_MANGLE_FUNCTION_ID + this.encodeLengthNameFormat(this.mangleFunctionHeader(header)));
-	}
-
-	public String mangleCapturedParameter(final int parameterId, final boolean isThis) {
-		if (isThis) {
-			return "$this";
-		} else {
-			return "$" + parameterId;
-		}
-	}
-
 	private String mangleScriptName(final String rawName) {
 		if (rawName == null) {
 			class GeneratedBlock {}
