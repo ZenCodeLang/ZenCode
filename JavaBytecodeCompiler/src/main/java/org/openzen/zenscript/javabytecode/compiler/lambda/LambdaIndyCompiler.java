@@ -13,10 +13,12 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaExpressionVisitor;
+import org.openzen.zenscript.javabytecode.compiler.JavaIndyHelper;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.*;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaMemberVisitor;
+import org.openzen.zenscript.javart.factory.LambdaFactory;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
@@ -182,40 +184,17 @@ public final class LambdaIndyCompiler {
 			capture.accept(othersVisitor);
 		}
 
-		// TODO("Have this in JavaWriter")
-		this.writer.getVisitor().visitInvokeDynamicInsn(
-				methodInfo.name,
-				this.computeIndyDescriptor(closureInfo, interfaceType),
-				new org.objectweb.asm.Handle(
-						Opcodes.H_INVOKESTATIC,
-						Type.getInternalName(org.openzen.zenscript.javart.factory.LambdaFactory.class),
-						"buildLambda",
-						Type.getMethodDescriptor(
-								Type.getType(java.lang.invoke.CallSite.class),
-								Type.getType(java.lang.invoke.MethodHandles.Lookup.class),
-								Type.getType(String.class),
-								Type.getType(java.lang.invoke.MethodType.class),
-								Type.getType(java.lang.invoke.MethodHandle.class),
-								Type.getType(java.lang.invoke.MethodType.class),
-								Type.INT_TYPE,
-								Type.getType(java.lang.invoke.MethodType.class)
-						),
-						false
-				),
-				new org.objectweb.asm.Handle(
-						Opcodes.H_INVOKESTATIC,
-						owner.internalName,
-						method.compiled.name,
-						method.compiled.descriptor,
-						false
-				),
-				Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(lambdaExpression.header)).compiled.descriptor),
-				org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_GENERATE_BRIDGE,
-				Type.getMethodType(methodInfo.descriptor)
-		);
+		this.writer.invokeDynamic(indy -> indy
+				.callSite(methodInfo.name, this.computeIndyDescriptor(closureInfo, interfaceType))
+				.bootstrapMethod(bsm -> bsm
+						.method(JavaClass.fromJavaClass(LambdaFactory.class), "buildLambda")
+						.arg(method)
+						.arg(Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(lambdaExpression.header)).compiled.descriptor))
+						.arg(LambdaFactory.FLAG_GENERATE_BRIDGE)
+						.arg(Type.getMethodType(methodInfo.descriptor))));
 	}
 
-	private String computeIndyDescriptor(final LambdaClosureInfo closureInfo, final String targetInterface) {
+	private Type computeIndyDescriptor(final LambdaClosureInfo closureInfo, final String targetInterface) {
 		final StringBuilder builder = new StringBuilder("(");
 
 		// TODO("Remove null check as this method should never return null")
@@ -234,7 +213,7 @@ public final class LambdaIndyCompiler {
 		}
 
 		builder.append(joiner).append(")L").append(targetInterface).append(';');
-		return builder.toString();
+		return Type.getType(builder.toString());
 	}
 
 }

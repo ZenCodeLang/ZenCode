@@ -15,13 +15,12 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -1086,7 +1085,7 @@ public class JavaWriter {
 		visitor.visitMethodInsn(INVOKESPECIAL, ownerInternalName, name, descriptor, false);
 	}
 
-	public void invokeSpecial(Class owner, String name, String descriptor) {
+	public void invokeSpecial(Class<?> owner, String name, String descriptor) {
 		invokeSpecial(Type.getInternalName(owner), name, descriptor);
 	}
 
@@ -1110,6 +1109,17 @@ public class JavaWriter {
 			logger.debug("invokeInterface " + method.cls.internalName + '.' + method.name + method.descriptor);
 
 		visitor.visitMethodInsn(INVOKEINTERFACE, method.cls.internalName, method.name, method.descriptor, true);
+	}
+
+	public void invokeDynamic(UnaryOperator<JavaIndyHelper.Builder> indyDataBuilder) {
+		invokeDynamic(indyDataBuilder.apply(JavaIndyHelper.builder()).build());
+	}
+
+	public void invokeDynamic(JavaIndyHelper indyData) {
+		if (debug)
+			logger.debug("invokeDynamic " + indyData);
+
+		indyData.visit(visitor::visitInvokeDynamicInsn);
 	}
 
 	public void newObject(String internalName) {
