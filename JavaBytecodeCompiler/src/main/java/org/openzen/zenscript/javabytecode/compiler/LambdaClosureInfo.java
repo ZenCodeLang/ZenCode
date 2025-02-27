@@ -3,6 +3,8 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedExpression;
 import org.openzen.zenscript.codemodel.expression.captured.CapturedThisExpression;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -10,12 +12,10 @@ import org.openzen.zenscript.javashared.JavaClass;
 public final class LambdaClosureInfo {
 	private final LambdaClosure closure;
 	private final TypeID thisCapture;
-	private final boolean isDifferent;
 
-	private LambdaClosureInfo(final LambdaClosure closure, final TypeID thisCapture, final boolean isDifferent) {
+	private LambdaClosureInfo(final LambdaClosure closure, final TypeID thisCapture) {
 		this.closure = closure;
 		this.thisCapture = thisCapture;
-		this.isDifferent = isDifferent;
 	}
 
 	static LambdaClosureInfo from(final JavaBytecodeContext context, final LambdaClosure closure, final JavaClass thisClass) {
@@ -27,10 +27,17 @@ public final class LambdaClosureInfo {
 			}
 		}
 
-		final TypeID thisType = capturedThis == null? null : capturedThis.type;
-		final boolean isDifferent = capturedThis != null && !thisClass.internalName.equals(context.getInternalName(capturedThis.type));
+		final TypeID thisType = computeCapturedThisType(capturedThis);
+		return new LambdaClosureInfo(closure, thisType);
+	}
 
-		return new LambdaClosureInfo(closure, thisType, isDifferent);
+	private static TypeID computeCapturedThisType(final CapturedThisExpression expression) {
+		if (expression != null) {
+			return expression.type;
+		}
+
+		// TODO("Make this default to void")
+		return null;
 	}
 
 	public LambdaClosure closure() {
@@ -39,9 +46,5 @@ public final class LambdaClosureInfo {
 
 	public TypeID thisType() {
 		return this.thisCapture;
-	}
-
-	public boolean isDifferentThis() {
-		return this.isDifferent;
 	}
 }

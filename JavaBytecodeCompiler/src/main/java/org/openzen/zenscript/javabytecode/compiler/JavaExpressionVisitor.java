@@ -498,13 +498,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final JavaClass thisClass = javaWriter.method.class_;
 		final String lambdaName = this.javaMangler.mangleLambdaMethod(javaWriter.method.compiled.name, interfaces[0]);
 		final LambdaClosureInfo closureInfo = LambdaClosureInfo.from(context, expression.closure, thisClass);
-		final String lambdaDescriptor = calcFunctionDescriptor(thisClass, closureInfo, expression.header);
+		final String lambdaDescriptor = calcFunctionDescriptor(closureInfo, expression.header);
 		final JavaNativeMethod lambdaMethod = JavaNativeMethod.getStatic(thisClass, lambdaName, lambdaDescriptor, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC);
 		final JavaCompilingMethod lambdaMethodCompiling = JavaMemberVisitor.compileBridgeableMethodNoSideEffect(lambdaMethod, lambdaDescriptor); // TODO("Restore signatures")
 		final JavaWriter lambdaWriter = new JavaWriter(context.logger, expression.position, javaWriter.clazzVisitor, lambdaMethodCompiling, null);
 		final CapturedExpressionVisitor<Void> lambdaCapturesVisitor = new JavaCapturedExpressionVisitorLocalRedirectionVisitor(lambdaWriter, expression, closureInfo);
-		final JavaCompiledModule lambdaModule = new ShiftingJavaCompiledModule(module, closureInfo, context);
-		final JavaExpressionVisitor lambdaExpressionVisitor = new JavaExpressionVisitor(context, lambdaModule, lambdaWriter, javaMangler, lambdaCapturesVisitor);
+		final JavaExpressionVisitor lambdaExpressionVisitor = new JavaExpressionVisitor(context, module, lambdaWriter, javaMangler, lambdaCapturesVisitor);
 		final JavaStatementVisitor lambdaStatementVisitor = new JavaStatementVisitor(context, lambdaExpressionVisitor, javaMangler);
 
 		lambdaWriter.start();
@@ -512,25 +511,28 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		lambdaWriter.ret();
 		lambdaWriter.end();
 
-		if (java.lang.reflect.Modifier.isStatic(javaWriter.method.compiled.modifiers) || thisClass.kind == JavaClass.Kind.EXPANSION) {
-			javaWriter.aConstNull();
-		} else {
-			javaWriter.loadObject(0);
+		final JavaLoadThisOnIndyCapturedExpressionVisitor thisVisitor = new JavaLoadThisOnIndyCapturedExpressionVisitor(this);
+		final JavaLoadCapturesOnIndyCapturedExpressionVisitor othersVisitor = new JavaLoadCapturesOnIndyCapturedExpressionVisitor(this);
+
+		boolean hasLoadedThis = false;
+		for (final CapturedExpression capture : expression.closure.captures) {
+			// Note: we want this to be |= to ensure NO short-circuiting behavior
+			hasLoadedThis |= capture.accept(thisVisitor);
 		}
 
-		if (closureInfo.isDifferentThis()) {
-			for (final CapturedExpression capture : expression.closure.captures) {
-				capture.accept(new JavaCapturedExpressionVisitorLoadIndyCapturesVisitor(this, true));
-			}
+		// If no this was loaded, then we don't care about its value; just load null
+		if (!hasLoadedThis) {
+			javaWriter.aConstNull();
 		}
+
 		for (final CapturedExpression capture : expression.closure.captures) {
-			capture.accept(new JavaCapturedExpressionVisitorLoadIndyCapturesVisitor(this, false));
+			capture.accept(othersVisitor);
 		}
 
 		// TODO("Have this in JavaWriter")
 		javaWriter.getVisitor().visitInvokeDynamicInsn(
 				methodInfo.name,
-				calcIndyDescriptor(thisClass, closureInfo, interfaces[0]),
+				calcIndyDescriptor(closureInfo, interfaces[0]),
 				new org.objectweb.asm.Handle(
 						Opcodes.H_INVOKESTATIC,
 						Type.getInternalName(org.openzen.zenscript.javart.factory.LambdaFactory.class),
@@ -555,14 +557,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 						false
 				),
 				Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(expression.header)).compiled.descriptor),
-				org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_GENERATE_BRIDGE | (closureInfo.isDifferentThis()? org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_DIFFERENTIATE_RECEIVER : 0),
+				org.openzen.zenscript.javart.factory.LambdaFactory.FLAG_GENERATE_BRIDGE,
 				Type.getMethodType(methodInfo.descriptor)
 		);
 
 		return null;
 	}
 
-	private String calcFunctionDescriptor(final JavaClass thisClass, final LambdaClosureInfo closureInfo, final FunctionHeader header) {
+	private String calcFunctionDescriptor(final LambdaClosureInfo closureInfo, final FunctionHeader header) {
 		final StringJoiner joiner = new StringJoiner("");
 		for (final CapturedExpression capture : closureInfo.closure().captures) {
 			if (!(capture instanceof CapturedThisExpression)) {
@@ -571,19 +573,21 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			}
 		}
 
-		final String thisDescriptor = closureInfo.isDifferentThis()? context.getDescriptor(closureInfo.thisType()) : "";
-
+		// TODO("Remove null check: the method should always return non-null")
+		final String thisType = closureInfo.thisType() == null? "Ljava/lang/Void;" : context.getDescriptor(closureInfo.thisType());
 		final StringBuilder builder = new StringBuilder(context.getMethodDescriptor(header));
-		builder.insert(builder.indexOf("(") + 1, 'L' + thisClass.internalName + ';' + thisDescriptor);
+		builder.insert(builder.indexOf("(") + 1, thisType);
 		builder.insert(builder.lastIndexOf(")"), joiner);
 		return builder.toString();
 	}
 
-	private String calcIndyDescriptor(final JavaClass thisClass, final LambdaClosureInfo closureInfo, final String targetInterface) {
-		final StringBuilder builder = new StringBuilder("(L");
-		builder.append(thisClass.internalName).append(';');
+	private String calcIndyDescriptor(final LambdaClosureInfo closureInfo, final String targetInterface) {
+		final StringBuilder builder = new StringBuilder("(");
 
-		if (closureInfo.isDifferentThis()) {
+		// TODO("Remove null check as this method should never return null")
+		if (closureInfo.thisType() == null) {
+			builder.append("Ljava/lang/Void;");
+		} else {
 			builder.append(context.getDescriptor(closureInfo.thisType()));
 		}
 

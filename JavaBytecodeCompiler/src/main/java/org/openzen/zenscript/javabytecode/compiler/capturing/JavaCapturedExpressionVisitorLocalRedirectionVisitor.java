@@ -39,9 +39,9 @@ public class JavaCapturedExpressionVisitorLocalRedirectionVisitor implements Cap
 
 	@Override
 	public Void visitCapturedThis(final CapturedThisExpression expression) {
-		return this.loadByMemberData(
-				this.closureInfo.isDifferentThis()? new MemberData(1, this.getTypeFrom(this.closureInfo.thisType())) : new MemberData(0, Type.getType(Object.class))
-		);
+		// TODO("Remove null-check as this method should never return null")
+		final Type type = this.closureInfo.thisType() == null? Type.getType(Void.class) : this.getTypeFrom(this.closureInfo.thisType());
+		return this.loadByMemberData(new MemberData(0, type));
 	}
 
 	@Override
@@ -109,11 +109,6 @@ public class JavaCapturedExpressionVisitorLocalRedirectionVisitor implements Cap
 
 	private int findFirstValidCaptureIndex(final FunctionExpression expression) {
 		int h = 1;
-
-		if (this.closureInfo.isDifferentThis()) {
-			h += this.getTypeFrom(this.closureInfo.thisType()).getSize();
-		}
-
 		for (final FunctionParameter parameter : expression.header.parameters) {
 			h += this.getTypeFrom(parameter.type).getSize();
 		}
@@ -142,6 +137,6 @@ public class JavaCapturedExpressionVisitorLocalRedirectionVisitor implements Cap
 
 		// We don't care about the actual class contained in the type here, we only care that Java treats it as an
 		// object, so we simply grab a random Java class
-		return Type.getType(Object.class);
+		return Type.getType(Void.class);
 	}
 }
