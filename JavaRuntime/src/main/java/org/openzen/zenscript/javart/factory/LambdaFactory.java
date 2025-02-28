@@ -13,6 +13,7 @@ import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BinaryOperator;
 
 public final class LambdaFactory {
 	private static final class LambdaClassLoader extends ClassLoader {
@@ -63,6 +64,291 @@ public final class LambdaFactory {
 
 		boolean generateBridge() {
 			return this.generateBridge;
+		}
+	}
+
+	private static final class LambdaTypeConverters {
+		@FunctionalInterface
+		interface Operation {
+			void run(final MethodVisitor visitor, final Type fromType, final Type toType);
+		}
+
+		private static final class TypedOperation {
+			private final int fromSort;
+			private final int toSort;
+			private final Operation operation;
+
+			TypedOperation(final int fromSort, final int toSort, final Operation operation) {
+				this.fromSort = fromSort;
+				this.toSort = toSort;
+				this.operation = operation;
+			}
+
+			int from() {
+				return this.fromSort;
+			}
+
+			int to() {
+				return this.toSort;
+			}
+
+			Operation op() {
+				return this.operation;
+			}
+		}
+
+		private static final Operation[][] OPERATIONS = build(
+				conv(Type.VOID, Type.VOID, nop()),
+				conv(Type.VOID, Type.BOOLEAN, load(Opcodes.ICONST_0)),
+				conv(Type.VOID, Type.CHAR, load(Opcodes.ICONST_0)),
+				conv(Type.VOID, Type.BYTE, load(Opcodes.ICONST_0)),
+				conv(Type.VOID, Type.SHORT, load(Opcodes.ICONST_0)),
+				conv(Type.VOID, Type.INT, load(Opcodes.ICONST_0)),
+				conv(Type.VOID, Type.FLOAT, load(Opcodes.FCONST_0)),
+				conv(Type.VOID, Type.LONG, load(Opcodes.LCONST_0)),
+				conv(Type.VOID, Type.DOUBLE, load(Opcodes.DCONST_0)),
+				conv(Type.VOID, Type.ARRAY, load(Opcodes.ACONST_NULL)),
+				conv(Type.VOID, Type.OBJECT, load(Opcodes.ACONST_NULL)),
+				conv(Type.VOID, Type.METHOD, nonsense()),
+
+				conv(Type.BOOLEAN, Type.VOID, pop()),
+				conv(Type.BOOLEAN, Type.BOOLEAN, nop()),
+				conv(Type.BOOLEAN, Type.CHAR, nop()),
+				conv(Type.BOOLEAN, Type.BYTE, nop()),
+				conv(Type.BOOLEAN, Type.SHORT, nop()),
+				conv(Type.BOOLEAN, Type.INT, nop()),
+				conv(Type.BOOLEAN, Type.FLOAT, widen(Opcodes.I2F)),
+				conv(Type.BOOLEAN, Type.LONG, widen(Opcodes.I2L)),
+				conv(Type.BOOLEAN, Type.DOUBLE, widen(Opcodes.I2D)),
+				conv(Type.BOOLEAN, Type.ARRAY, nonsense()),
+				conv(Type.BOOLEAN, Type.OBJECT, all(box(Boolean.class, "valueOf"), cast(toType()))),
+				conv(Type.BOOLEAN, Type.METHOD, nonsense()),
+
+				conv(Type.CHAR, Type.VOID, pop()),
+				conv(Type.CHAR, Type.BOOLEAN, all(load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.CHAR, Type.CHAR, nop()),
+				conv(Type.CHAR, Type.BYTE, narrow(Opcodes.I2B)),
+				conv(Type.CHAR, Type.SHORT, nop()),
+				conv(Type.CHAR, Type.INT, nop()),
+				conv(Type.CHAR, Type.FLOAT, widen(Opcodes.I2F)),
+				conv(Type.CHAR, Type.LONG, widen(Opcodes.I2L)),
+				conv(Type.CHAR, Type.DOUBLE, widen(Opcodes.I2D)),
+				conv(Type.CHAR, Type.ARRAY, nonsense()),
+				conv(Type.CHAR, Type.OBJECT, all(box(Character.class, "valueOf"), cast(toType()))),
+				conv(Type.CHAR, Type.METHOD, nonsense()),
+
+				conv(Type.BYTE, Type.VOID, pop()),
+				conv(Type.BYTE, Type.BOOLEAN, all(load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.BYTE, Type.CHAR, nop()),
+				conv(Type.BYTE, Type.BYTE, nop()),
+				conv(Type.BYTE, Type.SHORT, nop()),
+				conv(Type.BYTE, Type.INT, nop()),
+				conv(Type.BYTE, Type.FLOAT, widen(Opcodes.I2F)),
+				conv(Type.BYTE, Type.LONG, widen(Opcodes.I2L)),
+				conv(Type.BYTE, Type.DOUBLE, widen(Opcodes.I2D)),
+				conv(Type.BYTE, Type.ARRAY, nonsense()),
+				conv(Type.BYTE, Type.OBJECT, all(box(Byte.class, "valueOf"), cast(toType()))),
+				conv(Type.BYTE, Type.METHOD, nonsense()),
+
+				conv(Type.SHORT, Type.VOID, pop()),
+				conv(Type.SHORT, Type.BOOLEAN, all(load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.SHORT, Type.CHAR, nop()),
+				conv(Type.SHORT, Type.BYTE, narrow(Opcodes.I2B)),
+				conv(Type.SHORT, Type.SHORT, nop()),
+				conv(Type.SHORT, Type.INT, nop()),
+				conv(Type.SHORT, Type.FLOAT, widen(Opcodes.I2F)),
+				conv(Type.SHORT, Type.LONG, widen(Opcodes.I2L)),
+				conv(Type.SHORT, Type.DOUBLE, widen(Opcodes.I2D)),
+				conv(Type.SHORT, Type.ARRAY, nonsense()),
+				conv(Type.SHORT, Type.OBJECT, all(box(Short.class, "valueOf"), cast(toType()))),
+				conv(Type.SHORT, Type.METHOD, nonsense()),
+
+				conv(Type.INT, Type.VOID, pop()),
+				conv(Type.INT, Type.BOOLEAN, all(load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.INT, Type.CHAR, narrow(Opcodes.I2C)),
+				conv(Type.INT, Type.BYTE, narrow(Opcodes.I2B)),
+				conv(Type.INT, Type.SHORT, narrow(Opcodes.I2S)),
+				conv(Type.INT, Type.INT, nop()),
+				conv(Type.INT, Type.FLOAT, widen(Opcodes.I2F)),
+				conv(Type.INT, Type.LONG, widen(Opcodes.I2L)),
+				conv(Type.INT, Type.DOUBLE, widen(Opcodes.I2D)),
+				conv(Type.INT, Type.ARRAY, nonsense()),
+				conv(Type.INT, Type.OBJECT, all(box(Integer.class, "valueOf"), cast(toType()))),
+				conv(Type.INT, Type.METHOD, nonsense()),
+
+				conv(Type.FLOAT, Type.VOID, pop()),
+				conv(Type.FLOAT, Type.BOOLEAN, all(narrow(Opcodes.F2I), load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.FLOAT, Type.CHAR, all(narrow(Opcodes.F2I), narrow(Opcodes.I2C))),
+				conv(Type.FLOAT, Type.BYTE, all(narrow(Opcodes.F2I), narrow(Opcodes.I2B))),
+				conv(Type.FLOAT, Type.SHORT, all(narrow(Opcodes.F2I), narrow(Opcodes.I2S))),
+				conv(Type.FLOAT, Type.INT, narrow(Opcodes.F2I)),
+				conv(Type.FLOAT, Type.FLOAT, nop()),
+				conv(Type.FLOAT, Type.LONG, narrow(Opcodes.F2L)),
+				conv(Type.FLOAT, Type.DOUBLE, widen(Opcodes.F2D)),
+				conv(Type.FLOAT, Type.ARRAY, nonsense()),
+				conv(Type.FLOAT, Type.OBJECT, all(box(Float.class, "valueOf"), cast(toType()))),
+				conv(Type.FLOAT, Type.METHOD, nonsense()),
+
+				conv(Type.LONG, Type.VOID, pop2()),
+				conv(Type.LONG, Type.BOOLEAN, all(narrow(Opcodes.L2I), load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.LONG, Type.CHAR, all(narrow(Opcodes.L2I), narrow(Opcodes.I2C))),
+				conv(Type.LONG, Type.BYTE, all(narrow(Opcodes.L2I), narrow(Opcodes.I2B))),
+				conv(Type.LONG, Type.SHORT, all(narrow(Opcodes.L2I), narrow(Opcodes.I2S))),
+				conv(Type.LONG, Type.INT, narrow(Opcodes.L2I)),
+				conv(Type.LONG, Type.FLOAT, widen(Opcodes.L2F)),
+				conv(Type.LONG, Type.LONG, nop()),
+				conv(Type.LONG, Type.DOUBLE, widen(Opcodes.L2D)),
+				conv(Type.LONG, Type.ARRAY, nonsense()),
+				conv(Type.LONG, Type.OBJECT, all(box(Long.class, "valueOf"), cast(toType()))),
+				conv(Type.LONG, Type.METHOD, nonsense()),
+
+				conv(Type.DOUBLE, Type.VOID, pop2()),
+				conv(Type.DOUBLE, Type.BOOLEAN, all(narrow(Opcodes.D2I), load(Opcodes.ICONST_1), opcode(Opcodes.IAND))),
+				conv(Type.DOUBLE, Type.CHAR, all(narrow(Opcodes.D2I), narrow(Opcodes.I2C))),
+				conv(Type.DOUBLE, Type.BYTE, all(narrow(Opcodes.D2I), narrow(Opcodes.I2B))),
+				conv(Type.DOUBLE, Type.SHORT, all(narrow(Opcodes.D2I), narrow(Opcodes.I2S))),
+				conv(Type.DOUBLE, Type.INT, narrow(Opcodes.D2I)),
+				conv(Type.DOUBLE, Type.FLOAT, narrow(Opcodes.D2F)),
+				conv(Type.DOUBLE, Type.LONG, narrow(Opcodes.D2L)),
+				conv(Type.DOUBLE, Type.DOUBLE, nop()),
+				conv(Type.DOUBLE, Type.OBJECT, all(box(Double.class, "valueOf"), cast(toType()))),
+				conv(Type.DOUBLE, Type.METHOD, nonsense()),
+
+				conv(Type.ARRAY, Type.VOID, pop()),
+				conv(Type.ARRAY, Type.BOOLEAN, nonsense()),
+				conv(Type.ARRAY, Type.CHAR, nonsense()),
+				conv(Type.ARRAY, Type.BYTE, nonsense()),
+				conv(Type.ARRAY, Type.SHORT, nonsense()),
+				conv(Type.ARRAY, Type.INT, nonsense()),
+				conv(Type.ARRAY, Type.FLOAT, nonsense()),
+				conv(Type.ARRAY, Type.LONG, nonsense()),
+				conv(Type.ARRAY, Type.DOUBLE, nonsense()),
+				conv(Type.ARRAY, Type.OBJECT, cast(toType())),
+				conv(Type.ARRAY, Type.ARRAY, cast(toType())),
+				conv(Type.ARRAY, Type.METHOD, nonsense()),
+
+				conv(Type.OBJECT, Type.VOID, pop()),
+				conv(Type.OBJECT, Type.BOOLEAN, all(cast(Boolean.class), unbox(Boolean.class, "booleanValue"))),
+				conv(Type.OBJECT, Type.CHAR, all(cast(Character.class), unbox(Character.class, "charValue"))),
+				conv(Type.OBJECT, Type.BYTE, all(cast(Number.class), unbox(Number.class, "byteValue"))),
+				conv(Type.OBJECT, Type.SHORT, all(cast(Number.class), unbox(Number.class, "shortValue"))),
+				conv(Type.OBJECT, Type.INT, all(cast(Number.class), unbox(Number.class, "intValue"))),
+				conv(Type.OBJECT, Type.FLOAT, all(cast(Number.class), unbox(Number.class, "floatValue"))),
+				conv(Type.OBJECT, Type.LONG, all(cast(Number.class), unbox(Number.class, "longValue"))),
+				conv(Type.OBJECT, Type.DOUBLE, all(cast(Number.class), unbox(Number.class, "doubleValue"))),
+				conv(Type.OBJECT, Type.OBJECT, cast(toType())),
+				conv(Type.OBJECT, Type.ARRAY, cast(toType())),
+				conv(Type.OBJECT, Type.METHOD, nonsense()),
+
+				conv(Type.METHOD, Type.VOID, nonsense()),
+				conv(Type.METHOD, Type.BOOLEAN, nonsense()),
+				conv(Type.METHOD, Type.CHAR, nonsense()),
+				conv(Type.METHOD, Type.BYTE, nonsense()),
+				conv(Type.METHOD, Type.SHORT, nonsense()),
+				conv(Type.METHOD, Type.INT, nonsense()),
+				conv(Type.METHOD, Type.FLOAT, nonsense()),
+				conv(Type.METHOD, Type.LONG, nonsense()),
+				conv(Type.METHOD, Type.DOUBLE, nonsense()),
+				conv(Type.METHOD, Type.OBJECT, nonsense()),
+				conv(Type.METHOD, Type.ARRAY, nonsense()),
+				conv(Type.METHOD, Type.METHOD, nop())
+		);
+
+		private LambdaTypeConverters() {}
+
+		static void convert(final Type fromType, final Type toType, final MethodVisitor visitor) {
+			OPERATIONS[fromType.getSort()][toType.getSort()].run(visitor, fromType, toType);
+		}
+
+		private static Operation[][] build(final TypedOperation... ops) {
+			final Operation[][] operations = new Operation[12][12];
+			for (final TypedOperation op : ops) {
+				operations[op.from()][op.to()] = op.op();
+			}
+			return operations;
+		}
+
+		private static TypedOperation conv(final int from, final int to, final Operation operation) {
+			return new TypedOperation(from, to, operation);
+		}
+
+		private static Operation nop() {
+			return (visitor, fromType, toType) -> {};
+		}
+
+		private static Operation widen(final int opcode) {
+			return opcode(opcode);
+		}
+
+		private static Operation narrow(final int opcode) {
+			return opcode(opcode);
+		}
+
+		private static Operation load(final int opcode) {
+			return opcode(opcode);
+		}
+
+		private static Operation pop() {
+			return opcode(Opcodes.POP);
+		}
+
+		private static Operation pop2() {
+			return opcode(Opcodes.POP2);
+		}
+
+		private static Operation opcode(final int opcode) {
+			return (visitor, fromType, toType) -> visitor.visitInsn(opcode);
+		}
+
+		private static Operation nonsense() {
+			return (visitor, fromType, toType) -> {
+				throw new IllegalStateException("Conversion between " + fromType + " to " + toType + " cannot be meaningfully carried out");
+			};
+		}
+
+		private static Operation box(final Class<?> owner, @SuppressWarnings("SameParameterValue") final String name) {
+			return (visitor, fromType, toType) -> visitor.visitMethodInsn(
+					Opcodes.INVOKESTATIC,
+					Type.getInternalName(owner),
+					name,
+					Type.getMethodDescriptor(Type.getType(owner), fromType),
+					owner.isInterface()
+			);
+		}
+
+		private static Operation cast(final Class<?> target) {
+			return cast((a, b) -> Type.getType(target));
+		}
+
+		private static Operation cast(final BinaryOperator<Type> chooser) {
+			return (visitor, fromType, toType) -> visitor.visitTypeInsn(Opcodes.CHECKCAST, chooser.apply(fromType, toType).getInternalName());
+		}
+
+		@SuppressWarnings("unused")
+		private static BinaryOperator<Type> fromType() {
+			return (a, b) -> a;
+		}
+
+		private static BinaryOperator<Type> toType() {
+			return (a, b) -> b;
+		}
+
+		private static Operation unbox(final Class<?> owner, final String name) {
+			return (visitor, fromType, toType) -> visitor.visitMethodInsn(
+					owner.isInterface()? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL,
+					Type.getInternalName(owner),
+					name,
+					Type.getMethodDescriptor(toType),
+					false
+			);
+		}
+
+		private static Operation all(final Operation... ops) {
+			return (visitor, fromType, toType) -> {
+				for (final Operation op : ops) {
+					op.run(visitor, fromType, toType);
+				}
+			};
 		}
 	}
 
@@ -430,15 +716,8 @@ public final class LambdaFactory {
 			final Type bridgeType = Type.getType(bridgeInterfaceSignature.parameterType(i));
 			final Type targetType = Type.getType(interfaceSignature.parameterType(i));
 
-			if (bridgeType.getSort() == targetType.getSort()) {
-				writer.visitVarInsn(bridgeType.getOpcode(Opcodes.ILOAD), localIndex);
-
-				if (bridgeType.getSort() == Type.OBJECT) {
-					writer.visitTypeInsn(Opcodes.CHECKCAST, targetType.getInternalName());
-				}
-			} else {
-				throw new UnsupportedOperationException("Not yet implemented");
-			}
+			writer.visitVarInsn(bridgeType.getOpcode(Opcodes.ILOAD), localIndex);
+			LambdaTypeConverters.convert(bridgeType, targetType, writer);
 
 			localIndex += bridgeType.getSize();
 		}
@@ -448,15 +727,8 @@ public final class LambdaFactory {
 		final Type bridgeReturnType = Type.getType(bridgeInterfaceSignature.returnType());
 		final Type targetReturnType = Type.getType(interfaceSignature.returnType());
 
-		if (bridgeReturnType.getSort() == targetReturnType.getSort()) {
-			if (targetReturnType.getSort() == Type.OBJECT) {
-				writer.visitTypeInsn(Opcodes.CHECKCAST, bridgeReturnType.getInternalName());
-			}
-
-			writer.visitInsn(targetReturnType.getOpcode(Opcodes.IRETURN));
-		} else {
-			throw new UnsupportedOperationException("Not yet implemented");
-		}
+		LambdaTypeConverters.convert(targetReturnType, bridgeReturnType, writer);
+		writer.visitInsn(bridgeReturnType.getOpcode(Opcodes.IRETURN));
 
 		writer.visitMaxs(localIndex, localIndex);
 		writer.visitEnd();
