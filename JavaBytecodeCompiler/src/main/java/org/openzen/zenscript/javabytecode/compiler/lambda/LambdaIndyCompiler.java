@@ -192,7 +192,7 @@ public final class LambdaIndyCompiler {
 
 		this.writer.invokeDynamic(indy -> indy
 				.callSite(methodInfo.name, this.computeIndyDescriptor(closureInfo, interfaceType))
-				.bootstrapMethod(bsm -> bsm
+				.bsm(bsm -> bsm
 						.method(JavaClass.fromJavaClass(LambdaFactory.class), "buildLambda")
 						.arg(method)
 						.arg(Type.getMethodType(JavaMemberVisitor.compileBridgeableMethodNoSideEffect(methodInfo, context.getMethodDescriptor(lambdaExpression.header)).compiled.descriptor))
@@ -238,7 +238,7 @@ public final class LambdaIndyCompiler {
 		body.accept(this.visitor);
 		this.writer.invokeDynamic(indy -> indy
 				.callSite(toNativeDescription.name, Type.getMethodType(this.context.getType(toType), this.context.getType(fromType)))
-				.bootstrapMethod(bsm -> bsm
+				.bsm(bsm -> bsm
 						.method(JavaClass.fromJavaClass(LambdaFactory.class), "buildLambda")
 						.arg(fromNativeDescription)
 						.arg(Type.getMethodType(fromNativeDescription.descriptor))

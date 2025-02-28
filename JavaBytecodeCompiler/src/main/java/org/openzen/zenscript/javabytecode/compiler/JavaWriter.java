@@ -7,6 +7,8 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.compiler.indy.JavaCondy;
+import org.openzen.zenscript.javabytecode.compiler.indy.JavaIndy;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.JavaNativeField;
@@ -294,7 +296,11 @@ public class JavaWriter {
 		if (debug)
 			logger.debug("ldc " + value);
 
-		visitor.visitLdcInsn(value);
+		if (value instanceof JavaCondy) {
+			((JavaCondy) value).visit(visitor::visitLdcInsn);
+		} else {
+			visitor.visitLdcInsn(value);
+		}
 	}
 
 	public void constant(byte value) {
@@ -381,6 +387,14 @@ public class JavaWriter {
 
 	public void constant(JavaClass cls) {
 		this.ldc(Type.getObjectType(cls.internalName));
+	}
+
+	public void constant(UnaryOperator<JavaCondy.Builder> valueBuilder) {
+		this.constant(JavaCondy.build(valueBuilder));
+	}
+
+	public void constant(JavaCondy value) {
+		value.visit(this::ldc);
 	}
 
 	public void pop() {
@@ -1111,15 +1125,15 @@ public class JavaWriter {
 		visitor.visitMethodInsn(INVOKEINTERFACE, method.cls.internalName, method.name, method.descriptor, true);
 	}
 
-	public void invokeDynamic(UnaryOperator<JavaIndyHelper.Builder> indyDataBuilder) {
-		invokeDynamic(indyDataBuilder.apply(JavaIndyHelper.builder()).build());
+	public void invokeDynamic(UnaryOperator<JavaIndy.Builder> indyBuilder) {
+		invokeDynamic(JavaIndy.build(indyBuilder));
 	}
 
-	public void invokeDynamic(JavaIndyHelper indyData) {
+	public void invokeDynamic(JavaIndy indy) {
 		if (debug)
-			logger.debug("invokeDynamic " + indyData);
+			logger.debug("invokeDynamic " + indy);
 
-		indyData.visit(visitor::visitInvokeDynamicInsn);
+		indy.visit(visitor::visitInvokeDynamicInsn);
 	}
 
 	public void newObject(String internalName) {
