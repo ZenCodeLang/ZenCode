@@ -132,8 +132,8 @@ final class IndyHelpers {
 		if (realObject instanceof Handle) {
 			return METHOD_HANDLE_TYPE;
 		}
-		if (realObject instanceof JavaCondy) {
-			return Type.getType(((JavaCondy) realObject).asConstantDynamic().getDescriptor());
+		if (realObject instanceof ConstantDynamic) {
+			return Type.getType(((ConstantDynamic) realObject).getDescriptor());
 		}
 		throw new IllegalArgumentException("Unrecognized or incompatible indy construct " + realObject.getClass().getName());
 	}
