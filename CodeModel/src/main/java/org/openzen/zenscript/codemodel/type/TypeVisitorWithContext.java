@@ -21,6 +21,10 @@ public interface TypeVisitorWithContext<C, R, E extends Exception> {
 
 	R visitOptional(C context, OptionalTypeID type) throws E;
 
+	R visitWildcardIn(C context, WildcardInTypeID type) throws E;
+
+	R visitWildcardOut(C context, WildcardOutTypeID type) throws E;
+
 	default R visitInvalid(C context, InvalidTypeID type) throws E {
 		throw new RuntimeException("Invalid type: " + type.error.description);
 	}

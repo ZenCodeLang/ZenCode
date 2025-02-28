@@ -61,6 +61,16 @@ public abstract class AbstractTypeBuilder implements TypeBuilder {
 	}
 
 	@Override
+	public WildcardInTypeID wildcardIn(TypeID type) {
+		return new WildcardInTypeID(type);
+	}
+
+	@Override
+	public WildcardOutTypeID wildcardOut(TypeID type) {
+		return new WildcardOutTypeID(type);
+	}
+
+	@Override
 	public GenericMapTypeBuilder withGeneric(TypeParameter... parameters) {
 		return new Generic() {
 			@Override

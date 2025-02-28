@@ -140,6 +140,7 @@ public enum ZSTokenType implements TokenType {
 	K_DEFAULT(true, "default"),
 
 	K_IN(true, "in"),
+	K_OUT(true, "out"),
 	K_IS(true, "is"),
 	K_AS(true, "as"),
 	K_MATCH(true, "match"),

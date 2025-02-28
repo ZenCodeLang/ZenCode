@@ -27,6 +27,10 @@ public interface TypeBuilder {
 
 	FunctionTypeID functionOf(FunctionHeader header);
 
+	WildcardInTypeID wildcardIn(TypeID type);
+
+	WildcardOutTypeID wildcardOut(TypeID type);
+
 	TypeID resultOf(TypeID type, TypeID thrownType);
 
 	GenericMapTypeBuilder withGeneric(TypeParameter... parameters);

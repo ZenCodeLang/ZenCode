@@ -21,6 +21,10 @@ public interface TypeVisitor<T> {
 
 	T visitOptional(OptionalTypeID type);
 
+	T visitWildcardIn(WildcardInTypeID type);
+
+	T visitWildcardOut(WildcardOutTypeID type);
+
 	default T visitInvalid(InvalidTypeID type) {
 		throw new UnsupportedOperationException("Invalid type @ " + type.position +  ": " + type.error.description);
 	}

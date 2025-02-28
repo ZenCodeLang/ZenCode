@@ -60,24 +60,6 @@ public interface IParsedType {
 		return genericParameters;
 	}
 
-	static List<IParsedType> parseTypeArgumentsForCall(ZSTokenParser tokens) throws ParseException {
-		List<IParsedType> typeArguments = null;
-		if (tokens.optional(ZSTokenType.T_LESS) != null) {
-			try {
-				typeArguments = new ArrayList<>();
-				do {
-					IParsedType type = IParsedType.parse(tokens);
-					typeArguments.add(type);
-				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-				tokens.required(ZSTokenType.T_GREATER, "> expected");
-			} catch (ParseException ex) {
-				tokens.logError(ex);
-				tokens.recoverUntilTokenOrNewline(ZSTokenType.T_GREATER);
-			}
-		}
-		return typeArguments;
-	}
-
 	static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 
@@ -153,6 +135,18 @@ public interface IParsedType {
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				result = new ParsedFunctionType(header);
+				break;
+			}
+			case K_IN: {
+				tokens.next();
+				IParsedType upperBound = tryParse(tokens);
+				result = new ParsedWildcardInType(upperBound);
+				break;
+			}
+			case K_OUT: {
+				tokens.next();
+				IParsedType lowerBound = tryParse(tokens);
+				result = new ParsedWildcardOutType(lowerBound);
 				break;
 			}
 			case T_IDENTIFIER: {

@@ -66,7 +66,6 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	@Override
 	public Optional<InstanceCallableMethod> findCaster(TypeID toType) {
 		return template.getMethod(MethodID.caster(toType)).stream().findFirst().map(c -> mapper.map(type, c));
-
 	}
 
 	@Override

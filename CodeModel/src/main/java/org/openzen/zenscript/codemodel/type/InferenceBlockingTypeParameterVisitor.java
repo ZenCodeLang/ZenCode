@@ -251,6 +251,16 @@ public class InferenceBlockingTypeParameterVisitor implements TypeVisitor<Boolea
 	}
 
 	@Override
+	public Boolean visitWildcardIn(WildcardInTypeID type) {
+		return true;
+	}
+
+	@Override
+	public Boolean visitWildcardOut(WildcardOutTypeID type) {
+		return true; // TODO: or should we allow it to infer to be the lower bound?
+	}
+
+	@Override
 	public Boolean visitInvalid(InvalidTypeID type) {
 		Optional<Boolean> knownResult = getKnownResult(type);
 		if (knownResult.isPresent()) {
