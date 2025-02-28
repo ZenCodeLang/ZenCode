@@ -1,0 +1,68 @@
+import java.nio.charset.StandardCharsets
+
+plugins {
+	id 'java-library'
+}
+
+String branchName = (System.getenv('BRANCH_NAME') ?: 'master').replaceAll('[^A-Za-z-_0-9]', '_')
+if (!branchName.equalsIgnoreCase('master')) {
+	version = branchName + '-' + version
+}
+
+if (System.getenv('BUILD_NUMBER') != null) {
+	version += '.' + System.getenv('BUILD_NUMBER')
+}
+
+repositories {
+	mavenCentral()
+}
+
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(8)
+	withSourcesJar()
+	withJavadocJar()
+}
+
+configurations {
+	outputJava {
+		canBeResolved = true
+		canBeConsumed = true
+	}
+	outputResources {
+		canBeResolved = true
+		canBeConsumed = true
+	}
+}
+
+artifacts {
+	outputJava sourceSets.main.java.sourceDirectories.singleFile
+	outputResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+tasks.named('compileJava', JavaCompile) {
+	dependsOn(configurations.outputJava)
+	source(configurations.outputJava)
+}
+
+processResources {
+	dependsOn(configurations.outputResources)
+	from(configurations.outputResources)
+}
+
+tasks.named('javadoc', Javadoc) {
+	dependsOn(configurations.outputJava)
+	source(configurations.outputJava)
+	options {
+		encoding = StandardCharsets.UTF_8
+		if (it instanceof StandardJavadocDocletOptions) {
+			(it as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
+		}
+	}
+}
+
+tasks.named('sourcesJar', Jar) {
+	dependsOn(configurations.outputJava)
+	from(configurations.outputJava)
+	dependsOn(configurations.outputResources)
+	from(configurations.outputResources)
+}

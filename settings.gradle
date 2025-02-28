@@ -8,7 +8,7 @@ def subDirs = rootDir.listFiles(new FileFilter() {
         if (!file.isDirectory()) {
             return false
         }
-        if (file.name == 'buildSrc') {
+        if (file.name == 'buildSrc' || file.name == "archived-projects") {
             return false
         }
         return new File(file, 'build.gradle').isFile()
