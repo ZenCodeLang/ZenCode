@@ -124,7 +124,7 @@ public class JavaMethodBytecodeCompiler implements JavaMethodCompiler<Void> {
 
 	private static final JavaNativeMethod OBJECTS_EQUALS = new JavaNativeMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaNativeMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false);
 
-	private static final JavaNativeMethod STRINGBUILDER_LENGTH = JavaNativeMethod.getNativeVirtual(JavaClass.STRINGBUILDER, "length", "()I");
+	private static final JavaNativeMethod STRINGBUILDER_LENGTH = JavaNativeMethod.getNativeVirtual(JavaClass.STRING_BUILDER, "length", "()I");
 
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor expressionVisitor;

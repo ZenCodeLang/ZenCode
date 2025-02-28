@@ -29,7 +29,7 @@ class FunctionalInterfaceTests extends ZenCodeTest {
 	@Test
 	void testFunctionalInterface() {
 		addScript(
-				"var modified = modifyString('test', (strings, context) => { return strings; });\n" +
+				"var modified = modifyString('test', (strings, context) => { return straightUpItself(strings); });\n" +
 						"println(modified.length);",
 				"FunctionalInterfaceTests_testFunctionalInterface.zs");
 
@@ -44,7 +44,7 @@ class FunctionalInterfaceTests extends ZenCodeTest {
 	@Test
 	void testBiFunction() {
 		addScript(
-				"var modified = stringFunction('test', (strings, context) => {return strings;});\n" +
+				"var modified = stringFunction('test', (strings, context) => { return straightUpItself(strings); });\n" +
 						"println(modified.length);",
 				"FunctionalInterfaceTests_testBiFunction.zs");
 
@@ -66,6 +66,11 @@ class FunctionalInterfaceTests extends ZenCodeTest {
 		@ZenCodeGlobals.Global
 		public static List<String> stringFunction(String baseString, BiFunction<List<String>, Boolean, List<String>> function) {
 			return function.apply(Collections.singletonList(baseString), false);
+		}
+
+		@ZenCodeGlobals.Global
+		public static List<String> straightUpItself(List<String> list) {
+			return list;
 		}
 	}
 

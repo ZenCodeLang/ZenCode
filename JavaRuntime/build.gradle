@@ -1,0 +1,8 @@
+plugins {
+	id 'zencode-common'
+	id 'zencode-publish'
+}
+
+dependencies {
+	api libs.asm
+}

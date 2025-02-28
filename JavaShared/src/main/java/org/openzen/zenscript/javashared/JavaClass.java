@@ -7,35 +7,38 @@ package org.openzen.zenscript.javashared;
 
 import stdlib.Strings;
 
-import java.util.Arrays;
+import java.io.Closeable;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * @author Hoofdgebruiker
  */
 public class JavaClass implements Comparable<JavaClass> {
-	public static final JavaClass CLASS = new JavaClass("java.lang", "Class", Kind.CLASS);
-	public static final JavaClass ENUM = new JavaClass("java.lang", "Enum", Kind.CLASS);
-	public static final JavaClass OBJECT = new JavaClass("java.lang", "Object", Kind.CLASS);
-	public static final JavaClass STRING = new JavaClass("java.lang", "String", Kind.CLASS);
-	public static final JavaClass CLOSEABLE = new JavaClass("java.lang", "AutoCloseable", Kind.INTERFACE);
-	public static final JavaClass MAP = new JavaClass("java.util", "Map", JavaClass.Kind.INTERFACE);
-	public static final JavaClass HASHMAP = new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS);
-	public static final JavaClass ITERATOR = new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE);
-	public static final JavaClass ITERABLE = new JavaClass("java.lang", "Iterable", Kind.INTERFACE);
-	public static final JavaClass ARRAYS = new JavaClass("java.util", "Arrays", Kind.CLASS);
+	public static final JavaClass CLASS = fromJavaClass(Class.class);
+	public static final JavaClass ENUM = fromJavaClass(Enum.class);
+	public static final JavaClass OBJECT = fromJavaClass(Object.class);
+	public static final JavaClass STRING = fromJavaClass(String.class);
+	public static final JavaClass AUTO_CLOSEABLE = fromJavaClass(AutoCloseable.class);
+	public static final JavaClass CLOSEABLE = fromJavaClass(Closeable.class);
+	public static final JavaClass MAP = fromJavaClass(Map.class);
+	public static final JavaClass HASHMAP = fromJavaClass(HashMap.class);
+	public static final JavaClass ITERATOR = fromJavaClass(Iterator.class);
+	public static final JavaClass ITERABLE = fromJavaClass(Iterable.class);
+	public static final JavaClass ARRAYS = fromJavaClass(Arrays.class);
 
-	public static final JavaClass BOOLEAN = new JavaClass("java.lang", "Boolean", Kind.CLASS);
-	public static final JavaClass BYTE = new JavaClass("java.lang", "Byte", Kind.CLASS);
-	public static final JavaClass SHORT = new JavaClass("java.lang", "Short", Kind.CLASS);
-	public static final JavaClass INTEGER = new JavaClass("java.lang", "Integer", Kind.CLASS);
-	public static final JavaClass LONG = new JavaClass("java.lang", "Long", Kind.CLASS);
-	public static final JavaClass FLOAT = new JavaClass("java.lang", "Float", Kind.CLASS);
-	public static final JavaClass DOUBLE = new JavaClass("java.lang", "Double", Kind.CLASS);
-	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
-	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
-	public static final JavaClass COLLECTIONS = new JavaClass("java.util", "Collections", Kind.CLASS);
-	public static final JavaClass STRINGBUILDER = new JavaClass("java.lang", "StringBuilder", Kind.CLASS);
-	public static final JavaClass ARRAY = new JavaClass("java.lang.reflect", "Array", Kind.CLASS);
+	public static final JavaClass BOOLEAN = fromJavaClass(Boolean.class);
+	public static final JavaClass BYTE = fromJavaClass(Byte.class);
+	public static final JavaClass SHORT = fromJavaClass(Short.class);
+	public static final JavaClass INTEGER = fromJavaClass(Integer.class);
+	public static final JavaClass LONG = fromJavaClass(Long.class);
+	public static final JavaClass FLOAT = fromJavaClass(Float.class);
+	public static final JavaClass DOUBLE = fromJavaClass(Double.class);
+	public static final JavaClass CHARACTER = fromJavaClass(Character.class);
+	public static final JavaClass COLLECTION = fromJavaClass(Collection.class);
+	public static final JavaClass COLLECTIONS = fromJavaClass(Collections.class);
+	public static final JavaClass STRING_BUILDER = fromJavaClass(StringBuilder.class);
+	public static final JavaClass ARRAY = fromJavaClass(Array.class);
 
 	public static final JavaClass SHARED = new JavaClass("zsynthetic", "Shared", Kind.CLASS);
 	public final JavaClass outer;
@@ -95,6 +98,19 @@ public class JavaClass implements Comparable<JavaClass> {
 		String className = lastSlash < 0 ? internalName : internalName.substring(lastSlash + 1);
 		String[] nameParts = Strings.split(className, '$');
 		return new JavaClass(pkg, internalName, kind, nameParts);
+	}
+
+	public static JavaClass fromJavaClass(final Class<?> clazz) {
+		if (clazz.isArray()) {
+			return JavaClass.fromInternalName(clazz.getName(), Kind.ARRAY);
+		}
+		if (clazz.isPrimitive()) {
+			throw new IllegalStateException("JavaClass cannot represent primitive types");
+		}
+
+		final String internalName = clazz.getName().replace('.', '/');
+		final Kind kind = clazz.isInterface()? Kind.INTERFACE : clazz.isEnum()? Kind.ENUM : Kind.CLASS;
+		return JavaClass.fromInternalName(internalName, kind);
 	}
 
 	public static String getNameFromFile(String filename) {

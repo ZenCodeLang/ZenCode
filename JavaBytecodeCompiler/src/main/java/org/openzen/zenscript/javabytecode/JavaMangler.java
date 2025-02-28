@@ -53,7 +53,7 @@ public final class JavaMangler {
 	}
 
 	public String mangleScriptBodyMethod(final int methodsAmount) {
-		return "script-body" + (methodsAmount == 0? "" : ('-' + Integer.toString(methodsAmount)));
+		return "$body" + (methodsAmount == 0? "" : ('$' + Integer.toString(methodsAmount)));
 	}
 
 	public String mangleSourceFileName(final HighLevelDefinition definition) {
@@ -116,40 +116,41 @@ public final class JavaMangler {
 		return builder.toString();
 	}
 
-	public String mangleGeneratedLambdaName(final String interfaceName) {
+	public String mangleLambdaMethod(final String parentMethodName, final String interfaceName) {
 		final class LambdaId {
-			final String target;
+			final String interfaceName;
+			final String method;
 
-			LambdaId(final String target) {
-				this.target = target;
+			LambdaId(final String interfaceName, final String method) {
+				this.interfaceName = interfaceName;
+				this.method = method;
 			}
 
 			@Override
 			public boolean equals(final Object o) {
-				return this == o || o instanceof LambdaId && this.target.equals(((LambdaId) o).target);
+				return this == o || o instanceof LambdaId && this.interfaceName.equals(((LambdaId) o).interfaceName) && this.method.equals(((LambdaId) o).method);
 			}
 
 			@Override
 			public int hashCode() {
-				return 17 * this.target.hashCode();
+				return 17 * (this.interfaceName.hashCode() + 31 * this.method.hashCode());
 			}
 		}
 
-		final String interfaceTarget = interfaceName.replace('/', '_').replace('.', '_');
-		// TODO("Rework package structure")
-		return "zsynthetic/$Lambda$" + interfaceTarget + '$' + this.mangleCounters.get(new LambdaId(interfaceTarget));
-	}
-
-	public String mangleGeneratedLambdaName(final FunctionHeader header) {
-		return this.mangleGeneratedLambdaName("$Generated" + EXP_TAR_MANGLE_FUNCTION_ID + this.encodeLengthNameFormat(this.mangleFunctionHeader(header)));
-	}
-
-	public String mangleCapturedParameter(final int parameterId, final boolean isThis) {
-		if (isThis) {
-			return "$this";
+		final String sanitizedMethodName;
+		if (parentMethodName == null) {
+			sanitizedMethodName = "$null";
+		} else if ("<init>".equals(parentMethodName) || "<clinit>".equals(parentMethodName)) {
+			sanitizedMethodName = "$_" + parentMethodName.substring(1, parentMethodName.length() - 1) + '_';
 		} else {
-			return "$" + parameterId;
+			sanitizedMethodName = parentMethodName;
 		}
+		final String interfaceTarget = interfaceName.replace('/', '.');
+		final int lastDot = interfaceTarget.lastIndexOf('.');
+		final String canonicalInterfaceTarget = lastDot == -1 ? interfaceTarget : interfaceTarget.substring(lastDot + 1);
+		final LambdaId id = new LambdaId(canonicalInterfaceTarget, sanitizedMethodName);
+
+		return "$lambda$" + sanitizedMethodName + '$' + canonicalInterfaceTarget + '$' + this.mangleCounters.get(id);
 	}
 
 	private String mangleScriptName(final String rawName) {

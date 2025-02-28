@@ -7,6 +7,8 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.compiler.indy.JavaCondy;
+import org.openzen.zenscript.javabytecode.compiler.indy.JavaIndy;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.compiling.JavaCompilingMethod;
 import org.openzen.zenscript.javashared.JavaNativeField;
@@ -15,13 +17,12 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -295,7 +296,11 @@ public class JavaWriter {
 		if (debug)
 			logger.debug("ldc " + value);
 
-		visitor.visitLdcInsn(value);
+		if (value instanceof JavaCondy) {
+			((JavaCondy) value).visit(visitor::visitLdcInsn);
+		} else {
+			visitor.visitLdcInsn(value);
+		}
 	}
 
 	public void constant(byte value) {
@@ -382,6 +387,14 @@ public class JavaWriter {
 
 	public void constant(JavaClass cls) {
 		this.ldc(Type.getObjectType(cls.internalName));
+	}
+
+	public void constant(UnaryOperator<JavaCondy.Builder> valueBuilder) {
+		this.constant(JavaCondy.build(valueBuilder));
+	}
+
+	public void constant(JavaCondy value) {
+		value.visit(this::ldc);
 	}
 
 	public void pop() {
@@ -1086,7 +1099,7 @@ public class JavaWriter {
 		visitor.visitMethodInsn(INVOKESPECIAL, ownerInternalName, name, descriptor, false);
 	}
 
-	public void invokeSpecial(Class owner, String name, String descriptor) {
+	public void invokeSpecial(Class<?> owner, String name, String descriptor) {
 		invokeSpecial(Type.getInternalName(owner), name, descriptor);
 	}
 
@@ -1110,6 +1123,17 @@ public class JavaWriter {
 			logger.debug("invokeInterface " + method.cls.internalName + '.' + method.name + method.descriptor);
 
 		visitor.visitMethodInsn(INVOKEINTERFACE, method.cls.internalName, method.name, method.descriptor, true);
+	}
+
+	public void invokeDynamic(UnaryOperator<JavaIndy.Builder> indyBuilder) {
+		invokeDynamic(JavaIndy.build(indyBuilder));
+	}
+
+	public void invokeDynamic(JavaIndy indy) {
+		if (debug)
+			logger.debug("invokeDynamic " + indy);
+
+		indy.visit(visitor::visitInvokeDynamicInsn);
 	}
 
 	public void newObject(String internalName) {
