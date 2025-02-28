@@ -79,5 +79,15 @@ public class JavaTypeInfo {
 		public JavaTypeInfo visitOptional(TypeID context, OptionalTypeID type) {
 			return type.baseType == BasicTypeID.USIZE ? PRIMITIVE : OBJECT;
 		}
+
+		@Override
+		public JavaTypeInfo visitWildcardIn(TypeID context, WildcardInTypeID type) throws RuntimeException {
+			return OBJECT;
+		}
+
+		@Override
+		public JavaTypeInfo visitWildcardOut(TypeID context, WildcardOutTypeID type) throws RuntimeException {
+			return OBJECT;
+		}
 	}
 }

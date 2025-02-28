@@ -7,6 +7,9 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
 
+/**
+ * Represents a wildcard type with an upper bound. (e.g. ? super Number)
+ */
 public class WildcardInTypeID implements TypeID {
 	public final TypeID upperBound;
 

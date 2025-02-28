@@ -35,7 +35,7 @@ public interface IParsedType {
 
 		List<IParsedType> genericParameters = new ArrayList<>();
 		do {
-			IParsedType type = tryParse(tokens);
+			IParsedType type = tryParse(tokens, true);
 			if (type == null) {
 				tokens.reset();
 				return Collections.emptyList();
@@ -61,6 +61,10 @@ public interface IParsedType {
 	}
 
 	static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
+		return tryParse(tokens, false);
+	}
+
+	static IParsedType tryParse(ZSTokenParser tokens, boolean allowWildcards) throws ParseException {
 		CodePosition position = tokens.getPosition();
 
 		IParsedType result;
@@ -139,12 +143,22 @@ public interface IParsedType {
 			}
 			case K_IN: {
 				tokens.next();
+
+				// TODO: should this be moved to the validator?
+				if (!allowWildcards)
+					throw new ParseException(tokens.getPosition(), "wildcards are not allowed here");
+
 				IParsedType upperBound = tryParse(tokens);
 				result = new ParsedWildcardInType(upperBound);
 				break;
 			}
 			case K_OUT: {
 				tokens.next();
+
+				// TODO: should this be moved to the validator?
+				if (!allowWildcards)
+					throw new ParseException(tokens.getPosition(), "wildcards are not allowed here");
+
 				IParsedType lowerBound = tryParse(tokens);
 				result = new ParsedWildcardOutType(lowerBound);
 				break;

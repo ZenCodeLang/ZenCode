@@ -140,4 +140,16 @@ public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 		//NO-OP
 		return null;
 	}
+
+	@Override
+	public Void visitWildcardIn(WildcardInTypeID type) {
+		//NO-OP
+		return null;
+	}
+
+	@Override
+	public Void visitWildcardOut(WildcardOutTypeID type) {
+		//NO-OP
+		return null;
+	}
 }

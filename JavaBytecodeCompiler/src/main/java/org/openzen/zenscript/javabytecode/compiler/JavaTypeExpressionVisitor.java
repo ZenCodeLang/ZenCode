@@ -119,4 +119,16 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 	public Void visitOptional(JavaWriter writer, OptionalTypeID type) {
 		return type.baseType.accept(writer, this);
 	}
+
+	@Override
+	public Void visitWildcardIn(JavaWriter writer, WildcardInTypeID type) throws RuntimeException {
+		writer.constant(Object.class);
+		return null;
+	}
+
+	@Override
+	public Void visitWildcardOut(JavaWriter writer, WildcardOutTypeID type) throws RuntimeException {
+		type.lowerBound.accept(writer, this);
+		return null;
+	}
 }

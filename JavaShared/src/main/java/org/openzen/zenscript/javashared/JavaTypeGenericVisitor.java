@@ -195,6 +195,16 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 		return type.baseType.accept(this);
 	}
 
+	@Override
+	public String visitWildcardIn(WildcardInTypeID type) {
+		return "Ljava/lang/Object;";
+	}
+
+	@Override
+	public String visitWildcardOut(WildcardOutTypeID type) {
+		return type.lowerBound.accept(this);
+	}
+
 	public String getMethodSignatureExpansion(FunctionHeader header, TypeID expandedClass) {
 		final StringBuilder stringBuilder = new StringBuilder();
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();

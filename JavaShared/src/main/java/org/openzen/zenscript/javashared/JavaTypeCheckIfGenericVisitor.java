@@ -56,4 +56,14 @@ public class JavaTypeCheckIfGenericVisitor implements TypeVisitor<Boolean> {
 	public Boolean visitOptional(OptionalTypeID type) {
 		return type.baseType.accept(this);
 	}
+
+	@Override
+	public Boolean visitWildcardIn(WildcardInTypeID type) {
+		return true;
+	}
+
+	@Override
+	public Boolean visitWildcardOut(WildcardOutTypeID type) {
+		return true;
+	}
 }

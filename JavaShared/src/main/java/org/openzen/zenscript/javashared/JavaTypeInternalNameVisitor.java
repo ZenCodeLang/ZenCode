@@ -137,6 +137,16 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 	}
 
 	@Override
+	public String visitWildcardIn(WildcardInTypeID type) {
+		return "java/lang/Object";
+	}
+
+	@Override
+	public String visitWildcardOut(WildcardOutTypeID type) {
+		return "java/lang/Object";
+	}
+
+	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
 		return "java/util/Map";
 	}

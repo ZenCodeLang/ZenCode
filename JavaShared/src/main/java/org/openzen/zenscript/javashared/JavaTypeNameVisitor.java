@@ -115,4 +115,14 @@ public class JavaTypeNameVisitor implements TypeVisitor<String> {
 		result.append(type.baseType.accept(this));
 		return result.toString();
 	}
+
+	@Override
+	public String visitWildcardIn(WildcardInTypeID type) {
+		return "In" + type.upperBound.accept(this);
+	}
+
+	@Override
+	public String visitWildcardOut(WildcardOutTypeID type) {
+		return "Out" + type.lowerBound.accept(this);
+	}
 }

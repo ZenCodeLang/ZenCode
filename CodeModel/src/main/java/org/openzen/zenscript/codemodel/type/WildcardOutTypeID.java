@@ -7,6 +7,12 @@ import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
 
+/**
+ * Represents a wildcard type with an upper bound. (eg. ? extends Number)
+ * <p>
+ * This is used in the context of type arguments, where the type argument is not known, but it is known that it is a
+ * subtype of the given bound.
+ */
 public class WildcardOutTypeID implements TypeID {
 	public final TypeID lowerBound;
 

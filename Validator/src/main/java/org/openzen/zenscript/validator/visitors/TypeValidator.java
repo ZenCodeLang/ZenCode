@@ -99,6 +99,18 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 	}
 
 	@Override
+	public Void visitWildcardOut(TypeContext context, WildcardOutTypeID type) throws RuntimeException {
+		validate(context, type.lowerBound);
+		return null;
+	}
+
+	@Override
+	public Void visitWildcardIn(TypeContext context, WildcardInTypeID type) throws RuntimeException {
+		validate(context, type.upperBound);
+		return null;
+	}
+
+	@Override
 	public Void visitGenericMap(TypeContext context, GenericMapTypeID map) {
 		validate(context, map.value);
 		return null;

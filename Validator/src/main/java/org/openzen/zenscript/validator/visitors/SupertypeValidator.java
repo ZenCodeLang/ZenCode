@@ -84,6 +84,18 @@ public class SupertypeValidator implements TypeVisitor<Void> {
 	}
 
 	@Override
+	public Void visitWildcardIn(WildcardInTypeID type) {
+		validator.logError(position, CompileErrors.invalidSuperclass(type));
+		return null;
+	}
+
+	@Override
+	public Void visitWildcardOut(WildcardOutTypeID type) {
+		validator.logError(position, CompileErrors.invalidSuperclass(type));
+		return null;
+	}
+
+	@Override
 	public Void visitGenericMap(GenericMapTypeID map) {
 		validator.logError(position, CompileErrors.invalidSuperclass(map));
 		return null;

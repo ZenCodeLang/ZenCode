@@ -153,6 +153,16 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	}
 
 	@Override
+	public String visitWildcardIn(WildcardInTypeID type) {
+		return "Ljava/lang/Object;";
+	}
+
+	@Override
+	public String visitWildcardOut(WildcardOutTypeID type) {
+		return type.accept(this);
+	}
+
+	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
 		return "Ljava/util/Map;";
 	}
