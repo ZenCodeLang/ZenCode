@@ -84,7 +84,7 @@ final class IndyHelpers {
 				invokeType = Opcodes.H_INVOKESTATIC;
 			} else if (method.cls.isInterface()) {
 				invokeType = Opcodes.H_INVOKEINTERFACE;
-			} else if ("<init>".equals(method.name) || (method.modifiers & JavaModifiers.PRIVATE) != 0) {
+			} else if (CONSTRUCTOR_NAME.equals(method.name) || (method.modifiers & JavaModifiers.PRIVATE) != 0) {
 				invokeType = Opcodes.H_INVOKESPECIAL;
 			} else {
 				invokeType = Opcodes.H_INVOKEVIRTUAL;
