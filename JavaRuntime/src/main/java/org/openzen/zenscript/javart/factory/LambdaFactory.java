@@ -10,39 +10,90 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.invoke.*;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BinaryOperator;
 
 public final class LambdaFactory {
 	private static final class LambdaClassLoader extends ClassLoader {
+		private static final Map<ClassLoader, WeakReference<LambdaClassLoader>> KNOWN_LOADERS = new WeakHashMap<>();
+
 		static {
 			ClassLoader.registerAsParallelCapable();
 		}
 
-		private final String name;
-		private final byte[] data;
+		private final Lock lock;
+		private final Map<String, byte[]> knownLambdas;
 
-		private LambdaClassLoader(final String name, final byte[] data, final ClassLoader parent) {
+		private LambdaClassLoader(final ClassLoader parent) {
 			super(parent);
-			this.name = name;
-			this.data = data;
+			this.lock = new ReentrantLock();
+			this.knownLambdas = new HashMap<>();
 		}
 
-		static ClassLoader spinLoader(final String name, final byte[] data, final MethodHandles.Lookup lookup) {
-			return new LambdaClassLoader(name, data, lookup.lookupClass().getClassLoader());
+		private static LambdaClassLoader findLoader(final MethodHandles.Lookup lookup) {
+			final ClassLoader lookupClassLoader = lookup.lookupClass().getClassLoader();
+			final WeakReference<LambdaClassLoader> loaderRef = KNOWN_LOADERS.get(lookupClassLoader);
+			if (loaderRef == null || loaderRef.get() == null) {
+				// LambdaClassLoader reference was lost (or it never existed), so recreate
+				final LambdaClassLoader loader = new LambdaClassLoader(lookupClassLoader);
+				KNOWN_LOADERS.put(loader, new WeakReference<>(loader));
+				return loader;
+			}
+			return loaderRef.get();
+		}
+
+		LambdaClassLoader registerLambda(final String name, final byte[] data) {
+			this.lock.lock();
+			try {
+				if (this.knownLambdas.containsKey(name)) {
+					throw new IllegalStateException("Lambda with name '" + name + "' already exists");
+				}
+				this.knownLambdas.put(name, data);
+			} finally {
+				this.lock.unlock();
+			}
+			return this;
 		}
 
 		@Override
 		protected Class<?> findClass(final String name) throws ClassNotFoundException {
-			if (this.name.equals(name)) {
-				return this.defineClass(name, this.data, 0, this.data.length);
+			// Step 1: try loading the class directly without locking; there should never be an instance where a thread
+			//         is trying to load a class that is being registered on another thread
+			Class<?> lambdaClass = this.tryLoadLambdaClass(name);
+			if (lambdaClass != null) {
+				return lambdaClass;
 			}
+
+			// Step 2: if the previous step failed, let's retry with locking just in case the above situation happened
+			this.lock.lock();
+			try {
+				lambdaClass = this.tryLoadLambdaClass(name);
+				if (lambdaClass != null) {
+					return lambdaClass;
+				}
+			} finally {
+				this.lock.unlock();
+			}
+
+			// Step 3: Defer to default behavior
 			return super.findClass(name);
 		}
 
-
+		private Class<?> tryLoadLambdaClass(final String name) {
+			final byte[] lambdaBytes = this.knownLambdas.get(name);
+			if (lambdaBytes != null) {
+				return this.defineClass(name, lambdaBytes, 0, lambdaBytes.length);
+			}
+			return null;
+		}
 	}
 
 	private static final class LambdaCounters {
@@ -497,7 +548,8 @@ public final class LambdaFactory {
 		final byte[] classData = generateInterfaceClassData(targetMethodName, callSiteSignature, lambdaMethod, interfaceSignature, flags, bridgeInterfaceSignature, className);
 
 		// Java 8 forces us to use a custom classloader for this; ideally we'd be leveraging hidden classes
-		final ClassLoader lambdaLoader = LambdaClassLoader.spinLoader(binaryName, classData, callerLookup);
+		final LambdaClassLoader lookupLoader = LambdaClassLoader.findLoader(callerLookup);
+		final LambdaClassLoader lambdaLoader = lookupLoader.registerLambda(binaryName, classData);
 		try {
 			return Class.forName(binaryName, false, lambdaLoader);
 		} catch (final ClassNotFoundException e) {
