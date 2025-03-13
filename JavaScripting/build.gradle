@@ -3,9 +3,10 @@ plugins {
 	id 'zencode-publish'
 }
 
-def javaScriptingProjects = [':JavaIntegration', ':JavaAnnotations', ':JavaBytecodeCompiler', ':JavaShared', ':Validator', ':Parser', ':CodeModel', ':Shared']
+def javaScriptingProjects = [':JavaIntegration', ':JavaAnnotations', ':JavaBytecodeCompiler', ':JavaShared', ':Validator', ':Parser', ':CodeModel', ':Shared', ':JavaRuntime']
 
 dependencies {
+	implementation libs.asm.commons
 	implementation libs.asm.debug
 	javaScriptingProjects.each {
 		outputJava project(path: it, configuration: 'outputJava')
