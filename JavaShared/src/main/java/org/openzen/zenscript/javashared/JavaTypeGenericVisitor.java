@@ -202,7 +202,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitWildcardOut(WildcardOutTypeID type) {
-		return type.lowerBound.accept(this);
+		return type.upperBound.accept(this);
 	}
 
 	public String getMethodSignatureExpansion(FunctionHeader header, TypeID expandedClass) {

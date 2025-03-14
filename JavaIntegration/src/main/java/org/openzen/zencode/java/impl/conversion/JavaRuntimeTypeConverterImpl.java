@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.compilation.CompileContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -130,7 +131,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 				case TYPE_VARIABLE:
 					return loadTypeVariable(context, (TypeVariable<?>) type.getType());
 				case WILDCARD:
-					return loadWildcard();
+					return loadWildcard(context, (WildcardType) type.getType());
 			}
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("Unable to analyze type: " + type, e);
@@ -238,8 +239,16 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		return new GenericTypeID(context.get(variable));
 	}
 
-	private TypeID loadWildcard() {
-		return BasicTypeID.UNDETERMINED;
+	private TypeID loadWildcard(TypeVariableContext context, WildcardType wildcardType) {
+		if (wildcardType.getUpperBounds().length > 0) {
+			TypeID upperBound = loadType(context, JavaAnnotatedType.of(wildcardType.getUpperBounds()[0]));
+			return new WildcardOutTypeID(upperBound);
+		} else if (wildcardType.getLowerBounds().length > 0) {
+			TypeID lowerBound = loadType(context, JavaAnnotatedType.of(wildcardType.getLowerBounds()[0]));
+			return new WildcardInTypeID(lowerBound);
+		} else {
+			return BasicTypeID.UNDETERMINED;
+		}
 	}
 
 	private TypeSymbol findType(Class<?> cls) {
@@ -252,10 +261,14 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 			TypeSymbol result = packageInfo.getRoot().getImport(Arrays.asList("stdlib", "Object"), 0);
 			if (result == null) {
 
-				ZSPackage stdlib = packageInfo.getRoot().getOptional("stdlib").orElseThrow(() -> new IllegalStateException("Must depend on stdlib if trying to register java.lang.Object"));
-				ModuleSymbol module = nativeModuleSpace.moduleSpace.getModule("stdlib").module;
+				Optional<ZSPackage> stdlib = packageInfo.getRoot().getOptional("stdlib");
+				ZSPackage targetPackage = stdlib.orElseGet(() -> packageInfo.getRoot().getOrCreatePackage("stdlib"));
+				ModuleSymbol module = Optional.ofNullable(nativeModuleSpace.moduleSpace.getModule("stdlib"))
+						.map(x -> x.module)
+						.orElse(packageInfo.getModule());
+
 				// registers itself to the package automatically
-				new ClassDefinition(CodePosition.BUILTIN, module, stdlib, "Object", Modifiers.PUBLIC, null);
+				new ClassDefinition(CodePosition.BUILTIN, module, targetPackage, "Object", Modifiers.PUBLIC, null);
 				result = packageInfo.getRoot().getImport(Arrays.asList("stdlib", "Object"), 0);
 			}
 			return result;

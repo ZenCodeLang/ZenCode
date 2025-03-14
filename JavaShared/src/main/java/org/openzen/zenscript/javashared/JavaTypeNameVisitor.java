@@ -118,11 +118,11 @@ public class JavaTypeNameVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitWildcardIn(WildcardInTypeID type) {
-		return "In" + type.upperBound.accept(this);
+		return "In" + type.lowerBound.accept(this);
 	}
 
 	@Override
 	public String visitWildcardOut(WildcardOutTypeID type) {
-		return "Out" + type.lowerBound.accept(this);
+		return "Out" + type.upperBound.accept(this);
 	}
 }

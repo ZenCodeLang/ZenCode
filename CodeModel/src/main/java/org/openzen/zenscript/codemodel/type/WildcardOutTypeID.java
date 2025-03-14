@@ -3,9 +3,9 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a wildcard type with an upper bound. (eg. ? extends Number)
@@ -14,16 +14,16 @@ import java.util.List;
  * subtype of the given bound.
  */
 public class WildcardOutTypeID implements TypeID {
-	public final TypeID lowerBound;
+	public final TypeID upperBound;
 
-	public WildcardOutTypeID(TypeID lowerBound) {
-		this.lowerBound = lowerBound;
+	public WildcardOutTypeID(TypeID upperBound) {
+		this.upperBound = upperBound;
 	}
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		TypeID mappedLowerBound = lowerBound.instance(mapper);
-		return mappedLowerBound == lowerBound ? this : new WildcardOutTypeID(mappedLowerBound);
+		TypeID mappedUpperBound = upperBound.instance(mapper);
+		return mappedUpperBound == upperBound ? this : new WildcardOutTypeID(mappedUpperBound);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class WildcardOutTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		lowerBound.extractTypeParameters(typeParameters);
+		upperBound.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -53,7 +53,24 @@ public class WildcardOutTypeID implements TypeID {
 
 	@Override
 	public ResolvingType resolve() {
-		// No members to inherit, since there is no lower bound...
-		return MemberSet.create(this).build();
+		return upperBound.resolve();
+	}
+
+	@Override
+	public String toString() {
+		return "out " + upperBound;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		WildcardOutTypeID that = (WildcardOutTypeID) o;
+		return Objects.equals(upperBound, that.upperBound);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(upperBound);
 	}
 }

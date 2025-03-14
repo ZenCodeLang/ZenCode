@@ -1,0 +1,24 @@
+#output: Hello
+
+interface Stringable {
+	toString(): string;
+}
+
+expand string {
+	implements Stringable {
+		toString(): string {
+			return this;
+		}
+	}
+}
+
+class MyClass<T> {
+	val value as T : get;
+
+	this(value: T) {
+		this.value = value;
+	}
+}
+
+val a: MyClass<out Stringable> = new MyClass<string>("Hello");
+println(a.value.toString());

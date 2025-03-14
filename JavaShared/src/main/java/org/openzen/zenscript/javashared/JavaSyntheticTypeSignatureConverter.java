@@ -148,11 +148,11 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 
 	@Override
 	public String visitWildcardIn(WildcardInTypeID type) {
-		return "-" + type.upperBound.accept(this);
+		return "-" + type.lowerBound.accept(this);
 	}
 
 	@Override
 	public String visitWildcardOut(WildcardOutTypeID type) {
-		return "+" + type.lowerBound.accept(this);
+		return "+" + type.upperBound.accept(this);
 	}
 }

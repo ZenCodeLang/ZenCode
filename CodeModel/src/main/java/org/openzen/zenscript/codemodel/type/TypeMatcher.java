@@ -147,7 +147,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	public Boolean visitWildcardIn(Matching context, WildcardInTypeID type) throws RuntimeException {
 		if (context.type instanceof WildcardInTypeID) {
 			WildcardInTypeID wildcardIn = (WildcardInTypeID) context.type;
-			return match(context, wildcardIn.upperBound, type.upperBound);
+			return match(context, wildcardIn.lowerBound, type.lowerBound);
 		} else {
 			return false;
 		}
@@ -157,7 +157,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	public Boolean visitWildcardOut(Matching context, WildcardOutTypeID type) throws RuntimeException {
 		if (context.type instanceof WildcardOutTypeID) {
 			WildcardOutTypeID wildcardOut = (WildcardOutTypeID) context.type;
-			return match(context, wildcardOut.lowerBound, type.lowerBound);
+			return match(context, wildcardOut.upperBound, type.upperBound);
 		} else {
 			return false;
 		}

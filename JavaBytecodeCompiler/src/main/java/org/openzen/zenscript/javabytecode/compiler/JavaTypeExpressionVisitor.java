@@ -128,7 +128,7 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 
 	@Override
 	public Void visitWildcardOut(JavaWriter writer, WildcardOutTypeID type) throws RuntimeException {
-		type.lowerBound.accept(writer, this);
+		type.upperBound.accept(writer, this);
 		return null;
 	}
 }

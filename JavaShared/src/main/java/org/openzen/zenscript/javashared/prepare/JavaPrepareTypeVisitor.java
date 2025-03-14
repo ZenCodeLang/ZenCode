@@ -69,13 +69,13 @@ public class JavaPrepareTypeVisitor implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitWildcardIn(WildcardInTypeID type) {
-		type.upperBound.accept(this);
+		type.lowerBound.accept(this);
 		return null;
 	}
 
 	@Override
 	public Void visitWildcardOut(WildcardOutTypeID type) {
-		type.lowerBound.accept(this);
+		type.upperBound.accept(this);
 		return null;
 	}
 }

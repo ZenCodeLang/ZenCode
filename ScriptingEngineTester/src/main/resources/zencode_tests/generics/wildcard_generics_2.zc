@@ -1,0 +1,28 @@
+#output: Hello
+
+interface Stringable {
+	toString(): string;
+}
+
+expand string {
+	implements Stringable {
+		toString(): string {
+			return this;
+		}
+	}
+}
+
+interface Printer<T> {
+	print(value: T): void;
+}
+
+class MyPrinter {
+	implements Printer<Stringable> {
+		print(value: Stringable) {
+			println(value.toString());
+		}
+	}
+}
+
+val a: Printer<in string> = new MyPrinter();
+a.print("Hello");
