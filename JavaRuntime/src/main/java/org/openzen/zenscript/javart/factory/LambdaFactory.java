@@ -23,6 +23,7 @@ import java.util.function.BinaryOperator;
 
 public final class LambdaFactory {
 	private static final class LambdaClassLoader extends ClassLoader {
+		private static final Lock GLOBAL_LOCK = new ReentrantLock();
 		private static final Map<ClassLoader, WeakReference<LambdaClassLoader>> KNOWN_LOADERS = new WeakHashMap<>();
 
 		static {
@@ -39,15 +40,21 @@ public final class LambdaFactory {
 		}
 
 		private static LambdaClassLoader findLoader(final MethodHandles.Lookup lookup) {
-			final ClassLoader lookupClassLoader = lookup.lookupClass().getClassLoader();
-			final WeakReference<LambdaClassLoader> loaderRef = KNOWN_LOADERS.get(lookupClassLoader);
-			if (loaderRef == null || loaderRef.get() == null) {
-				// LambdaClassLoader reference was lost (or it never existed), so recreate
-				final LambdaClassLoader loader = new LambdaClassLoader(lookupClassLoader);
-				KNOWN_LOADERS.put(loader, new WeakReference<>(loader));
-				return loader;
+			GLOBAL_LOCK.lock();
+			try {
+				final ClassLoader lookupClassLoader = lookup.lookupClass().getClassLoader();
+				final WeakReference<LambdaClassLoader> loaderRef = KNOWN_LOADERS.get(lookupClassLoader);
+				final LambdaClassLoader alreadyPresentLoader = loaderRef == null? null : loaderRef.get();
+				if (alreadyPresentLoader == null) {
+					// LambdaClassLoader reference was lost (or it never existed), so recreate
+					final LambdaClassLoader loader = new LambdaClassLoader(lookupClassLoader);
+					KNOWN_LOADERS.put(loader, new WeakReference<>(loader));
+					return loader;
+				}
+				return alreadyPresentLoader;
+			} finally {
+				GLOBAL_LOCK.unlock();
 			}
-			return loaderRef.get();
 		}
 
 		LambdaClassLoader registerLambda(final String name, final byte[] data) {
@@ -65,17 +72,9 @@ public final class LambdaFactory {
 
 		@Override
 		protected Class<?> findClass(final String name) throws ClassNotFoundException {
-			// Step 1: try loading the class directly without locking; there should never be an instance where a thread
-			//         is trying to load a class that is being registered on another thread
-			Class<?> lambdaClass = this.tryLoadLambdaClass(name);
-			if (lambdaClass != null) {
-				return lambdaClass;
-			}
-
-			// Step 2: if the previous step failed, let's retry with locking just in case the above situation happened
 			this.lock.lock();
 			try {
-				lambdaClass = this.tryLoadLambdaClass(name);
+				final Class<?> lambdaClass = this.tryLoadLambdaClass(name);
 				if (lambdaClass != null) {
 					return lambdaClass;
 				}
@@ -83,7 +82,6 @@ public final class LambdaFactory {
 				this.lock.unlock();
 			}
 
-			// Step 3: Defer to default behavior
 			return super.findClass(name);
 		}
 
