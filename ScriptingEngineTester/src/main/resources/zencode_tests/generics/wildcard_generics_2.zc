@@ -4,10 +4,16 @@ interface Stringable {
 	toString(): string;
 }
 
-expand string {
+class MyString {
+	val value as string;
+
+	this(value as string) {
+		this.value = value;
+	}
+
 	implements Stringable {
 		toString(): string {
-			return this;
+			return this.value;
 		}
 	}
 }
@@ -24,5 +30,5 @@ class MyPrinter {
 	}
 }
 
-val a: Printer<in string> = new MyPrinter();
-a.print("Hello");
+val a: Printer<in MyString> = new MyPrinter();
+a.print(new MyString("Hello"));

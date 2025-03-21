@@ -490,6 +490,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitGenericCast(GenericWildcardCastExpression expression) {
+		return expression.value.accept(this);
+	}
+
+	@Override
 	public Void visitGetField(GetFieldExpression expression) {
 		JavaField field = context.getJavaField(expression.field);
 		field.compileInstanceGet(fieldCompiler, expression.target);

@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -87,7 +88,7 @@ public interface ResolvedType {
 
 	List<MethodSymbol> getInterfaceMethodsToImplement();
 
-	boolean extendsOrImplements(TypeID type);
+	boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions);
 
 	interface SwitchMember {
 		SwitchValue toSwitchValue(List<CompilingVariable> bindings);

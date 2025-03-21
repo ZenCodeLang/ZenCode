@@ -63,11 +63,11 @@ public class CastedEval {
 		if (implicitCast.isPresent())
 			return CastedExpression.implicit(implicitCast.get());
 
-		Optional<Expression> castedImplicitlyTo = value.type.castImplicitTo(position, value, type);
+		Optional<Expression> castedImplicitlyTo = value.type.castImplicitTo(position, value, type, compiler.getAvailableExpansions());
 		if (castedImplicitlyTo.isPresent())
 			return CastedExpression.implicit(castedImplicitlyTo.get());
 
-		Optional<Expression> castedImplicitlyFrom = type.castImplicitFrom(position, value);
+		Optional<Expression> castedImplicitlyFrom = type.castImplicitFrom(position, value, compiler.getAvailableExpansions());
 		if (castedImplicitlyFrom.isPresent())
 			return CastedExpression.implicit(castedImplicitlyFrom.get());
 
@@ -86,7 +86,7 @@ public class CastedEval {
 				return result;
 		}
 
-		if (this.type.extendsOrImplements(value.type, compiler.getAvailableExpansions()))
+		if (value.type.extendsOrImplements(type, compiler.getAvailableExpansions()))
 			return CastedExpression.implicit(new SupertypeCastExpression(position, value, type));
 
 		if (explicit) {

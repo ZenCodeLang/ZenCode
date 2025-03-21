@@ -59,6 +59,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitFunction(C context, FunctionExpression expression);
 
+	R visitGenericCast(C context, GenericWildcardCastExpression expression);
+
 	R visitGetField(C context, GetFieldExpression expression);
 
 	R visitGetFunctionParameter(C context, GetFunctionParameterExpression expression);

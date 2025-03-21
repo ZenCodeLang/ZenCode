@@ -59,6 +59,8 @@ public interface ExpressionVisitor<T> {
 
 	T visitFunction(FunctionExpression expression);
 
+	T visitGenericCast(GenericWildcardCastExpression expression);
+
 	T visitGetField(GetFieldExpression expression);
 
 	T visitGetFunctionParameter(GetFunctionParameterExpression expression);

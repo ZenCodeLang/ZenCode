@@ -1,11 +1,15 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.GenericWildcardCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 import java.util.*;
@@ -98,6 +102,50 @@ public class DefinitionTypeID implements TypeID {
 	@Override
 	public TypeID getSuperType() {
 		return definition.getSupertype(typeArguments).orElse(null);
+	}
+
+	@Override
+	public Optional<Expression> castImplicitTo(
+			CodePosition position,
+			Expression value,
+			TypeID other,
+			List<ExpansionSymbol> expansions) {
+		if (other instanceof DefinitionTypeID) {
+			DefinitionTypeID otherType = (DefinitionTypeID) other;
+			if (definition.equals(otherType.definition)) {
+				if (typeArguments.length != otherType.typeArguments.length)
+					throw new IllegalArgumentException("Type arguments do not match: " + this + " -> " + other);
+
+				for (int i = 0; i < typeArguments.length; i++) {
+					if (!otherType.typeArguments[i].canCastGenericFrom(typeArguments[i], expansions))
+						return Optional.empty();
+				}
+
+				return Optional.of(new GenericWildcardCastExpression(position, value, otherType));
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	@Override
+	public boolean isEquivalentTo(TypeID other, List<ExpansionSymbol> expansions) {
+		if (other instanceof DefinitionTypeID) {
+			DefinitionTypeID otherType = (DefinitionTypeID) other;
+			if (definition.equals(otherType.definition)) {
+				if (typeArguments.length != otherType.typeArguments.length)
+					throw new IllegalArgumentException("Type arguments do not match: " + this + " -> " + other);
+
+				for (int i = 0; i < typeArguments.length; i++) {
+					if (!otherType.typeArguments[i].canCastGenericFrom(typeArguments[i], expansions))
+						return TypeID.super.isEquivalentTo(other, expansions);
+				}
+
+				return true;
+			}
+		}
+
+		return TypeID.super.isEquivalentTo(other, expansions);
 	}
 
 	@Override

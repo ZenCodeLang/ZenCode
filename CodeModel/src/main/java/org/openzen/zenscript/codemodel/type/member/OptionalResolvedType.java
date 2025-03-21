@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type.member;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -153,7 +154,7 @@ public class OptionalResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public boolean extendsOrImplements(TypeID type) {
-		return this.type.equals(type);
+	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
+		return this.type.isEquivalentTo(type, expansions);
 	}
 }

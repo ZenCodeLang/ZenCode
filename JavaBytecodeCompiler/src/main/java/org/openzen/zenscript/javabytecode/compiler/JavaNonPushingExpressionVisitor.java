@@ -14,7 +14,6 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMangler;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
@@ -243,6 +242,11 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
 		return null;
+	}
+
+	@Override
+	public Void visitGenericCast(GenericWildcardCastExpression expression) {
+		return expression.value.accept(this);
 	}
 
 	@Override

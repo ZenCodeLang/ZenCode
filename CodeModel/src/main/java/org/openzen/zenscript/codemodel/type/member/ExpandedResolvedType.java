@@ -182,9 +182,9 @@ public class ExpandedResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public boolean extendsOrImplements(TypeID type) {
-		return base.extendsOrImplements(type)
-				|| expansions.stream().anyMatch(expansion -> expansion.extendsOrImplements(type));
+	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> allExpansions) {
+		return base.extendsOrImplements(type, allExpansions)
+				|| expansions.stream().anyMatch(expansion -> expansion.extendsOrImplements(type, allExpansions));
 	}
 
 	@Override

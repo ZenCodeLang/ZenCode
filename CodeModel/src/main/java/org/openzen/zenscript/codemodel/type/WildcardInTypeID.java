@@ -1,12 +1,18 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.GenericWildcardCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a wildcard type with a lower bound. (e.g. ? super Number)
@@ -32,6 +38,17 @@ public class WildcardInTypeID implements TypeID {
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		lowerBound.extractTypeParameters(typeParameters);
+	}
+
+	@Override
+	public Optional<Expression> castImplicitFrom(CodePosition position, Expression value, List<ExpansionSymbol> expansions) {
+		return lowerBound.castImplicitTo(position, value, lowerBound, expansions)
+				.map(v -> new GenericWildcardCastExpression(position, v, this));
+	}
+
+	@Override
+	public boolean canCastGenericFrom(TypeID fromType, List<ExpansionSymbol> expansions) {
+		return lowerBound.extendsOrImplements(fromType, expansions);
 	}
 
 	@Override

@@ -4,10 +4,16 @@ interface Stringable {
 	toString(): string;
 }
 
-expand string {
+class MyString {
+	val value as string;
+
+	this(value as string) {
+		this.value = value;
+	}
+
 	implements Stringable {
 		toString(): string {
-			return this;
+			return this.value;
 		}
 	}
 }
@@ -20,5 +26,5 @@ class MyClass<T> {
 	}
 }
 
-val a: MyClass<out Stringable> = new MyClass<string>("Hello");
+val a: MyClass<out Stringable> = new MyClass<MyString>(new MyString("Hello"));
 println(a.value.toString());

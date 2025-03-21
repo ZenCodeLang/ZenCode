@@ -4,12 +4,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaNativeMethod;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
@@ -29,7 +31,11 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	}
 
 	@Override
-	public Optional<Expression> castImplicitTo(CodePosition position, Expression value, TypeID other) {
+	public Optional<Expression> castImplicitTo(
+			CodePosition position,
+			Expression value,
+			TypeID other,
+			List<ExpansionSymbol> expansions) {
 		if (other instanceof FunctionTypeID) {
 			FunctionTypeID otherType = (FunctionTypeID) other;
 			if (header.isEquivalentTo(otherType.header))
@@ -40,7 +46,7 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	}
 
 	@Override
-	public Optional<Expression> castImplicitFrom(CodePosition position, Expression value) {
+	public Optional<Expression> castImplicitFrom(CodePosition position, Expression value, List<ExpansionSymbol> expansions) {
 		if (value.type instanceof FunctionTypeID) {
 			FunctionTypeID otherType = (FunctionTypeID) value.type;
 			if (header.isEquivalentTo(otherType.header))

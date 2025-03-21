@@ -300,6 +300,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitGenericCast(GenericWildcardCastExpression expression) {
+		// TODO: check that the generic cast is actually valid
+		expression.value.accept(this);
+		return null;
+	}
+
+	@Override
 	public Void visitGetField(GetFieldExpression expression) {
 		checkFieldAccess(expression.position, expression.field.field);
 		checkNotStatic(expression.position, expression.field);

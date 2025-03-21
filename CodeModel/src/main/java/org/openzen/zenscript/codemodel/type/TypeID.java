@@ -94,12 +94,20 @@ public interface TypeID {
 		return new InvalidTypeID(CodePosition.UNKNOWN, CompileErrors.invalidType());
 	}
 
-	default Optional<Expression> castImplicitTo(CodePosition position, Expression value, TypeID toType) {
+	default Optional<Expression> castImplicitTo(
+			CodePosition position,
+			Expression value,
+			TypeID toType,
+			List<ExpansionSymbol> expansions) {
 		return Optional.empty();
 	}
 
-	default Optional<Expression> castImplicitFrom(CodePosition position, Expression value) {
+	default Optional<Expression> castImplicitFrom(CodePosition position, Expression value, List<ExpansionSymbol> expansions) {
 		return Optional.empty();
+	}
+
+	default boolean canCastGenericFrom(TypeID fromType, List<ExpansionSymbol> expansions) {
+		return false;
 	}
 
 	default Optional<OptionalTypeID> asOptional() {
@@ -141,7 +149,18 @@ public interface TypeID {
 	}
 
 	default boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
-		return this.resolve().withExpansions(expansions).extendsOrImplements(type);
+		return this.resolve().withExpansions(expansions).extendsOrImplements(type, expansions);
+	}
+
+	/**
+	 * Similar to equals, but takes into account wildcard generics.
+	 *
+	 * @param type
+	 * @param expansions
+	 * @return
+	 */
+	default boolean isEquivalentTo(TypeID type, List<ExpansionSymbol> expansions) {
+		return this.equals(type);
 	}
 
 	/**

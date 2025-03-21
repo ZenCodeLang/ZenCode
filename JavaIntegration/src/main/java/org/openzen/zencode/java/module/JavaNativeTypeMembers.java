@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class JavaNativeTypeMembers implements ResolvedType {
 	private final JavaNativeTypeTemplate template;
@@ -114,8 +113,8 @@ public class JavaNativeTypeMembers implements ResolvedType {
 	}
 
 	@Override
-	public boolean extendsOrImplements(TypeID type) {
-		return type.equals(this.type); // TODO
+	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
+		return this.type.isEquivalentTo(type, expansions);
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -175,8 +176,8 @@ public class SubtypeResolvedType implements ResolvedType {
 	}
 
 	@Override
-	public boolean extendsOrImplements(TypeID type) {
-		return streamAllTypes().anyMatch(t -> t.extendsOrImplements(type));
+	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
+		return streamAllTypes().anyMatch(t -> t.extendsOrImplements(type, expansions));
 	}
 
 	private <T> Optional<T> findFirstInLocalOrBaseTypes(Function<ResolvedType, Optional<T>> mapper) {
