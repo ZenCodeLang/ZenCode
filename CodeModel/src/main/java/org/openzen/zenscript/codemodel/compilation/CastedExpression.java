@@ -44,6 +44,10 @@ public class CastedExpression {
 	}
 
 	public static CastedExpression invalidType(Expression expression) {
+		if(expression instanceof InvalidExpression) {
+			InvalidExpression invalidExpression = (InvalidExpression) expression;
+			return new CastedExpression(Level.INVALID, expression, invalidExpression.error);
+		}
 		return new CastedExpression(Level.INVALID, expression, expression.type.asInvalid().error);
 	}
 
