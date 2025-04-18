@@ -171,4 +171,8 @@ public interface TypeID {
 	default String toStringSuffixed() {
 		return toString();
 	}
+
+	default boolean isObjectRoot() {
+		return false;
+	}
 }

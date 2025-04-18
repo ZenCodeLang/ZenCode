@@ -77,6 +77,11 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	}
 
 	@Override
+	public boolean isObjectRoot() {
+		return false;
+	}
+
+	@Override
 	public boolean hasDefaultValue() {
 		return true;
 	}

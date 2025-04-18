@@ -23,6 +23,7 @@ import org.openzen.zenscript.javabytecode.compiler.lambda.LambdaIndyCompiler;
 import org.openzen.zenscript.javabytecode.compiler.lambda.capturing.JavaInvalidCapturedExpressionVisitor;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
+import org.openzen.zenscript.javashared.expressions.JavaObjectCastExpression;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 import java.util.*;
@@ -869,17 +870,22 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitPlatformSpecific(Expression expression) {
-		if (!(expression instanceof JavaFunctionInterfaceCastExpression)) {
+		if (expression instanceof JavaObjectCastExpression) {
+			JavaObjectCastExpression castExpression = (JavaObjectCastExpression) expression;
+			castExpression.value.accept(this);
+			javaWriter.checkCast(Type.getType(Object.class));
+		} else if (expression instanceof JavaFunctionInterfaceCastExpression) {
+			final JavaFunctionInterfaceCastExpression jficExpression = (JavaFunctionInterfaceCastExpression) expression;
+
+			if (jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID) {
+				return jficExpression.value.accept(this);
+			}
+
+			this.lambdaIndyCompiler.convertTypeOfFunctionExpressionViaIndy(jficExpression);
+		} else {
 			throw new AssertionError("Unrecognized platform expression " + expression.getClass().getName() + ": " + expression);
 		}
 
-		final JavaFunctionInterfaceCastExpression jficExpression = (JavaFunctionInterfaceCastExpression) expression;
-
-		if (jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID) {
-			return jficExpression.value.accept(this);
-		}
-
-		this.lambdaIndyCompiler.convertTypeOfFunctionExpressionViaIndy(jficExpression);
 		return null;
 	}
 

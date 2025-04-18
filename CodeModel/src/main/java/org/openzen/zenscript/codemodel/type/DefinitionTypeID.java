@@ -65,22 +65,6 @@ public class DefinitionTypeID implements TypeID {
 		return typeArguments.length > 0;
 	}
 
-	public Map<TypeParameter, TypeID> getTypeParameterMapping() {
-		Map<TypeParameter, TypeID> mapping = new HashMap<>();
-		DefinitionTypeID current = this;
-		do {
-			if (current.typeArguments != null) {
-				if (current.definition.getTypeParameters() != null) {
-					for (int i = 0; i < current.typeArguments.length; i++)
-						mapping.put(current.definition.getTypeParameters()[i], current.typeArguments[i]);
-				}
-			}
-
-			current = current.outer;
-		} while (current != null && !current.definition.isStatic());
-		return mapping;
-	}
-
 	@Override
 	public TypeID instance(GenericMapper mapper) {
 		if (!hasTypeParameters() && outer == null)
@@ -126,6 +110,11 @@ public class DefinitionTypeID implements TypeID {
 		}
 
 		return Optional.empty();
+	}
+
+	@Override
+	public Optional<Expression> castImplicitFrom(CodePosition position, Expression value, List<ExpansionSymbol> expansions) {
+		return definition.castImplicitFrom(position, typeArguments, value, expansions);
 	}
 
 	@Override
@@ -240,8 +229,8 @@ public class DefinitionTypeID implements TypeID {
 			type.extractTypeParameters(typeParameters);
 	}
 
-	/*@Override
-	public Expression castImplicitFrom(CodePosition position, Expression value) {
-		return new SubtypeCastExpression(position, value, this);
-	}*/
+	@Override
+	public boolean isObjectRoot() {
+		return definition.isObjectRoot();
+	}
 }

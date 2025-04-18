@@ -1,10 +1,13 @@
 package org.openzen.zenscript.codemodel.identifiers;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,5 +35,13 @@ public interface TypeSymbol extends DefinitionSymbol {
 	@Override
 	default Optional<TypeSymbol> asType() {
 		return Optional.of(this);
+	}
+
+	default Optional<Expression> castImplicitFrom(CodePosition position, TypeID[] typeArguments, Expression value, List<ExpansionSymbol> expansions) {
+		return Optional.empty();
+	}
+
+	default boolean isObjectRoot() {
+		return false;
 	}
 }

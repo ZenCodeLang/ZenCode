@@ -54,7 +54,7 @@ public class WildcardOutTypeID implements TypeID {
 
 	@Override
 	public boolean canCastGenericFrom(TypeID toType, List<ExpansionSymbol> expansions) {
-		return toType.extendsOrImplements(upperBound, expansions);
+		return toType.extendsOrImplements(upperBound, expansions) || upperBound.isObjectRoot();
 	}
 
 	@Override

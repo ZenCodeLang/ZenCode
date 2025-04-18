@@ -6,27 +6,28 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitorWithContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.javashared.JavaContext;
 
-public abstract class JavaSpecificExpression extends Expression {
-	public JavaSpecificExpression(CodePosition position, TypeID type, TypeID thrownType) {
-		super(position, type, thrownType);
+public class JavaObjectCastExpression extends Expression {
+	public final Expression value;
+
+	public JavaObjectCastExpression(CodePosition position, TypeID type, Expression value) {
+		super(position, type, value.thrownType);
+
+		this.value = value;
 	}
 
-	public abstract void compile(JavaContext context);
-
 	@Override
-	public final <T> T accept(ExpressionVisitor<T> visitor) {
+	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitPlatformSpecific(this);
 	}
 
 	@Override
-	public final <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
 		return visitor.visitPlatformSpecific(context, this);
 	}
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
+		return new JavaObjectCastExpression(position, type, transformer.transform(value));
 	}
 }

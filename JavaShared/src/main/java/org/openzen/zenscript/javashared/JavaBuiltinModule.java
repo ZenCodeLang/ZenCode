@@ -3,6 +3,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.type.builtin.*;
+import org.openzen.zenscript.javashared.types.ObjectTypeSymbol;
 
 public class JavaBuiltinModule {
 	public static final JavaNativeMethod OBJECT_HASHCODE = JavaNativeMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
@@ -129,6 +130,8 @@ public class JavaBuiltinModule {
 		for (BuiltinMethodSymbol builtin : BuiltinMethodSymbol.values()) {
 			result.setMethodInfo(builtin, new JavaBuiltinMethod(builtin));
 		}
+
+		result.setClassInfo(ObjectTypeSymbol.INSTANCE, new JavaClass("java.lang", "Object", JavaClass.Kind.CLASS));
 
 		result.setMethodInfo(BuiltinMethodSymbol.BOOL_TO_STRING, JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/lang/String;"));
 		result.setMethodInfo(BuiltinMethodSymbol.BOOL_PARSE, JavaNativeMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z"));
