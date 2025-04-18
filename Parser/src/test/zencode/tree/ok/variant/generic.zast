@@ -1,0 +1,34 @@
+FILE
+  DEF_VARIANT
+    K_VARIANT "variant"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      VARIANT_OPTION
+        NAME
+          T_IDENTIFIER "A"
+        VARIANT_OPTION_TYPES
+          T_BROPEN "("
+          TYPE
+            NAME
+              T_IDENTIFIER "T"
+          T_BRCLOSE ")"
+      T_COMMA ","
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      VARIANT_OPTION
+        NAME
+          T_IDENTIFIER "B"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

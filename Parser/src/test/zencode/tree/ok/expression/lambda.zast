@@ -1,0 +1,13 @@
+FILE
+  EXPR_FUNCTION
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    T_LAMBDA "=>"
+    T_WHITESPACE_SPACE " "
+    LAMBDA_BODY
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "bar"
+  T_SEMICOLON ";"

@@ -1,0 +1,8 @@
+class Foo {
+	set bar {
+
+	}
+	set baz as string {
+
+	}
+}

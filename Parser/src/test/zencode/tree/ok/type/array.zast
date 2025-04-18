@@ -1,0 +1,8 @@
+FILE
+  EXPR_TYPE
+    ARRAY
+      TYPE
+        K_STRING "string"
+      T_SQOPEN "["
+      T_SQCLOSE "]"
+  T_SEMICOLON ";"

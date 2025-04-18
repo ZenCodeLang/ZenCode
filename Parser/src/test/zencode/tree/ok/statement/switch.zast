@@ -1,0 +1,64 @@
+FILE
+  STMT_SWITCH
+    K_SWITCH "switch"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    SWITCH_CASES
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_SWITCH
+    K_SWITCH "switch"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    SWITCH_CASES
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      SWITCH_CASE
+        K_CASE "case"
+        T_WHITESPACE_SPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
+        T_COLON ":"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+        T_WHITESPACE_TAB "	"
+        STMT_BREAK
+          K_BREAK "break"
+          T_SEMICOLON ";"
+          T_WHITESPACE_NEWLINE "\n"
+          T_WHITESPACE_TAB "	"
+      SWITCH_CASE
+        K_DEFAULT "default"
+        T_COLON ":"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+        T_WHITESPACE_TAB "	"
+        STMT_BREAK
+          K_BREAK "break"
+          T_SEMICOLON ";"
+          T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_SWITCH
+    K_SWITCH "switch"
+    T_COLON ":"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "bar"
+      T_WHITESPACE_SPACE " "
+    SWITCH_CASES
+      T_AOPEN "{"
+      T_ACLOSE "}"

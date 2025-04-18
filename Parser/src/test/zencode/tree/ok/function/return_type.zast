@@ -1,0 +1,39 @@
+FILE
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      PARAM_LIST
+        T_BROPEN "("
+        T_BRCLOSE ")"
+      T_WHITESPACE_SPACE " "
+      TYPE_DECLARATION
+        K_AS "as"
+        T_WHITESPACE_SPACE " "
+        TYPE
+          K_VOID "void"
+        T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      PARAM_LIST
+        T_BROPEN "("
+        T_BRCLOSE ")"
+      TYPE_DECLARATION
+        T_COLON ":"
+        T_WHITESPACE_SPACE " "
+        TYPE
+          K_VOID "void"
+        T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

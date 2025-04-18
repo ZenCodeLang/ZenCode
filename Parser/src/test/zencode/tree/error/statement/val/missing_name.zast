@@ -1,0 +1,13 @@
+FILE
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "x"
+    T_SEMICOLON ";"
+(2:0->3:0)expected a name
+(2:0->3:0)expected [T_SEMICOLON]

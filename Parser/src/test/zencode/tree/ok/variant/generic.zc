@@ -1,0 +1,4 @@
+variant Foo<T> {
+	A(T),
+	B
+}

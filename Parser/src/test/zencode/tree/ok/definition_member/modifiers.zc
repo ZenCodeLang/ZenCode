@@ -1,0 +1,15 @@
+class Foo {
+	internal var bar;
+	public var bar1;
+	private var bar2;
+	const var bar3;
+	abstract var bar4;
+	final var bar5;
+	static var bar6;
+	protected var bar7;
+	implicit var bar8;
+	extern var bar9;
+	override var bar10;
+	private implicit var baz;
+	public static final var qux;
+}

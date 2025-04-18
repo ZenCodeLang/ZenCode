@@ -1,0 +1,16 @@
+FILE
+  DEF_STRUCT
+    K_STRUCT "struct"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "X"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

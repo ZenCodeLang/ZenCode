@@ -1,0 +1,50 @@
+FILE
+  STMT_IF
+    K_IF "if"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_IF
+    K_IF "if"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    STMT_ELSE
+      K_ELSE "else"
+      T_WHITESPACE_SPACE " "
+      BLOCK
+        T_AOPEN "{"
+        T_ACLOSE "}"
+      T_WHITESPACE_NEWLINE "\n"
+  STMT_IF
+    K_IF "if"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    STMT_ELSE
+      K_ELSE "else"
+      T_WHITESPACE_SPACE " "
+      STMT_IF
+        K_IF "if"
+        T_WHITESPACE_SPACE " "
+        EXPR_BOOL
+          K_FALSE "false"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"

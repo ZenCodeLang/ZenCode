@@ -1,0 +1,5 @@
+try {} catch {}
+try {} catch {} catch {}
+try {} catch e {}
+try {} finally {}
+try foo = "" {}

@@ -1,0 +1,9 @@
+FILE
+  EXPR_CALL
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    CALL_ARGUMENTS
+      T_BROPEN "("
+      T_BRCLOSE ")"
+  T_SEMICOLON ";"

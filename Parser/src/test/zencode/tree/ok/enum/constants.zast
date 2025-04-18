@@ -1,0 +1,21 @@
+FILE
+  DEF_ENUM
+    K_ENUM "enum"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    T_AOPEN "{"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    ENUM_CONSTANT
+      NAME
+        T_IDENTIFIER "BAR"
+    T_COMMA ","
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    ENUM_CONSTANT
+      NAME
+        T_IDENTIFIER "BAZ"
+      T_WHITESPACE_NEWLINE "\n"
+    T_ACLOSE "}"

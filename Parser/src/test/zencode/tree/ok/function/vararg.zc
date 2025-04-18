@@ -1,0 +1,2 @@
+function foo(bar... as string){}
+function bar(foo...: string){}

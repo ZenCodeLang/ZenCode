@@ -1,0 +1,25 @@
+FILE
+  EXPR_CALL
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "println"
+    CALL_ARGUMENTS
+      T_BROPEN "("
+      CALL_ARGUMENT
+        EXPR_STRING
+          T_STRING_DQ """"
+      T_BRCLOSE ")"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+  EXPR_CALL
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "println"
+    CALL_ARGUMENTS
+      T_BROPEN "("
+      CALL_ARGUMENT
+        EXPR_STRING
+          T_STRING_DQ """"
+      T_BRCLOSE ")"
+  T_SEMICOLON ";"
+(2:0->3:0)expected [T_SEMICOLON]

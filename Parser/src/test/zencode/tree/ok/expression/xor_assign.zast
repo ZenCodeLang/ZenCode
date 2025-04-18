@@ -1,0 +1,11 @@
+FILE
+  EXPR_XOR_ASSIGN
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    T_XORASSIGN "^="
+    T_WHITESPACE_SPACE " "
+    EXPR_INT
+      T_INT "1"
+  T_SEMICOLON ";"

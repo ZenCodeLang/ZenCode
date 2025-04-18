@@ -1,0 +1,5 @@
+val foo;
+val foo: string;
+val foo as string;
+val foo = "";
+val foo: string = "";

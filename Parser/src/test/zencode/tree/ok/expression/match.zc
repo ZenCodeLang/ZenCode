@@ -1,0 +1,4 @@
+match foo {
+	Foo => bar,
+	default => baz
+};

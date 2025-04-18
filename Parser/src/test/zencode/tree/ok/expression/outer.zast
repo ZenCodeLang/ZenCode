@@ -1,0 +1,8 @@
+FILE
+  EXPR_OUTER
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_DOT "."
+    T_DOLLAR "$"
+  T_SEMICOLON ";"

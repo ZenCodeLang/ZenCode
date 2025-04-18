@@ -1,0 +1,10 @@
+FILE
+  DEF_EXPANSION
+    K_EXPAND "expand"
+    T_WHITESPACE_SPACE " "
+    TYPE
+      K_STRING "string"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

@@ -1,0 +1,8 @@
+FILE
+  IMPORT
+    K_IMPORT "import"
+    T_WHITESPACE_SPACE " "
+    T_DOT "."
+    NAME
+      T_IDENTIFIER "Bar"
+    T_SEMICOLON ";"

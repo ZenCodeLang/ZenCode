@@ -1,0 +1,4 @@
+FILE
+  BLOCK
+    T_AOPEN "{"
+    T_ACLOSE "}"

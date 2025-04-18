@@ -53,6 +53,10 @@ public final class CodePosition {
 		return new CodePosition(file, fromLine, fromLineOffset, fromLine, fromLineOffset + characters);
 	}
 
+	public CodePosition subPosition(int skipCharacters) {
+		return new CodePosition(file, fromLine, fromLineOffset + skipCharacters, toLine, toLineOffset);
+	}
+
 	public String toString() {
 		return fromLine == 0 && fromLineOffset == 0 ? file.getFilename() : file.getFilename() + ":" + Integer.toString(fromLine) + ":" + Integer.toString(fromLineOffset);
 	}

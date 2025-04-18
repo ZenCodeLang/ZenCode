@@ -1,0 +1,4 @@
+class Foo {
+	get bar {}
+	get baz as string {}
+}

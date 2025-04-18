@@ -1,0 +1,24 @@
+FILE
+  DEF_EXPANSION
+    K_EXPAND "expand"
+    T_WHITESPACE_SPACE " "
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    TYPE
+      NAME
+        T_IDENTIFIER "List"
+      TYPE_PARAMS
+        T_LESS "<"
+        TYPE
+          NAME
+            T_IDENTIFIER "T"
+        T_GREATER ">"
+        T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

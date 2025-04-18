@@ -1,0 +1,76 @@
+FILE
+  STMT_TRY
+    K_TRY "try"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    K_CATCH "catch"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_TRY
+    K_TRY "try"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    K_CATCH "catch"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    K_CATCH "catch"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_TRY
+    K_TRY "try"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    K_CATCH "catch"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "e"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_TRY
+    K_TRY "try"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_SPACE " "
+    K_FINALLY "finally"
+    T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_TRY
+    K_TRY "try"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE_SPACE " "
+    EXPR_STRING
+      T_STRING_DQ """"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

@@ -1,0 +1,13 @@
+FILE
+  EXPR_TYPE
+    GENERIC_MAP
+      TYPE
+        K_STRING "string"
+      T_SQOPEN "["
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_SQCLOSE "]"
+  T_SEMICOLON ";"

@@ -1,0 +1,6 @@
+FILE
+  EXPR_NOT
+    T_NOT "!"
+    EXPR_BOOL
+      K_TRUE "true"
+  T_SEMICOLON ";"

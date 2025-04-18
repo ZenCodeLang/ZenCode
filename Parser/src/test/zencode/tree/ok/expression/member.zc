@@ -1,0 +1,4 @@
+foo.bar;
+foo.bar<T>();
+foo."bar";
+foo.'bar';

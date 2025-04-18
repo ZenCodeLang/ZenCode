@@ -1,0 +1,23 @@
+FILE
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE_SPACE " "
+    EXPR_STRING
+      T_STRING_DQ """"
+    T_SEMICOLON ";"
+(2:0->3:0)expected expression
+(2:0->3:0)expected [T_SEMICOLON]

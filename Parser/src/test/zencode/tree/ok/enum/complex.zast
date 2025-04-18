@@ -1,0 +1,87 @@
+FILE
+  DEF_ENUM
+    K_ENUM "enum"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    T_AOPEN "{"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    ENUM_CONSTANT
+      NAME
+        T_IDENTIFIER "BAR"
+      CALL_ARGUMENTS
+        T_BROPEN "("
+        CALL_ARGUMENT
+          EXPR_STRING
+            T_STRING_DQ ""hello world""
+        T_BRCLOSE ")"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    MEMB_FIELD
+      K_VAR "var"
+      T_WHITESPACE_SPACE " "
+      NAME
+        T_IDENTIFIER "value"
+      T_WHITESPACE_SPACE " "
+      TYPE_DECLARATION
+        K_AS "as"
+        T_WHITESPACE_SPACE " "
+        TYPE
+          K_STRING "string"
+        T_WHITESPACE_SPACE " "
+      FIELD_AUTO
+        T_COLON ":"
+        T_WHITESPACE_SPACE " "
+        AUTO_GET
+          K_GET "get"
+        T_COMMA ","
+        T_WHITESPACE_SPACE " "
+        AUTO_SET
+          K_SET "set"
+      T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    MEMB_CONSTRUCTOR
+      K_THIS "this"
+      FUNCTION_HEADER
+        PARAM_LIST
+          T_BROPEN "("
+          PARAM
+            NAME
+              T_IDENTIFIER "value"
+            TYPE_DECLARATION
+              T_COLON ":"
+              T_WHITESPACE_SPACE " "
+              TYPE
+                K_STRING "string"
+          T_BRCLOSE ")"
+        T_WHITESPACE_SPACE " "
+      BLOCK
+        T_AOPEN "{"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+        T_WHITESPACE_TAB "	"
+        EXPR_ASSIGN
+          EXPR_MEMBER
+            EXPR_THIS
+              K_THIS "this"
+            T_DOT "."
+            NAME
+              T_IDENTIFIER "value"
+            T_WHITESPACE_SPACE " "
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_VARIABLE
+            NAME
+              T_IDENTIFIER "value"
+        T_SEMICOLON ";"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+        T_ACLOSE "}"
+      T_WHITESPACE_NEWLINE "\n"
+    T_ACLOSE "}"

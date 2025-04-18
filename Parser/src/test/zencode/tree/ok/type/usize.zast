@@ -1,0 +1,5 @@
+FILE
+  EXPR_TYPE
+    TYPE
+      K_USIZE "usize"
+  T_SEMICOLON ";"

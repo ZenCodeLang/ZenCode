@@ -1,0 +1,7 @@
+FILE
+  EXPR_TYPE
+    OPTIONAL
+      TYPE
+        K_STRING "string"
+      T_QUEST "?"
+  T_SEMICOLON ";"

@@ -1,0 +1,10 @@
+FILE
+  EXPR_EQ
+    EXPR_INT
+      T_INT "1"
+      T_WHITESPACE_SPACE " "
+    T_EQUAL2 "=="
+    T_WHITESPACE_SPACE " "
+    EXPR_INT
+      T_INT "1"
+  T_SEMICOLON ";"

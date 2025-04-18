@@ -1,0 +1,6 @@
+variant Foo {
+	A,
+	B;
+
+	public bar() {}
+}

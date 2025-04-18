@@ -1,0 +1,4 @@
+FILE
+  EXPR_INT
+    T_INT "1"
+  T_SEMICOLON ";"

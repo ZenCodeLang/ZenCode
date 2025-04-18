@@ -1,0 +1,13 @@
+FILE
+  DEF_ALIAS
+    K_ALIAS "alias"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    TYPE_DECLARATION
+      K_AS "as"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        K_STRING "string"
+    T_SEMICOLON ";"

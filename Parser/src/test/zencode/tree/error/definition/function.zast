@@ -1,0 +1,21 @@
+FILE
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      PARAM_LIST
+        T_BROPEN "("
+        T_BRCLOSE ")"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected a name
+(2:0->3:0)expected a function header
+(2:0->3:0)expected a function body

@@ -1,0 +1,8 @@
+FILE
+  EXPR_PANIC
+    K_PANIC "panic"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+  T_SEMICOLON ";"

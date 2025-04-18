@@ -1,0 +1,3 @@
+enum Foo as string {
+	BAR = "bar";
+}

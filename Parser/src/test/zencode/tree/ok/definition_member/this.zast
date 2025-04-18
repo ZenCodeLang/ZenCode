@@ -1,0 +1,38 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_CONSTRUCTOR
+        K_THIS "this"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_CONSTRUCTOR
+        MODIFIERS
+          K_PUBLIC "public"
+          T_WHITESPACE_SPACE " "
+        K_THIS "this"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

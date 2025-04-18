@@ -1,0 +1,44 @@
+FILE
+  EXPR_MEMBER
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_DOT "."
+    NAME
+      T_IDENTIFIER "bar"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_CALL
+    EXPR_MEMBER
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "foo"
+      T_DOT "."
+      NAME
+        T_IDENTIFIER "bar"
+      TYPE_PARAMS
+        T_LESS "<"
+        TYPE
+          NAME
+            T_IDENTIFIER "T"
+        T_GREATER ">"
+    CALL_ARGUMENTS
+      T_BROPEN "("
+      T_BRCLOSE ")"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_MEMBER
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_DOT "."
+    T_STRING_DQ ""bar""
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_MEMBER
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_DOT "."
+    T_STRING_SQ "'bar'"
+  T_SEMICOLON ";"

@@ -1,0 +1,4 @@
+FILE
+  EXPR_OUTER
+    T_DOLLAR "$"
+  T_SEMICOLON ";"

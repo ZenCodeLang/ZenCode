@@ -1,0 +1,9 @@
+switch foo {}
+switch foo {
+	case "":
+		break;
+	default:
+		break;
+}
+
+switch: foo bar {}

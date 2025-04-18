@@ -1,0 +1,4 @@
+class Foo {
+	var bar as string : get,
+	var bar as string : get, set;
+}

@@ -1,0 +1,4 @@
+FILE
+  EXPR_FLOAT
+    T_FLOAT "1.0"
+  T_SEMICOLON ";"

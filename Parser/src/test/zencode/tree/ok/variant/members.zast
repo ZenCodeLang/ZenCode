@@ -1,0 +1,40 @@
+FILE
+  DEF_VARIANT
+    K_VARIANT "variant"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      VARIANT_OPTION
+        NAME
+          T_IDENTIFIER "A"
+      T_COMMA ","
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      VARIANT_OPTION
+        NAME
+          T_IDENTIFIER "B"
+      T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_METHOD
+        MODIFIERS
+          K_PUBLIC "public"
+          T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

@@ -1,0 +1,22 @@
+FILE
+  EXPR_ARRAY
+    T_SQOPEN "["
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_ARRAY
+    T_SQOPEN "["
+    EXPR_INT
+      T_INT "1"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_ARRAY
+    T_SQOPEN "["
+    EXPR_INT
+      T_INT "1"
+    T_COMMA ","
+    EXPR_INT
+      T_INT "2"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"

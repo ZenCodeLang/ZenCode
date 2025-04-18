@@ -1,0 +1,28 @@
+FILE
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      PARAM_LIST
+        T_BROPEN "("
+        PARAM
+          NAME
+            T_IDENTIFIER "bar"
+          T_WHITESPACE_SPACE " "
+          TYPE_DECLARATION
+            K_AS "as"
+            T_WHITESPACE_SPACE " "
+            TYPE
+              K_STRING "string"
+            T_WHITESPACE_SPACE " "
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_BRCLOSE ")"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

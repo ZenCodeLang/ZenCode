@@ -1,0 +1,39 @@
+FILE
+  STMT_FOR
+    K_FOR "for"
+    T_WHITESPACE_SPACE " "
+    FOR_NAMES
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    K_IN "in"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "bar"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_FOR
+    K_FOR "for"
+    T_WHITESPACE_SPACE " "
+    FOR_NAMES
+      NAME
+        T_IDENTIFIER "foo"
+      T_COMMA ","
+      T_WHITESPACE_SPACE " "
+      NAME
+        T_IDENTIFIER "baz"
+      T_WHITESPACE_SPACE " "
+    K_IN "in"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "bar"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"

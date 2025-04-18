@@ -1,0 +1,25 @@
+FILE
+  EXPR_CAST
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    K_AS "as"
+    T_WHITESPACE_SPACE " "
+    TYPE
+      NAME
+        T_IDENTIFIER "bar"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_CAST
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    K_AS "as"
+    T_QUEST "?"
+    T_WHITESPACE_SPACE " "
+    TYPE
+      NAME
+        T_IDENTIFIER "bar"
+  T_SEMICOLON ";"

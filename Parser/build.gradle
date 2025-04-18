@@ -6,4 +6,15 @@ plugins {
 dependencies {
 	api project(':Shared')
 	api project(':CodeModel')
+	testImplementation libs.jupiter.api
+	testImplementation libs.junit.platform.engine
+	testRuntimeOnly libs.jupiter.engine
+}
+
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "PASSED", "FAILED", "SKIPPED"
+	}
 }

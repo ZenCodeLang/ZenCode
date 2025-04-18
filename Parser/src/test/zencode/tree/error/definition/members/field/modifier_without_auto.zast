@@ -1,0 +1,55 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          MODIFIERS
+            K_PUBLIC "public"
+            T_WHITESPACE_NEWLINE "\n"
+            T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_GET "get"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"
+(3:0->3:1)expected auto
+(3:0->3:1)expected [T_SEMICOLON]

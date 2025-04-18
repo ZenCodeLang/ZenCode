@@ -1,0 +1,12 @@
+FILE
+  STMT_THROW
+    K_THROW "throw"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+    EXPR_THROW
+      K_THROW "throw"
+      T_WHITESPACE_SPACE " "
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "foo"
+    T_SEMICOLON ";"

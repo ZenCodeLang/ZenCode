@@ -1,0 +1,2 @@
+enum Foo as string {}
+enum Foo: string {}

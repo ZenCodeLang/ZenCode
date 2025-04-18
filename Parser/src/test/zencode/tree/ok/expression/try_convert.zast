@@ -1,0 +1,9 @@
+FILE
+  EXPR_TRY_CONVERT
+    K_TRY "try"
+    T_QUEST "?"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+  T_SEMICOLON ";"

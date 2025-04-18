@@ -1,0 +1,20 @@
+FILE
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      TYPE_PARAMS
+        T_LESS "<"
+        TYPE_PARAM
+          NAME
+            T_IDENTIFIER "T"
+        T_GREATER ">"
+      PARAM_LIST
+        T_BROPEN "("
+        T_BRCLOSE ")"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

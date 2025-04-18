@@ -1,0 +1,4 @@
+class Foo {
+	val bar as string :
+	val bar as string : get;
+}

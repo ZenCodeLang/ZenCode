@@ -1,0 +1,17 @@
+FILE
+  STMT_SWITCH
+    K_SWITCH "switch"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_SWITCH
+    K_SWITCH "switch"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    SWITCH_CASES
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected expression
+(2:0->3:0)expected switch cases

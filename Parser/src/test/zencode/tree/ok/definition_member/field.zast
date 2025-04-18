@@ -1,0 +1,480 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar1"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar2"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_GET "get"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar3"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar4"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PROTECTED "protected"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar5"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar6"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar7"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PROTECTED "protected"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar8"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar9"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_GET "get"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar10"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar11"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PROTECTED "protected"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar12"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar13"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PUBLIC "public"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar14"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            MODIFIERS
+              K_PROTECTED "protected"
+              T_WHITESPACE_SPACE " "
+            K_SET "set"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz1"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz2"
+        T_WHITESPACE_SPACE " "
+        EXPR_ASSIGN
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz3"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        EXPR_ASSIGN
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz4"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+            T_WHITESPACE_SPACE " "
+        EXPR_ASSIGN
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz5"
+        T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE_SPACE " "
+          AUTO_SET
+            K_SET "set"
+            T_WHITESPACE_SPACE " "
+        EXPR_ASSIGN
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      T_WHITESPACE_SPACE " "
+      MEMB_FIELD
+        K_VAL "val"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz6"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          AUTO_GET
+            K_GET "get"
+            T_WHITESPACE_SPACE " "
+        EXPR_ASSIGN
+          T_ASSIGN "="
+          T_WHITESPACE_SPACE " "
+          EXPR_STRING
+            T_STRING_DQ """"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_CONST "const"
+          T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "qux"
+        T_WHITESPACE_SPACE " "
+        T_ASSIGN "="
+        T_WHITESPACE_SPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
+        T_SEMICOLON ";"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_CONST "const"
+          T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "qux1"
+        T_WHITESPACE_SPACE " "
+        TYPE_DECLARATION
+          K_AS "as"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        T_ASSIGN "="
+        T_WHITESPACE_SPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
+        T_SEMICOLON ";"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

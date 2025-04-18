@@ -1,0 +1,11 @@
+FILE
+  STMT_RETURN
+    K_RETURN "return"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_RETURN
+    K_RETURN "return"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+    T_SEMICOLON ";"

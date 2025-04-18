@@ -1,0 +1,371 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_CAT "~"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_ADD "+"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SUB "-"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_MUL "*"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_DIV "/"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_MOD "%"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_AND "&"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_OR "|"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_XOR "^"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_NOT "!"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_ADDASSIGN "+="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SUBASSIGN "-="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_CATASSIGN "~="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_MULASSIGN "*="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_DIVASSIGN "/="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_MODASSIGN "%="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_ANDASSIGN "&="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_ORASSIGN "|="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_XORASSIGN "^="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_INCREMENT "++"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_DECREMENT "--"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_DOT2 ".."
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SHL "<<"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SHR ">>"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_USHR ">>>"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SHLASSIGN "<<="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_SHRASSIGN ">>="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_USHRASSIGN ">>>="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        T_EQUAL2 "=="
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_OPERATOR
+        K_IN "in"
+        FUNCTION_HEADER
+          PARAM_LIST
+            T_BROPEN "("
+            T_BRCLOSE ")"
+          T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

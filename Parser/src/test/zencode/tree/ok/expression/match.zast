@@ -1,0 +1,35 @@
+FILE
+  EXPR_MATCH
+    K_MATCH "match"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    T_AOPEN "{"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    EXPR_MATCH_KEY
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "Foo"
+        T_WHITESPACE_SPACE " "
+    T_LAMBDA "=>"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "bar"
+    T_COMMA ","
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_TAB "	"
+    EXPR_MATCH_KEY
+      K_DEFAULT "default"
+      T_WHITESPACE_SPACE " "
+    T_LAMBDA "=>"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "baz"
+      T_WHITESPACE_NEWLINE "\n"
+    T_ACLOSE "}"
+  T_SEMICOLON ";"

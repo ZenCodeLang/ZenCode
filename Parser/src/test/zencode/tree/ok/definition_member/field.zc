@@ -1,0 +1,26 @@
+class Foo {
+	var bar;
+	var bar1 : get;
+	var bar2 : public get;
+	var bar3 : set;
+	var bar4 : protected set;
+	var bar5 : get, set;
+	var bar6 : public get, public set;
+	var bar7 : get, protected set;
+	var bar8 as string : get;
+	var bar9 as string : public get;
+	var bar10 as string : set;
+	var bar11 as string : protected set;
+	var bar12 as string : get, set;
+	var bar13 as string : public get, public set;
+	var bar14 as string : get, protected set;
+	val baz;
+	val baz1 as string;
+	val baz2 = "";
+	val baz3 as string = "";
+    val baz4 : get = "";
+    var baz5 : get, set = "";
+    val baz6 as string : get = "";
+	const qux = "";
+	const qux1 as string = "";
+}

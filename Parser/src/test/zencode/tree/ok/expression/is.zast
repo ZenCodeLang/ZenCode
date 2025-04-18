@@ -1,0 +1,10 @@
+FILE
+  EXPR_IS
+    EXPR_INT
+      T_INT "1"
+      T_WHITESPACE_SPACE " "
+    K_IS "is"
+    T_WHITESPACE_SPACE " "
+    TYPE
+      K_STRING "string"
+  T_SEMICOLON ";"

@@ -1,0 +1,30 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "X"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+        T_WHITESPACE_SPACE " "
+        TYPE_BOUND
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_STRING "string"
+          T_WHITESPACE_SPACE " "
+        SUPER_BOUND
+          T_COLON ":"
+          T_WHITESPACE_SPACE " "
+          K_SUPER "super"
+          T_WHITESPACE_SPACE " "
+          TYPE
+            K_INT "int"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

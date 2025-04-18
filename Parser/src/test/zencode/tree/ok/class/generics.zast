@@ -1,0 +1,21 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "X"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_COMMA ","
+      T_WHITESPACE_SPACE " "
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "U"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

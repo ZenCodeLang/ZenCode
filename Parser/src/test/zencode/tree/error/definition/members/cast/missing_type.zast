@@ -1,0 +1,28 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_CASTER
+        K_AS "as"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_CASTER
+        K_AS "as"
+        T_WHITESPACE_SPACE " "
+        TYPE
+          K_STRING "string"
+        T_WHITESPACE_SPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_ACLOSE "}"
+        T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"
+(3:0->3:1)expected type
+(3:0->3:1)expected a function body

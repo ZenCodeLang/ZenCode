@@ -1,0 +1,42 @@
+FILE
+  DEF_INTERFACE
+    K_INTERFACE "interface"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    SUPER_TYPES
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      SUPER_TYPE
+        TYPE
+          NAME
+            T_IDENTIFIER "Bar"
+          T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  DEF_INTERFACE
+    K_INTERFACE "interface"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Baz"
+    T_WHITESPACE_SPACE " "
+    SUPER_TYPES
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      SUPER_TYPE
+        TYPE
+          NAME
+            T_IDENTIFIER "Foo"
+      T_COMMA ","
+      T_WHITESPACE_SPACE " "
+      SUPER_TYPE
+        TYPE
+          NAME
+            T_IDENTIFIER "Qux"
+          T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

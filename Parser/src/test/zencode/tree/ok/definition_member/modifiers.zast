@@ -1,0 +1,160 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_INTERNAL "internal"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_PUBLIC "public"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar1"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_PRIVATE "private"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar2"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_CONST "const"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar3"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_ABSTRACT "abstract"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar4"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_FINAL "final"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar5"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_STATIC "static"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar6"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_PROTECTED "protected"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar7"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_IMPLICIT "implicit"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar8"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_EXTERN "extern"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar9"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_OVERRIDE "override"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar10"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_PRIVATE "private"
+          T_WHITESPACE_SPACE " "
+          K_IMPLICIT "implicit"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "baz"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        MODIFIERS
+          K_PUBLIC "public"
+          T_WHITESPACE_SPACE " "
+          K_STATIC "static"
+          T_WHITESPACE_SPACE " "
+          K_FINAL "final"
+          T_WHITESPACE_SPACE " "
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "qux"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"

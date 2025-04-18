@@ -1,0 +1,56 @@
+FILE
+  EXPR_ARRAY
+    T_SQOPEN "["
+    EXPR_MAP
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_ARRAY
+    T_SQOPEN "["
+    EXPR_MAP
+      T_AOPEN "{"
+      EXPR_MAP_KEY
+        EXPR_VARIABLE
+          NAME
+            T_IDENTIFIER "foo"
+        T_COLON ":"
+        T_WHITESPACE_SPACE " "
+      EXPR_MAP_VALUE
+        EXPR_STRING
+          T_STRING_DQ ""bar""
+      T_ACLOSE "}"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_ARRAY
+    T_SQOPEN "["
+    EXPR_MAP
+      T_AOPEN "{"
+      T_WHITESPACE_SPACE " "
+      EXPR_MAP_KEY
+        EXPR_VARIABLE
+          NAME
+            T_IDENTIFIER "foo"
+          T_WHITESPACE_SPACE " "
+        T_COLON ":"
+        T_WHITESPACE_SPACE " "
+      EXPR_MAP_VALUE
+        EXPR_STRING
+          T_STRING_DQ ""bar""
+          T_WHITESPACE_SPACE " "
+      T_COMMA ","
+      T_WHITESPACE_SPACE " "
+      EXPR_MAP_KEY
+        EXPR_STRING
+          T_STRING_DQ ""baz""
+        T_COLON ":"
+        T_WHITESPACE_SPACE " "
+      EXPR_MAP_VALUE
+        EXPR_INT
+          T_INT "1"
+          T_WHITESPACE_SPACE " "
+      T_ACLOSE "}"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"

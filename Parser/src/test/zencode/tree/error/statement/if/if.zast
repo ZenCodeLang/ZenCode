@@ -1,0 +1,15 @@
+FILE
+  STMT_IF
+    K_IF "if"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_IF
+    K_IF "if"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected expression

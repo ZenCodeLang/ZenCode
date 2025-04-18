@@ -1,0 +1,23 @@
+FILE
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    TYPE_DECLARATION
+      T_COLON ":"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    TYPE_DECLARATION
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        K_STRING "string"
+    T_SEMICOLON ";"
+(2:0->3:0)expected type
+(2:0->3:0)expected [T_SEMICOLON]

@@ -1,0 +1,14 @@
+FILE
+  STMT_THROW
+    K_THROW "throw"
+    T_WHITESPACE_SPACE " "
+    EXPR_NEW
+      K_NEW "new"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        NAME
+          T_IDENTIFIER "Exception"
+      CALL_ARGUMENTS
+        T_BROPEN "("
+        T_BRCLOSE ")"
+    T_SEMICOLON ";"

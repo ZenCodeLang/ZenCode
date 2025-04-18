@@ -1,0 +1,27 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_TAB "	"
+      MEMB_FIELD
+        K_VAR "var"
+        T_WHITESPACE_SPACE " "
+        NAME
+          T_IDENTIFIER "bar"
+        T_SEMICOLON ";"
+      T_WHITESPACE_NEWLINE "\n"
+      T_ACLOSE "}"
+(3:0->3:1)expected [T_SEMICOLON]

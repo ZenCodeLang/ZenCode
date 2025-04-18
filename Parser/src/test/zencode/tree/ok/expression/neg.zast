@@ -1,0 +1,7 @@
+FILE
+  EXPR_NEG
+    T_SUB "-"
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+  T_SEMICOLON ";"

@@ -1,0 +1,29 @@
+FILE
+  DEF_ALIAS
+    K_ALIAS "alias"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    TYPE_DECLARATION
+      K_AS "as"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        NAME
+          T_IDENTIFIER "stdlib"
+        T_DOT "."
+        NAME
+          T_IDENTIFIER "List"
+        TYPE_PARAMS
+          T_LESS "<"
+          TYPE
+            NAME
+              T_IDENTIFIER "T"
+          T_GREATER ">"
+    T_SEMICOLON ";"

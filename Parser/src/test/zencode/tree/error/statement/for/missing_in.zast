@@ -1,0 +1,32 @@
+FILE
+  STMT_FOR
+    K_FOR "for"
+    T_WHITESPACE_SPACE " "
+    FOR_NAMES
+      NAME
+        T_IDENTIFIER "i"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+  STMT_FOR
+    K_FOR "for"
+    T_WHITESPACE_SPACE " "
+    FOR_NAMES
+      NAME
+        T_IDENTIFIER "i"
+      T_WHITESPACE_SPACE " "
+    K_IN "in"
+    T_WHITESPACE_SPACE " "
+    EXPR_RANGE
+      EXPR_INT
+        T_INT "0"
+        T_WHITESPACE_SPACE " "
+      T_DOT2 ".."
+      T_WHITESPACE_SPACE " "
+      EXPR_INT
+        T_INT "1"
+        T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected [K_IN]
+(2:0->3:0)expected expression

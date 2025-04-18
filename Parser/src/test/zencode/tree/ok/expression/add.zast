@@ -1,0 +1,10 @@
+FILE
+  EXPR_ADD
+    EXPR_INT
+      T_INT "1"
+      T_WHITESPACE_SPACE " "
+    T_ADD "+"
+    T_WHITESPACE_SPACE " "
+    EXPR_INT
+      T_INT "1"
+  T_SEMICOLON ";"

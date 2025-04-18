@@ -1,0 +1,20 @@
+FILE
+  DEF_ALIAS
+    K_ALIAS "alias"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  DEF_ALIAS
+    K_ALIAS "alias"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    TYPE_DECLARATION
+      K_AS "as"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        NAME
+          T_IDENTIFIER "Bar"
+    T_SEMICOLON ";"
+(2:0->3:0)expected a name
+(2:0->3:0)expected as

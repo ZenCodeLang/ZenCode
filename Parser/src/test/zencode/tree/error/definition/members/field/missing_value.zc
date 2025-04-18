@@ -1,0 +1,4 @@
+class Foo {
+	var bar =
+	var bar = true;
+}

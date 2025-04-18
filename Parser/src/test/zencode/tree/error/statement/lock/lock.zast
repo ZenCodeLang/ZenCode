@@ -1,0 +1,16 @@
+FILE
+  STMT_LOCK
+    K_LOCK "lock"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_LOCK
+    K_LOCK "lock"
+    T_WHITESPACE_SPACE " "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected expression

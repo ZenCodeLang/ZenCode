@@ -1,0 +1,15 @@
+FILE
+  DEF_ENUM
+    K_ENUM "enum"
+    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE_NEWLINE "\n"
+  DEF_ENUM
+    K_ENUM "enum"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    T_AOPEN "{"
+    T_ACLOSE "}"
+(2:0->3:0)expected a name
+(2:0->3:0)expected '{'

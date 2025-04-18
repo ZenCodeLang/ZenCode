@@ -1,0 +1,13 @@
+FILE
+  DEF_CLASS
+    MODIFIERS
+      K_PUBLIC "public"
+      T_WHITESPACE_SPACE " "
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"

@@ -1,0 +1,16 @@
+FILE
+  EXPR_VARIABLE
+    NAME
+      T_IDENTIFIER "foo"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_VARIABLE
+    NAME
+      T_IDENTIFIER "foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+  T_SEMICOLON ";"

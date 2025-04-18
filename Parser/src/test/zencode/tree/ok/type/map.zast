@@ -1,0 +1,10 @@
+FILE
+  EXPR_TYPE
+    MAP
+      TYPE
+        K_STRING "string"
+      T_SQOPEN "["
+      TYPE
+        K_STRING "string"
+      T_SQCLOSE "]"
+  T_SEMICOLON ";"

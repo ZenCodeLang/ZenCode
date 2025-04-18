@@ -1,0 +1,25 @@
+FILE
+  STMT_WHILE
+    K_WHILE "while"
+    T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_WHILE
+    K_WHILE "while"
+    LABEL
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE_SPACE " "
+    EXPR_BOOL
+      K_TRUE "true"
+      T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

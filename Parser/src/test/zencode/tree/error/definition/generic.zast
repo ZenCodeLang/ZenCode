@@ -1,0 +1,59 @@
+FILE
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE_NEWLINE "\n"
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_COMMA ","
+      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE_NEWLINE "\n"
+  DEF_CLASS
+    K_CLASS "class"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "Foo"
+    TYPE_PARAMS
+      T_LESS "<"
+      TYPE_PARAM
+        NAME
+          T_IDENTIFIER "T"
+      T_GREATER ">"
+      T_WHITESPACE_SPACE " "
+    MEMBERS
+      T_AOPEN "{"
+      T_ACLOSE "}"
+(2:0->3:0)expected type parameter name
+(2:0->3:0)expected [T_GREATER]
+(2:0->3:0)expected '{'
+(4:0->5:0)expected ',' or '>'
+(4:0->5:0)expected [T_GREATER]
+(4:0->5:0)expected '{'
+(6:0->7:0)expected type parameter name
+(6:0->7:0)expected [T_GREATER]
+(6:0->7:0)expected '{'

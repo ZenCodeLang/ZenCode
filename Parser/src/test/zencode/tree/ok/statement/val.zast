@@ -1,0 +1,61 @@
+FILE
+  STMT_VAL
+    K_VAL "val"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAL
+    K_VAL "val"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    TYPE_DECLARATION
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        K_STRING "string"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAL
+    K_VAL "val"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    TYPE_DECLARATION
+      K_AS "as"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        K_STRING "string"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAL
+    K_VAL "val"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_WHITESPACE_SPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE_SPACE " "
+    EXPR_STRING
+      T_STRING_DQ """"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_VAL
+    K_VAL "val"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    TYPE_DECLARATION
+      T_COLON ":"
+      T_WHITESPACE_SPACE " "
+      TYPE
+        K_STRING "string"
+      T_WHITESPACE_SPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE_SPACE " "
+    EXPR_STRING
+      T_STRING_DQ """"
+    T_SEMICOLON ";"

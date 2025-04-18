@@ -1,0 +1,4 @@
+FILE
+  EXPR_THIS
+    K_THIS "this"
+  T_SEMICOLON ";"

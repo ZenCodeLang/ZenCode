@@ -1,0 +1,24 @@
+FILE
+  DEF_FUNCTION
+    K_FUNCTION "function"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    FUNCTION_HEADER
+      PARAM_LIST
+        T_BROPEN "("
+        T_BRCLOSE ")"
+      T_WHITESPACE_SPACE " "
+      THROWS
+        K_THROWS "throws"
+        T_WHITESPACE_SPACE " "
+        TYPE
+          NAME
+            T_IDENTIFIER "stdlib"
+          T_DOT "."
+          NAME
+            T_IDENTIFIER "Exception"
+          T_WHITESPACE_SPACE " "
+    BLOCK
+      T_AOPEN "{"
+      T_ACLOSE "}"

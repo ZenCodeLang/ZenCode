@@ -1,0 +1,4 @@
+class Foo {
+	get bar as
+	get bar as string {}
+}

@@ -1,0 +1,27 @@
+FILE
+  EXPR_INDEX
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_SQOPEN "["
+    INDEX_KEY
+      EXPR_INT
+        T_INT "1"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"
+  T_WHITESPACE_NEWLINE "\n"
+  EXPR_INDEX
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_SQOPEN "["
+    INDEX_KEY
+      EXPR_INT
+        T_INT "0"
+    T_COMMA ","
+    T_WHITESPACE_SPACE " "
+    INDEX_KEY
+      EXPR_INT
+        T_INT "1"
+    T_SQCLOSE "]"
+  T_SEMICOLON ";"

@@ -1,0 +1,5 @@
+FILE
+  EXPR_TYPE
+    TYPE
+      K_ULONG "ulong"
+  T_SEMICOLON ";"

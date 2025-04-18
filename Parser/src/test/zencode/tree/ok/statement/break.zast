@@ -1,0 +1,11 @@
+FILE
+  STMT_BREAK
+    K_BREAK "break"
+    T_SEMICOLON ";"
+    T_WHITESPACE_NEWLINE "\n"
+  STMT_BREAK
+    K_BREAK "break"
+    T_WHITESPACE_SPACE " "
+    NAME
+      T_IDENTIFIER "foo"
+    T_SEMICOLON ";"

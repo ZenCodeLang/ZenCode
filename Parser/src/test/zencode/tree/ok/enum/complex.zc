@@ -1,0 +1,9 @@
+enum Foo {
+	BAR("hello world");
+
+	var value as string : get, set;
+
+	this(value: string) {
+		this.value = value;
+	}
+}

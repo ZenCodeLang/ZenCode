@@ -1,0 +1,5 @@
+var foo;
+var foo: string;
+var foo as string;
+var foo = "";
+var foo: string = "";

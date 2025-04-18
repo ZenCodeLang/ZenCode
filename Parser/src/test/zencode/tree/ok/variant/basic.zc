@@ -1,0 +1,8 @@
+variant Foo {
+	A,
+	B
+}
+variant Foo {
+	A,
+	B;
+}
