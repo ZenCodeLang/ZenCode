@@ -1,24 +1,24 @@
 FILE
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
       PARAM_LIST
         T_BROPEN "("
         T_BRCLOSE ")"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       THROWS
         K_THROWS "throws"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE
           NAME
             T_IDENTIFIER "stdlib"
           T_DOT "."
           NAME
             T_IDENTIFIER "Exception"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"

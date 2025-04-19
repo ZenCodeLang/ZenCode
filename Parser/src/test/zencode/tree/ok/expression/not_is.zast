@@ -2,10 +2,10 @@ FILE
   EXPR_NOT_IS
     EXPR_INT
       T_INT "1"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     T_NOT "!"
     K_IS "is"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE
       K_STRING "string"
   T_SEMICOLON ";"

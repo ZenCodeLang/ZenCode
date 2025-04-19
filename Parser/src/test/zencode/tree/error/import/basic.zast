@@ -1,16 +1,15 @@
 FILE
   IMPORT
     K_IMPORT "import"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   IMPORT
     K_IMPORT "import"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     T_DOT "."
     NAME
       T_IDENTIFIER "Bar"
     T_SEMICOLON ";"
-(2:0->3:0)expected a name
-(2:0->3:0)expected [T_SEMICOLON]
+(1:6->1:7)expected a name
+(1:6->1:7)expected [T_SEMICOLON]

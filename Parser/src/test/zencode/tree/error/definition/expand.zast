@@ -1,16 +1,15 @@
 FILE
   DEF_EXPANSION
     K_EXPAND "expand"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   DEF_EXPANSION
     K_EXPAND "expand"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE
       NAME
         T_IDENTIFIER "Foo"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected type
+(1:6->1:7)expected type

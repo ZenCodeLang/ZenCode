@@ -3,7 +3,7 @@ FILE
     NAME
       T_IDENTIFIER "foo"
   T_SEMICOLON ";"
-  T_WHITESPACE_NEWLINE "\n"
+  T_WHITESPACE "\n"
   EXPR_VARIABLE
     NAME
       T_IDENTIFIER "foo"

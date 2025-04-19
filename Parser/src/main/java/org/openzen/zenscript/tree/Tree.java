@@ -1,14 +1,12 @@
 package org.openzen.zenscript.tree;
 
 import org.openzen.zencode.shared.SourceFile;
-import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.tree.lexer.DFALexer;
 import org.openzen.zenscript.tree.lexer.PositionedToken;
 import org.openzen.zenscript.tree.lexer.ZSPosTokenFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +25,13 @@ public class Tree {
 		this.children = new ArrayList<>();
 	}
 
-	public static Tree parse(SourceFile sourceFile) throws IOException, ParseException {
+	public static Tree parse(SourceFile sourceFile) {
 		DFALexer dfaLexer = new DFALexer(new ZSPosTokenFactory());
 		List<PositionedToken<ZSTokenType, ZSToken>> tokens = dfaLexer.tokenize(sourceFile);
 		return parse(tokens);
 	}
 
-	public static Tree parse(List<PositionedToken<ZSTokenType, ZSToken>> tokens) throws IOException, ParseException {
+	public static Tree parse(List<PositionedToken<ZSTokenType, ZSToken>> tokens) {
 		TreeParser p = new TreeParser(tokens);
 		p.file();
 		return p.buildTree();

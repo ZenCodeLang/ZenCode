@@ -1,31 +1,29 @@
 FILE
   DEF_CLASS
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       MEMB_IMPLEMENTS
         K_IMPLEMENTS "implements"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE
           NAME
             T_IDENTIFIER "Bar"
         T_SEMICOLON ";"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       MEMB_IMPLEMENTS
         K_IMPLEMENTS "implements"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE
           NAME
             T_IDENTIFIER "Baz"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
         T_AOPEN "{"
         T_ACLOSE "}"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n"
       T_ACLOSE "}"

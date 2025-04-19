@@ -1,15 +1,15 @@
 FILE
   EXPR_NEW
     K_NEW "new"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE
       NAME
         T_IDENTIFIER "foo"
   T_SEMICOLON ";"
-  T_WHITESPACE_NEWLINE "\n"
+  T_WHITESPACE "\n"
   EXPR_NEW
     K_NEW "new"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE
       NAME
         T_IDENTIFIER "Bar"

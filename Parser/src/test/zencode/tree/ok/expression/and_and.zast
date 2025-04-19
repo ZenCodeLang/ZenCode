@@ -2,9 +2,9 @@ FILE
   EXPR_AND_AND
     EXPR_INT
       T_INT "1"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     T_ANDAND "&&"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_INT
       T_INT "1"
   T_SEMICOLON ";"

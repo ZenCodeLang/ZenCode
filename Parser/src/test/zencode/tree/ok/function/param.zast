@@ -1,7 +1,7 @@
 FILE
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
@@ -10,21 +10,21 @@ FILE
         PARAM
           NAME
             T_IDENTIFIER "bar"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
           TYPE_DECLARATION
             K_AS "as"
-            T_WHITESPACE_SPACE " "
+            T_WHITESPACE " "
             TYPE
               K_STRING "string"
         T_BRCLOSE ")"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
@@ -35,12 +35,12 @@ FILE
             T_IDENTIFIER "bar"
           TYPE_DECLARATION
             T_COLON ":"
-            T_WHITESPACE_SPACE " "
+            T_WHITESPACE " "
             TYPE
               K_STRING "string"
         T_BRCLOSE ")"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"

@@ -1,7 +1,7 @@
 FILE
   IMPORT
     K_IMPORT "import"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     T_DOT "."

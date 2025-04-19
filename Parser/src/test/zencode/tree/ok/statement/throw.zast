@@ -1,10 +1,10 @@
 FILE
   STMT_THROW
     K_THROW "throw"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_NEW
       K_NEW "new"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE
         NAME
           T_IDENTIFIER "Exception"

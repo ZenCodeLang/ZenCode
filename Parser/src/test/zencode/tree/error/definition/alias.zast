@@ -1,20 +1,19 @@
 FILE
   DEF_ALIAS
     K_ALIAS "alias"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   DEF_ALIAS
     K_ALIAS "alias"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE_DECLARATION
       K_AS "as"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE
         NAME
           T_IDENTIFIER "Bar"
     T_SEMICOLON ";"
-(2:0->3:0)expected a name
-(2:0->3:0)expected as
+(1:5->1:6)expected a name
+(1:5->1:6)expected as

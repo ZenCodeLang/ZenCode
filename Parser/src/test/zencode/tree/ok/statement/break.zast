@@ -2,10 +2,10 @@ FILE
   STMT_BREAK
     K_BREAK "break"
     T_SEMICOLON ";"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_BREAK
     K_BREAK "break"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     T_SEMICOLON ";"

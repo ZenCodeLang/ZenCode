@@ -1,13 +1,12 @@
 FILE
   STMT_RETURN
     K_RETURN "return"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   STMT_RETURN
     K_RETURN "return"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_BOOL
       K_TRUE "true"
     T_SEMICOLON ";"
-(2:0->3:0)expected expression
-(2:0->3:0)expected [T_SEMICOLON]
+(1:6->1:7)expected expression
+(1:6->1:7)expected [T_SEMICOLON]

@@ -1,11 +1,10 @@
 FILE
   STMT_THROW
     K_THROW "throw"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
     EXPR_THROW
       K_THROW "throw"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       EXPR_VARIABLE
         NAME
           T_IDENTIFIER "foo"

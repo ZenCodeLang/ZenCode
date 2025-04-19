@@ -1,11 +1,11 @@
 FILE
   STMT_LOCK
     K_LOCK "lock"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "foo"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"

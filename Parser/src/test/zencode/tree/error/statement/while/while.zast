@@ -1,15 +1,14 @@
 FILE
   STMT_WHILE
     K_WHILE "while"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   STMT_WHILE
     K_WHILE "while"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_BOOL
       K_TRUE "true"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected expression
+(1:5->1:6)expected expression

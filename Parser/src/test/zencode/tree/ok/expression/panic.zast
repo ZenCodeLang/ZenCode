@@ -1,7 +1,7 @@
 FILE
   EXPR_PANIC
     K_PANIC "panic"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "foo"

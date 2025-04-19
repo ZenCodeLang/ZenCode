@@ -2,7 +2,7 @@ FILE
   EXPR_BOOL
     K_TRUE "true"
   T_SEMICOLON ";"
-  T_WHITESPACE_NEWLINE "\n"
+  T_WHITESPACE "\n"
   EXPR_BOOL
     K_FALSE "false"
   T_SEMICOLON ";"

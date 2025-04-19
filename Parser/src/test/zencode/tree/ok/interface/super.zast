@@ -1,42 +1,42 @@
 FILE
   DEF_INTERFACE
     K_INTERFACE "interface"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     SUPER_TYPES
       T_COLON ":"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       SUPER_TYPE
         TYPE
           NAME
             T_IDENTIFIER "Bar"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   DEF_INTERFACE
     K_INTERFACE "interface"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Baz"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     SUPER_TYPES
       T_COLON ":"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       SUPER_TYPE
         TYPE
           NAME
             T_IDENTIFIER "Foo"
       T_COMMA ","
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       SUPER_TYPE
         TYPE
           NAME
             T_IDENTIFIER "Qux"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

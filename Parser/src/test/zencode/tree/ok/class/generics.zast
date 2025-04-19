@@ -1,7 +1,7 @@
 FILE
   DEF_CLASS
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "X"
     TYPE_PARAMS
@@ -10,12 +10,12 @@ FILE
         NAME
           T_IDENTIFIER "T"
       T_COMMA ","
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE_PARAM
         NAME
           T_IDENTIFIER "U"
       T_GREATER ">"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

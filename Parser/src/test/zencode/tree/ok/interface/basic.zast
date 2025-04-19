@@ -1,10 +1,10 @@
 FILE
   DEF_INTERFACE
     K_INTERFACE "interface"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

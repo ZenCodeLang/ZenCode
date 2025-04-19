@@ -1,39 +1,39 @@
 FILE
   STMT_FOR
     K_FOR "for"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     FOR_NAMES
       NAME
         T_IDENTIFIER "foo"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     K_IN "in"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "bar"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_FOR
     K_FOR "for"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     FOR_NAMES
       NAME
         T_IDENTIFIER "foo"
       T_COMMA ","
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       NAME
         T_IDENTIFIER "baz"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     K_IN "in"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "bar"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"

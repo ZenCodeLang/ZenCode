@@ -1,17 +1,17 @@
 FILE
   DEF_CLASS
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     SUPER_TYPE
       T_COLON ":"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE
         NAME
           T_IDENTIFIER "Bar"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

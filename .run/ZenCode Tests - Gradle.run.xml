@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":test" />
+			<option value=":ScriptingExample:test" />
         </list>
       </option>
       <option name="vmOptions" />

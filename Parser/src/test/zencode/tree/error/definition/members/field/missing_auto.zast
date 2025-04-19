@@ -1,49 +1,47 @@
 FILE
   DEF_CLASS
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       MEMB_FIELD
         K_VAL "val"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         NAME
           T_IDENTIFIER "bar"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE_DECLARATION
           K_AS "as"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
           TYPE
             K_STRING "string"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
         FIELD_AUTO
           T_COLON ":"
-          T_WHITESPACE_NEWLINE "\n"
-          T_WHITESPACE_TAB "	"
+          T_WHITESPACE "\n	"
       MEMB_FIELD
         K_VAL "val"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         NAME
           T_IDENTIFIER "bar"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE_DECLARATION
           K_AS "as"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
           TYPE
             K_STRING "string"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
         FIELD_AUTO
           T_COLON ":"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
           AUTO_GET
             K_GET "get"
         T_SEMICOLON ";"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n"
       T_ACLOSE "}"
-(3:0->3:1)expected auto
-(3:0->3:1)expected [T_SEMICOLON]
+(2:20->2:21)expected auto
+(2:20->2:21)expected [T_SEMICOLON]

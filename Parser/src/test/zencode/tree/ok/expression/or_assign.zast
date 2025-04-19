@@ -3,9 +3,9 @@ FILE
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "foo"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     T_ORASSIGN "|="
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_INT
       T_INT "1"
   T_SEMICOLON ";"

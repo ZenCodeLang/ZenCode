@@ -3,7 +3,7 @@ FILE
     T_BROPEN "("
     T_BRCLOSE ")"
   T_SEMICOLON ";"
-  T_WHITESPACE_NEWLINE "\n"
+  T_WHITESPACE "\n"
   EXPR_BRACKET
     T_BROPEN "("
     EXPR_INT

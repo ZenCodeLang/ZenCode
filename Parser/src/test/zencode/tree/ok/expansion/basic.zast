@@ -1,10 +1,10 @@
 FILE
   DEF_EXPANSION
     K_EXPAND "expand"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     TYPE
       K_STRING "string"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

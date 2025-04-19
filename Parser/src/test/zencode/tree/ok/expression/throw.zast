@@ -1,7 +1,7 @@
 FILE
   STMT_THROW
     K_THROW "throw"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "foo"

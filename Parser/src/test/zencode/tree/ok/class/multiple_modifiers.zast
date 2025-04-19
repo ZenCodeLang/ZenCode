@@ -2,14 +2,14 @@ FILE
   DEF_CLASS
     MODIFIERS
       K_PUBLIC "public"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       K_ABSTRACT "abstract"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"

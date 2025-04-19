@@ -1,9 +1,9 @@
 FILE
   DEF_ENUM
     K_ENUM "enum"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     T_AOPEN "{"
     T_ACLOSE "}"

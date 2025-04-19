@@ -1,19 +1,17 @@
 FILE
   DEF_CLASS
     K_CLASS "class"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       MEMB_METHOD
         NAME
           T_IDENTIFIER "bar"
-        T_WHITESPACE_NEWLINE "\n"
-        T_WHITESPACE_TAB "	"
+        T_WHITESPACE "\n	"
       MEMB_METHOD
         NAME
           T_IDENTIFIER "bar"
@@ -21,11 +19,11 @@ FILE
           PARAM_LIST
             T_BROPEN "("
             T_BRCLOSE ")"
-          T_WHITESPACE_SPACE " "
+          T_WHITESPACE " "
         BLOCK
           T_AOPEN "{"
           T_ACLOSE "}"
-        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE "\n"
       T_ACLOSE "}"
-(3:0->3:1)expected a function header
-(3:0->3:1)expected a function body
+(2:4->2:5)expected a function header
+(2:4->2:5)expected a function body

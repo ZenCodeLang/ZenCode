@@ -1,24 +1,23 @@
 FILE
   IMPORT
     K_IMPORT "import"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     T_DOT "."
     NAME
       T_IDENTIFIER "Bar"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_AS "as"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   IMPORT
     K_IMPORT "import"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     T_DOT "."
     NAME
       T_IDENTIFIER "Bar"
     T_SEMICOLON ";"
-(2:0->3:0)expected identifier
-(2:0->3:0)expected [T_SEMICOLON]
+(1:17->1:18)expected identifier
+(1:17->1:18)expected [T_SEMICOLON]

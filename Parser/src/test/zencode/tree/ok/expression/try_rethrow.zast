@@ -2,7 +2,7 @@ FILE
   EXPR_TRY_RETHROW
     K_TRY "try"
     T_NOT "!"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_VARIABLE
       NAME
         T_IDENTIFIER "foo"

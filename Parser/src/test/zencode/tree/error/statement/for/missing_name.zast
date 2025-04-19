@@ -1,38 +1,37 @@
 FILE
   STMT_FOR
     K_FOR "for"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     FOR_NAMES
       NAME
         T_IDENTIFIER "i"
       T_COMMA ","
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n\n"
   STMT_FOR
     K_FOR "for"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     FOR_NAMES
       NAME
         T_IDENTIFIER "i"
       T_COMMA ","
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       NAME
         T_IDENTIFIER "j"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     K_IN "in"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_RANGE
       EXPR_INT
         T_INT "0"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
       T_DOT2 ".."
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       EXPR_INT
         T_INT "1"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected a name
-(2:0->3:0)expected [K_IN]
-(2:0->3:0)expected expression
+(1:6->1:7)expected a name
+(1:6->1:7)expected [K_IN]
+(1:6->1:7)expected expression

@@ -9,7 +9,7 @@ FILE
         T_INT "1"
     T_SQCLOSE "]"
   T_SEMICOLON ";"
-  T_WHITESPACE_NEWLINE "\n"
+  T_WHITESPACE "\n"
   EXPR_INDEX
     EXPR_VARIABLE
       NAME
@@ -19,7 +19,7 @@ FILE
       EXPR_INT
         T_INT "0"
     T_COMMA ","
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     INDEX_KEY
       EXPR_INT
         T_INT "1"

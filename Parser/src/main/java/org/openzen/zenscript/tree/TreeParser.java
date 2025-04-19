@@ -158,7 +158,11 @@ public class TreeParser {
 	}
 
 	public void error(String message) {
-		events.add(Event.error(message, this.tokens.get(pos - 1).position()));
+		int reportingPos = pos -1;
+//		while(this.tokens.get(reportingPos).getType().isWhitespace() && reportingPos > 0) {
+//			reportingPos--;
+//		}
+		events.add(Event.error(message, this.tokens.get(reportingPos).position().withLength(1)));
 	}
 
 	public void advanceWithError(String error) {

@@ -1,27 +1,27 @@
 FILE
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
       PARAM_LIST
         T_BROPEN "("
         T_BRCLOSE ")"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE_DECLARATION
         K_AS "as"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE
           K_VOID "void"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
@@ -30,10 +30,10 @@ FILE
         T_BRCLOSE ")"
       TYPE_DECLARATION
         T_COLON ":"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
         TYPE
           K_VOID "void"
-        T_WHITESPACE_SPACE " "
+        T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"

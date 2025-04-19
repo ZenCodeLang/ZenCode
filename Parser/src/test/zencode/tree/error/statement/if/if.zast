@@ -1,15 +1,14 @@
 FILE
   STMT_IF
     K_IF "if"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   STMT_IF
     K_IF "if"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_BOOL
       K_TRUE "true"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected expression
+(1:2->1:3)expected expression

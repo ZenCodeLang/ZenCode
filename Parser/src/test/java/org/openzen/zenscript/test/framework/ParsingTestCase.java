@@ -21,24 +21,20 @@ public class ParsingTestCase {
 
 	public void execute() throws IOException {
 		// Read file content
-		try {
-			if (Files.notExists(zcFile)) {
-				Assertions.fail("File " + zcFile + " does not exist");
-			}
-			if (Files.notExists(zastFile)) {
-				Assertions.fail("File " + zastFile + " does not exist");
-			}
-			String zcContent = new String(Files.readAllBytes(zcFile), StandardCharsets.UTF_8).replace("\r\n", "\n");
-			String zastContent = new String(Files.readAllBytes(zastFile), StandardCharsets.UTF_8).replace("\r\n", "\n");
-			Tree tree = Tree.parse(new LiteralSourceFile(zcFile.getFileName().toString(), zcContent));
+		if (Files.notExists(zcFile)) {
+			Assertions.fail("File " + zcFile + " does not exist");
+		}
+		if (Files.notExists(zastFile)) {
+			Assertions.fail("File " + zastFile + " does not exist");
+		}
+		String zcContent = new String(Files.readAllBytes(zcFile), StandardCharsets.UTF_8).replace("\r\n", "\n");
+		String zastContent = new String(Files.readAllBytes(zastFile), StandardCharsets.UTF_8).replace("\r\n", "\n");
+		Tree tree = Tree.parse(new LiteralSourceFile(zcFile.getFileName().toString(), zcContent));
 
-			if (!zastContent.equals(tree.toString())) {
-				Assertions.fail(
-						"Error in \nfile://" + zcFile.toUri().getPath() + "\nfile://" + zastFile.toUri().getPath() + "\n Expected tree:\n'" + zastContent + "'\nbut got:\n'" + tree + "'\n"
-				);
-			}
-		} catch (ParseException e) {
-			Assertions.fail(e);
+		if (!zastContent.equals(tree.toString())) {
+			Assertions.fail(
+					"Error in \nfile://" + zcFile.toUri().getPath() + "\nfile://" + zastFile.toUri().getPath() + "\n Expected tree:\n'" + zastContent + "'\nbut got:\n'" + tree + "'\n"
+			);
 		}
 
 	}

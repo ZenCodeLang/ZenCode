@@ -9,8 +9,7 @@ FILE
         EXPR_STRING
           T_STRING_DQ """"
       T_BRCLOSE ")"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n\n"
   EXPR_CALL
     EXPR_VARIABLE
       NAME
@@ -22,4 +21,4 @@ FILE
           T_STRING_DQ """"
       T_BRCLOSE ")"
   T_SEMICOLON ";"
-(2:0->3:0)expected [T_SEMICOLON]
+(1:11->1:12)expected [T_SEMICOLON]

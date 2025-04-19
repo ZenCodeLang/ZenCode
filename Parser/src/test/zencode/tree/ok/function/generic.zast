@@ -1,7 +1,7 @@
 FILE
   DEF_FUNCTION
     K_FUNCTION "function"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
@@ -14,7 +14,7 @@ FILE
       PARAM_LIST
         T_BROPEN "("
         T_BRCLOSE ")"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"

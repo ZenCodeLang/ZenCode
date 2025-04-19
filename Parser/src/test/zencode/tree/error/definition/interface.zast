@@ -1,16 +1,15 @@
 FILE
   DEF_INTERFACE
     K_INTERFACE "interface"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   DEF_INTERFACE
     K_INTERFACE "interface"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected a name
-(2:0->3:0)expected '{'
+(1:9->1:10)expected a name
+(1:9->1:10)expected '{'

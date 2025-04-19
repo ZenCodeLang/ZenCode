@@ -1,45 +1,41 @@
 FILE
   DEF_VARIANT
     K_VARIANT "variant"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       VARIANT_OPTION
         NAME
           T_IDENTIFIER "A"
       T_COMMA ","
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       VARIANT_OPTION
         NAME
           T_IDENTIFIER "B"
-        T_WHITESPACE_NEWLINE "\n"
+        T_WHITESPACE "\n"
       T_ACLOSE "}"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n"
   DEF_VARIANT
     K_VARIANT "variant"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       VARIANT_OPTION
         NAME
           T_IDENTIFIER "A"
       T_COMMA ","
-      T_WHITESPACE_NEWLINE "\n"
-      T_WHITESPACE_TAB "	"
+      T_WHITESPACE "\n	"
       VARIANT_OPTION
         NAME
           T_IDENTIFIER "B"
       T_SEMICOLON ";"
-      T_WHITESPACE_NEWLINE "\n"
+      T_WHITESPACE "\n"
       T_ACLOSE "}"

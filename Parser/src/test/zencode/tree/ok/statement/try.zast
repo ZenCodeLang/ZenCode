@@ -1,76 +1,76 @@
 FILE
   STMT_TRY
     K_TRY "try"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_CATCH "catch"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_TRY
     K_TRY "try"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_CATCH "catch"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_CATCH "catch"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_TRY
     K_TRY "try"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_CATCH "catch"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "e"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_TRY
     K_TRY "try"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     K_FINALLY "finally"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n"
   STMT_TRY
     K_TRY "try"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     T_ASSIGN "="
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     EXPR_STRING
       T_STRING_DQ """"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     BLOCK
       T_AOPEN "{"
       T_ACLOSE "}"

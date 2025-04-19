@@ -1,7 +1,7 @@
 FILE
   DEF_ALIAS
     K_ALIAS "alias"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
     TYPE_PARAMS
@@ -10,10 +10,10 @@ FILE
         NAME
           T_IDENTIFIER "T"
       T_GREATER ">"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
     TYPE_DECLARATION
       K_AS "as"
-      T_WHITESPACE_SPACE " "
+      T_WHITESPACE " "
       TYPE
         NAME
           T_IDENTIFIER "stdlib"

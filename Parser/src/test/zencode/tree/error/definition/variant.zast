@@ -1,16 +1,15 @@
 FILE
   DEF_VARIANT
     K_VARIANT "variant"
-    T_WHITESPACE_NEWLINE "\n"
-    T_WHITESPACE_NEWLINE "\n"
+    T_WHITESPACE "\n\n"
   DEF_VARIANT
     K_VARIANT "variant"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     NAME
       T_IDENTIFIER "Foo"
-    T_WHITESPACE_SPACE " "
+    T_WHITESPACE " "
     MEMBERS
       T_AOPEN "{"
       T_ACLOSE "}"
-(2:0->3:0)expected a name
-(2:0->3:0)expected '{'
+(1:7->1:8)expected a name
+(1:7->1:8)expected '{'
