@@ -27,7 +27,7 @@ public class ParsedFunction extends ParsedDefinition {
 	private final ParsedFunctionBody body;
 	private final String name;
 
-	private ParsedFunction(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body) {
+	public ParsedFunction(CodePosition position, Modifiers modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body) {
 		super(position, modifiers, annotations);
 
 		this.header = header;

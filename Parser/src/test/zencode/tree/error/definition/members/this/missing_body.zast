@@ -11,14 +11,14 @@ FILE
       MEMB_CONSTRUCTOR
         K_THIS "this"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE "\n	"
       MEMB_CONSTRUCTOR
         K_THIS "this"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "

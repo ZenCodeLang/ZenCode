@@ -11,7 +11,7 @@ FILE
           T_IDENTIFIER "T"
       T_GREATER ">"
       T_WHITESPACE " "
-    MEMBERS
+    VARIANTS
       T_AOPEN "{"
       T_WHITESPACE "\n	"
       VARIANT_OPTION
@@ -19,7 +19,7 @@ FILE
           T_IDENTIFIER "A"
         VARIANT_OPTION_TYPES
           T_BROPEN "("
-          TYPE
+          TYPE_NAMED
             NAME
               T_IDENTIFIER "T"
           T_BRCLOSE ")"

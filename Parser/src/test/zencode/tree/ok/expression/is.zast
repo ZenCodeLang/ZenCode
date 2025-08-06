@@ -5,6 +5,6 @@ FILE
       T_WHITESPACE " "
     K_IS "is"
     T_WHITESPACE " "
-    TYPE
+    TYPE_BASIC
       K_STRING "string"
   T_SEMICOLON ";"

@@ -1,7 +1,7 @@
 FILE
   EXPR_TYPE
-    GENERIC_MAP
-      TYPE
+    TYPE_GENERIC_MAP
+      TYPE_BASIC
         K_STRING "string"
       T_SQOPEN "["
       T_LESS "<"

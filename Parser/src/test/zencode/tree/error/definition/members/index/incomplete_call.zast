@@ -15,7 +15,7 @@ FILE
         T_SQOPEN "["
         T_SQCLOSE "]"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "

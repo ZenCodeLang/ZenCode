@@ -2,7 +2,7 @@ FILE
   EXPR_NEW
     K_NEW "new"
     T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "foo"
   T_SEMICOLON ";"
@@ -10,7 +10,7 @@ FILE
   EXPR_NEW
     K_NEW "new"
     T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "Bar"
     CALL_ARGUMENTS

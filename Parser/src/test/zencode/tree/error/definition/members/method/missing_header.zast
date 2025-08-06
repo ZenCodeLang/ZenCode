@@ -16,7 +16,7 @@ FILE
         NAME
           T_IDENTIFIER "bar"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "

@@ -1,7 +1,7 @@
 FILE
   EXPR_TYPE
-    ARRAY
-      TYPE
+    TYPE_ARRAY
+      TYPE_BASIC
         K_STRING "string"
       T_SQOPEN "["
       T_SQCLOSE "]"

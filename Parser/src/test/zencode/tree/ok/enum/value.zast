@@ -8,7 +8,7 @@ FILE
     TYPE_DECLARATION
       K_AS "as"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
       T_WHITESPACE " "
     T_AOPEN "{"
@@ -22,7 +22,7 @@ FILE
     TYPE_DECLARATION
       T_COLON ":"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
       T_WHITESPACE " "
     T_AOPEN "{"

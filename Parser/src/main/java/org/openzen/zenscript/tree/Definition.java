@@ -149,9 +149,11 @@ class Definition {
 			if (p.at(T_SEMICOLON)) {
 				p.eat(T_SEMICOLON);
 				p.whitespace();
+				TreeParser.MarkOpened membersOpen = p.open();
 				while (!p.eat(T_ACLOSE)) {
 					DefinitionMembers.parse(p);
 				}
+				p.close(membersOpen, TreeKind.MEMBERS);
 				p.whitespace();
 			} else {
 				p.expect(T_ACLOSE);
@@ -290,7 +292,7 @@ class Definition {
 				p.expect(T_ACLOSE);
 				p.whitespace();
 			}
-			p.close(defMembersOpen, TreeKind.MEMBERS);
+			p.close(defMembersOpen, TreeKind.VARIANTS);
 		} else {
 			p.recover("expected '{'", DEFINITION_RECOVERY_SET);
 		}

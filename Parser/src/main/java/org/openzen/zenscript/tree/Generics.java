@@ -55,7 +55,7 @@ class Generics {
 			}
 			subParser.expect(T_GREATER);
 			subParser.whitespace();
-			subParser.close(open, TreeKind.TYPE_PARAMS);
+			subParser.close(open, TreeKind.TYPE_ARGS);
 			p.mergeIn(subParser);
 
 		}

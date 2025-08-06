@@ -8,7 +8,7 @@ FILE
     TYPE_DECLARATION
       K_AS "as"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
       T_WHITESPACE " "
     T_AOPEN "{"
@@ -24,4 +24,5 @@ FILE
           T_STRING_DQ ""bar""
     T_SEMICOLON ";"
     T_WHITESPACE "\n"
-    T_ACLOSE "}"
+    MEMBERS
+      T_ACLOSE "}"

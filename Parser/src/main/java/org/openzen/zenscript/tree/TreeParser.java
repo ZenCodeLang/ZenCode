@@ -61,11 +61,8 @@ public class TreeParser {
 	}
 
 	public void whitespace() {
-		//TODO figure out multiple calls to whitespace
 		ZSTokenType nth = nth(0);
 		if (nth.isWhitespace()) {
-			MarkOpened open = open();
-			close(open, TreeKind.fromTokenType(nth));
 			advance();
 			whitespace();
 		}
@@ -103,9 +100,6 @@ public class TreeParser {
 			if (event instanceof Event.Open) {
 				Event.Open openEvent = (Event.Open) event;
 				stack.add(new Tree(openEvent.kind));
-			} else if (event instanceof Event.Token) {
-				Event.Token tokenEvent = (Event.Token) event;
-				stack.add(new Tree(tokenEvent.kind));
 			} else if (event == Event.CLOSE) {
 				Tree tree = stack.remove(stack.size() - 1);
 				stack.get(stack.size() - 1).children().add(Child.ofTree(tree));
@@ -158,7 +152,7 @@ public class TreeParser {
 	}
 
 	public void error(String message) {
-		int reportingPos = pos -1;
+		int reportingPos = pos - 1;
 //		while(this.tokens.get(reportingPos).getType().isWhitespace() && reportingPos > 0) {
 //			reportingPos--;
 //		}
@@ -282,9 +276,7 @@ public class TreeParser {
 	public boolean eat(ZSTokenType... kinds) {
 		if (atAny(kinds)) {
 			ZSTokenType eaten = nth(0);
-			MarkOpened open = this.open();
 			advance();
-			this.close(open, TreeKind.fromTokenType(eaten));
 			return true;
 		} else {
 			return false;
@@ -293,9 +285,7 @@ public class TreeParser {
 
 	public void eatAny() {
 		ZSTokenType eaten = nth(0);
-		MarkOpened open = this.open();
 		advance();
-		this.close(open, TreeKind.fromTokenType(eaten));
 	}
 
 	public boolean expect(ZSTokenType... kinds) {
@@ -316,8 +306,8 @@ public class TreeParser {
 			return new Open(kind);
 		}
 
-		static Token token(TreeKind kind) {
-			return new Token(kind);
+		static Token token(ZSTokenType type) {
+			return new Token(type);
 		}
 
 		static Error error(String message,/* TODO do I need this?*/ CodePosition position) {
@@ -366,27 +356,16 @@ public class TreeParser {
 		}
 
 		class Token implements Event {
-			private TreeKind kind;
+			private final ZSTokenType type;
 
-			public Token(TreeKind kind) {
-				this.kind = kind;
+			public Token(ZSTokenType kind) {
+				this.type = kind;
 			}
 
-			public void kind(TreeKind kind) {
-				this.kind = kind;
+			public ZSTokenType type() {
+				return type;
 			}
 
-			public TreeKind kind() {
-				return kind;
-			}
-
-			@Override
-			public String toString() {
-				final StringBuilder sb = new StringBuilder("Token{");
-				sb.append("kind=").append(kind);
-				sb.append('}');
-				return sb.toString();
-			}
 		}
 
 		class Advance implements Event {

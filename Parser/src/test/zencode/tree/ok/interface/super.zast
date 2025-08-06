@@ -9,7 +9,7 @@ FILE
       T_COLON ":"
       T_WHITESPACE " "
       SUPER_TYPE
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "Bar"
           T_WHITESPACE " "
@@ -27,13 +27,13 @@ FILE
       T_COLON ":"
       T_WHITESPACE " "
       SUPER_TYPE
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "Foo"
       T_COMMA ","
       T_WHITESPACE " "
       SUPER_TYPE
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "Qux"
           T_WHITESPACE " "

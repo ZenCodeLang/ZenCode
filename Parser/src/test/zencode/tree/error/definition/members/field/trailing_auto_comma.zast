@@ -17,7 +17,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -36,7 +36,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO

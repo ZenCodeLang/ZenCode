@@ -8,7 +8,7 @@ FILE
     NAME
       T_IDENTIFIER "Foo"
     T_WHITESPACE " "
-    MEMBERS
+    VARIANTS
       T_AOPEN "{"
       T_ACLOSE "}"
 (1:7->1:8)expected a name

@@ -1,9 +1,9 @@
 FILE
   EXPR_TYPE
-    RANGE
-      TYPE
+    TYPE_RANGE
+      TYPE_BASIC
         K_INT "int"
       T_DOT2 ".."
-      TYPE
+      TYPE_BASIC
         K_INT "int"
   T_SEMICOLON ";"

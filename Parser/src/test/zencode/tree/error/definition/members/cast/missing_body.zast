@@ -11,13 +11,13 @@ FILE
       MEMB_CASTER
         K_AS "as"
         T_WHITESPACE " "
-        TYPE
+        TYPE_BASIC
           K_STRING "string"
         T_WHITESPACE "\n	"
       MEMB_CASTER
         K_AS "as"
         T_WHITESPACE " "
-        TYPE
+        TYPE_BASIC
           K_STRING "string"
         T_WHITESPACE " "
         BLOCK

@@ -11,7 +11,7 @@ FILE
           NAME
             T_IDENTIFIER "T"
         T_GREATER ">"
-      PARAM_LIST
+      PARAMS
         T_BROPEN "("
         T_BRCLOSE ")"
       T_WHITESPACE " "

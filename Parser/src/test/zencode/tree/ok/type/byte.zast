@@ -1,5 +1,5 @@
 FILE
   EXPR_TYPE
-    TYPE
+    TYPE_BASIC
       K_BYTE "byte"
   T_SEMICOLON ";"

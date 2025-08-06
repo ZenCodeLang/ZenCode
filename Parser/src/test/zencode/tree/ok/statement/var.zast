@@ -14,7 +14,7 @@ FILE
     TYPE_DECLARATION
       T_COLON ":"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
     T_SEMICOLON ";"
     T_WHITESPACE "\n"
@@ -27,7 +27,7 @@ FILE
     TYPE_DECLARATION
       K_AS "as"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
     T_SEMICOLON ";"
     T_WHITESPACE "\n"
@@ -51,7 +51,7 @@ FILE
     TYPE_DECLARATION
       T_COLON ":"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
       T_WHITESPACE " "
     T_ASSIGN "="
@@ -59,3 +59,48 @@ FILE
     EXPR_STRING
       T_STRING_DQ """"
     T_SEMICOLON ";"
+    T_WHITESPACE "\n"
+  STMT_VAR
+    K_VAR "var"
+    T_WHITESPACE " "
+    NAME
+      T_IDENTIFIER "asd"
+    T_WHITESPACE " "
+    T_ASSIGN "="
+    T_WHITESPACE " "
+    EXPR_STRING
+      T_STRING_DQ """"
+    T_SEMICOLON ";"
+    T_WHITESPACE "\n\n"
+  BLOCK
+    T_AOPEN "{"
+    T_WHITESPACE "\n    "
+    STMT_VAR
+      K_VAR "var"
+      T_WHITESPACE " "
+      NAME
+        T_IDENTIFIER "foo"
+      T_WHITESPACE " "
+      T_ASSIGN "="
+      T_WHITESPACE " "
+      EXPR_STRING
+        T_STRING_DQ """"
+      T_SEMICOLON ";"
+      T_WHITESPACE "\n    "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "foo"
+    T_SEMICOLON ";"
+    T_WHITESPACE "\n    "
+    EXPR_VARIABLE
+      NAME
+        T_IDENTIFIER "asd"
+    T_SEMICOLON ";"
+    T_WHITESPACE "\n"
+    T_ACLOSE "}"
+  T_WHITESPACE "\n\n"
+  EXPR_VARIABLE
+    NAME
+      T_IDENTIFIER "foo"
+  T_SEMICOLON ";"
+  T_WHITESPACE "\n"

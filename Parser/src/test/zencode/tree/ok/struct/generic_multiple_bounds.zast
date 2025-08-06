@@ -13,7 +13,7 @@ FILE
         TYPE_BOUND
           T_COLON ":"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         SUPER_BOUND
@@ -21,7 +21,7 @@ FILE
           T_WHITESPACE " "
           K_SUPER "super"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_INT "int"
       T_GREATER ">"
       T_WHITESPACE " "

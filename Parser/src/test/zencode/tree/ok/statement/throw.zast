@@ -5,7 +5,7 @@ FILE
     EXPR_NEW
       K_NEW "new"
       T_WHITESPACE " "
-      TYPE
+      TYPE_NAMED
         NAME
           T_IDENTIFIER "Exception"
       CALL_ARGUMENTS

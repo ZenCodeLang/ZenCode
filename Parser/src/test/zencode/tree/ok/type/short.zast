@@ -1,5 +1,5 @@
 FILE
   EXPR_TYPE
-    TYPE
+    TYPE_BASIC
       K_SHORT "short"
   T_SEMICOLON ";"

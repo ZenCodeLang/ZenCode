@@ -5,7 +5,7 @@ FILE
   DEF_EXPANSION
     K_EXPAND "expand"
     T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "Foo"
       T_WHITESPACE " "

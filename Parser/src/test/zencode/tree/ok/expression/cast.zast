@@ -6,7 +6,7 @@ FILE
       T_WHITESPACE " "
     K_AS "as"
     T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "bar"
   T_SEMICOLON ";"
@@ -19,7 +19,7 @@ FILE
     K_AS "as"
     T_QUEST "?"
     T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "bar"
   T_SEMICOLON ";"

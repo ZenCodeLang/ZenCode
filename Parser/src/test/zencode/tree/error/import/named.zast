@@ -19,5 +19,5 @@ FILE
     NAME
       T_IDENTIFIER "Bar"
     T_SEMICOLON ";"
-(1:17->1:18)expected identifier
+(1:17->1:18)expected a name
 (1:17->1:18)expected [T_SEMICOLON]

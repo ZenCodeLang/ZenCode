@@ -16,9 +16,9 @@ FILE
       T_DOT "."
       NAME
         T_IDENTIFIER "bar"
-      TYPE_PARAMS
+      TYPE_ARGS
         T_LESS "<"
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "T"
         T_GREATER ">"

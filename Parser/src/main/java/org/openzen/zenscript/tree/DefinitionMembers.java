@@ -228,13 +228,11 @@ class DefinitionMembers {
 			}
 
 			if (p.at(T_ASSIGN)) {
-				TreeParser.MarkOpened assignOpen = p.open();
 				p.expect(T_ASSIGN);
 				p.whitespace();
 				if (Expression.parse(p) == null) {
 					p.recover("expected expression", FIELD_RECOVERY);
 				}
-				p.close(assignOpen, TreeKind.EXPR_ASSIGN);
 			}
 
 

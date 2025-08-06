@@ -30,7 +30,7 @@ public class 	ParsedExpressionInt extends ParsedExpression {
 		suffix = value.substring(split);
 	}
 
-	private ParsedExpressionInt(CodePosition position, boolean negative, long value, String suffix) {
+	public ParsedExpressionInt(CodePosition position, boolean negative, long value, String suffix) {
 		super(position);
 
 		this.negative = negative;

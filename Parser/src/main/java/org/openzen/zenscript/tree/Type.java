@@ -22,7 +22,7 @@ class Type {
 		if (p.atAny(typeTypes)) {
 			TreeParser.MarkOpened open = p.open();
 			p.expect(typeTypes);
-			base = p.close(open, TreeKind.TYPE);
+			base = p.close(open, TreeKind.TYPE_BASIC);
 			p.whitespace();
 		} else if (p.at(T_BROPEN)) {
 			TreeParser.MarkOpened open = p.open();
@@ -30,14 +30,14 @@ class Type {
 			p.whitespace();
 			Type.parse(p);
 			p.expect(T_BRCLOSE);
-			base = p.close(open, TreeKind.TYPE);
+			base = p.close(open, TreeKind.TYPE_BRACED);
 			p.whitespace();
 		} else if (p.at(K_FUNCTION)) {
 			TreeParser.MarkOpened open = p.open();
 			p.expect(K_FUNCTION);
 			p.whitespace();
 			FunctionHeader.parse(p);
-			base = p.close(open, TreeKind.TYPE);
+			base = p.close(open, TreeKind.TYPE_FUNCTION);
 		} else if (p.at(T_IDENTIFIER)) {
 			TreeParser.MarkOpened open = p.open();
 			p.name();
@@ -47,7 +47,7 @@ class Type {
 				p.name();
 				Generics.parseTypeArguments(p);
 			}
-			base = p.close(open, TreeKind.TYPE);
+			base = p.close(open, TreeKind.TYPE_NAMED);
 		} else {
 			return false;
 		}
@@ -60,7 +60,7 @@ class Type {
 					p.expect(T_DOT2);
 					p.whitespace();
 					Type.parse(p);
-					base = p.close(open, TreeKind.RANGE);
+					base = p.close(open, TreeKind.TYPE_RANGE);
 					break;
 				case T_SQOPEN:
 					open = p.openBefore(base);
@@ -73,7 +73,7 @@ class Type {
 					if (p.at(T_SQCLOSE)) {
 						p.expect(T_SQCLOSE);
 						p.whitespace();
-						base = p.close(open, TreeKind.ARRAY);
+						base = p.close(open, TreeKind.TYPE_ARRAY);
 					} else if (p.at(T_LESS)) {
 						p.expect(T_LESS);
 						p.whitespace();
@@ -82,19 +82,19 @@ class Type {
 						p.whitespace();
 						p.expect(T_SQCLOSE);
 						p.whitespace();
-						base = p.close(open, TreeKind.GENERIC_MAP);
+						base = p.close(open, TreeKind.TYPE_GENERIC_MAP);
 					} else {
 						Type.parse(p);
 						p.expect(T_SQCLOSE);
 						p.whitespace();
-						base = p.close(open, TreeKind.MAP);
+						base = p.close(open, TreeKind.TYPE_MAP);
 					}
 					break;
 				case T_QUEST:
 					open = p.openBefore(base);
 					p.expect(T_QUEST);
 					p.whitespace();
-					base = p.close(open, TreeKind.OPTIONAL);
+					base = p.close(open, TreeKind.TYPE_OPTIONAL);
 					break;
 			}
 		}

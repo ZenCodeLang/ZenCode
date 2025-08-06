@@ -11,14 +11,14 @@ FILE
       MEMB_OPERATOR
         T_ADD "+"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE "\n	"
       MEMB_OPERATOR
         T_ADD "+"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "

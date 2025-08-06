@@ -40,7 +40,7 @@ class FunctionHeader {
 				} while (p.eat(ZSTokenType.T_COMMA));
 				p.expect(ZSTokenType.T_BRCLOSE);
 			}
-			p.close(paramListOpen, TreeKind.PARAM_LIST);
+			p.close(paramListOpen, TreeKind.PARAMS);
 			p.whitespace();
 
 			//TODO this error recovery is pretty rough

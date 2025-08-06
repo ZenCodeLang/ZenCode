@@ -15,7 +15,7 @@ FILE
           T_WHITESPACE " "
           K_SUPER "super"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
       T_GREATER ">"
       T_WHITESPACE " "

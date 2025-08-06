@@ -22,11 +22,8 @@ class Import {
 
 			if (p.eat(ZSTokenType.K_AS)) {
 				p.whitespace();
-				if (p.eat(ZSTokenType.T_IDENTIFIER)) {
-					p.whitespace();
-				} else {
-					p.recover("expected identifier", IMPORT_RECOVERY);
-				}
+				p.name(IMPORT_RECOVERY);
+				p.whitespace();
 			}
 			p.expect(ZSTokenType.T_SEMICOLON);
 			p.close(open, TreeKind.IMPORT);

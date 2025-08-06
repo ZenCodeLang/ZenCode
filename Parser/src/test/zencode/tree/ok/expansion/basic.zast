@@ -2,7 +2,7 @@ FILE
   DEF_EXPANSION
     K_EXPAND "expand"
     T_WHITESPACE " "
-    TYPE
+    TYPE_BASIC
       K_STRING "string"
     T_WHITESPACE " "
     MEMBERS

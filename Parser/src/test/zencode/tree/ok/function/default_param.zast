@@ -5,7 +5,7 @@ FILE
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
-      PARAM_LIST
+      PARAMS
         T_BROPEN "("
         PARAM
           NAME
@@ -14,7 +14,7 @@ FILE
           TYPE_DECLARATION
             K_AS "as"
             T_WHITESPACE " "
-            TYPE
+            TYPE_BASIC
               K_STRING "string"
             T_WHITESPACE " "
           T_ASSIGN "="

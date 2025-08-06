@@ -142,7 +142,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -161,7 +161,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -183,7 +183,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -202,7 +202,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -224,7 +224,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -247,7 +247,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -276,7 +276,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -309,7 +309,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
         T_SEMICOLON ";"
       T_WHITESPACE "\n	"
@@ -319,11 +319,10 @@ FILE
         NAME
           T_IDENTIFIER "baz2"
         T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_STRING
-            T_STRING_DQ """"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
         T_SEMICOLON ";"
       T_WHITESPACE "\n	"
       MEMB_FIELD
@@ -335,14 +334,13 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_STRING
-            T_STRING_DQ """"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
         T_SEMICOLON ";"
       T_WHITESPACE "\n    "
       MEMB_FIELD
@@ -357,11 +355,10 @@ FILE
           AUTO_GET
             K_GET "get"
             T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_STRING
-            T_STRING_DQ """"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
         T_SEMICOLON ";"
       T_WHITESPACE "\n    "
       MEMB_FIELD
@@ -380,11 +377,10 @@ FILE
           AUTO_SET
             K_SET "set"
             T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_STRING
-            T_STRING_DQ """"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
         T_SEMICOLON ";"
       T_WHITESPACE "\n    "
       MEMB_FIELD
@@ -396,7 +392,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         FIELD_AUTO
@@ -405,11 +401,10 @@ FILE
           AUTO_GET
             K_GET "get"
             T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_STRING
-            T_STRING_DQ """"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_STRING
+          T_STRING_DQ """"
         T_SEMICOLON ";"
       T_WHITESPACE "\n	"
       MEMB_FIELD
@@ -435,7 +430,7 @@ FILE
         TYPE_DECLARATION
           K_AS "as"
           T_WHITESPACE " "
-          TYPE
+          TYPE_BASIC
             K_STRING "string"
           T_WHITESPACE " "
         T_ASSIGN "="

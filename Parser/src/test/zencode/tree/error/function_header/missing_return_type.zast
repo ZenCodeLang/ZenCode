@@ -12,26 +12,26 @@ FILE
         NAME
           T_IDENTIFIER "bar"
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "
           TYPE_DECLARATION
             K_AS "as"
             T_WHITESPACE "\n	"
-            TYPE
+            TYPE_NAMED
               NAME
                 T_IDENTIFIER "bar"
       MEMB_OPERATOR
         FUNCTION_HEADER
-          PARAM_LIST
+          PARAMS
             T_BROPEN "("
             T_BRCLOSE ")"
           T_WHITESPACE " "
           TYPE_DECLARATION
             K_AS "as"
             T_WHITESPACE " "
-            TYPE
+            TYPE_BASIC
               K_STRING "string"
             T_WHITESPACE " "
         BLOCK

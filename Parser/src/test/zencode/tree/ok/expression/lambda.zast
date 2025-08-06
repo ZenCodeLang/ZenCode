@@ -11,3 +11,24 @@ FILE
         NAME
           T_IDENTIFIER "bar"
   T_SEMICOLON ";"
+  T_WHITESPACE "\n"
+  EXPR_FUNCTION
+    EXPR_BRACKET
+      T_BROPEN "("
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "foo"
+      T_COMMA ","
+      T_WHITESPACE " "
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "bar"
+      T_BRCLOSE ")"
+      T_WHITESPACE " "
+    T_LAMBDA "=>"
+    T_WHITESPACE " "
+    LAMBDA_BODY
+      EXPR_VARIABLE
+        NAME
+          T_IDENTIFIER "baz"
+  T_SEMICOLON ";"

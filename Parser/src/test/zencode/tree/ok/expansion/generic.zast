@@ -9,12 +9,12 @@ FILE
           T_IDENTIFIER "T"
       T_GREATER ">"
       T_WHITESPACE " "
-    TYPE
+    TYPE_NAMED
       NAME
         T_IDENTIFIER "List"
-      TYPE_PARAMS
+      TYPE_ARGS
         T_LESS "<"
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "T"
         T_GREATER ">"

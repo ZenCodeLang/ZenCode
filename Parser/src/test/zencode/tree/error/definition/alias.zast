@@ -11,7 +11,7 @@ FILE
     TYPE_DECLARATION
       K_AS "as"
       T_WHITESPACE " "
-      TYPE
+      TYPE_NAMED
         NAME
           T_IDENTIFIER "Bar"
     T_SEMICOLON ";"

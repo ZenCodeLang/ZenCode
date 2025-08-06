@@ -5,14 +5,14 @@ FILE
     NAME
       T_IDENTIFIER "foo"
     FUNCTION_HEADER
-      PARAM_LIST
+      PARAMS
         T_BROPEN "("
         T_BRCLOSE ")"
       T_WHITESPACE " "
       THROWS
         K_THROWS "throws"
         T_WHITESPACE " "
-        TYPE
+        TYPE_NAMED
           NAME
             T_IDENTIFIER "stdlib"
           T_DOT "."

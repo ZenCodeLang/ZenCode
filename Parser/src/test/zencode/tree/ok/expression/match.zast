@@ -8,7 +8,7 @@ FILE
       T_WHITESPACE " "
     T_AOPEN "{"
     T_WHITESPACE "\n	"
-    EXPR_MATCH_KEY
+    MATCH_KEY
       EXPR_VARIABLE
         NAME
           T_IDENTIFIER "Foo"
@@ -20,7 +20,7 @@ FILE
         T_IDENTIFIER "bar"
     T_COMMA ","
     T_WHITESPACE "\n	"
-    EXPR_MATCH_KEY
+    MATCH_KEY
       K_DEFAULT "default"
       T_WHITESPACE " "
     T_LAMBDA "=>"

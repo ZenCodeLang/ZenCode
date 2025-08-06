@@ -1,4 +1,4 @@
 FILE
-  EXPR_OUTER
+  EXPR_DOLLAR
     T_DOLLAR "$"
   T_SEMICOLON ";"

@@ -7,9 +7,9 @@ FILE
   EXPR_VARIABLE
     NAME
       T_IDENTIFIER "foo"
-    TYPE_PARAMS
+    TYPE_ARGS
       T_LESS "<"
-      TYPE
+      TYPE_NAMED
         NAME
           T_IDENTIFIER "T"
       T_GREATER ">"

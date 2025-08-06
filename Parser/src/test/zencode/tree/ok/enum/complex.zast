@@ -18,62 +18,63 @@ FILE
         T_BRCLOSE ")"
     T_SEMICOLON ";"
     T_WHITESPACE "\n\n	"
-    MEMB_FIELD
-      K_VAR "var"
-      T_WHITESPACE " "
-      NAME
-        T_IDENTIFIER "value"
-      T_WHITESPACE " "
-      TYPE_DECLARATION
-        K_AS "as"
+    MEMBERS
+      MEMB_FIELD
+        K_VAR "var"
         T_WHITESPACE " "
-        TYPE
-          K_STRING "string"
+        NAME
+          T_IDENTIFIER "value"
         T_WHITESPACE " "
-      FIELD_AUTO
-        T_COLON ":"
-        T_WHITESPACE " "
-        AUTO_GET
-          K_GET "get"
-        T_COMMA ","
-        T_WHITESPACE " "
-        AUTO_SET
-          K_SET "set"
-      T_SEMICOLON ";"
-    T_WHITESPACE "\n\n	"
-    MEMB_CONSTRUCTOR
-      K_THIS "this"
-      FUNCTION_HEADER
-        PARAM_LIST
-          T_BROPEN "("
-          PARAM
-            NAME
-              T_IDENTIFIER "value"
-            TYPE_DECLARATION
-              T_COLON ":"
-              T_WHITESPACE " "
-              TYPE
-                K_STRING "string"
-          T_BRCLOSE ")"
-        T_WHITESPACE " "
-      BLOCK
-        T_AOPEN "{"
-        T_WHITESPACE "\n		"
-        EXPR_ASSIGN
-          EXPR_MEMBER
-            EXPR_THIS
-              K_THIS "this"
-            T_DOT "."
-            NAME
-              T_IDENTIFIER "value"
-            T_WHITESPACE " "
-          T_ASSIGN "="
+        TYPE_DECLARATION
+          K_AS "as"
           T_WHITESPACE " "
-          EXPR_VARIABLE
-            NAME
-              T_IDENTIFIER "value"
+          TYPE_BASIC
+            K_STRING "string"
+          T_WHITESPACE " "
+        FIELD_AUTO
+          T_COLON ":"
+          T_WHITESPACE " "
+          AUTO_GET
+            K_GET "get"
+          T_COMMA ","
+          T_WHITESPACE " "
+          AUTO_SET
+            K_SET "set"
         T_SEMICOLON ";"
-        T_WHITESPACE "\n	"
-        T_ACLOSE "}"
-      T_WHITESPACE "\n"
-    T_ACLOSE "}"
+      T_WHITESPACE "\n\n	"
+      MEMB_CONSTRUCTOR
+        K_THIS "this"
+        FUNCTION_HEADER
+          PARAMS
+            T_BROPEN "("
+            PARAM
+              NAME
+                T_IDENTIFIER "value"
+              TYPE_DECLARATION
+                T_COLON ":"
+                T_WHITESPACE " "
+                TYPE_BASIC
+                  K_STRING "string"
+            T_BRCLOSE ")"
+          T_WHITESPACE " "
+        BLOCK
+          T_AOPEN "{"
+          T_WHITESPACE "\n		"
+          EXPR_ASSIGN
+            EXPR_MEMBER
+              EXPR_THIS
+                K_THIS "this"
+              T_DOT "."
+              NAME
+                T_IDENTIFIER "value"
+              T_WHITESPACE " "
+            T_ASSIGN "="
+            T_WHITESPACE " "
+            EXPR_VARIABLE
+              NAME
+                T_IDENTIFIER "value"
+          T_SEMICOLON ";"
+          T_WHITESPACE "\n	"
+          T_ACLOSE "}"
+        T_WHITESPACE "\n"
+      T_ACLOSE "}"

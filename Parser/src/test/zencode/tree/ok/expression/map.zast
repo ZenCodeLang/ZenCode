@@ -11,13 +11,13 @@ FILE
     T_SQOPEN "["
     EXPR_MAP
       T_AOPEN "{"
-      EXPR_MAP_KEY
+      MAP_KEY
         EXPR_VARIABLE
           NAME
             T_IDENTIFIER "foo"
         T_COLON ":"
         T_WHITESPACE " "
-      EXPR_MAP_VALUE
+      MAP_VALUE
         EXPR_STRING
           T_STRING_DQ ""bar""
       T_ACLOSE "}"
@@ -29,25 +29,25 @@ FILE
     EXPR_MAP
       T_AOPEN "{"
       T_WHITESPACE " "
-      EXPR_MAP_KEY
+      MAP_KEY
         EXPR_VARIABLE
           NAME
             T_IDENTIFIER "foo"
           T_WHITESPACE " "
         T_COLON ":"
         T_WHITESPACE " "
-      EXPR_MAP_VALUE
+      MAP_VALUE
         EXPR_STRING
           T_STRING_DQ ""bar""
           T_WHITESPACE " "
       T_COMMA ","
       T_WHITESPACE " "
-      EXPR_MAP_KEY
+      MAP_KEY
         EXPR_STRING
           T_STRING_DQ ""baz""
         T_COLON ":"
         T_WHITESPACE " "
-      EXPR_MAP_VALUE
+      MAP_VALUE
         EXPR_INT
           T_INT "1"
           T_WHITESPACE " "

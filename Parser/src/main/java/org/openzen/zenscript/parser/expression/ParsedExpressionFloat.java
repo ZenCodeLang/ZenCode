@@ -24,6 +24,12 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		suffix = value.substring(split);
 	}
 
+	public ParsedExpressionFloat(CodePosition position, double value, String suffix) {
+		super(position);
+		this.value = value;
+		this.suffix = suffix;
+	}
+
 	private static boolean isLetter(char c) {
 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 	}

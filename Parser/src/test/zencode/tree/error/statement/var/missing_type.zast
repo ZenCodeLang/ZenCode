@@ -15,7 +15,7 @@ FILE
     TYPE_DECLARATION
       T_COLON ":"
       T_WHITESPACE " "
-      TYPE
+      TYPE_BASIC
         K_STRING "string"
     T_SEMICOLON ";"
 (1:8->1:9)expected type

@@ -477,7 +477,8 @@ class Expression {
 							p.whitespace();
 							markClosed = p.close(postfixOpen, TreeKind.EXPR_MEMBER);
 						} else {
-							markClosed = p.close(postfixOpen, TreeKind.ERROR);
+							markClosed = p.close(postfixOpen, TreeKind.EXPR_MEMBER);
+							p.error("Expected a name");
 						}
 						break;
 					}
@@ -613,7 +614,7 @@ class Expression {
 					primaryOpen = p.open();
 					p.expect(T_DOLLAR);
 					p.whitespace();
-					close = p.close(primaryOpen, TreeKind.EXPR_OUTER);
+					close = p.close(primaryOpen, TreeKind.EXPR_DOLLAR);
 					p.whitespace();
 					return close;
 				case T_SQOPEN:
@@ -648,12 +649,12 @@ class Expression {
 						parse(p);
 						if (p.eat(T_COLON)) {
 							p.whitespace();
-							p.close(keyOrValOpen, TreeKind.EXPR_MAP_KEY);
+							p.close(keyOrValOpen, TreeKind.MAP_KEY);
 							TreeParser.MarkOpened valOpen = p.open();
 							parse(p);
-							p.close(valOpen, TreeKind.EXPR_MAP_VALUE);
+							p.close(valOpen, TreeKind.MAP_VALUE);
 						} else {
-							p.close(keyOrValOpen, TreeKind.EXPR_MAP_VALUE);
+							p.close(keyOrValOpen, TreeKind.MAP_VALUE);
 						}
 						if (!p.eat(T_COMMA)) {
 							p.expect(T_ACLOSE);
@@ -742,7 +743,7 @@ class Expression {
 							parse(p, ParseOptions.NO_LAMBDAS);
 						}
 						p.whitespace();
-						p.close(keyOpen, TreeKind.EXPR_MATCH_KEY);
+						p.close(keyOpen, TreeKind.MATCH_KEY);
 
 						p.expect(T_LAMBDA);
 						p.whitespace();

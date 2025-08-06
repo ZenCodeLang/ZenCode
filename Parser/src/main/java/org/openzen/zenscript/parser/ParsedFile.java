@@ -40,6 +40,15 @@ public class ParsedFile {
 		this.file = file;
 	}
 
+	public ParsedFile(CompilingPackage pkg, SourceFile file, List<ParsedImport> imports, List<ParsedDefinition> definitions, List<ParsedStatement> statements) {
+		this.pkg = pkg;
+		this.file = file;
+		this.imports.addAll(imports);
+		this.definitions.addAll(definitions);
+		this.statements.addAll(statements);
+	}
+
+
 	public static SemanticModule compileSyntaxToSemantic(
 			SemanticModule[] dependencies,
 			CompilingPackage modulePackage,

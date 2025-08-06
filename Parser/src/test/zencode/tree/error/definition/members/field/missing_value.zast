@@ -14,20 +14,18 @@ FILE
         NAME
           T_IDENTIFIER "bar"
         T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE "\n	"
+        T_ASSIGN "="
+        T_WHITESPACE "\n	"
       MEMB_FIELD
         K_VAR "var"
         T_WHITESPACE " "
         NAME
           T_IDENTIFIER "bar"
         T_WHITESPACE " "
-        EXPR_ASSIGN
-          T_ASSIGN "="
-          T_WHITESPACE " "
-          EXPR_BOOL
-            K_TRUE "true"
+        T_ASSIGN "="
+        T_WHITESPACE " "
+        EXPR_BOOL
+          K_TRUE "true"
         T_SEMICOLON ";"
       T_WHITESPACE "\n"
       T_ACLOSE "}"

@@ -129,7 +129,7 @@ public abstract class ParsedStatement implements CompilableStatement {
 				parser.required(T_SEMICOLON, "; expected");
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementVar(position, annotations, whitespace, name, type, initializer, start.getType() == K_VAL);
+				return new ParsedStatementVar(position.until(parser.getPosition()), annotations, whitespace, name, type, initializer, start.getType() == K_VAL);
 			}
 			case K_IF: {
 				parser.next();
