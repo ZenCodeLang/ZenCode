@@ -1,0 +1,16 @@
+#output: baz
+
+virtual class Foo {}
+
+class Bar : Foo {
+	public baz(): void {
+		println("baz");
+	}
+}
+
+val foo = new Bar();
+
+if foo is Bar {
+	val bar = foo as Bar;
+	bar.baz();
+}

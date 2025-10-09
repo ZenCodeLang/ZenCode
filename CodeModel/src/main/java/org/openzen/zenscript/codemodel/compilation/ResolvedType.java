@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
@@ -28,14 +29,21 @@ public interface ResolvedType {
 	Optional<InstanceCallableMethod> findCaster(TypeID toType);
 
 	default Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
-		return findCaster(target)
+		Optional<Expression> expression = findCaster(target)
 				.filter(caster -> !caster.getModifiers().isImplicit())
 				// TODO: remember the type arguments in the caster method instead, so we don't need to infer it again
 				.flatMap(caster -> MatchedCallArguments.match(compiler, position, Collections.singletonList(caster), target, TypeID.NONE)
 						.getArguments()
 						.map(arg -> caster.call(compiler.at(position), value, arg))
 				);
+		if (!expression.isPresent()) {
+			if (target.extendsOrImplements(this.getType(), compiler.getAvailableExpansions())) {
+				return Optional.of(new SubtypeCastExpression(position, value, target));
+			}
+		}
+		return expression;
 	}
+
 
 	default Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		return findCaster(target)

@@ -1,0 +1,14 @@
+#output: baz
+#output: baz
+
+virtual class Foo {}
+
+class Bar : Foo {}
+
+function baz(foo: Foo): void {
+	println("baz");
+}
+
+val bar = new Bar();
+baz(bar);
+baz(bar as Foo);
