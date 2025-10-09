@@ -10,6 +10,7 @@ import java.util.List;
 public class WildcardCastingTest extends ZenCodeTest {
 	@Test
 	void testPrinter() {
+		//TODO Should this work? We couldn't decide
 		ScriptBuilder.create()
 				.add("import test_module.Generator;")
 				.add("var generator = new Generator();")
@@ -37,7 +38,7 @@ public class WildcardCastingTest extends ZenCodeTest {
 		}
 
 		@ZenCodeType.Method
-		public <T> void print(Singleton<T> stuff) {
+		public <T> void print(Class<T> clazz, Singleton<T> stuff) {
 			System.out.println(stuff.value);
 		}
 	}
