@@ -155,12 +155,12 @@ public interface TypeID {
 	/**
 	 * Similar to equals, but takes into account wildcard generics.
 	 *
-	 * @param type
+	 * @param to
 	 * @param expansions
 	 * @return
 	 */
-	default boolean isEquivalentTo(TypeID type, List<ExpansionSymbol> expansions) {
-		return this.equals(type);
+	default boolean canCastToBecauseOfWildcardGenerics(TypeID to, List<ExpansionSymbol> expansions) {
+		return this.equals(to);
 	}
 
 	/**

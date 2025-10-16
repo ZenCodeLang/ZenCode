@@ -13,9 +13,11 @@ public class WildcardCastingTest extends ZenCodeTest {
 		//TODO Should this work? We couldn't decide
 		ScriptBuilder.create()
 				.add("import test_module.Generator;")
+				.add("import test_module.Singleton;")
 				.add("var generator = new Generator();")
 				.add("var stuff = generator.generate();")
-				.add("generator.print<string>(stuff);")
+				.add("var morestuff = stuff as Singleton<string>;")
+				.add("generator.print<string>(morestuff);")
 				.execute(this);
 	}
 
@@ -50,5 +52,10 @@ public class WildcardCastingTest extends ZenCodeTest {
 		public Singleton(T value) {
 			this.value = value;
 		}
+
+		/*@ZenCodeType.Caster(implicit = true)
+		public <U> Singleton<U> cast(Class<U> clazz) {
+			return new Singleton<>(clazz.cast(value));
+		}*/
 	}
 }

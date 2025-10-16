@@ -114,7 +114,7 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
-		return this.type.isEquivalentTo(type, expansions);
+		return this.type.canCastToBecauseOfWildcardGenerics(type, expansions);
 	}
 
 	@Override

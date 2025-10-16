@@ -118,23 +118,23 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean isEquivalentTo(TypeID other, List<ExpansionSymbol> expansions) {
-		if (other instanceof DefinitionTypeID) {
-			DefinitionTypeID otherType = (DefinitionTypeID) other;
+	public boolean canCastToBecauseOfWildcardGenerics(TypeID to, List<ExpansionSymbol> expansions) {
+		if (to instanceof DefinitionTypeID) {
+			DefinitionTypeID otherType = (DefinitionTypeID) to;
 			if (definition.equals(otherType.definition)) {
 				if (typeArguments.length != otherType.typeArguments.length)
-					throw new IllegalArgumentException("Type arguments do not match: " + this + " -> " + other);
+					throw new IllegalArgumentException("Type arguments do not match: " + this + " -> " + to);
 
 				for (int i = 0; i < typeArguments.length; i++) {
 					if (!otherType.typeArguments[i].canCastGenericFrom(typeArguments[i], expansions))
-						return TypeID.super.isEquivalentTo(other, expansions);
+						return TypeID.super.canCastToBecauseOfWildcardGenerics(to, expansions);
 				}
 
 				return true;
 			}
 		}
 
-		return TypeID.super.isEquivalentTo(other, expansions);
+		return TypeID.super.canCastToBecauseOfWildcardGenerics(to, expansions);
 	}
 
 	@Override

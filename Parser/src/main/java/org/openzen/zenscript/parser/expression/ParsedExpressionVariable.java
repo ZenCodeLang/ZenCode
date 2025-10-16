@@ -125,7 +125,6 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
-			TypeID type = cast.type.simplified();
 			return resolved.cast(cast);
 		}
 
