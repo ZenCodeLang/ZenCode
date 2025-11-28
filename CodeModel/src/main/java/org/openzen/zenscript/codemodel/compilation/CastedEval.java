@@ -109,4 +109,8 @@ public class CastedEval {
 	public CastedExpression invalid(CompileError error) {
 		return CastedExpression.invalid(position, error);
 	}
+
+	public boolean isExplicit() {
+		return explicit;
+	}
 }

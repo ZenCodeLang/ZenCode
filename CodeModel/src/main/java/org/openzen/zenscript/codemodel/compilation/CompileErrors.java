@@ -170,6 +170,10 @@ public class CompileErrors {
 		}
 	}
 
+	public static CompileError constantSize(long value, TypeID toType) {
+		return new CompileError(CompileExceptionCode.INVALID_CAST, "Cannot fit " + value + " in type " + toType);
+	}
+
 	public static CompileError bracketMultipleExpressions() {
 		return new CompileError(CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
 	}

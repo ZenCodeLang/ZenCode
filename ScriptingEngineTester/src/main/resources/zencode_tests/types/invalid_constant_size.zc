@@ -1,0 +1,6 @@
+#error: 6:INVALID_CAST
+function foo(i: int) {
+	println(i);
+}
+
+foo(0xFFFFFFFF);

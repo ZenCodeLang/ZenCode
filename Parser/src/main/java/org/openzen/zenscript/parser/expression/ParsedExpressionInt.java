@@ -12,8 +12,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
-public class 	ParsedExpressionInt extends ParsedExpression {
+public class ParsedExpressionInt extends ParsedExpression {
 	public final boolean negative;
 	public final long value;
 	public final String suffix;
@@ -164,23 +166,23 @@ public class 	ParsedExpressionInt extends ParsedExpression {
 			long signed = negative ? -value : value;
 			switch (type) {
 				case SBYTE:
-					return cast.of(level(signed >= Byte.MIN_VALUE && signed <= Byte.MAX_VALUE), new ConstantSByteExpression(position, (byte)value));
+					return castIfFits(cast, signed >= Byte.MIN_VALUE && signed <= Byte.MAX_VALUE, (position, value) -> new ConstantSByteExpression(position, value.byteValue()));
 				case BYTE:
-					return cast.of(level(!negative && value <= 0xFF), new ConstantByteExpression(position, (int)value));
+					return castIfFits(cast, !negative && value <= 0xFF, (position, value) -> new ConstantByteExpression(position, value.intValue()));
 				case SHORT:
-					return cast.of(level(signed >= Short.MIN_VALUE && signed <= Short.MAX_VALUE), new ConstantShortExpression(position, (short) value));
+					return castIfFits(cast, signed >= Short.MIN_VALUE && signed <= Short.MAX_VALUE, (position, value) -> new ConstantShortExpression(position, value.shortValue()));
 				case USHORT:
-					return cast.of(level(!negative && value <= 0xFFFF), new ConstantUShortExpression(position, (int)value));
+					return castIfFits(cast, !negative && value <= 0xFFFF, (position, value) -> new ConstantUShortExpression(position, value.intValue()));
 				case INT:
-					return cast.of(level(signed >= Integer.MIN_VALUE && signed <= Integer.MAX_VALUE), new ConstantIntExpression(position, (int)value));
+					return castIfFits(cast, signed >= Integer.MIN_VALUE && signed <= Integer.MAX_VALUE, (position, value) -> new ConstantIntExpression(position, value.intValue()));
 				case UINT:
-					return cast.of(level(!negative && value <= 0xFFFFFFFFL), new ConstantUIntExpression(position, (int)value));
+					return castIfFits(cast, !negative && value <= 0xFFFFFFFFL, (position, value) -> new ConstantUIntExpression(position, value.intValue()));
 				case USIZE:
-					return cast.of(level(!negative && value <= 0xFFFFFFFFL), new ConstantUSizeExpression(position, value));
+					return castIfFits(cast, !negative && value <= 0xFFFFFFFFL, ConstantUSizeExpression::new);
 				case LONG:
 					return cast.of(new ConstantLongExpression(position, value));
 				case ULONG:
-					return cast.of(level(!negative), new ConstantULongExpression(position, value));
+					return castIfFits(cast, !negative, ConstantULongExpression::new);
 				case FLOAT:
 					return cast.of(new ConstantFloatExpression(position, value));
 				case DOUBLE:
@@ -188,6 +190,15 @@ public class 	ParsedExpressionInt extends ParsedExpression {
 			}
 
 			return cast.of(eval());
+		}
+
+		private CastedExpression castIfFits(CastedEval cast, boolean fits, BiFunction<CodePosition, Long, Expression> expr){
+			if(fits) {
+				return cast.of(CastedExpression.Level.EXACT, expr.apply(this.position, this.value));
+			} else if(cast.isExplicit()) {
+				return cast.of(CastedExpression.Level.EXPLICIT, expr.apply(this.position, this.value));
+			}
+			return cast.invalid(CompileErrors.constantSize(this.value,cast.type));
 		}
 
 		private boolean isIntegerType(TypeID type) {
@@ -202,9 +213,6 @@ public class 	ParsedExpressionInt extends ParsedExpression {
 					|| type == BasicTypeID.USIZE;
 		}
 
-		private CastedExpression.Level level(boolean fits) {
-			return fits ? CastedExpression.Level.EXACT : CastedExpression.Level.EXPLICIT;
-		}
 	}
 
 	@Override
