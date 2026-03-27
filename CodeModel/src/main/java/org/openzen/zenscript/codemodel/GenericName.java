@@ -5,7 +5,9 @@ import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class GenericName {
@@ -50,6 +52,21 @@ public class GenericName {
 
 	public boolean hasNoArguments() {
 		return arguments.length == 0;
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if (!(o instanceof GenericName)) return false;
+
+		GenericName that = (GenericName) o;
+		return Objects.equals(name, that.name) && Arrays.equals(arguments, that.arguments);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hashCode(name);
+		result = 31 * result + Arrays.hashCode(arguments);
+		return result;
 	}
 
 	@Override

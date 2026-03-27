@@ -89,7 +89,7 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 			boolean relative = tokens.optional(ZSTokenType.T_DOT) != null;
 			IParsedType parsed = IParsedType.parse(tokens);
 
-			CompileContext context = new CompileContext(relative ? packageInfo.getPkg() : packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
+			JavaCompileContext context = new JavaCompileContext(relative ? packageInfo.getPkg() : packageInfo.getRoot(), packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
 
 			final ZSTokenParser typeBoundsTokens = ZSTokenParser.create(new LiteralSourceFile("internal", expansion.typeParameters()), null);
 			TypeParameter[] typeParameters = Optional.ofNullable(ParsedTypeParameter.parseAll(typeBoundsTokens))
