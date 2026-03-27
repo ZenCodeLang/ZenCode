@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.ExpandedResolvedType;
+import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 import java.util.Collections;
 import java.util.List;
@@ -114,6 +115,13 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public boolean extendsOrImplements(TypeID type, List<ExpansionSymbol> expansions) {
+		if(type instanceof JavaFunctionalInterfaceTypeID) {
+			JavaFunctionalInterfaceTypeID func = ((JavaFunctionalInterfaceTypeID) type);
+			Class<?> cls = this.template.class_.cls;
+			if(func.functionalInterfaceMethod.getDeclaringClass().isAssignableFrom(cls)) {
+				return true;
+			}
+		}
 		return this.type.canCastToBecauseOfWildcardGenerics(type, expansions);
 	}
 
