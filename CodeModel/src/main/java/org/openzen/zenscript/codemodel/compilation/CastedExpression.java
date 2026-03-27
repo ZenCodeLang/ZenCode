@@ -5,6 +5,7 @@ import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 
 public class CastedExpression {
 	public enum Level {
@@ -63,7 +64,7 @@ public class CastedExpression {
 
 	public CastedExpression(CodePosition position, CompileError error) {
 		this.level = Level.INVALID;
-		this.value = new InvalidExpression(position, BasicTypeID.INVALID, error);
+		this.value = new InvalidExpression(position, new InvalidTypeID(position, error), error);
 		this.error = error;
 	}
 

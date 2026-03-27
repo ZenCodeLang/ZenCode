@@ -309,7 +309,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 		@Override
 		public Expression invalid(CompileError error) {
-			return new InvalidExpression(position, BasicTypeID.INVALID, error);
+			return new InvalidExpression(position, new InvalidTypeID(position, error), error);
 		}
 
 		@Override

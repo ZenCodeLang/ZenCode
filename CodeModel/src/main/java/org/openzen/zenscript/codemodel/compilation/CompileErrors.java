@@ -498,6 +498,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.RETURN_VALUE_VOID, "Return type is void; cannot return a value");
 	}
 
+	public static CompileError missingThrownType() {
+		return new CompileError(CompileExceptionCode.MISSING_THROWN_TYPE, "Statement doesn't throw anything");
+	}
+
 	public static CompileError missingReturn() {
 		return new CompileError(CompileExceptionCode.MISSING_RETURN, "Missing return");
 	}

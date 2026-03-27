@@ -32,6 +32,9 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 		if (basic == BasicTypeID.UNDETERMINED)
 			validator.logError(position, CompileErrors.typeNotDetermined(context.display));
 
+		if (basic.isInvalid()) {
+			validator.logError(position, CompileErrors.invalidType());
+		}
 		return null;
 	}
 
