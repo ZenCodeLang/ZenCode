@@ -27,8 +27,6 @@ public class BasicTypeMembers {
 			case VOID:
 			case NULL:
 			case UNDETERMINED:
-			case INVALID:
-				return MemberSet.create(type).build();
 			default:
 				MemberSet.Builder builder = MemberSet.create(type);
 				setup(builder, type);

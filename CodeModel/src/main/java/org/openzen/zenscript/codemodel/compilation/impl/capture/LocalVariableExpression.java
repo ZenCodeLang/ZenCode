@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.compilation.impl.capture;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
@@ -14,6 +15,7 @@ import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableInvalidEx
 import org.openzen.zenscript.codemodel.expression.modifiable.ModifiableLocalVariableExpression;
 import org.openzen.zenscript.codemodel.ssa.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 
 import java.util.Optional;
 
@@ -71,8 +73,10 @@ public class LocalVariableExpression implements LocalExpression {
 
 		@Override
 		public Optional<ModifiableExpression> asModifiable() {
-			if (variable.getActualType() == null)
-				return Optional.of(new ModifiableInvalidExpression(position, BasicTypeID.INVALID, CompileErrors.localVariableTypeUnknown(variable.name)));
+			if (variable.getActualType() == null) {
+				CompileError error = CompileErrors.localVariableTypeUnknown(variable.name);
+				return Optional.of(new ModifiableInvalidExpression(position, new InvalidTypeID(position, error), error));
+			}
 
 			return Optional.of(new ModifiableLocalVariableExpression(position, variable.eval()));
 		}
