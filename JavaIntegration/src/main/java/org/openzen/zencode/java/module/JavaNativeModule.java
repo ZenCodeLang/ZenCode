@@ -26,6 +26,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaNativeField;
+import org.openzen.zenscript.javashared.types.ObjectTypeSymbol;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import stdlib.Strings;
 
@@ -200,6 +201,9 @@ public class JavaNativeModule {
 	}
 
 	public Optional<TypeSymbol> findClass(Class<?> cls) {
+		if (Object.class.equals(cls)) {
+			return Optional.of(ObjectTypeSymbol.INSTANCE);
+		}
 		return nativeModuleSpace.getModule(cls).flatMap(module -> module.findLocalClass(cls));
 	}
 
