@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javashared.types;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.ResolvingType;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -8,8 +9,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.ModuleSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.javashared.expressions.JavaObjectCastExpression;
 
@@ -44,7 +48,12 @@ public class ObjectTypeSymbol implements TypeSymbol {
 
 	@Override
 	public ResolvingType resolve(TypeID[] typeArguments) {
-		MemberSet.Builder members = MemberSet.create(new DefinitionTypeID(this, typeArguments, null));
+		DefinitionTypeID type = new DefinitionTypeID(this, typeArguments, null);
+		MemberSet.Builder members = MemberSet.create(type);
+		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_SAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_NOTSAME, new FunctionHeader(BasicTypeID.BOOL, type), type));
+		members.method(new MethodInstance(BuiltinMethodSymbol.OBJECT_HASHCODE, new FunctionHeader(BasicTypeID.UINT), type));
+
 		return members.build();
 	}
 
