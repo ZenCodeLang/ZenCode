@@ -134,6 +134,10 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.CANNOT_THROW_HERE, "Cannot throw here");
 	}
 
+	public static CompileError cannotInferTypeArguments() {
+		return new CompileError(CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Cannot infer type arguments");
+	}
+
 	public static CompileError cannotInferEmptyArray() {
 		return new CompileError(CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Cannot infer type of empty array");
 	}

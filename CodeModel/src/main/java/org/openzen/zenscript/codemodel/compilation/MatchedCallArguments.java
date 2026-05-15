@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.compilation.expression.WrappedCompilingExpression;
@@ -31,8 +32,15 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
 	) {
-		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = overloads.stream()
-				.map(method -> match(compiler, position, method, asType, typeArguments, arguments))
+		List<MatchedCallArguments<T>> matchedCalls = new ArrayList<>();
+		for (T method : overloads) {
+			try {
+				matchedCalls.add(match(compiler, position, method, asType, typeArguments, arguments));
+			} catch (CompileException e) {
+				return new MatchedCallArguments<>(e.error);
+			}
+		}
+		final Map<CastedExpression.Level, List<MatchedCallArguments<T>>> methodsGroupedByMatchLevel = matchedCalls.stream()
 				.collect(Collectors.groupingBy(matched -> matched.arguments.level, Collectors.toList()));
 
 		for (final CastedExpression.Level level : candidateLevelsInOrderOfPriority) {
@@ -132,7 +140,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 			TypeID result,
 			TypeID[] typeArguments,
 			CompilingExpression... arguments
-	) {
+	) throws CompileException {
 		TypeID[] expansionTypeArguments = method.asMethod().map(MethodInstance::getExpansionTypeArguments).orElse(TypeID.NONE);
 
 		if (!method.getHeader().accepts(arguments.length)) {
@@ -144,7 +152,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 		}
 
 		// Type inference
-		Optional<TypeID[]> inferred = inferTypeArguments(expansionTypeArguments, method, result, typeArguments, compiler.getAvailableExpansions(), arguments);
+		Optional<TypeID[]> inferred = inferTypeArguments(position, expansionTypeArguments, method, result, typeArguments, compiler.getAvailableExpansions(), arguments);
 		if (!inferred.isPresent()) {
 			return new MatchedCallArguments<>(
 					method,
@@ -323,27 +331,32 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 
 	private static <T extends AnyMethod> Optional<TypeID[]> inferTypeArguments(
+			CodePosition position,
 			TypeID[] expansionTypeArguments,
 			T method,
 			TypeID result,
 			TypeID[] typeArguments,
 			List<ExpansionSymbol> expansions,
 			CompilingExpression... arguments
-	) {
+	) throws CompileException {
 		int providedTypeArguments = typeArguments == null ? 0 : typeArguments.length;
 
 		if (providedTypeArguments == method.getHeader().typeParameters.length) {
 			return Optional.of(typeArguments != null ? typeArguments : TypeID.NONE);
 		}
 
-		if(providedTypeArguments != 0 && providedTypeArguments != method.getHeader().typeParameters.length) {
+		if (providedTypeArguments != 0 && providedTypeArguments != method.getHeader().typeParameters.length) {
 			return Optional.empty();
 		}
 
 		// attempt to infer type arguments from the return type
 		final Map<TypeParameter, TypeID> typeArgumentMap = new HashMap<>();
 		if (result != null) {
-			typeArgumentMap.putAll(method.getHeader().getReturnType().inferTypeParameters(result, expansions));
+			Map<TypeParameter, TypeID> m = method.getHeader().getReturnType().inferTypeParameters(result, expansions);
+			if (m == null) {
+				throw new CompileException(position, CompileErrors.cannotInferTypeArguments());
+			}
+			typeArgumentMap.putAll(m);
 		}
 
 		// create a mapping with everything found so far
