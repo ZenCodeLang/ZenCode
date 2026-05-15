@@ -92,16 +92,6 @@ public class ParsedFile {
 		ZSPackage rootPackage = registry.collectPackages();
 
 		for (ParsedFile file : files) {
-			for (ParsedDefinition definition : file.definitions) {
-				if (definition.isExpansion()) {
-					definition.registerCompiling(definitions, expansions, definitionCompilers.get(file));
-				}
-			}
-		}
-
-		definitions = sortTopologically(definitions);
-
-		for (ParsedFile file : files) {
 			ParsedFileCompiler fileCompiler = definitionCompilers.get(file);
 			for (ParsedImport import_ : file.imports) {
 				if (import_.isRelative()) {
@@ -113,6 +103,16 @@ public class ParsedFile {
 				}
 			}
 		}
+
+		for (ParsedFile file : files) {
+			for (ParsedDefinition definition : file.definitions) {
+				if (definition.isExpansion()) {
+					definition.registerCompiling(definitions, expansions, definitionCompilers.get(file));
+				}
+			}
+		}
+
+		definitions = sortTopologically(definitions);
 
 		for (CompilingExpansion expansion : expansions) {
 			context.addExpansion(expansion.getCompiling());
