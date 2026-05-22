@@ -19,6 +19,11 @@ public abstract class AbstractCompilingExpression implements CompilingExpression
 	}
 
 	@Override
+	public CodePosition getPosition() {
+		return position;
+	}
+
+	@Override
 	public CastedExpression cast(CastedEval cast) {
 		return cast.of(eval());
 	}

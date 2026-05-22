@@ -23,6 +23,11 @@ public class PackageCompilingExpression implements CompilingExpression {
 	}
 
 	@Override
+	public CodePosition getPosition() {
+		return position;
+	}
+
+	@Override
 	public Expression eval() {
 		return compiler.at(position).invalid(CompileErrors.cannotUsePackageAsValue());
 	}

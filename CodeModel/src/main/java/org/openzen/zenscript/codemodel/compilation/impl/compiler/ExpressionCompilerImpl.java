@@ -318,6 +318,11 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		}
 
 		@Override
+		public Expression invalidAt(CompileError error, CodePosition position) {
+			return new InvalidExpression(position, new InvalidTypeID(position, error), error);
+		}
+
+		@Override
 		public Expression is(Expression value, TypeID type) {
 			return new IsExpression(position, value, type);
 		}

@@ -77,23 +77,41 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	private final T method;
 	private final CallArguments arguments;
 	private final CompileError error;
+	private final CodePosition position;
 
 	private MatchedCallArguments(T method, CallArguments arguments) {
 		this.method = method;
 		this.arguments = arguments;
 		this.error = null;
+		this.position = null;
+	}
+
+	private MatchedCallArguments(T method, CallArguments arguments, CompileError error) {
+		this.method = method;
+		this.arguments = arguments;
+		this.error = error;
+		this.position = null;
 	}
 
 	private MatchedCallArguments(CompileError error) {
 		this.method = null;
 		this.arguments = null;
 		this.error = error;
+		this.position = null;
 	}
 
 	private MatchedCallArguments(CompileError error, CallArguments arguments) {
 		this.method = null;
 		this.arguments = arguments;
 		this.error = error;
+		this.position = null;
+	}
+
+	private MatchedCallArguments(CompileError error, CallArguments arguments, CodePosition position) {
+		this.method = null;
+		this.arguments = arguments;
+		this.error = error;
+		this.position = position;
 	}
 
 	public boolean requiresWidenedInstance(TypeID instanceType) {
@@ -106,7 +124,11 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 	public Expression eval(ExpressionBuilder builder, CallEvaluator<T> evaluator) {
 		if (this.error != null) {
-			return builder.invalid(error);
+			if (position != null) {
+				return builder.invalidAt(error, position);
+			} else {
+				return builder.invalid(error);
+			}
 		} else {
 			return evaluator.eval(builder, method, arguments);
 		}
@@ -148,7 +170,12 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					CastedExpression.Level.INVALID,
 					expansionTypeArguments,
 					typeArguments,
-					Expression.NONE));
+					Expression.NONE),
+					CompileErrors.invalidNumberOfArguments(
+							arguments.length,
+							arguments.length < method.getHeader().minParameters
+									? method.getHeader().minParameters
+									: method.getHeader().maxParameters));
 		}
 
 		// Type inference
@@ -256,7 +283,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 						return CastedExpression.invalid(position, CompileErrors.missingParameter(header.getParameter(false, i).name));
 					}
 					TypeID originalType = method.getHeader().getParameterType(false, i);
-					return argument.cast(CastedEval.implicit(compiler, position, header.getParameterType(false, i), originalType));
+					return argument.cast(CastedEval.implicit(compiler, argument.getPosition(), header.getParameterType(false, i), originalType));
 				})
 				.toArray(CastedExpression[]::new);
 
@@ -272,7 +299,8 @@ public class MatchedCallArguments<T extends AnyMethod> {
 					.orElseThrow(() -> new IllegalStateException("Should never happen"));
 
 			return new MatchedCallArguments<>(firstInvalid.error,
-					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, Expression.NONE));
+					new CallArguments(CastedExpression.Level.INVALID, expansionTypeArguments, typeArguments, Expression.NONE),
+					firstInvalid.value.position);
 		}
 
 		return new MatchedCallArguments<>(

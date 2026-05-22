@@ -153,6 +153,10 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	public void visitEnumConstant(EnumConstantMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
+		if (member.invalidConstructor != null) {
+			validator.logError(member.position, member.invalidConstructor.error);
+			return;
+		}
 		if (member.constructor != null) {
 			member.constructor.accept(new ExpressionValidator(validator, new EnumConstantInitializerScope()));
 		}

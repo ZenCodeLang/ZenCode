@@ -54,6 +54,14 @@ public class CompileErrors {
 		return new CompileError(CompileExceptionCode.NO_SUCH_MEMBER, "No operator " + operator + " in type " + type);
 	}
 
+	public static CompileError notAStaticMethod(TypeID type, String name) {
+		return new CompileError(CompileExceptionCode.MEMBER_NOT_STATIC, "No static method " + name + " in type " + type);
+	}
+
+	public static CompileError notAnInstanceMethod(TypeID type, String name) {
+		return new CompileError(CompileExceptionCode.MEMBER_IS_STATIC, "No instance method " + name + " in type " + type);
+	}
+
 	public static CompileError noThisInScope() {
 		return new CompileError(CompileExceptionCode.USING_THIS_OUTSIDE_TYPE, "Not in an instance method; cannot use this");
 	}

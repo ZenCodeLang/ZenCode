@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.compilation;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -62,6 +63,8 @@ public interface ExpressionBuilder {
 	Expression invalid(CompileError error);
 
 	Expression invalid(CompileError error, TypeID type);
+
+	Expression invalidAt(CompileError error, CodePosition position);
 
 	Expression is(Expression value, TypeID type);
 

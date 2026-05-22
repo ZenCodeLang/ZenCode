@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface CompilingExpression {
 	CompilingExpression[] NONE = new CompilingExpression[0];
 
+	CodePosition getPosition();
+
 	/**
 	 * Compiles this expression. The return type is inferred from the expression.
 	 *

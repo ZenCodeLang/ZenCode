@@ -54,6 +54,11 @@ public class IterateStatement implements CodeBlockStatement {
 		}
 
 		@Override
+		public CodePosition getPosition() {
+			return position;
+		}
+
+		@Override
 		public Expression eval() {
 			Expression value = list.eval();
 			return compiler.resolve(value.type).findIterator(loopVariables.size())

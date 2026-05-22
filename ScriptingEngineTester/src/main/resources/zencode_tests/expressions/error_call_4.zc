@@ -1,0 +1,9 @@
+#error: 9:INVALID_ARGUMENTS:Invalid number of arguments, 1 expected but 0 given
+
+class Foo {
+	static bar(a: int, value: int? = null): int {
+		return a;
+	}
+}
+
+println(Foo.bar());

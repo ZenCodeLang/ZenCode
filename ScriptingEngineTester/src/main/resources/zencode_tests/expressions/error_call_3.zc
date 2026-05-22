@@ -1,0 +1,9 @@
+#error:9:MEMBER_NOT_STATIC
+
+class Foo {
+	bar(value: int): int {
+		return value;
+	}
+}
+
+println(Foo.bar());

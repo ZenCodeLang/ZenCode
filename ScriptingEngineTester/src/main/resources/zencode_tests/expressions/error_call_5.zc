@@ -1,0 +1,10 @@
+#error: 10:MEMBER_IS_STATIC
+
+class Foo {
+	static bar(a: int): int {
+		return a;
+	}
+}
+
+val foo = new Foo();
+println(foo.bar(1));

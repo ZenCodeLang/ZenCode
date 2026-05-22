@@ -46,9 +46,9 @@ public class TestAnnotations {
 	}
 
 	private static ExpectedError parseError(String filename, String errorSpecification) {
-		String[] parts = errorSpecification.split(":", 2);
+		String[] parts = errorSpecification.split(":", 3);
 		try {
-			return new ExpectedError(filename, Integer.parseInt(parts[0]), CompileExceptionCode.valueOf(parts[1]));
+			return new ExpectedError(filename, Integer.parseInt(parts[0]), CompileExceptionCode.valueOf(parts[1]), parts.length > 2 ? parts[2] : null);
 		} catch (NumberFormatException ex) {
 			throw new RuntimeException("Invalid line number in " + filename + ": " + parts[0], ex);
 		} catch (IllegalArgumentException ex) {

@@ -74,6 +74,9 @@ public class InstanceMemberCompilingExpression extends AbstractCompilingExpressi
 							.findOperator(OperatorType.CALL)
 							.map(method -> method.bind(compiler, field.get(compiler.at(position), instance), name.arguments)));
 		}
+		if (resolvedType.findStaticMethod(name.name).isPresent()) {
+			return Optional.of(new InvalidCompilingExpression(compiler, position, CompileErrors.notAnInstanceMethod(instance.type, name.name)));
+		}
 
 		return Optional.of(result.orElseGet(() -> new InvalidCompilingExpression(compiler, position, CompileErrors.noMemberInType(instance.type, name.name))));
 	}

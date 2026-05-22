@@ -64,6 +64,10 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 		if (staticMethod.isPresent())
 			return staticMethod;
 
+		if (resolvedType.findMethod(name.name).isPresent()) {
+			return Optional.of(new InvalidCompilingExpression(compiler, position, CompileErrors.notAStaticMethod(type, name.name)));
+		}
+
 		return resolvedType.getContextMember(name.name).flatMap(member -> member.compile(compiler).call());
 	}
 

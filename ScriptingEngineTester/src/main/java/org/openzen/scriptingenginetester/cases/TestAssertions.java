@@ -39,6 +39,15 @@ public class TestAssertions {
 				);
 
 		Assertions.assertLinesMatch(expectedErrors, actualErrors, "Test must throw errors exactly as specified as '#error:' Preprocessors");
+
+		for (int i = 0; i < this.expectedErrors.size(); i++) {
+			if (this.expectedErrors.get(i).message != null) {
+				String expectedMessage = this.expectedErrors.get(i).message;
+				String actualMessage = output.exceptions.get(i).error.description;
+				Assertions.assertEquals(expectedMessage, actualMessage, "Error message must match expected message");
+			}
+		}
+
 		Assertions.assertTrue(output.runtimeExceptions.isEmpty(), "There must be no runtime exceptions");
 	}
 

@@ -1,4 +1,4 @@
-#error: 6:INVALID_CALL_ARGUMENT
+#error: 6:INVALID_ARGUMENTS
 
 public enum MyEnum {
 	A('X1'),

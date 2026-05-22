@@ -1,0 +1,7 @@
+#error:7:INVALID_ARGUMENTS
+
+function a(): int {
+	return 1;
+}
+
+println(a(1));

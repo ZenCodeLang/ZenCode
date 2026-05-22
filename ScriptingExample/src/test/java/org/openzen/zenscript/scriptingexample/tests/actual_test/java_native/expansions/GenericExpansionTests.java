@@ -35,11 +35,9 @@ class GenericExpansionTests extends ZenCodeTest {
 
 	@ZenCodeType.Expansion(value = "stdlib.List<T>", typeParameters = "<T : string>")
 	public static class ExpandStringList {
-
-
 		@ZenCodeType.Method
-		public static String join(List<String> list) {
-			return String.join(",", list);
+		public static String join(List<String> list, String delimiter) {
+			return String.join(delimiter, list);
 		}
 	}
 }

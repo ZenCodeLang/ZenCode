@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingE
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -22,6 +23,7 @@ public class EnumConstantMember implements CompilableExpression {
 
 	public Expression value = null;
 	public CallStaticExpression constructor = null;
+	public InvalidExpression invalidConstructor = null;
 
 	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int ordinal) {
 		this.position = position;

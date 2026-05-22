@@ -1,0 +1,11 @@
+#error: 10:INVALID_ARGUMENTS
+
+class Foo {
+	static bar(value: int): int {
+		return value;
+	}
+}
+
+println(
+	Foo.bar()
+);
