@@ -1,0 +1,9 @@
+#output: 1.5
+
+function useDouble(num: double): void {
+	println(num);
+}
+
+var i = 1 as int;
+useDouble(i + 0.5);
+
