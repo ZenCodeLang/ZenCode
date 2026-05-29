@@ -31,7 +31,7 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	CHAR("char"),
 	STRING("string"),
 
-	UNDETERMINED("undetermined"),
+	UNDETERMINED("undetermined");
 	INVALID("invalid");
 
 	private final String name;
