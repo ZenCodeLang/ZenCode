@@ -32,7 +32,6 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	STRING("string"),
 
 	UNDETERMINED("undetermined");
-	INVALID("invalid");
 
 	private final String name;
 	private ResolvingType members;
@@ -198,5 +197,10 @@ public enum BasicTypeID implements TypeID, TypeSymbol {
 	@Override
 	public Optional<TypeID> getSupertype(TypeID[] typeArguments) {
 		return Optional.empty();
+	}
+
+	@Override
+	public boolean isIncomplete() {
+		return this == BasicTypeID.UNDETERMINED;
 	}
 }

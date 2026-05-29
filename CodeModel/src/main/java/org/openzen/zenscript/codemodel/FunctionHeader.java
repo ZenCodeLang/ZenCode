@@ -472,6 +472,6 @@ public class FunctionHeader {
 	}
 
 	public boolean hasInvalidTypes() {
-		return Stream.of(parameters).anyMatch(p -> p.type.isInvalid());
+		return Stream.of(parameters).anyMatch(p -> p.type.isIncomplete());
 	}
 }

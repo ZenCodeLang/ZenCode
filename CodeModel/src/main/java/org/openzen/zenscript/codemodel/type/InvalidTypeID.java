@@ -44,6 +44,11 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
+	public boolean isIncomplete() {
+		return true;
+	}
+
+	@Override
 	public InvalidTypeID asInvalid() {
 		return this;
 	}

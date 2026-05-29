@@ -90,6 +90,10 @@ public interface TypeID {
 		return false;
 	}
 
+	default boolean isIncomplete() {
+		return this.isInvalid();
+	}
+
 	default InvalidTypeID asInvalid() {
 		return new InvalidTypeID(CodePosition.UNKNOWN, CompileErrors.invalidType());
 	}
