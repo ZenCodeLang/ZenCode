@@ -8,7 +8,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
 
-public interface StatementCompiler {
+public interface StatementCompiler extends TypeResolver{
 	ExpressionCompiler expressions();
 
 	TypeBuilder types();

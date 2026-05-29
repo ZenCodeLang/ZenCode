@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -9,7 +10,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -74,20 +74,35 @@ public class BlockStatement extends Statement {
 	}
 
 	@Override
-	public Optional<TypeID> getReturnType() {
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
 		final List<TypeID> collect = Arrays.stream(statements)
-				.map(Statement::getReturnType)
+				.map(statement -> statement.getReturnType(typeResolver))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.distinct()
 				.collect(Collectors.toList());
 
-		if (collect.isEmpty())
+		if (collect.isEmpty()) {
 			return Optional.of(BasicTypeID.VOID);
-		else if (collect.size() == 1)
+		} else if (collect.size() == 1) {
 			return Optional.ofNullable(collect.get(0));
-		else
-			//TODO make this real?
-			throw new IllegalStateException("More than one possible type: " + collect.size());
+		} else {
+			if (typeResolver == null) {
+				//			TODO make this real?
+				throw new IllegalStateException("More than one possible type: " + collect.size());
+			}
+			TypeID result = collect.get(0);
+			for (int i = 1; i < collect.size(); i++) {
+				Optional<TypeID> union = typeResolver.union(result, collect.get(i));
+				if (union.isPresent()) {
+					result = union.get();
+				} else {
+					return union;
+				}
+
+			}
+			return Optional.of(result);
+
+		}
 	}
 }

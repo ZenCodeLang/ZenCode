@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -73,13 +74,13 @@ public class TryCatchStatement extends Statement {
 	}
 
 	@Override
-	public Optional<TypeID> getReturnType() {
-		Optional<TypeID> finallyType = Optional.ofNullable(finallyClause).flatMap(Statement::getReturnType);
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
+		Optional<TypeID> finallyType = Optional.ofNullable(finallyClause).flatMap(statement -> statement.getReturnType(typeResolver));
 		if (finallyType.isPresent()) {
 			return finallyType;
 		}
 
 		//TODO check catch clauses and do stuff I guess?
-		return content.getReturnType();
+		return content.getReturnType(typeResolver);
 	}
 }

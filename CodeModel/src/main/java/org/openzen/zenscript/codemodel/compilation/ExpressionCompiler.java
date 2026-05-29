@@ -33,8 +33,6 @@ public interface ExpressionCompiler extends TypeResolver {
 
 	List<String> findCandidateImports(String name);
 
-	Optional<TypeID> union(TypeID left, TypeID right);
-
 	ExpressionCompiler withLocalVariables(List<CompilingVariable> variables);
 
 	ExpressionCompiler withDollarTarget(CompilingExpression target);

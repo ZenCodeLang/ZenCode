@@ -115,35 +115,6 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 	}
 
 	@Override
-	public Optional<TypeID> union(TypeID left, TypeID right) {
-		if (left.equals(right))
-			return Optional.of(right);
-
-		ResolvedType leftResolved = resolve(left);
-		ResolvedType rightResolved = resolve(right);
-
-		if (leftResolved.canCastImplicitlyTo(right))
-			return Optional.of(right);
-
-		if (rightResolved.canCastImplicitlyTo(left))
-			return Optional.of(left);
-
-		Optional<ArrayTypeID> maybeLeftArray = left.asArray();
-		Optional<ArrayTypeID> maybeRightArray = right.asArray();
-		if (maybeLeftArray.isPresent() && maybeRightArray.isPresent()) {
-			ArrayTypeID leftArray = maybeLeftArray.get();
-			ArrayTypeID rightArray = maybeRightArray.get();
-
-			if (leftArray.dimension == rightArray.dimension) {
-				return union(leftArray.elementType, rightArray.elementType)
-						.map(t -> new ArrayTypeID(t, leftArray.dimension));
-			}
-		}
-
-		return Optional.empty();
-	}
-
-	@Override
 	public ExpressionCompiler withLocalVariables(List<CompilingVariable> variables) {
 		LocalSymbols newLocals = locals.forBlock();
 		for (CompilingVariable variable : variables) {

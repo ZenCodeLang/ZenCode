@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.compilation.statement.CompilingLoopStatem
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.identifiers.ExpansionSymbol;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
@@ -15,6 +16,8 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -58,6 +61,11 @@ public class StatementCompilerImpl implements StatementCompiler {
 	@Override
 	public TypeBuilder types() {
 		return types;
+	}
+
+	@Override
+	public List<ExpansionSymbol> getAvailableExpansions() {
+		return context.getAvailableExpansions();
 	}
 
 	@Override

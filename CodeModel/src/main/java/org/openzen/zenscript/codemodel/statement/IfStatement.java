@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -64,14 +65,14 @@ public class IfStatement extends Statement {
 	}
 
 	@Override
-	public Optional<TypeID> getReturnType() {
-		final Optional<TypeID> thenType = onThen.getReturnType();
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
+		final Optional<TypeID> thenType = onThen.getReturnType(typeResolver);
 
 		if (onElse == null) {
 			return thenType;
 		}
 
-		final Optional<TypeID> elseType = onElse.getReturnType();
+		final Optional<TypeID> elseType = onElse.getReturnType(typeResolver);
 		if (thenType.equals(elseType)) {
 			return thenType;
 		}

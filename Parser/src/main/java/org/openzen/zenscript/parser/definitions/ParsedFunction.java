@@ -125,7 +125,7 @@ public class ParsedFunction extends ParsedDefinition {
 			compiled.setCode(body.compile(compiler));
 
 			if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED)
-				compiled.caller.body.getReturnType().ifPresent(type -> compiled.header.setReturnType(type));
+				compiled.caller.body.getReturnType(compiler).ifPresent(type -> compiled.header.setReturnType(type));
 		}
 
 		@Override

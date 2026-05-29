@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -70,10 +71,10 @@ public class SwitchStatement extends LoopStatement {
 	}
 
 	@Override
-	public Optional<TypeID> getReturnType() {
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
 		final List<TypeID> collect = cases.stream()
 				.flatMap(aCase -> Arrays.stream(aCase.statements))
-				.map(Statement::getReturnType)
+				.map(statement -> statement.getReturnType(typeResolver))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.distinct()

@@ -80,7 +80,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 				//Statement statements = body.compile(innerScope, header);
 
 				if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
-					Optional<TypeID> returnType = statement.getReturnType();
+					Optional<TypeID> returnType = statement.getReturnType(functionCompiler);
 					/*if (returnType == null) {
 						if (header.getReturnType() != BasicTypeID.UNDETERMINED) {
 							returnType = genericHeader.getReturnType();

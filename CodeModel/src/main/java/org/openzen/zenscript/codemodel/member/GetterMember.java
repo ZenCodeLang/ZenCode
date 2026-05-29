@@ -9,8 +9,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.Optional;
-
 public class GetterMember extends FunctionalMember {
 	public final String name;
 	public TypeID type;
@@ -31,7 +29,7 @@ public class GetterMember extends FunctionalMember {
 		this.body = body;
 
 		if (type == BasicTypeID.UNDETERMINED) {
-			body.getReturnType().ifPresent(this::setType);
+			body.getReturnType(null).ifPresent(this::setType);
 		}
 	}
 

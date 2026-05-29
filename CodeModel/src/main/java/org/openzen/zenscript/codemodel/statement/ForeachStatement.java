@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
@@ -66,7 +67,7 @@ public class ForeachStatement extends LoopStatement {
 	}
 
 	@Override
-	public Optional<TypeID> getReturnType() {
-		return content.getReturnType();
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
+		return content.getReturnType(typeResolver);
 	}
 }

@@ -4,8 +4,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.StatementAnnotation;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ public abstract class Statement extends Taggable {
 		this.thrownType = thrownType;
 	}
 
-	public Optional<TypeID> getReturnType() {
+	public Optional<TypeID> getReturnType(TypeResolver typeResolver) {
 		return Optional.empty();
 	}
 
