@@ -193,9 +193,9 @@ public class ParsedExpressionInt extends ParsedExpression {
 		}
 
 		private CastedExpression castIfFits(CastedEval cast, boolean fits, BiFunction<CodePosition, Long, Expression> expr){
-			if(fits) {
+			if (fits) {
 				return cast.of(CastedExpression.Level.EXACT, expr.apply(this.position, this.value));
-			} else if(cast.isExplicit()) {
+			} else if (cast.isExplicit()) {
 				return cast.of(CastedExpression.Level.EXPLICIT, expr.apply(this.position, this.value));
 			}
 			return cast.invalid(CompileErrors.constantSize(this.value,cast.type));

@@ -61,10 +61,16 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		public CastedExpression cast(CastedEval cast) {
 			TypeID actualType = cast.type.simplified();
 
-			if (actualType == BasicTypeID.FLOAT) {
-				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant((float) value));
-			} else if (actualType == BasicTypeID.DOUBLE) {
-				return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant(value));
+			if (suffix.isEmpty()) {
+				if (actualType == BasicTypeID.FLOAT) {
+					return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant((float) value));
+				} else if (actualType == BasicTypeID.DOUBLE) {
+					return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant(value));
+				}
+			} else if (suffix.equals("f") || suffix.equals("F")) {
+				return cast.of(compiler.at(position).constant((float) value));
+			} else if (suffix.equals("d") || suffix.equals("D")) {
+				return cast.of(compiler.at(position).constant(value));
 			}
 
 			ResolvedType resolvedType = compiler.resolve(actualType);
@@ -77,7 +83,7 @@ public class ParsedExpressionFloat extends ParsedExpression {
 						});
 			} else {
 				return resolvedType.findSuffixConstructor(suffix)
-						.map(method -> method.casted(compiler, position, cast, null, this))
+						.map(method -> method.casted(compiler, position, cast, null, new Compiling(compiler, position, value, "")))
 						.orElseGet(() -> cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type, suffix)));
 			}
 		}
