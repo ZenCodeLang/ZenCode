@@ -10,9 +10,10 @@ configurations {
 
 dependencies {
 	api project(':Shared')
+	testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 	implementation libs.jupiter.api
 	implementation libs.junit.platform.engine
-    testRuntimeOnly libs.jupiter.engine
+	testRuntimeOnly libs.jupiter.engine
 
 	stdLibs project(path: ":StdLibs", configuration: "zip")
 }
