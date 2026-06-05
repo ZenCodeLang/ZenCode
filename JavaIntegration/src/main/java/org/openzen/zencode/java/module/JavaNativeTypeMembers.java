@@ -154,7 +154,8 @@ public class JavaNativeTypeMembers implements ResolvedType {
 
 	@Override
 	public Optional<IteratorInstance> findIterator(int variables) {
-		return Optional.empty();
+		return template.getIterator()
+				.map(i -> mapper.mapToIterator(type, i));
 	}
 
 	private Optional<StaticCallable> loadStatic(MethodID id) {

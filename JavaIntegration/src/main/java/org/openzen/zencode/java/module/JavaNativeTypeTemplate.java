@@ -13,9 +13,11 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.IteratorSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodID;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.ssa.CodeBlockStatement;
 import org.openzen.zenscript.codemodel.ssa.SSAVariableCollector;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -31,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +47,7 @@ public class JavaNativeTypeTemplate {
 	private Map<String, JavaRuntimeField> fields;
 	private Map<MethodID, List<MethodSymbol>> methods;
 	private Map<String, JavaRuntimeClass> innerTypes;
+	private Optional<JavaRuntimeIterator> iterator;
 
 	public List<MethodSymbol> getConstructors() {
 		if (constructors == null) {
@@ -104,6 +108,17 @@ public class JavaNativeTypeTemplate {
 		return getField(name)
 				.filter(JavaRuntimeField::isEnumConstant)
 				.map(EnumField::new);
+	}
+
+	public Optional<IteratorSymbol> getIterator() {
+		if (iterator == null) {
+			if (Iterable.class.isAssignableFrom(class_.cls)) {
+				iterator = Optional.of(loadIterator());
+			} else {
+				iterator = Optional.empty();
+			}
+		}
+		return iterator.map(Function.identity());
 	}
 
 	private void loadFields() {
@@ -245,6 +260,20 @@ public class JavaNativeTypeTemplate {
 			}
 
 
+		}
+	}
+
+	private JavaRuntimeIterator loadIterator() {
+		try {
+			Method method = class_.cls.getMethod("iterator");
+			MethodID id = MethodID.instanceMethod(method.getName());
+			JavaNativeHeaderConverter headerConverter = class_.module.getHeaderConverter();
+			FunctionHeader header = headerConverter.getHeader(typeVariableContext, method);
+			JavaRuntimeMethod runtimeMethod = new JavaRuntimeMethod(class_, target, method, id, header, false, expansion);
+			class_.module.getCompiled().setMethodInfo(runtimeMethod, runtimeMethod);
+			return new JavaRuntimeIterator(runtimeMethod);
+		} catch (NoSuchMethodException ex) {
+			throw new IllegalStateException("Class " + class_.cls.getName() + " does not have an iterator() method");
 		}
 	}
 

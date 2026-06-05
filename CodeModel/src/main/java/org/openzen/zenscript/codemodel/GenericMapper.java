@@ -2,9 +2,12 @@ package org.openzen.zenscript.codemodel;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.IteratorSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.IteratorInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -77,6 +80,10 @@ public class GenericMapper {
 
 	public MethodInstance map(TypeID target, MethodSymbol method) {
 		return new MethodInstance(method, map(method.getHeader()), target, expansionTypeArguments);
+	}
+
+	public IteratorInstance mapToIterator(TypeID target, IteratorSymbol iterator) {
+		return new IteratorInstance(target, map(iterator.getReturnedTypes(target)), map(target, iterator));
 	}
 
 	public GenericMapper getInner(Map<TypeParameter, TypeID> mapping) {
