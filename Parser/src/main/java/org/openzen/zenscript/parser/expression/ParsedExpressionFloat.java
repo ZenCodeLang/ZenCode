@@ -63,7 +63,7 @@ public class ParsedExpressionFloat extends ParsedExpression {
 
 			if (suffix.isEmpty()) {
 				if (actualType == BasicTypeID.FLOAT) {
-					return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant((float) value));
+					return cast.of(CastedExpression.Level.INFERRED, compiler.at(position).constant((float) value));
 				} else if (actualType == BasicTypeID.DOUBLE) {
 					return cast.of(CastedExpression.Level.EXACT, compiler.at(position).constant(value));
 				}

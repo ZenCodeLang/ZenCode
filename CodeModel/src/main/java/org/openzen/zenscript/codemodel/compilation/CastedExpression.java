@@ -10,7 +10,9 @@ import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 public class CastedExpression {
 	public enum Level {
 		EXACT,
+		INFERRED, // for example, a number that could be either float or double will return "inferred" when cast to float
 		WIDENING,
+		WIDENING_INFERRED, // when doing x + y where x must be widened and y is inferred
 		IMPLICIT,
 		EXPLICIT,
 		INVALID;

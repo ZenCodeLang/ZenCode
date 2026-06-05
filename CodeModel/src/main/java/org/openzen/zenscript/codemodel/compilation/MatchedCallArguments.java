@@ -22,7 +22,13 @@ import java.util.stream.Stream;
 
 public class MatchedCallArguments<T extends AnyMethod> {
 
-	private static final CastedExpression.Level[] candidateLevelsInOrderOfPriority = {CastedExpression.Level.EXACT, CastedExpression.Level.WIDENING, CastedExpression.Level.IMPLICIT};
+	private static final CastedExpression.Level[] candidateLevelsInOrderOfPriority;
+
+	static {
+		candidateLevelsInOrderOfPriority = Stream.of(CastedExpression.Level.values())
+				.filter(level -> level != CastedExpression.Level.INVALID && level != CastedExpression.Level.EXPLICIT)
+				.toArray(CastedExpression.Level[]::new);
+	}
 
 	public static <T extends AnyMethod> MatchedCallArguments<T> match(
 			ExpressionCompiler compiler,
@@ -218,7 +224,8 @@ public class MatchedCallArguments<T extends AnyMethod> {
 	) {
 		FunctionHeader header = instancedMethod.getHeader();
 
-		if (matchedNormal.arguments.level != CastedExpression.Level.EXACT || !method.hasWideningConversions()) {
+		boolean inferred = matchedNormal.arguments.level == CastedExpression.Level.INFERRED;
+		if ((matchedNormal.arguments.level != CastedExpression.Level.EXACT && !inferred) || !method.hasWideningConversions()) {
 			return matchedNormal;
 		}
 
@@ -247,7 +254,7 @@ public class MatchedCallArguments<T extends AnyMethod> {
 
 		return new MatchedCallArguments<>(
 				method,
-				new CallArguments(CastedExpression.Level.WIDENING, expansionTypeArguments, typeArguments, expressions)
+				new CallArguments(inferred ? CastedExpression.Level.WIDENING_INFERRED : CastedExpression.Level.WIDENING, expansionTypeArguments, typeArguments, expressions)
 		);
 	}
 
