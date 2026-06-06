@@ -1,0 +1,3 @@
+#output: 2
+
+println(8 % 3);
