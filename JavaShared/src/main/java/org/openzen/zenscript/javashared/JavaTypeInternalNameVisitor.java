@@ -143,7 +143,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitWildcardOut(WildcardOutTypeID type) {
-		return "java/lang/Object";
+		return type.upperBound.accept(this);
 	}
 
 	@Override

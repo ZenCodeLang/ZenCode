@@ -159,7 +159,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitWildcardOut(WildcardOutTypeID type) {
-		return type.accept(this);
+		return type.upperBound.accept(this);
 	}
 
 	@Override
