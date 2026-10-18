@@ -196,12 +196,48 @@ public class JavaRuntimeTypeConverterImpl implements JavaRuntimeTypeConverter {
 		//	((JavaRuntimeClass) definition).translateTypeParameters(context);
 		//}
 
+		// Type variables not in context mean a raw type used from outside the class,
+		// e.g. a parameter declared as `Foo` instead of `Foo<String>`. Inside Foo itself, T is in context.
+		if (!context.containsAll(type.getTypeParameters())) {
+			return loadRawClass(context, type, definition);
+		}
+
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
 			typeParameters.add(new GenericTypeID(context.get(typeParameter)));
 		}
 
 		return DefinitionTypeID.create(definition, typeParameters.toArray(TypeID.NONE));
+	}
+
+	// Raw types are treated the way Java erases them: each type argument becomes "out <erasure of its first bound>".
+	// Like JavaRuntimeClass.translateTypeParameters, the type variables are put into the context before their bounds
+	// are resolved, so a bound leading back to a class being loaded (e.g. T extends Node<T>) is detected and becomes Object.
+	private TypeID loadRawClass(TypeVariableContext context, Class<?> type, TypeSymbol definition) {
+		final TypeVariable<? extends Class<?>>[] javaTypeParameters = type.getTypeParameters();
+		final TypeVariableContext rawContext = context.createChildContext();
+		for (TypeVariable<? extends Class<?>> typeVariable : javaTypeParameters) {
+			rawContext.put(typeVariable, new TypeParameter(CodePosition.NATIVE, typeVariable.getName()));
+		}
+
+		final TypeID[] typeArguments = new TypeID[javaTypeParameters.length];
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			Class<?> bound = erase(javaTypeParameters[i].getBounds()[0]);
+			boolean boundIsLoading = bound.getTypeParameters().length > 0 && rawContext.containsAll(bound.getTypeParameters());
+			typeArguments[i] = new WildcardOutTypeID(loadClass(rawContext, boundIsLoading ? Object.class : bound));
+		}
+
+		return DefinitionTypeID.create(definition, typeArguments);
+	}
+
+	private static Class<?> erase(Type type) {
+		if (type instanceof Class)
+			return (Class<?>) type;
+		if (type instanceof ParameterizedType)
+			return erase(((ParameterizedType) type).getRawType());
+		if (type instanceof TypeVariable)
+			return erase(((TypeVariable<?>) type).getBounds()[0]);
+		return Object.class;
 	}
 
 	private TypeID loadGenericArray(TypeVariableContext context, GenericArrayType type) {
