@@ -166,35 +166,42 @@ public class ParsedExpressionInt extends ParsedExpression {
 			long signed = negative ? -value : value;
 			switch (type) {
 				case SBYTE:
-					return castIfFits(cast, signed >= Byte.MIN_VALUE && signed <= Byte.MAX_VALUE, (position, value) -> new ConstantSByteExpression(position, value.byteValue()));
+					return castIfFits(cast, type, signed >= Byte.MIN_VALUE && signed <= Byte.MAX_VALUE, (position, value) -> new ConstantSByteExpression(position, value.byteValue()));
 				case BYTE:
-					return castIfFits(cast, !negative && value <= 0xFF, (position, value) -> new ConstantByteExpression(position, value.intValue()));
+					return castIfFits(cast, type, !negative && value <= 0xFF, (position, value) -> new ConstantByteExpression(position, value.intValue()));
 				case SHORT:
-					return castIfFits(cast, signed >= Short.MIN_VALUE && signed <= Short.MAX_VALUE, (position, value) -> new ConstantShortExpression(position, value.shortValue()));
+					return castIfFits(cast, type, signed >= Short.MIN_VALUE && signed <= Short.MAX_VALUE, (position, value) -> new ConstantShortExpression(position, value.shortValue()));
 				case USHORT:
-					return castIfFits(cast, !negative && value <= 0xFFFF, (position, value) -> new ConstantUShortExpression(position, value.intValue()));
+					return castIfFits(cast, type, !negative && value <= 0xFFFF, (position, value) -> new ConstantUShortExpression(position, value.intValue()));
 				case INT:
-					return castIfFits(cast, signed >= Integer.MIN_VALUE && signed <= Integer.MAX_VALUE, (position, value) -> new ConstantIntExpression(position, value.intValue()));
+					return castIfFits(cast, type, signed >= Integer.MIN_VALUE && signed <= Integer.MAX_VALUE, (position, value) -> new ConstantIntExpression(position, value.intValue()));
 				case UINT:
-					return castIfFits(cast, !negative && value <= 0xFFFFFFFFL, (position, value) -> new ConstantUIntExpression(position, value.intValue()));
+					return castIfFits(cast, type, !negative && value <= 0xFFFFFFFFL, (position, value) -> new ConstantUIntExpression(position, value.intValue()));
 				case USIZE:
-					return castIfFits(cast, !negative && value <= 0xFFFFFFFFL, ConstantUSizeExpression::new);
+					return castIfFits(cast, type, !negative && value <= 0xFFFFFFFFL, ConstantUSizeExpression::new);
 				case LONG:
-					return cast.of(new ConstantLongExpression(position, value));
+					return cast.of(levelFor(type), new ConstantLongExpression(position, value));
 				case ULONG:
-					return castIfFits(cast, !negative, ConstantULongExpression::new);
+					return castIfFits(cast, type, !negative, ConstantULongExpression::new);
 				case FLOAT:
-					return cast.of(new ConstantFloatExpression(position, value));
+					return cast.of(levelFor(type), new ConstantFloatExpression(position, value));
 				case DOUBLE:
-					return cast.of(new ConstantDoubleExpression(position, value));
+					return cast.of(levelFor(type), new ConstantDoubleExpression(position, value));
 			}
 
 			return cast.of(eval());
 		}
 
-		private CastedExpression castIfFits(CastedEval cast, boolean fits, BiFunction<CodePosition, Long, Expression> expr){
+		// Only the literal's natural type (int, or long if it doesn't fit) is an exact match;
+		// any other numeric type it fits into is inferred, so that e.g. 2.0 / 0 prefers the int overload
+		private CastedExpression.Level levelFor(BasicTypeID type) {
+			BasicTypeID natural = value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE ? BasicTypeID.INT : BasicTypeID.LONG;
+			return type == natural ? CastedExpression.Level.EXACT : CastedExpression.Level.INFERRED;
+		}
+
+		private CastedExpression castIfFits(CastedEval cast, BasicTypeID type, boolean fits, BiFunction<CodePosition, Long, Expression> expr){
 			if (fits) {
-				return cast.of(CastedExpression.Level.EXACT, expr.apply(this.position, this.value));
+				return cast.of(levelFor(type), expr.apply(this.position, this.value));
 			} else if (cast.isExplicit()) {
 				return cast.of(CastedExpression.Level.EXPLICIT, expr.apply(this.position, this.value));
 			}
